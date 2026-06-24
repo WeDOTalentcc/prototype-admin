@@ -113,7 +113,7 @@ class CVParserService:
             logger.error(f"CV parsing failed: {e}", exc_info=True)
             raise HTTPException(
                 status_code=500,
-                detail=f"Failed to parse CV: {str(e)}"
+                detail="Internal server error"
             )
     
     async def extract_text_from_pdf(self, content: bytes) -> str:

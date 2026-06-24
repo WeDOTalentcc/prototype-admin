@@ -7,6 +7,7 @@ Provides functionality to:
 - Apply adjustments to reused vacancies
 """
 
+from app.shared.llm_models import CANONICAL_GEMINI_FLASH_MODEL
 import json
 import logging
 import re
@@ -126,7 +127,7 @@ Se nenhum ajuste for mencionado, retorne null para todos os campos."""
             
             response = await self._llm_service.generate_native_gemini(
                 contents=prompt,
-                model="gemini-2.5-flash",
+                model=CANONICAL_GEMINI_FLASH_MODEL,
             )
             
             response_text = response.text.strip()
@@ -231,7 +232,7 @@ Se nenhum ajuste for mencionado, retorne null para todos os campos."""
             
             summaries = []
             for v in vacancies:
-                status_normalized = "contratado" if v.status in ["Concluída", "Filled", "Closed", "Fechada"] else (
+                status_normalized = "contratado" if v.status in ["Concluída", "Cancelada", "Arquivada"] else (
                     "cancelado" if v.status in ["Cancelada", "Cancelled"] else "ativa"
                 )
                 
@@ -329,7 +330,7 @@ Se nenhum ajuste for mencionado, retorne null para todos os campos."""
             
             response = await self._llm_service.generate_native_gemini(
                 contents=prompt,
-                model="gemini-2.5-flash",
+                model=CANONICAL_GEMINI_FLASH_MODEL,
             )
             
             response_text = response.text.strip()

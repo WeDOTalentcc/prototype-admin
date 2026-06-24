@@ -104,12 +104,12 @@ export function InsightsPipelineSection({
           <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
           Funil de Triagem IA
           {liaFunnelMetrics.isEstimated && (
-            <span className="text-xs text-lia-text-disabled font-normal ml-1">(estimativa)</span>
+            <span className="text-xs text-lia-text-muted font-normal ml-1">(estimativa)</span>
           )}
         </h3>
         <div className="grid grid-cols-5 gap-3">
           {[
-            { Icon: GitBranch, label: "Funil LIA", value: liaFunnelMetrics.pipeline_lia, color: "text-lia-text-primary" },
+            { Icon: GitBranch, label: "Funil de Triagem", value: liaFunnelMetrics.pipeline_lia, color: "text-lia-text-primary" },
             { Icon: CalendarCheck, label: "Triagens Agendadas", value: liaFunnelMetrics.triagens_agendadas, color: "text-lia-text-primary" },
             { Icon: PhoneCall, label: "Triagens Realizadas", value: liaFunnelMetrics.triagens_realizadas, color: "text-status-success" },
             { Icon: MessageCircleX, label: "Sem Resposta", value: liaFunnelMetrics.sem_resposta, color: "text-lia-text-secondary" },
@@ -169,7 +169,7 @@ export function InsightsPipelineSection({
                   <span className="text-xs font-medium text-lia-text-tertiary">{job.title}</span>
                   <div className="flex flex-wrap gap-1 mt-1.5">
                     {job.behavioral_competencies?.map((comp, i) => (
-                      <span key={i} className="text-micro px-2 py-0.5 rounded-full bg-wedo-purple/15 text-wedo-purple">
+                      <span key={i} className="text-micro px-2 py-0.5 rounded-full bg-wedo-purple/15 text-wedo-purple-text">
                         {comp.competency}
                       </span>
                     ))}

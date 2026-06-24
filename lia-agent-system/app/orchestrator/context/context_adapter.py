@@ -77,6 +77,7 @@ class UniversalContext(BaseModel):
 
     # Contexto do usuário (enriquecido pelo MainOrchestrator via DB lookup)
     user_name: str = ""
+    user_email: str = ""
     user_role: str = ""
 
     # Contexto do tenant (injetado pelo MainOrchestrator)
@@ -89,6 +90,9 @@ class UniversalContext(BaseModel):
     search_context: dict[str, Any] | None = None
     target_job: dict[str, Any] | None = None
     extra: dict[str, Any] = {}
+    # Fase B P0.1 (consciencia de tela): estado-da-tela vivo (page_type +
+    # counts + filtros + ids visiveis) que o supervisor injeta no system prompt.
+    view_context: dict[str, Any] | None = None
 
     # Flag: skip memory persistence (Passo 2 Path A — ChatRepository remains owner until M2)
     skip_memory_persist: bool = False
@@ -122,6 +126,7 @@ class UniversalContext(BaseModel):
             "channel": self.channel,
             "company_id": self.company_id,
             "user_name": self.user_name,
+            "user_email": self.user_email,
             "user_role": self.user_role,
             "context_page": self.context_page,
             "entity_type": self.entity_type,
@@ -365,3 +370,4 @@ class ContextAdapter:
                 f"company:{company_id} — {exc}. Allowing (graceful degradation)."
             )
             return True
+

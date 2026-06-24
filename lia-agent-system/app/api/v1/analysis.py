@@ -10,6 +10,7 @@ from app.schemas.analysis import AnalysisRequest, AnalysisResponse
 from app.shared.services.analysis_service import analysis_service
 from fastapi import Depends
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 
 logger = logging.getLogger(__name__)
 
@@ -51,12 +52,12 @@ async def analyze_candidates(request: AnalysisRequest, company_id: str = Depends
         
     except ValueError as e:
         logger.error(f"Configuration error: {e}")
-        raise HTTPException(status_code=503, detail=str(e))
+        raise HTTPException(status_code=503, detail="Serviço de análise indisponível — verifique a configuração")
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Analysis failed: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/analysis/archetypes", response_model=None)

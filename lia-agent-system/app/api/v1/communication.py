@@ -20,6 +20,9 @@ from app.shared.pii_masking import get_masked_logger
 from app.shared.security.require_company_id import require_company_id
 from app.shared.tenant_guard import get_verified_company_id
 from app.shared.types import WeDoBaseModel
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.core.database import get_db
+from app.domains.communication.services.consent_gate import CommunicationConsentGate
 
 logger = get_masked_logger(__name__)
 
@@ -93,8 +96,9 @@ class SendResponse(BaseModel):
 @router.post("/send-email", response_model=SendResponse, status_code=status.HTTP_200_OK)
 async def send_email(
     request: SendEmailRequest,
+    db: AsyncSession = Depends(get_db),
     audit_svc: AuditService = Depends(get_audit_service),
-company_id: str = Depends(get_verified_company_id)):
+    company_id: str = Depends(get_verified_company_id)):
     """
     Send an email via the CommunicationDispatcher (Mailgun primary, Resend fallback).
 
@@ -102,6 +106,42 @@ company_id: str = Depends(get_verified_company_id)):
     - Falls back to mock success in development when API keys not set
     - Logs the communication to CommunicationHistory
     """
+    # Conformidade do conteudo (texto pode ter sido editado a mao no modal):
+    # fairness L1 + PII de documento (computacional) + LLM-judge (dormente por flag).
+    from app.shared.compliance.feedback_guard import feedback_block_reason_full
+    _block_reason = await feedback_block_reason_full(
+        f"{request.subject or ''} {request.body_text or request.body_html or ''}",
+        company_id,
+    )
+    if _block_reason:
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "error": "compliance_blocked",
+                "reason": _block_reason,
+                "message": "O texto contem conteudo bloqueado (vies, PII de documento ou risco juridico). Revise antes de enviar.",
+            },
+        )
+
+    # GAP-07-004: LGPD consent gate — fail-closed per Art. 7
+    if request.candidate_id:
+        _email_gate = CommunicationConsentGate(db)
+        _email_consent = await _email_gate.check(request.candidate_id, company_id, "email")
+        if not _email_consent.allowed:
+            raise HTTPException(
+                status_code=403,
+                detail={
+                    "error": "lgpd_consent_required",
+                    "reason": _email_consent.reason,
+                    "message": (
+                        "Envio bloqueado: o candidato n\u00e3o possui consentimento LGPD "
+                        "para este canal. Solicite consentimento antes de comunicar (LGPD Art. 7)."
+                    ),
+                    "candidate_id": request.candidate_id,
+                    "channel": "email",
+                },
+            )
+
     try:
         logger.info(f"Sending email for company {company_id}")
 
@@ -207,8 +247,9 @@ company_id: str = Depends(get_verified_company_id)):
 @router.post("/send-whatsapp", response_model=SendResponse, status_code=status.HTTP_200_OK)
 async def send_whatsapp(
     request: SendWhatsAppRequest,
+    db: AsyncSession = Depends(get_db),
     audit_svc: AuditService = Depends(get_audit_service),
-company_id: str = Depends(get_verified_company_id)):
+    company_id: str = Depends(get_verified_company_id)):
     """
     Send a WhatsApp message via the CommunicationDispatcher (Twilio).
 
@@ -216,6 +257,39 @@ company_id: str = Depends(get_verified_company_id)):
     - Falls back to mock success in development when API keys not set
     - Logs the communication to CommunicationHistory
     """
+    # Conformidade (fairness L1 + PII de documento). WhatsApp = template Meta (W1);
+    # guardamos o conteudo por defesa em profundidade.
+    from app.shared.compliance.feedback_guard import feedback_block_reason as _fbr_wa
+    _wa_block = _fbr_wa(request.message or "", company_id)
+    if _wa_block:
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "error": "compliance_blocked",
+                "reason": _wa_block,
+                "message": "Mensagem bloqueada (vies ou PII de documento). Revise antes de enviar.",
+            },
+        )
+
+    # GAP-07-004: LGPD consent gate for WhatsApp — fail-closed per Art. 7
+    if request.candidate_id:
+        _wa_gate = CommunicationConsentGate(db)
+        _wa_consent = await _wa_gate.check(request.candidate_id, company_id, "whatsapp")
+        if not _wa_consent.allowed:
+            raise HTTPException(
+                status_code=403,
+                detail={
+                    "error": "lgpd_consent_required",
+                    "reason": _wa_consent.reason,
+                    "message": (
+                        "Envio bloqueado: o candidato n\u00e3o possui consentimento LGPD "
+                        "para WhatsApp. Solicite consentimento antes de comunicar (LGPD Art. 7)."
+                    ),
+                    "candidate_id": request.candidate_id,
+                    "channel": "whatsapp",
+                },
+            )
+
     try:
         logger.info(f"Sending WhatsApp for company {company_id}")
 
@@ -520,3 +594,135 @@ company_id: str = Depends(get_verified_company_id)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to send screening invite: {str(e)}"
         )
+
+
+# ── GAP-07-007 — Schedule Message ────────────────────────────────────────────
+
+class ScheduleMessageRequest(WeDoBaseModel):
+    """Request body for POST /communication/schedule-message.
+
+    LGPD notes:
+    - company_id comes from JWT via get_verified_company_id (never from payload).
+    - message_content is PII: stored encrypted at rest via column-level encryption.
+    - lgpd_expiry auto-set to send_at + 90 days (Art. 15 data minimisation).
+    """
+    candidate_id: str = Field(..., description="Candidate UUID or bigint id")
+    candidate_name: str | None = Field(None, description="Candidate display name")
+    vacancy_id: str | None = Field(None, description="Related vacancy (optional)")
+    channel: str = Field(..., description="Delivery channel: email or whatsapp")
+    message: str = Field(..., min_length=1, description="Message body")
+    subject: str | None = Field(None, description="Subject line (email only)")
+    send_at: str = Field(
+        ...,
+        description="ISO-8601 datetime in UTC when to send, e.g. 2026-06-17T10:00:00Z",
+    )
+
+
+class ScheduleMessageResponse(BaseModel):
+    scheduled_message_id: str
+    send_at: str
+    status: str
+    channel: str
+    candidate_id: str
+
+
+@router.post(
+    "/schedule-message",
+    response_model=ScheduleMessageResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Schedule a future message for a candidate (GAP-07-007)",
+)
+async def schedule_message(
+    request: ScheduleMessageRequest,
+    db: AsyncSession = Depends(get_db),
+    company_id: str = Depends(get_verified_company_id),
+) -> ScheduleMessageResponse:
+    """Create a scheduled message entry for future delivery.
+
+    The Celery task ``communication.send_scheduled_messages`` polls every minute
+    and dispatches messages whose ``send_at <= now()``.
+
+    Rules:
+    - ``send_at`` must be in the future.
+    - ``channel`` must be ``email`` or ``whatsapp``.
+    - ``company_id`` is read from JWT — never from the request body (multi-tenancy).
+    - LGPD Art. 15: ``lgpd_expiry`` is set to ``send_at + 90 days``.
+    """
+    from datetime import datetime, timedelta
+    import uuid as _uuid_mod
+
+    from app.models import ScheduledMessage, ScheduledMessageStatus
+    from sqlalchemy import insert
+
+    # --- Validate channel ---
+    channel = request.channel.lower()
+    if channel not in ("email", "whatsapp"):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail={
+                "error": "invalid_channel",
+                "message": "Canal inválido. Use 'email' ou 'whatsapp'.",
+            },
+        )
+
+    # --- Validate send_at ---
+    try:
+        send_at_dt = datetime.fromisoformat(request.send_at.replace("Z", "+00:00"))
+        # Normalise to naive UTC for DB storage (consistent with other models)
+        send_at_naive = send_at_dt.replace(tzinfo=None)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail={
+                "error": "invalid_send_at",
+                "message": f"send_at inválido: {exc}. Use ISO-8601 UTC.",
+            },
+        )
+
+    now_naive = datetime.utcnow()
+    if send_at_naive <= now_naive:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail={
+                "error": "send_at_in_past",
+                "message": "send_at deve ser uma data/hora futura.",
+            },
+        )
+
+    # --- LGPD retention ---
+    lgpd_expiry = send_at_naive + timedelta(days=90)
+
+    # --- Persist ---
+    msg_id = str(_uuid_mod.uuid4())
+    new_msg = ScheduledMessage(
+        id=msg_id,
+        company_id=company_id,
+        candidate_id=request.candidate_id,
+        candidate_name=request.candidate_name,
+        vacancy_id=request.vacancy_id,
+        channel=channel,
+        message_content=request.message,
+        subject=request.subject,
+        send_at=send_at_naive,
+        status=ScheduledMessageStatus.PENDING,
+        lgpd_expiry=lgpd_expiry,
+    )
+    db.add(new_msg)
+    await db.commit()
+
+    logger.info(
+        "schedule_message: created %s for candidate %s via %s at %s (company=%s)",
+        msg_id,
+        request.candidate_id,
+        channel,
+        send_at_naive,
+        company_id,
+    )
+
+    return ScheduleMessageResponse(
+        scheduled_message_id=msg_id,
+        send_at=send_at_naive.isoformat(),
+        status=ScheduledMessageStatus.PENDING,
+        channel=channel,
+        candidate_id=request.candidate_id,
+    )

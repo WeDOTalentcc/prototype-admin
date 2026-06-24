@@ -15,6 +15,7 @@ from fastapi import APIRouter, HTTPException, Query
 from app.shared.services.pipeline_prediction_service import pipeline_prediction_service
 from fastapi import Depends
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.errors import LIAError
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +52,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"[pipeline_prediction] Error for vacancy {vacancy_id}: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="Erro ao calcular previsão de fechamento")
+        raise LIAError(message="Erro ao calcular previsão de fechamento")
 
 
 @router.get("/company-overview", response_model=None)
@@ -79,4 +80,4 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"[pipeline_prediction] Error for company {company_id}: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="Erro ao calcular visão geral de previsões")
+        raise LIAError(message="Erro ao calcular visão geral de previsões")

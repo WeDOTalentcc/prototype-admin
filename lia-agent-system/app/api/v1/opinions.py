@@ -9,8 +9,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
-from app.domains.opinions.dependencies import get_opinions_repo
-from app.domains.opinions.repositories.opinions_repository import OpinionsRepository
+from app.repositories.dependencies import get_opinions_repo
+from app.repositories.opinions_repository import OpinionsRepository
 from app.models.lia_opinion import LiaOpinion
 from app.schemas.lia_opinion import (
     CandidateOpinionsSummary,
@@ -21,10 +21,28 @@ from app.schemas.lia_opinion import (
     LiaOpinionUpdate,
 )
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/opinions", tags=["LIA Opinions"])
+
+
+class ParecerGenerateRequest(WeDoBaseModel):
+    """Body do POST /opinions/candidate/{id}/parecer. company_id vem do JWT, nunca aqui."""
+    job_vacancy_id: str | None = None
+
+
+class CriteriaMatchRequest(WeDoBaseModel):
+    """Body do POST /opinions/candidate/{id}/criteria-match (matriz da busca ou vaga, on-the-fly).
+
+    - search_criteria + sem job_id: matriz plana (busca de talentos).
+    - job_id presente: matriz agrupada (must_have/preferred) derivada da vaga sem LLM.
+      Fallback quando o candidato não tem parecer salvo com qualification_matrix.
+    """
+    search_criteria: dict = {}
+    job_id: str | None = None
 
 
 def _build_opinion_full(op: LiaOpinion, job_title: str | None) -> LiaOpinionFull:
@@ -97,6 +115,7 @@ company_id: str = Depends(require_company_id)):
             recommendation=op.recommendation,
             summary=op.summary,
             archetype=op.archetype,
+            score_breakdown=op.score_breakdown or {},
             job_vacancy_id=op.job_vacancy_id,
             job_vacancy_title=job_title,
             created_at=op.created_at,
@@ -369,3 +388,129 @@ company_id: str = Depends(require_company_id)):
     logger.info(f"Soft-deleted opinion {opinion_id}")
 
     return {"message": "Opinion deleted successfully", "id": str(opinion_id)}
+
+
+@router.post("/candidate/{candidate_id}/parecer", response_model=LiaOpinionFull)
+async def generate_candidate_parecer(
+    candidate_id: UUID,
+    payload: ParecerGenerateRequest,
+    repo: OpinionsRepository = Depends(get_opinions_repo),
+    current_user: User = Depends(get_current_user_or_demo),
+    company_id: str = Depends(require_company_id),
+):
+    """Gera o parecer job-directed (matriz de qualificacao) e AUTO-SALVA versionado.
+
+    Fail-loud: se a geracao falhar (LLM), responde 502 e NAO persiste conteudo
+    degradado (CLAUDE.md REGRA 4). multi-tenancy: company_id do JWT, nunca do payload.
+    """
+    from app.domains.analytics.services.candidate_report_service import (
+        candidate_report_service,
+        ParecerGenerationError,
+    )
+
+    company_id = current_user.company_id or company_id
+    if not company_id:
+        raise HTTPException(status_code=400, detail="company_id is required but not set")
+
+    try:
+        parecer = await candidate_report_service.generate_parecer(
+            db=repo.db,
+            candidate_id=str(candidate_id),
+            job_id=payload.job_vacancy_id,
+        )
+    except ParecerGenerationError as e:
+        logger.error("Parecer generation failed", exc_info=True, extra={"candidate": str(candidate_id)})
+        raise HTTPException(status_code=502, detail="Erro ao gerar parecer — tente novamente mais tarde")
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+    qm = parecer.get("qualification_matrix") or {}
+    sections = parecer.get("sections") or {}
+    resumo = sections.get("resumo_executivo") or {}
+    pfa = sections.get("pontos_fortes_e_atencao") or {}
+    rec_final = sections.get("recomendacao_final") or {}
+    rec = parecer.get("recommendation")
+    recommendation = (
+        rec.get("nivel") if isinstance(rec, dict) else (rec if isinstance(rec, str) else None)
+    )
+    lia_score = parecer.get("lia_score")
+    score = float(lia_score) if isinstance(lia_score, (int, float)) else None
+    crits = qm.get("criteria") or []
+    matched = [c.get("label") for c in crits if c.get("status") == "met"]
+    missing = [c.get("label") for c in crits if c.get("status") == "not_met"]
+
+    opinion_id = await repo.create_parecer_opinion(
+        candidate_id=str(candidate_id),
+        job_vacancy_id=payload.job_vacancy_id,
+        company_id=company_id,
+        score=score,
+        recommendation=recommendation,
+        summary=resumo.get("texto") if isinstance(resumo, dict) else None,
+        score_breakdown={
+            "qualification_matrix": qm,
+            "sections": sections,
+            "completeness_score": parecer.get("completeness_score"),
+            "recommendation": rec,
+            "lia_score": lia_score,
+        },
+        strengths=pfa.get("pontos_fortes") or [],
+        concerns=pfa.get("pontos_atencao") or [],
+        gaps=[],
+        matched_skills=matched,
+        missing_skills=missing,
+        next_steps=rec_final.get("proximos_passos") or [],
+    )
+    await repo.db.commit()
+
+    opinion = await repo.get_by_id(opinion_id=UUID(opinion_id), company_id=company_id)
+    if not opinion:
+        raise LIAError(message="Parecer persisted but not retrievable")
+    job_title = (
+        await repo.get_job_title(opinion.job_vacancy_id) if opinion.job_vacancy_id else None
+    )
+    return _build_opinion_full(opinion, job_title)
+
+
+@router.post("/candidate/{candidate_id}/criteria-match", response_model=None)
+async def candidate_criteria_match(
+    candidate_id: UUID,
+    payload: CriteriaMatchRequest,
+    repo: OpinionsRepository = Depends(get_opinions_repo),
+    company_id: str = Depends(require_company_id),
+):
+    """Matriz da BUSCA (lista plana de criterios) avaliada on-the-fly. NAO persiste.
+
+    Explica o Match score comparando o candidato com os filtros da busca.
+    multi-tenancy: leitura via tenant db (RLS) + company_id do JWT.
+    """
+    from app.domains.analytics.services.candidate_report_service import (
+        candidate_report_service,
+    )
+    from app.domains.analytics.services.criteria_derivation import derive_from_search
+
+    candidate = await candidate_report_service._get_candidate(repo.db, str(candidate_id))
+    if not candidate:
+        raise HTTPException(status_code=404, detail=f"Candidate {candidate_id} not found")
+    cand_dict = candidate_report_service._build_candidate_dict(candidate)
+
+    if payload.job_id:
+        # Matriz agrupada (vaga) — derivação determinística, sem LLM.
+        # Fallback para candidatos sem parecer salvo ou com parecer antigo.
+        from app.domains.job_management.repositories.job_vacancy_crud_repository import (
+            JobVacancyCrudRepository,
+        )
+        from uuid import UUID as _UUID
+        job_repo = JobVacancyCrudRepository(repo.db)
+        try:
+            job_uuid = _UUID(str(payload.job_id))
+        except ValueError:
+            raise HTTPException(status_code=400, detail="job_id deve ser um UUID válido")
+        job = await job_repo.get_vacancy_by_id_and_company(job_uuid, company_id)
+        if not job:
+            raise HTTPException(status_code=404, detail=f"Job {payload.job_id} not found")
+        from app.domains.analytics.services.criteria_derivation import derive_from_job
+        job_dict = candidate_report_service._build_job_dict(job)
+        matrix = derive_from_job(job_dict, cand_dict, None)
+    else:
+        matrix = derive_from_search(payload.search_criteria or {}, cand_dict)
+    return matrix.model_dump()

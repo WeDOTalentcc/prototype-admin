@@ -3,6 +3,8 @@
 import React, { useState, useEffect, useCallback, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Loader2, AlertCircle } from 'lucide-react'
+import { NextIntlClientProvider, useTranslations } from 'next-intl'
+import ptBRMessages from '@/../messages/pt-BR.json'
 import { CandidateChatPage } from '@/components/candidate/CandidateChatPage'
 import { CandidateJobSelector, type ApplicationSummary } from '@/components/candidate/CandidateJobSelector'
 
@@ -24,6 +26,7 @@ function parseJwtPayload(token: string): Record<string, unknown> | null {
 }
 
 function CandidateStatusContent() {
+  const t = useTranslations('candidateStatus')
   const searchParams = useSearchParams()
   const token = searchParams.get('token') ?? ''
   const [state, setState] = useState<PageState>({ type: 'loading' })
@@ -35,12 +38,12 @@ function CandidateStatusContent() {
       })
 
       if (res.status === 401) {
-        setState({ type: 'error', message: 'Seu link expirou. Solicite um novo link ao RH.' })
+        setState({ type: 'error', message: t('errors.linkExpiredRh') })
         return
       }
 
       if (!res.ok) {
-        setState({ type: 'error', message: 'Não foi possível carregar suas candidaturas. Tente novamente.' })
+        setState({ type: 'error', message: t('errors.loadFailed') })
         return
       }
 
@@ -71,30 +74,30 @@ function CandidateStatusContent() {
 
       setState({ type: 'selector', applications })
     } catch {
-      setState({ type: 'error', message: 'Erro de conexão. Verifique sua internet.' })
+      setState({ type: 'error', message: t('errors.connectionError') })
     }
-  }, [])
+  }, [t])
 
   useEffect(() => {
     if (!token) {
-      setState({ type: 'error', message: 'Link inválido. Verifique o link recebido por e-mail ou WhatsApp.' })
+      setState({ type: 'error', message: t('errors.invalidLinkContact') })
       return
     }
 
     const payload = parseJwtPayload(token)
     if (!payload) {
-      setState({ type: 'error', message: 'Link inválido. Solicite um novo link ao RH.' })
+      setState({ type: 'error', message: t('errors.invalidLinkRh') })
       return
     }
 
     const exp = payload.exp as number | undefined
     if (exp && exp * 1000 < Date.now()) {
-      setState({ type: 'error', message: 'Seu link expirou. Solicite um novo link ao RH.' })
+      setState({ type: 'error', message: t('errors.linkExpiredRh') })
       return
     }
 
     loadApplications(token, payload)
-  }, [token, loadApplications])
+  }, [token, loadApplications, t])
 
   const handleSelectApplication = useCallback((app: ApplicationSummary) => {
     setState({
@@ -112,7 +115,7 @@ function CandidateStatusContent() {
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-3 text-center">
           <Loader2 className="h-8 w-8 animate-spin text-wedo-cyan" />
-          <p className="text-sm text-muted-foreground">Carregando seu portal...</p>
+          <p className="text-sm text-muted-foreground">{t('loading.portal')}</p>
         </div>
       </div>
     )
@@ -126,11 +129,11 @@ function CandidateStatusContent() {
             <AlertCircle className="h-6 w-6 text-destructive" />
           </div>
           <div className="space-y-1">
-            <h2 className="text-base font-semibold text-foreground">Não foi possível abrir o portal</h2>
+            <h2 className="text-base font-semibold text-foreground">{t('errorState.title')}</h2>
             <p className="text-sm text-muted-foreground">{state.message}</p>
           </div>
           <p className="text-xs text-muted-foreground">
-            Em caso de dúvidas, entre em contato com a empresa que realizou sua candidatura.
+            {t('errorState.contactHint')}
           </p>
         </div>
       </div>
@@ -158,14 +161,16 @@ function CandidateStatusContent() {
 
 export default function CandidateStatusPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen flex items-center justify-center">
-          <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
-        </div>
-      }
-    >
-      <CandidateStatusContent />
-    </Suspense>
+    <NextIntlClientProvider locale="pt" messages={ptBRMessages} timeZone="America/Sao_Paulo">
+      <Suspense
+        fallback={
+          <div className="min-h-screen flex items-center justify-center">
+            <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+          </div>
+        }
+      >
+        <CandidateStatusContent />
+      </Suspense>
+    </NextIntlClientProvider>
   )
 }

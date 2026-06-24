@@ -34,7 +34,7 @@ from tenacity import (
     retry,
     retry_if_exception,
     stop_after_attempt,
-    wait_exponential,
+    wait_exponential_jitter,
 )
 
 logger = logging.getLogger(__name__)
@@ -44,6 +44,15 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 #: Error class names that are always transient (retry without status code).
+# GAP-08-002: Expanded to cover connection-level errors so transient network
+# hiccups (e.g. service restart mid-request) are retried instead of opening
+# the circuit breaker.
+#
+# TODO (tech debt GAP-08-003): Unify transient error handling across 3 classifiers:
+# 1. llm_retry.py (_TRANSIENT_CLASS_NAMES) -- canonical, this file
+# 2. error_handling.py (AgentErrorCode.retryable) -- enum-based, disconnected
+# 3. chat_queue_serializer.py (_TRANSIENT_KEYWORDS) -- string heuristic, fragile
+# Consolidate into app/shared/exception_classification.py
 _TRANSIENT_CLASS_NAMES: frozenset[str] = frozenset({
     "RateLimitError",           # Anthropic / OpenAI 429
     "InternalServerError",      # Anthropic / OpenAI 500
@@ -53,6 +62,12 @@ _TRANSIENT_CLASS_NAMES: frozenset[str] = frozenset({
     "Timeout",                  # Requests / httpx timeout
     "TooManyRequests",          # Generic alias for 429
     "OverloadedError",          # Anthropic overload (529)
+    # Connection-level transients (GAP-08-002)
+    "ConnectError",             # httpx.ConnectError -- TCP refused / unreachable
+    "NetworkError",             # httpx.NetworkError -- base network failure
+    "ConnectionRefusedError",   # Python built-in -- port closed (e.g. service restart)
+    "ConnectionResetError",     # Python built-in -- RST by peer
+    "OSError",                  # Python built-in -- raw OS socket errors
 })
 
 
@@ -92,7 +107,7 @@ def _is_transient_llm_error(exc: BaseException) -> bool:
 llm_transient_retry = retry(
     retry=retry_if_exception(_is_transient_llm_error),
     stop=stop_after_attempt(3),
-    wait=wait_exponential(multiplier=1, min=1, max=10),
+    wait=wait_exponential_jitter(initial=1, max=10, jitter=2),
     before_sleep=before_sleep_log(logger, logging.WARNING),
     reraise=True,  # re-raise after exhausting attempts (circuit breaker must see it)
 )

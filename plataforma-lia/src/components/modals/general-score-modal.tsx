@@ -163,7 +163,7 @@ export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreMo
                         <span 
                           className="text-micro px-1.5 py-0.5 rounded-full text-lia-text-secondary bg-lia-interactive-active"
                         >
-                          {t('weight', { weight: component.weight })}
+                          {t('weight', { weight: String(component.weight) })}
                         </span>
                       </div>
                       <span 

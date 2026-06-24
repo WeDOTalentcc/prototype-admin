@@ -151,14 +151,14 @@ class ChatAdapter:
         # so user only sees natural-language content.
         _extracted = _extract_navigate_marker(result["response"])
         if _extracted is not None:
-            _clean_text, _canonical_page = _extracted
+            _clean_text, _canonical_page, _nav_params = _extracted
             result["response"] = _clean_text
             # Only emit ui_action when canonical_page is a known page.
             # Unknown pages resolve to general — strip the marker but
             # do not trigger frontend navigation.
             if _canonical_page != "general":
                 result["ui_action"] = "navigate_to"
-                result["ui_action_params"] = {"page": _canonical_page}
+                result["ui_action_params"] = {"page": _canonical_page, **_nav_params}
 
         # ── Structured data → workflow_data ──
         structured = getattr(orch_response, "structured_data", None)
@@ -237,12 +237,37 @@ def _extract_navigate_marker(text: str):
     import re
     from app.shared.canonical_pages import normalize_page
 
-    match = re.search(r"\[NAVIGATE:\s*([a-z][a-z0-9_-]*)\s*\]", text, re.IGNORECASE)
+    # Fase 0 2026-06-06: captura tambem id opcional
+    # ([NAVIGATE:vaga_detalhe:<uuid>] ou [NAVIGATE:vaga_detalhe?id=<uuid>])
+    # -> params={"id": ...}. Retorna 3-tupla (clean, page, params).
+    # Fase C 2026-06-06: deep-links. Captura page + id opcional (colon) +
+    # query opcional (?tab=edit&section=descricao). Formas suportadas:
+    #   [NAVIGATE:configuracoes]
+    #   [NAVIGATE:vaga_detalhe:<uuid>]
+    #   [NAVIGATE:configuracoes?section=beneficios]
+    #   [NAVIGATE:vaga_detalhe:<uuid>?tab=edit&section=descricao]
+    #   [NAVIGATE:vaga_detalhe?id=<uuid>]  (legado)
+    match = re.search(
+        r"\[NAVIGATE:\s*([a-z][a-z0-9_-]*)\s*(?::\s*([^\]\s?]+))?\s*(?:\?\s*([^\]\s]+))?\s*\]",
+        text,
+        re.IGNORECASE,
+    )
     if not match:
         return None
     canonical = normalize_page(match.group(1))
+    params: dict = {}
+    if match.group(2):
+        params["id"] = match.group(2)
+    if match.group(3):
+        from urllib.parse import parse_qsl
+        q = dict(parse_qsl(match.group(3)))
+        # id pode vir na query (forma legada ?id=) — promove a id.
+        if "id" in q and "id" not in params:
+            params["id"] = q.pop("id")
+        if q:
+            params["query"] = q
     clean = (text[: match.start()] + text[match.end():]).strip()
-    return clean, canonical.value
+    return clean, canonical.value, params
 
 
 # ───────────────────────────────────────────────────────────────────────

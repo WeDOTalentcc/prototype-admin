@@ -76,7 +76,18 @@ class LangGraphReActBase(LangGraphBase):
                     msg_type = msg.__class__.__name__
                     # Apenas HumanMessage e AIMessage — SystemMessage preservado
                     if msg_type in ("HumanMessage", "AIMessage"):
-                        stripped = strip_pii_for_llm_prompt(msg.content)
+                        # Chat do recrutador: NOME de candidato/vaga é
+                        # NECESSÁRIO e AUTORIZADO (mesmo tenant, propósito
+                        # legítimo de recrutamento -- LGPD Art. 7º II / 10).
+                        # mask_names=False preserva o nome (senão "Felipe
+                        # Almeida"/"Diretor Jurídico" viravam "[PERSON REMOVIDO]"
+                        # e identificação/busca quebravam -- transcript Paulo
+                        # 2026-06-06); CPF/email/telefone seguem mascarados
+                        # (layers regex). Consistente com o SSE inbound
+                        # (agent_chat_sse: strip_pii_for_llm_prompt(mask_names=False)).
+                        stripped = strip_pii_for_llm_prompt(
+                            msg.content, mask_names=False
+                        )
                         if stripped != msg.content:
                             _pii_logger.warning(
                                 "[LIA-C04][%s] PII removido de %s domain=%s",
@@ -167,6 +178,25 @@ class LangGraphReActBase(LangGraphBase):
         """
         from app.shared.compliance.audit_callback import AuditCallback
 
+        # wire-B canonical (2026-06-06): zera o sink de response_blocks no inicio
+        # do turno (drenado abaixo apos _state_to_output). Universal — TODOS os
+        # domain agents passam por _process_langgraph. Ver app/shared/rrp_block_sink.
+        try:
+            from app.shared.rrp_block_sink import reset_sink
+            reset_sink()
+        except Exception:
+            pass
+        try:
+            from app.shared.hitl_pending_sink import reset_sink as _hitl_reset
+            _hitl_reset()
+        except Exception:
+            pass
+        try:
+            from app.shared.ui_action_sink import reset_sink as _uia_reset
+            _uia_reset()
+        except Exception:
+            pass
+
         audit_callback = AuditCallback(
             user_id=str(input.user_id or "system"),
             company_id=str(input.company_id or ""),
@@ -192,13 +222,26 @@ class LangGraphReActBase(LangGraphBase):
             system_prompt = f"{system_prompt}\n\n{extra_context}"
 
         # --- WorkingMemory: incrementa iteração e sincroniza stage ---
+        # Fire-and-forget: increment is an analytics counter; LLM response does NOT
+        # depend on its result. Using create_task removes the await from the hot path.
+        # Harness: guide=computacional (perf improvement, no inference change).
         if hasattr(self, "_memory_service"):
+            import asyncio as _asyncio_react
+            async def _incr_iter():
+                try:
+                    await self._memory_service.increment_iteration(  # type: ignore[attr-defined]
+                        input.session_id, self.domain_name
+                    )
+                except Exception as exc:
+                    logger.debug("[%s] working_memory increment falhou: %s", self.__class__.__name__, exc)
             try:
-                await self._memory_service.increment_iteration(  # type: ignore[attr-defined]
-                    input.session_id, self.domain_name
-                )
-            except Exception as exc:
-                logger.debug("[%s] working_memory increment falhou: %s", self.__class__.__name__, exc)
+                _asyncio_react.get_event_loop().create_task(_incr_iter())
+            except RuntimeError:
+                # No running loop (e.g. tests) — fall back to awaiting directly
+                try:
+                    await _incr_iter()
+                except Exception:
+                    pass
 
         # --- Estado inicial LangGraph ---
         try:
@@ -282,6 +325,15 @@ class LangGraphReActBase(LangGraphBase):
         except Exception as e:
             logger.debug("[LIA-C05] FairnessGuard check skipped (fail-open): %s", e)
 
+        # Canonical reasoning phases (2026-06-13): emit understanding/composing
+        # so ALL domain agents (recruiter_copilot, talent, kanban, etc.) feed
+        # the multistep timeline instead of falling back to static Pensando.
+        if streaming_cb and hasattr(streaming_cb, "emit_reasoning_step"):
+            try:
+                streaming_cb.emit_reasoning_step("understanding")
+            except Exception:
+                pass
+
         import time as _time
         _t0 = _time.monotonic()
         try:
@@ -291,13 +343,133 @@ class LangGraphReActBase(LangGraphBase):
                     session_id=input.session_id,
                     audit_callback=audit_callback,
                     streaming_callback=streaming_cb,
+                    conversation_id=(input.context or {}).get("conversation_id"),
                 )
         except Exception as _graph_exc:
             raise
 
         _duration = _time.monotonic() - _t0
 
+        if streaming_cb and hasattr(streaming_cb, "emit_reasoning_step_async"):
+            try:
+                # await to guarantee composing lands in sse_queue BEFORE _done
+                await streaming_cb.emit_reasoning_step_async("composing")
+            except Exception:
+                pass
+
         output = self._state_to_output(result, input)
+
+        # Fix canonical (2026-06-22): extract ui_action + response_blocks
+        # directly from ToolMessage content in the graph state.
+        # asyncio.gather in LangGraph ToolNode copies the Context, so
+        # ContextVar-based sinks (ui_action_sink, rrp_block_sink) set
+        # inside tools do NOT propagate back. This direct extraction
+        # is the primary mechanism; sink drains below are kept as
+        # defense-in-depth for execution paths that dont use gather.
+        try:
+            from app.shared.ui_action_canonical import ALL_ACTIONABLE_UI_ACTION_TYPES as _DIRECT_ACTIONABLE
+            _msgs = (result or {}).get("messages", [])
+            _last_ui_directive = None
+            _direct_blocks = []
+            for _msg in _msgs:
+                _raw = getattr(_msg, "content", None)
+                if _raw is None or not isinstance(_raw, str):
+                    continue
+                if not _raw.startswith("{"):
+                    continue
+                try:
+                    import json as _json_direct
+                    _parsed = _json_direct.loads(_raw)
+                except Exception:
+                    continue
+                if not isinstance(_parsed, dict):
+                    continue
+                _d = _parsed.get("data")
+                if isinstance(_d, dict):
+                    _ua = _d.get("ui_action")
+                    if _ua and _ua in _DIRECT_ACTIONABLE and _last_ui_directive is None:
+                        _last_ui_directive = {
+                            "ui_action": _ua,
+                            "ui_action_params": _d.get("ui_action_params"),
+                        }
+                        _seed = _d.get("seed_source")
+                        if _seed is not None:
+                            _last_ui_directive["seed_source"] = _seed
+                _rblocks = _parsed.get("response_blocks")
+                if isinstance(_rblocks, list) and _rblocks:
+                    _direct_blocks.extend(_rblocks)
+            if _last_ui_directive:
+                _td_page = (_last_ui_directive.get("ui_action_params") or {}).get("page")
+                if _td_page == "pipeline_kanban":
+                    _um = getattr(input, "message", "") or ""
+                    if any(kw in _um.lower() for kw in ("inicio", "home", "pagina inicial", "tela inicial", "página inicial")):
+                        _last_ui_directive["ui_action_params"]["page"] = "home"
+                output.metadata = {
+                    **(output.metadata or {}),
+                    **_last_ui_directive,
+                }
+            if _direct_blocks:
+                output.metadata = {
+                    **(output.metadata or {}),
+                    "response_blocks": (
+                        (output.metadata or {}).get("response_blocks") or []
+                    ) + _direct_blocks,
+                }
+        except Exception as _direct_exc:
+            logger.debug("[%s] direct tool-msg extraction (fail-open): %s", self.__class__.__name__, _direct_exc)
+
+        # wire-B canonical (2026-06-06): drena response_blocks tee'd pelas tools
+        # (via tool_definition_to_langchain_tool) pro metadata → SSE/WS serializa
+        # → FE renderiza cards/tabelas/funis. Consumo unico no fim do turno.
+        try:
+            from app.shared.rrp_block_sink import drain_sink
+            _rrp_blocks = drain_sink()
+            logger.info("[RRP-DRAIN-DBG] %s drained=%d blocks", self.__class__.__name__, len(_rrp_blocks or []))
+            if _rrp_blocks:
+                output.metadata = {
+                    **(output.metadata or {}),
+                    "response_blocks": (
+                        (output.metadata or {}).get("response_blocks") or []
+                    )
+                    + _rrp_blocks,
+                }
+        except Exception as _drain_exc:
+            logger.debug("[%s] rrp drain falhou (fail-open): %s", self.__class__.__name__, _drain_exc)
+
+        # HITL surfacing (AUD-4 1b, 2026-06-07): drena needs_confirmation tee'd
+        # pela tool gateada -> metadata['hitl_pending'] -> o transporte SSE emite
+        # o frame approval_required. Espelha o drain de response_blocks acima.
+        try:
+            from app.shared.hitl_pending_sink import drain_sink as _hitl_drain
+            _hitl_pending = _hitl_drain()
+            if _hitl_pending:
+                output.metadata = {
+                    **(output.metadata or {}),
+                    "hitl_pending": _hitl_pending,
+                }
+        except Exception as _hdrain_exc:
+            logger.debug("[%s] hitl drain falhou (fail-open): %s", self.__class__.__name__, _hdrain_exc)
+
+        # Fase 2 (2026-06-09): drena a diretiva ui_action tee'd pelas ui tools
+        # -> metadata['ui_action'/'ui_action_params'] -> SSE/WS serializa -> FE
+        # (useUIAction). Sem isso open_ui/apply_table_state nao chegavam ao FE
+        # no caminho federado. Espelha o drain de response_blocks/hitl acima.
+        try:
+            from app.shared.ui_action_sink import drain_sink as _uia_drain
+            _uia_directive = _uia_drain()
+            if _uia_directive:
+                _uia_meta = {
+                    **(output.metadata or {}),
+                    "ui_action": _uia_directive.get("ui_action"),
+                    "ui_action_params": _uia_directive.get("ui_action_params"),
+                }
+                # T7 (2026-06-13): propaga seed_source para que o SSE handler
+                # possa delegar ao WizardSessionService (start_wizard_seeded).
+                if _uia_directive.get("seed_source") is not None:
+                    _uia_meta["seed_source"] = _uia_directive["seed_source"]
+                output.metadata = _uia_meta
+        except Exception as _uiadrain_exc:
+            logger.debug("[%s] ui_action drain falhou (fail-open): %s", self.__class__.__name__, _uiadrain_exc)
 
         # --- Post-loop learning (EnhancedAgentMixin) ---
         if hasattr(self, "_post_loop_learning"):

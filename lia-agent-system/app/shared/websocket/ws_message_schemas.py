@@ -184,16 +184,40 @@ class UISettingsOpenTabParams(BaseModel):
     subsection: str | None = Field(default=None, max_length=64)
 
 
-GLOBAL_UI_ACTION_TYPES: tuple[str, ...] = (
-    "navigate_to",
-    "open_modal",
-    "open_offer_review",
-    "wizard_step",
-    "open_panel",
-    "scroll_to",
-    "settings_open_tab",  # WT-2022 Fase 4: bridge chat → SettingsPageEnhanced
-)
-"""Espelho runtime do `GLOBAL_UI_ACTION_TYPES` em `src/types/ui-action.ts`."""
+class UIApplyTableStateParams(BaseModel):
+    """`apply_table_state`: filtra/busca/ordena a tabela in-page (Fase 2 slice 1).
+    Espelha a variante TS GlobalUIAction.apply_table_state. patch é camelCase
+    (search, sortBy, sortOrder, quickFilters, tab). `tab` (Fase 2 funil tabs)
+    troca a aba do Funil no FE via setActiveTab (search/favorites/lists/
+    history/saved-searches/agents). patch é dict aberto — sem mudança de
+    schema. Read-only UI — não muta dados."""
+
+    surface: Literal["candidates", "jobs", "kanban", "talent_pool", "recrutar"]
+    patch: dict[str, Any] = Field(default_factory=dict)
+
+
+class UISelectRowsParams(BaseModel):
+    """`select_rows`: seleciona candidatos in-page (Fase 2 surface close).
+    Espelha TS GlobalUIAction.select_rows. Sem mutacao de dados - so estado UI."""
+
+    surface: Literal["candidates"]
+    mode: Literal["set", "add", "clear"]
+    ids: list[str] | None = None
+
+
+class UIBulkExecuteParams(BaseModel):
+    '''`bulk_execute`: feedback visual de acao em lote (F3 Gap 1).
+    Espelha TS GlobalUIAction.bulk_execute. Emitido apos bulk mutation concluida.'''
+
+    action: str = Field(..., min_length=1, max_length=64)
+    title: str = Field(..., min_length=1, max_length=256)
+    results: list[dict[str, Any]] = Field(default_factory=list)
+
+
+# P-SSOT: import from single canonical source.
+# Only GLOBAL_UI_ACTION_TYPES_CORE (16 types) -- page-specific actions are not
+# part of the WebSocket schema (they reach FE via ChatResponse.ui_action only).
+from app.shared.ui_action_canonical import GLOBAL_UI_ACTION_TYPES_CORE as GLOBAL_UI_ACTION_TYPES  # noqa: E501
 
 
 _UI_ACTION_PARAMS_BY_TYPE: dict[str, type[BaseModel]] = {
@@ -204,6 +228,16 @@ _UI_ACTION_PARAMS_BY_TYPE: dict[str, type[BaseModel]] = {
     "open_panel": UIOpenPanelParams,
     "scroll_to": UIScrollToParams,
     "settings_open_tab": UISettingsOpenTabParams,  # WT-2022 Fase 4
+    "apply_table_state": UIApplyTableStateParams,  # Fase 2 slice 1
+    "select_rows": UISelectRowsParams,  # Fase 2 surface close
+    "bulk_execute": UIBulkExecuteParams,  # F3 Gap 1
+    # Minimal schema entries (params are optional/unvalidated) -- C10-04 fix.
+    "close_modal": None,
+    "close_panel": None,
+    "start_wizard_seeded": None,
+    "open_communication_modal": None,
+    "open_schedule_modal": None,
+    "open_screening_modal": None,
 }
 
 

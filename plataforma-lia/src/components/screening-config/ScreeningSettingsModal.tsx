@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import { useState, useEffect } from "react"
 import {
   Dialog,
@@ -14,6 +15,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Settings, Target, Clock, RefreshCw, Loader2 } from "lucide-react"
 import { toast } from "sonner"
+import { TOAST_MESSAGES } from "@/constants/toast-messages"
 import type { ScreeningConfig } from "@/hooks/recruitment/useScreeningConfig"
 
 interface ScreeningSettingsModalProps {
@@ -29,6 +31,9 @@ export function ScreeningSettingsModal({
   config,
   updateConfig,
 }: ScreeningSettingsModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('screening-settings', isOpen)
+
   const [minScore, setMinScore] = useState(config?.settings?.min_score ?? 70)
   const [responseTimeout, setResponseTimeout] = useState(config?.settings?.response_timeout_hours ?? 48)
   const [maxRetries, setMaxRetries] = useState(config?.settings?.max_retries ?? 2)
@@ -57,10 +62,10 @@ export function ScreeningSettingsModal({
         toast.success("Configurações de triagem atualizadas com sucesso")
         onClose()
       } else {
-        toast.error("Erro ao atualizar configurações")
+        toast.error(TOAST_MESSAGES.SCREENING_CONFIG.UPDATE_SETTINGS_ERROR)
       }
     } catch (error) {
-      toast.error("Erro ao salvar configurações")
+      toast.error(TOAST_MESSAGES.SCREENING_CONFIG.SAVE_ERROR)
     } finally {
       setIsSaving(false)
     }

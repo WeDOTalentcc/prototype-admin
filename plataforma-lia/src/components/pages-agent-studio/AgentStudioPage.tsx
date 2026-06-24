@@ -1,4 +1,5 @@
 "use client"
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 
 import React, { useState, useEffect } from "react"
 import {
@@ -7,7 +8,7 @@ import {
   CreateDigitalTwinModal,
 } from "@/components/pages-agent-studio/DigitalTwinComponents"
 import CustomAgentsTab, { CreateCustomAgentModal } from "@/components/pages-agent-studio/CustomAgentsTab"
-import { TemplateGallery, AgentCard as CustomAgentCard, AgentDetailsPanel, DeployDialog, ConversationalCreator, TestDebugPanel, ApprovalsList } from "@/components/pages-agent-studio/custom-agents"
+import { AgentCard as CustomAgentCard, AgentDetailsPanel, DeployDialog, TestDebugPanel, ApprovalsList } from "@/components/pages-agent-studio/custom-agents"
 import { StudioCardShell } from "@/components/pages-agent-studio/StudioCardShell"
 import { TemplatePreviewModal } from "@/components/pages-agent-studio/custom-agents/template-preview-modal"
 import { useCustomAgents, useStudioAlerts } from "@/hooks/agents"
@@ -70,8 +71,8 @@ const SECTOR_ICONS: Record<string, React.ComponentType<{ className?: string }>> 
 }
 
 const STATUS_CONFIG_STYLES = {
-  active:    { labelKey: "studio.status.active" as const,    dot: "bg-wedo-green", bg: "bg-wedo-green/10", text: "text-wedo-green", pulse: true  },
-  paused:    { labelKey: "studio.status.paused" as const,    dot: "bg-wedo-orange", bg: "bg-wedo-orange/10", text: "text-wedo-orange", pulse: false },
+  active:    { labelKey: "studio.status.active" as const,    dot: "bg-wedo-green", bg: "bg-wedo-green/10", text: "text-wedo-green-text", pulse: true  },
+  paused:    { labelKey: "studio.status.paused" as const,    dot: "bg-wedo-orange", bg: "bg-wedo-orange/10", text: "text-wedo-orange-text", pulse: false },
   completed: { labelKey: "studio.status.completed" as const, dot: "bg-lia-border-default", bg: "bg-lia-bg-tertiary", text: "text-lia-text-tertiary", pulse: false },
 }
 
@@ -198,7 +199,7 @@ export default function AgentStudioPage({
             try {
               const summaryRes = await fetch(
                 `/api/backend-proxy/studio-summary?job_id=${encodeURIComponent(firstLive.id)}`,
-                { credentials: "include" }
+                { credentials: "include", signal: AbortSignal.timeout(5000) }
               )
               if (summaryRes.ok) {
                 const summaryData = await summaryRes.json()
@@ -410,7 +411,7 @@ export default function AgentStudioPage({
         <>
           {liveJobs.length > 0 && (
             <div className="space-y-1.5">
-              <p className="text-micro font-semibold uppercase tracking-widest text-wedo-green">
+              <p className="text-micro font-semibold uppercase tracking-widest text-lia-text-secondary">
                 {liveJobs.length} vaga{liveJobs.length !== 1 ? "s" : ""} ativa{liveJobs.length !== 1 ? "s" : ""}
               </p>
               {liveJobs.map(j => (
@@ -429,7 +430,7 @@ export default function AgentStudioPage({
           )}
           {draftJobs.length > 0 && (
             <div className="space-y-1.5">
-              <p className="text-micro font-semibold uppercase tracking-widest text-wedo-orange">
+              <p className="text-micro font-semibold uppercase tracking-widest text-wedo-orange-text">
                 {draftJobs.length} em configuração
               </p>
               {draftJobs.map(j => (
@@ -441,7 +442,7 @@ export default function AgentStudioPage({
                 >
                   <div className="w-2 h-2 rounded-full bg-wedo-orange flex-shrink-0" />
                   <span className="flex-1 text-sm text-lia-text-primary truncate">{j.title}</span>
-                  <span className="text-micro text-wedo-orange opacity-0 group-hover:opacity-100 transition-opacity">Completar →</span>
+                  <span className="text-micro text-wedo-orange-text opacity-0 group-hover:opacity-100 transition-opacity">Completar →</span>
                 </button>
               ))}
             </div>
@@ -530,7 +531,7 @@ export default function AgentStudioPage({
     },
     {
       slug: "offer",
-      ctaKey: "studio.services.ctaOpenJobs",
+      ctaKey: "studio.services.ctaActivate",
       status: (studioSummaryServices.offer?.status as ServiceStatus) ?? "inactive",
       metric: studioSummaryServices.offer?.metric,
       panel: firstJobId ? (
@@ -577,10 +578,12 @@ export default function AgentStudioPage({
     } else if (slug === "alignment") {
       // Alinhamento exige um agente de captação vinculado a uma vaga → abre a criação.
       setShowCreateModal(true)
-    } else if (slug === "offer" || slug === "nps") {
-      // Oferta/NPS exigem uma vaga publicada → leva à vaga (ou à lista).
-      router.push(firstJobId ? `/${locale}/jobs/${firstJobId}` : `/${locale}/jobs`)
-    }
+    } else if (slug === "offer") {
+    // offer_concierge — navegar para Marketplace para instalar o agente
+    setActiveTab("marketplace")
+  } else if (slug === "nps") {
+    router.push(firstJobId ? `/${locale}/jobs/${firstJobId}` : `/${locale}/jobs`)
+  }
   }
 
   const studioTabs: PageTab[] = [
@@ -604,24 +607,8 @@ export default function AgentStudioPage({
               <RefreshCw className="w-4 h-4" />
             </Button>
             <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setActiveTab("personalizados")
-                setTimeout(() => {
-                  document.getElementById("agent-studio-conversational-creator")
-                    ?.scrollIntoView({ behavior: "smooth", block: "start" })
-                }, 80)
-              }}
-              className="gap-2"
-            >
-              <Wand2 className="w-4 h-4" />
-              {t("studio.createWithAI") ?? "Criar com IA"}
-            </Button>
-            <Button
-              size="sm"
+              className="gap-2 h-8 px-3 bg-lia-btn-primary-hover"
               onClick={() => setShowCreateModal(true)}
-              className="gap-2 bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover"
             >
               <Plus className="w-4 h-4" />
               {t("studio.createAgent")}
@@ -662,7 +649,7 @@ export default function AgentStudioPage({
             {alertCount > 0 && (
               <div className="rounded-xl border border-wedo-orange/40 bg-wedo-orange/10 overflow-hidden">
                 <div className="px-4 py-2.5 flex items-center justify-between border-b border-wedo-orange/20">
-                  <span className="text-micro font-semibold uppercase tracking-widest text-wedo-orange">
+                  <span className="text-micro font-semibold uppercase tracking-widest text-wedo-orange-text">
                     {alertCount} alerta{alertCount !== 1 ? "s" : ""} do Studio
                   </span>
                 </div>
@@ -705,49 +692,18 @@ export default function AgentStudioPage({
         {/* ── Personalizados ────────────────────────────────────────────────── */}
         {activeTab === "personalizados" && (
           <div className="space-y-6">
-            <section>
-              <TabSectionHeader title={t("studio.myAgents")} count={customAgents.length} className="mb-3" />
-              {customAgents.length === 0 ? (
-                <div className="text-center py-8">
-                  <Bot className="w-8 h-8 text-lia-border-default mx-auto mb-2" />
-                  <p className="text-sm text-lia-text-tertiary">{t("studio.noAgentsYet")}</p>
-                  <p className="text-xs text-lia-text-tertiary mt-1">{t("studio.chooseTemplateOrDescribe")}</p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {customAgents.map((agent) => (
-                    <div key={agent.id} onClick={() => setDetailsAgent(agent)} className="cursor-pointer">
-                      <CustomAgentCard
-                        agent={agent}
-                        onTest={() => setTestAgent(agent)}
-                        onDeploy={() => setDeployAgent(agent)}
-                        onToggleStatus={(a) => handleCustomAgentToggle(a)}
-                      />
-                    </div>
-                  ))}
-                </div>
-              )}
-            </section>
+            <p className="text-sm text-lia-text-secondary mb-6">
+              {t("customAgents.customAgentsSubtitle")}
+            </p>
 
-            <TemplateGallery
-              onTemplateSelect={handleTemplatePreview}
-              onTemplateUse={handleTemplateUse}
-              onTemplateCustomize={handleTemplatePreview}
-              onCreateManual={() => setShowCreateModal(true)}
-            />
-
-            <div id="agent-studio-conversational-creator" className="scroll-mt-4">
-              <ConversationalCreator onAgentCreated={() => mutateCustomAgents()} />
-            </div>
-
-            <details className="mt-4">
-              <summary className="text-xs text-lia-text-tertiary cursor-pointer hover:text-lia-text-secondary">
+            <div className="mt-4">
+              <p className="text-sm font-medium text-lia-text-secondary">
                 {t("studio.advancedForm")}
-              </summary>
+              </p>
               <div className="mt-3">
                 <CustomAgentsTab />
               </div>
-            </details>
+            </div>
           </div>
         )}
 
@@ -863,15 +819,15 @@ function AgentCard({
     <div className="grid grid-cols-3 gap-2">
       <div className="flex flex-col items-center p-2 rounded-md bg-lia-bg-primary">
         <span className="text-xs font-bold text-lia-text-primary">{agent.profiles_viewed}</span>
-        <span className="text-micro text-lia-text-disabled uppercase tracking-wider">{t("studio.stats.analyzed")}</span>
+        <span className="text-micro text-lia-text-tertiary uppercase tracking-wider">{t("studio.stats.analyzed")}</span>
       </div>
       <div className="flex flex-col items-center p-2 rounded-md bg-lia-bg-primary">
-        <span className="text-xs font-bold text-emerald-600">{agent.profiles_approved}</span>
-        <span className="text-micro text-lia-text-disabled uppercase tracking-wider">{t("studio.stats.approved")}</span>
+        <span className="text-xs font-bold text-status-success">{agent.profiles_approved}</span>
+        <span className="text-micro text-lia-text-tertiary uppercase tracking-wider">{t("studio.stats.approved")}</span>
       </div>
       <div className="flex flex-col items-center p-2 rounded-md bg-lia-bg-primary">
         <span className="text-xs font-bold text-lia-text-primary">{approvalRate}%</span>
-        <span className="text-micro text-lia-text-disabled uppercase tracking-wider">{t("studio.stats.rate")}</span>
+        <span className="text-micro text-lia-text-tertiary uppercase tracking-wider">{t("studio.stats.rate")}</span>
       </div>
     </div>
   )
@@ -882,7 +838,7 @@ function AgentCard({
         <span key={i} className="px-2 py-0.5 rounded-md bg-lia-bg-tertiary text-micro font-medium text-lia-text-secondary">{skill}</span>
       ))}
       {strategy.required_skills.length > 4 && (
-        <span className="px-2 py-0.5 rounded-md bg-lia-bg-tertiary text-micro text-lia-text-disabled">+{strategy.required_skills.length - 4}</span>
+        <span className="px-2 py-0.5 rounded-md bg-lia-bg-tertiary text-micro text-lia-text-muted">+{strategy.required_skills.length - 4}</span>
       )}
     </div>
   ) : undefined
@@ -896,18 +852,18 @@ function AgentCard({
     )}>
       {agent.talent_pool_id ? (
         <>
-          <Database className="w-3 h-3 text-lia-text-disabled" />
+          <Database className="w-3 h-3 text-lia-text-muted" />
           <span className="text-micro text-lia-text-secondary">{t("studio.card.linkedToPool")}</span>
         </>
       ) : agent.job_id ? (
         <>
-          <Briefcase className="w-3 h-3 text-lia-text-disabled" />
+          <Briefcase className="w-3 h-3 text-lia-text-muted" />
           <span className="text-micro text-lia-text-secondary">{t("studio.card.linkedToJob")}</span>
         </>
       ) : (
         <>
           <Brain className="w-3 h-3 text-wedo-orange" />
-          <span className="text-micro text-wedo-orange">{t("studio.card.noLink")}</span>
+          <span className="text-micro text-wedo-orange-text">{t("studio.card.noLink")}</span>
         </>
       )}
     </div>

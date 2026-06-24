@@ -20,13 +20,14 @@ Register: app.include_router(sourcing_agents_router)
 """
 
 import logging
+from app.shared.errors import LIAInternalError
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.dependencies import get_current_user
 from app.auth.models import User
 from app.core.database import get_db
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from typing import Optional
 from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
 from typing import Annotated
@@ -97,6 +98,8 @@ router = APIRouter(prefix="/sourcing-agents", tags=["Sourcing Agents"])
 
 
 class CreateSourcingAgentRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     agent_name: str = Field(..., min_length=3, max_length=256)
     job_id: Optional[str] = None
     talent_pool_id: Optional[str] = None
@@ -106,6 +109,8 @@ class CreateSourcingAgentRequest(BaseModel):
 
 
 class FeedbackRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     candidate_id: str
     signal_type: str = Field(..., pattern="^(positive|negative)$")
     reason: str = Field(..., min_length=3, max_length=500)
@@ -181,10 +186,7 @@ async def list_sourcing_agents(
             company_id, job_id, talent_pool_id, status, exc,
             exc_info=True,
         )
-        raise HTTPException(
-            status_code=500,
-            detail=f"Falha ao listar agentes de sourcing: {exc.__class__.__name__}",
-        )
+        raise LIAInternalError(f"Falha ao listar agentes de sourcing: {exc.__class__.__name__}")
 
     logger.info(
         "sourcing_agents.list_ok company_id=%s count=%d",

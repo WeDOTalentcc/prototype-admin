@@ -5,11 +5,14 @@ from typing import Any
 from uuid import UUID
 
 from ._base import analytics_db, error_response, extract_context, success_response
+from app.shared.tool_guards import validate_uuid_params
+from app.shared.tool_handler import tool_handler
 from app.tools.context_helpers import require_company_id_from_context
 
 logger = logging.getLogger(__name__)
 
 
+@tool_handler("analytics")
 async def get_workload_distribution(
     team_id: str | None = None,
     include_details: bool = False,
@@ -101,6 +104,7 @@ async def get_workload_distribution(
         return error_response(f"❌ Erro ao buscar distribuição de carga: {str(e)}", e)
 
 
+@tool_handler("analytics")
 async def get_bottleneck_analysis(
     job_id: str,
     period: str = "month",
@@ -118,6 +122,10 @@ async def get_bottleneck_analysis(
         slowest_stage, and recommendations
     """
     company_id = require_company_id_from_context(kwargs, "get_bottleneck_analysis")
+
+    _err = validate_uuid_params(job_id=job_id)
+    if _err:
+        return _err
 
     logger.info(f"🔍 Analyzing bottlenecks for job: {job_id} (company: {company_id})")
 

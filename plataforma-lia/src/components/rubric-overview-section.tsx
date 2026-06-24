@@ -94,7 +94,7 @@ export function RubricOverviewSection({
       <div className="p-3 border border-lia-border-subtle rounded-lg bg-lia-bg-secondary">
         <h3 className="text-xs font-semibold flex items-center gap-2 mb-3 text-lia-text-primary">
           <Brain className="w-4 h-4 text-wedo-cyan" />
-          Parecer da LIA
+          Parecer de IA
         </h3>
 
         <div className="mb-3">

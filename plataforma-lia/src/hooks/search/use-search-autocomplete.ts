@@ -65,6 +65,7 @@ export function useSearchAutocomplete(): UseSearchAutocompleteResult {
         setShowAutocomplete(suggestions.length > 0)
       }
     } catch (error) {
+      console.error("[use-search-autocomplete] Error:", error)
     }
   }, [])
 

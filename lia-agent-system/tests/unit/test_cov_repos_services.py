@@ -35,19 +35,19 @@ def _cid():
 # ── ApprovalsRepository ─────────────────────────────────────────────────────
 
 def test_approvals_repo_importable():
-    from app.domains.approvals.repositories.approvals_repository import ApprovalsRepository
+    from app.repositories.approvals_repository import ApprovalsRepository
     assert ApprovalsRepository
 
 
 def test_approvals_repo_init():
-    from app.domains.approvals.repositories.approvals_repository import ApprovalsRepository
+    from app.repositories.approvals_repository import ApprovalsRepository
     repo = ApprovalsRepository(_db())
     assert repo.db is not None
 
 
 @pytest.mark.asyncio
 async def test_approvals_get_by_id_not_found():
-    from app.domains.approvals.repositories.approvals_repository import ApprovalsRepository
+    from app.repositories.approvals_repository import ApprovalsRepository
     repo = ApprovalsRepository(_db())
     result = await repo.get_by_id(_cid())
     assert result is None
@@ -55,7 +55,7 @@ async def test_approvals_get_by_id_not_found():
 
 @pytest.mark.asyncio
 async def test_approvals_list_by_company_empty():
-    from app.domains.approvals.repositories.approvals_repository import ApprovalsRepository
+    from app.repositories.approvals_repository import ApprovalsRepository
     repo = ApprovalsRepository(_db())
     result = await repo.list_by_company(
         company_id=_cid(), status=None, request_type=None, limit=10, offset=0
@@ -65,7 +65,7 @@ async def test_approvals_list_by_company_empty():
 
 @pytest.mark.asyncio
 async def test_approvals_list_pending_by_company_empty():
-    from app.domains.approvals.repositories.approvals_repository import ApprovalsRepository
+    from app.repositories.approvals_repository import ApprovalsRepository
     repo = ApprovalsRepository(_db())
     result = await repo.list_pending_by_company(
         company_id=_cid(), request_type="feature_flag_toggle"
@@ -75,7 +75,7 @@ async def test_approvals_list_pending_by_company_empty():
 
 @pytest.mark.asyncio
 async def test_approvals_find_pending_duplicate_none():
-    from app.domains.approvals.repositories.approvals_repository import ApprovalsRepository
+    from app.repositories.approvals_repository import ApprovalsRepository
     repo = ApprovalsRepository(_db())
     result = await repo.find_pending_duplicate(
         company_id=_cid(), flag_key="test_flag", requester_id="user-1"
@@ -85,7 +85,7 @@ async def test_approvals_find_pending_duplicate_none():
 
 @pytest.mark.asyncio
 async def test_approvals_add_and_flush_smoke():
-    from app.domains.approvals.repositories.approvals_repository import ApprovalsRepository
+    from app.repositories.approvals_repository import ApprovalsRepository
     repo = ApprovalsRepository(_db())
     approval = MagicMock()
     approval.id = _cid()
@@ -97,7 +97,7 @@ async def test_approvals_add_and_flush_smoke():
 
 @pytest.mark.asyncio
 async def test_approvals_get_default_company_id():
-    from app.domains.approvals.repositories.approvals_repository import ApprovalsRepository
+    from app.repositories.approvals_repository import ApprovalsRepository
     repo = ApprovalsRepository(_db())
     try:
         result = await repo.get_default_company_id()

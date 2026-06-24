@@ -2,7 +2,7 @@
 
 import { useCandidatePreviewCore } from"@/components/candidate-preview/useCandidatePreviewCore"
 import { Chip } from "@/components/ui/chip"
-import { Activity, FileText, Brain, UserCheck } from"lucide-react"
+import { Activity, FileText, Brain, UserCheck, ShieldCheck } from"lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from"@/components/ui/tooltip"
 import { CandidatePreviewHeader } from"@/components/candidate-preview/CandidatePreviewHeader"
 import { CandidatePreviewActionBar } from"@/components/candidate-preview/CandidatePreviewActionBar"
@@ -12,6 +12,7 @@ import { CandidateFilesTab } from"@/components/candidate-preview/CandidateFilesT
 import { CandidateActivitiesTab } from"@/components/candidate-preview/CandidateActivitiesTab"
 import { CandidatePreviewProfileTab } from"@/components/candidate-preview/CandidatePreviewProfileTab"
 import { CandidateOpinionsTab } from"@/components/candidate-preview/CandidateOpinionsTab"
+import { CandidateConsentTab } from"@/components/candidate-preview/CandidateConsentTab"
 import type { CandidateData } from"@/components/candidate-preview/ProfileTabTypes"
 
 interface CandidatePreviewProps {
@@ -39,6 +40,7 @@ interface CandidatePreviewProps {
   onSchedule?: (candidate: Record<string, unknown>) => void
   onAddToList?: (candidate: Record<string, unknown>) => void
   jobId?: string
+  searchCriteria?: Record<string, unknown> | null
   onCandidateUpdated?: () => void
 }
 
@@ -67,9 +69,10 @@ export function CandidatePreview({
   onSchedule,
   onAddToList,
   jobId,
+  searchCriteria,
   onCandidateUpdated,
 }: CandidatePreviewProps) {
-  const core = useCandidatePreviewCore(candidate)
+  const core = useCandidatePreviewCore(candidate, jobId)
   const {
     activeTab, setActiveTab,
     showLiaModal, setShowLiaModal,
@@ -86,15 +89,11 @@ export function CandidatePreview({
     expandedOpinionId, setExpandedOpinionId,
     opinionsHistory,
     isLoadingHistory,
-    savedAnalyses, setSavedAnalyses,
-    isLoadingAnalyses,
-    opinionsSubTab, setOpinionsSubTab,
-    expandedAnalysisId, setExpandedAnalysisId,
+    isErrorHistory, retryOpinionsHistory,
     showUpdateOpinionAlert, setShowUpdateOpinionAlert,
     showInsufficientDataModal, setShowInsufficientDataModal,
     dataRequirements,
     lastOpinionDate,
-    showLiaAnalysisModal, setShowLiaAnalysisModal,
     screeningModalOpen, setScreeningModalOpen,
     screeningModalData, setScreeningModalData,
     discModalOpen, setDiscModalOpen,
@@ -102,8 +101,6 @@ export function CandidatePreview({
     bigFiveModalOpen, setBigFiveModalOpen,
     bigFiveModalCandidate, setBigFiveModalCandidate,
     copiedItemId,
-    analysisToDelete, setAnalysisToDelete,
-    isDeletingAnalysis,
     sendLiaMessage,
     generateNewOpinion,
     handleAnalyzeWithLia,
@@ -112,9 +109,6 @@ export function CandidatePreview({
     generateShortId,
     cleanTextForCopy,
     handleCopyOpinion,
-    handleCopyAnalysis,
-    handleDeleteAnalysis,
-    handleAnalysisTransport,
     formatCurrency,
     getLanguagesData,
     hasSalaryData,
@@ -142,7 +136,8 @@ export function CandidatePreview({
     { id: 'profile', label: 'Perfil Completo', icon: UserCheck },
     { id: 'activities', label: 'Atividades', icon: Activity },
     { id: 'files', label: 'Arquivos', icon: FileText },
-    { id: 'opinions', label: 'Pareceres e Análises', icon: Brain, badge: ((opinionsData as unknown as {total_opinions?: number} | undefined)?.total_opinions || 0) + ((savedAnalyses as unknown as {total_analyses?: number} | undefined)?.total_analyses || 0) }
+    { id: 'opinions', label: 'Pareceres e Análises', icon: Brain, badge: ((opinionsData as unknown as {total_opinions?: number} | undefined)?.total_opinions || 0) },
+    { id: 'consent', label: 'Consentimento', icon: ShieldCheck },
   ]
 
   const liaActions = [
@@ -162,9 +157,6 @@ export function CandidatePreview({
             c={c}
             candidate={candidate}
             generateShortId={generateShortId}
-            showLiaAnalysisModal={showLiaAnalysisModal}
-            setShowLiaAnalysisModal={setShowLiaAnalysisModal}
-            handleAnalysisTransport={handleAnalysisTransport as (analysis: { type: string; content: string; candidate_id: string }) => void}
             onOpenFullPage={onOpenFullPage}
             onClose={onClose}
           />
@@ -198,7 +190,7 @@ export function CandidatePreview({
           {tabs.map(tab => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as 'activities' | 'profile' | 'files' | 'opinions')}
+              onClick={() => setActiveTab(tab.id as 'activities' | 'profile' | 'files' | 'opinions' | 'consent')}
               className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium whitespace-nowrap transition-colors motion-reduce:transition-none ${
  activeTab === tab.id
                   ? 'rounded-lg bg-lia-bg-tertiary text-lia-text-primary font-semibold'
@@ -218,7 +210,7 @@ export function CandidatePreview({
       </div>
 
       <TooltipProvider delayDuration={200}>
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto min-h-0">
         {activeTab === 'profile' && (
           <CandidatePreviewProfileTab
             candidate={c as Record<string, unknown>}
@@ -234,6 +226,8 @@ export function CandidatePreview({
             hasSalaryData={hasSalaryData}
             hasAddressData={hasAddressData}
             getAddressString={getAddressString}
+            searchCriteria={searchCriteria}
+            onShowConsentHistory={() => setActiveTab('consent')}
           />
         )}
 
@@ -263,22 +257,20 @@ export function CandidatePreview({
 
         {activeTab === 'opinions' && (
           <CandidateOpinionsTab
-            opinionsSubTab={opinionsSubTab}
-            setOpinionsSubTab={setOpinionsSubTab as never}
             opinionsHistory={opinionsHistory}
             isLoadingHistory={isLoadingHistory}
-            savedAnalyses={savedAnalyses}
-            isLoadingAnalyses={isLoadingAnalyses}
+            isErrorHistory={isErrorHistory}
+            onRetryHistory={retryOpinionsHistory}
             expandedOpinionId={expandedOpinionId as never}
             setExpandedOpinionId={setExpandedOpinionId as never}
-            expandedAnalysisId={expandedAnalysisId}
-            setExpandedAnalysisId={setExpandedAnalysisId as never}
-            analysisToDelete={analysisToDelete as never}
-            setAnalysisToDelete={setAnalysisToDelete as never}
             copiedItemId={copiedItemId}
             handleCopyOpinion={handleCopyOpinion as never}
-            handleCopyAnalysis={handleCopyAnalysis}
-            cleanTextForCopy={cleanTextForCopy}
+          />
+        )}
+
+        {activeTab === 'consent' && (
+          <CandidateConsentTab
+            candidateId={String(c.id || c.candidateId || '')}
           />
         )}
       </div>
@@ -305,10 +297,6 @@ export function CandidatePreview({
         setShowUpdateOpinionAlert={setShowUpdateOpinionAlert}
         lastOpinionDate={lastOpinionDate}
         generateNewOpinion={generateNewOpinion}
-        analysisToDelete={analysisToDelete}
-        setAnalysisToDelete={setAnalysisToDelete}
-        isDeletingAnalysis={isDeletingAnalysis}
-        handleDeleteAnalysis={handleDeleteAnalysis}
         showInsufficientDataModal={showInsufficientDataModal}
         setShowInsufficientDataModal={setShowInsufficientDataModal}
         dataRequirements={dataRequirements}

@@ -663,6 +663,69 @@ async def handle_screening_completed_event(event: PlatformEvent) -> None:
         except Exception as exc:
             logger.warning("[EventHandler] Failed to check automation rules: %s", exc)
 
+        # W2-C: ler auto_approval_preset/limit/paused do screening_config por-vaga.
+        # Sobrescreve auto_advance se a vaga atingiu cota ou está pausada.
+        _auto_approvals_count = 0
+        _auto_approval_limit = None  # None = sem cota por-vaga (só usa global)
+        try:
+            from app.models.job_vacancy import JobVacancy as _W2C_JV
+
+            _w2c_vac = await db.get(_W2C_JV, vacancy_id)
+            if _w2c_vac and _w2c_vac.screening_config:
+                _sc_settings = {}
+                _sc = _w2c_vac.screening_config
+                if isinstance(_sc, dict):
+                    _sc_settings = _sc.get("settings", {}) or {}
+
+                # Pausado explicitamente → bloqueia auto-advance para esta vaga
+                if _sc_settings.get("auto_approval_paused", False):
+                    auto_advance = False
+                    logger.info(
+                        "[EventHandler] auto_advance BLOCKED: auto_approval_paused=True vaga=%s",
+                        vacancy_id,
+                    )
+                else:
+                    # Resolver limite: preset → número canônico (espelha approvalPresetToLimit FE)
+                    _preset = _sc_settings.get("auto_approval_preset", "recommended")
+                    _PRESET_LIMITS = {"conservative": 5, "recommended": 10, "autonomous": 25}
+                    _auto_approval_limit = _sc_settings.get(
+                        "auto_approval_limit",
+                        _PRESET_LIMITS.get(_preset, 10),
+                    )
+                    _auto_approvals_count = int(_sc_settings.get("auto_approvals_count", 0) or 0)
+
+                    if _auto_approvals_count >= _auto_approval_limit:
+                        auto_advance = False
+                        logger.info(
+                            "[EventHandler] auto_advance BLOCKED: cota atingida count=%d limit=%d vaga=%s",
+                            _auto_approvals_count,
+                            _auto_approval_limit,
+                            vacancy_id,
+                        )
+        except Exception as _w2c_exc:
+            logger.warning("[EventHandler] W2-C screening_config read error (fail-open): %s", _w2c_exc)
+
+        # W2-D: override WSI decision thresholds with per-job min_score.
+        # min_score stored on /100 scale (84 = 8.4/10). Internal WSI scale is /5.
+        if _sc_settings.get("min_score") is not None:
+            try:
+                _job_min_score = int(_sc_settings["min_score"])
+                approved_threshold = _job_min_score / 20.0
+                review_threshold = max(approved_threshold * 0.8, WSI_CUTOFFS["review_min"])
+                if wsi_final >= approved_threshold:
+                    decision = "approved"
+                elif wsi_final >= review_threshold:
+                    decision = "review"
+                else:
+                    decision = "rejected"
+                logger.info(
+                    "[EventHandler] W2-D WSI thresholds from job config: score=%.2f approved>=%.2f review>=%.2f decision=%s vaga=%s",
+                    wsi_final, approved_threshold, review_threshold, decision, vacancy_id,
+                )
+            except (ValueError, TypeError) as _thresh_exc:
+                logger.warning("[EventHandler] W2-D could not parse min_score (fail-open): %s", _thresh_exc)
+
+
         from app.domains.automation.services.automation_handlers import (
             handle_screening_completed,
         )
@@ -734,8 +797,79 @@ async def handle_screening_completed_event(event: PlatformEvent) -> None:
                         candidate_id,
                         wsi_final,
                     )
+
+                    # W2-E: auto_schedule notification when scheduling.auto_enabled=True
+                    try:
+                        _sc_sched = (_sc or {}).get("scheduling") or {}
+                        _auto_sched_enabled = bool(_sc_sched.get("auto_enabled", False))
+                        _min_score_auto = float(_sc_sched.get("min_score_for_auto") or 76) / 20.0
+                        if _auto_sched_enabled and wsi_final >= _min_score_auto:
+                            _duration_min = int(_sc_sched.get("interview_duration_min") or 45)
+                            _avail_hours = _sc_sched.get("available_hours") or "9h-18h"
+                            _recruiter_result = await db.execute(
+                                __import__("sqlalchemy", fromlist=["text"]).text(
+                                    "SELECT created_by FROM job_vacancies WHERE id = :jid LIMIT 1"
+                                ),
+                                {"jid": vacancy_id},
+                            )
+                            _recruiter_row = _recruiter_result.fetchone()
+                            if _recruiter_row and _recruiter_row.created_by:
+                                from app.services.notification_service import notification_service
+                                await notification_service.create_notification(
+                                    user_id=str(_recruiter_row.created_by),
+                                    title="Agendar entrevista — candidato aprovado (auto-schedule ativo)",
+                                    message=(
+                                        f"Candidato aprovado com WSI {wsi_final * 20:.0f}/100 "
+                                        f"(acima do mínimo de auto-agendamento). "
+                                        f"Entrevista sugerida: {_duration_min}min no horário {_avail_hours}."
+                                    ),
+                                    category="interview_scheduling",
+                                    source_trigger="wsi_auto_schedule_request",
+                                    related_candidate_id=candidate_id,
+                                    related_job_id=str(vacancy_id),
+                                    channels=["bell"],
+                                    metadata={
+                                        "auto_schedule_triggered": True,
+                                        "wsi_score": round(wsi_final * 20, 1),
+                                        "interview_duration_min": _duration_min,
+                                        "available_hours": _avail_hours,
+                                        "vacancy_id": str(vacancy_id),
+                                    },
+                                    db=db,
+                                )
+                                logger.info(
+                                    "[EventHandler] W2-E auto_schedule notification dispatched "
+                                    "candidate=%s vaga=%s score=%.2f duration=%dmin",
+                                    candidate_id, vacancy_id, wsi_final, _duration_min,
+                                )
+                    except Exception as _sched_exc:
+                        logger.warning("[EventHandler] W2-E auto_schedule notify error (fail-soft): %s", _sched_exc)
+
                 except Exception as exc:
                     logger.warning("[EventHandler] Auto-advance failed: %s", exc)
+
+                    # W2-C: incrementar auto_approvals_count no JSONB por-vaga (fail-soft).
+                    if _auto_approval_limit is not None:
+                        try:
+                            from app.models.job_vacancy import JobVacancy as _W2C_JV2
+
+                            _w2c_vac2 = await db.get(_W2C_JV2, vacancy_id)
+                            if _w2c_vac2 and _w2c_vac2.screening_config:
+                                _sc2 = dict(_w2c_vac2.screening_config)
+                                _s2 = dict(_sc2.get("settings", {}) or {})
+                                _s2["auto_approvals_count"] = _auto_approvals_count + 1
+                                _sc2["settings"] = _s2
+                                _w2c_vac2.screening_config = _sc2
+                                await db.flush()
+                                logger.info(
+                                    "[EventHandler] auto_approvals_count incremented to %d/%d vaga=%s",
+                                    _auto_approvals_count + 1,
+                                    _auto_approval_limit,
+                                    vacancy_id,
+                                )
+                        except Exception as _w2c_cnt_exc:
+                            logger.warning("[EventHandler] W2-C count increment error (fail-soft): %s", _w2c_cnt_exc)
+
 
         elif decision == "rejected":
             await handle_screening_completed(
@@ -785,7 +919,6 @@ async def handle_screening_completed_event(event: PlatformEvent) -> None:
                         from app.domains.communication.services.communication_dispatcher import (
 
 # RAILS-DEPRECATED: This endpoint manages Rails-owned entities (candidates/jobs/applies/users).
-# Direct DB calls will be replaced by RailsAdapter after ats-api-rails handoff.
 # See: app/domains/integrations_hub/services/rails_adapter.py
                             CommunicationDispatcher,
                         )
@@ -822,6 +955,124 @@ async def handle_screening_completed_event(event: PlatformEvent) -> None:
                 wsi_final,
                 auto_advance,
             )
+
+        # W1-H (2026-06-12): dispatch custom feedback_template from screening_config.
+        # Fail-soft: erros nao devem abortar processamento do evento principal.
+        try:
+            from app.models.job_vacancy import JobVacancy as _WH_JV
+
+            _wh_vac = await db.get(_WH_JV, vacancy_id)
+            _wh_templates = {}
+            if _wh_vac and _wh_vac.screening_config:
+                _sc = _wh_vac.screening_config
+                if isinstance(_sc, dict):
+                    _wh_templates = _sc.get("feedback_templates", {}) or {}
+
+            if _wh_templates and decision != "review":
+                _wh_tmpl = _wh_templates.get(decision, "")
+                if _wh_tmpl:
+                    # Resolve candidate email (multi-tenancy fail-closed)
+                    from app.models.candidate import Candidate as _WH_Cand
+
+                    _wh_cand_result = await db.execute(
+                        select(_WH_Cand).where(
+                            _WH_Cand.id == candidate_id,
+                            _WH_Cand.company_id == company_id,
+                        )
+                    )
+                    _wh_cand = _wh_cand_result.scalar_one_or_none()
+
+                    if _wh_cand and _wh_cand.email:
+                        from app.domains.communication.services.communication_dispatcher import (
+                            CommunicationDispatcher as _WH_CD,
+                        )
+
+                        _wh_dispatcher = _WH_CD()
+                        await _wh_dispatcher.dispatch_message(
+                            company_id=company_id,
+                            recipient_email=_wh_cand.email,
+                            recipient_phone=getattr(_wh_cand, "phone", None),
+                            subject=f"Atualização sobre sua candidatura - {job_title}",
+                            message=_wh_tmpl,
+                            candidate_name=candidate_name or _wh_cand.name,
+                        )
+                        logger.info(
+                            "[EventHandler] Custom feedback_template dispatched candidate=%s decision=%s",
+                            candidate_id,
+                            decision,
+                        )
+        except Exception as _wh_exc:
+            logger.warning("[EventHandler] Custom feedback_template dispatch skipped: %s", _wh_exc)
+
+        # A2b (2026-06-10): notifica recrutador via Teams DM ao completar triagem.
+        # Fail-soft: erro de entrega Teams nao deve abortar processamento do evento.
+        try:
+            from app.domains.communication.services.teams_proactivity_engine import (
+                teams_proactivity_engine as _tpe,
+            )
+
+            await _tpe.on_screening_complete(
+                candidate_id=candidate_id,
+                candidate_name=candidate_name or "Candidato",
+                vacancy_id=vacancy_id,
+                job_title=job_title or "",
+                match_score=wsi_final,
+                recommendation=decision,
+                company_id=company_id,
+            )
+        except Exception as _tpe_exc:
+            logger.warning(
+                "[EventHandler] teams on_screening_complete skipped: %s", _tpe_exc
+            )
+
+        # Fatia 4 — bell notification para o recrutador da vaga (melhor-esforco).
+        try:
+            from app.models.job_vacancy import JobVacancy as _JV
+            _vac = await db.get(_JV, vacancy_id)
+            _recruiter_uid = await _find_recruiter_user_id_by_email(
+                db,
+                getattr(_vac, "recruiter_email", None),
+                company_id,
+            ) if _vac else None
+            if _recruiter_uid:
+                from lia_messaging.notification_service import (
+                    NotificationService as _NS,
+                    NotificationType as _NT,
+                )
+
+                _score_str = f"{wsi_final:.1f}" if wsi_final else "–"
+                _rec_labels = {
+                    "approved": "Aprovado",
+                    "review": "Revisão recomendada",
+                    "rejected": "Não seguiu",
+                }
+                await _NS().create_notification(
+                    user_id=_recruiter_uid,
+                    title=f"Triagem concluída: {candidate_name or 'Candidato'}",
+                    message=(
+                        f"Vaga: {job_title or 'Vaga'} | "
+                        f"Score WSI: {_score_str} | "
+                        f"{_rec_labels.get(decision, decision)}"
+                    ),
+                    notification_type=(
+                        _NT.SUCCESS if decision == "approved" else _NT.INFO
+                    ),
+                    category="screening_completed",
+                    source_trigger="screening.wsi.completed",
+                    related_job_id=vacancy_id,
+                    related_candidate_id=candidate_id,
+                    action_url=f"/pt/vagas/{vacancy_id}/candidatos/{candidate_id}",
+                    action_label="Ver candidato",
+                    channels=["bell"],
+                    db=db,
+                )
+                logger.debug(
+                    "[EventHandler] bell sent screening_complete user=%s rec=%s",
+                    _recruiter_uid,
+                    decision,
+                )
+        except Exception as _bell_exc:
+            logger.debug("[EventHandler] bell screening_complete skipped: %s", _bell_exc)
 
         decision_labels = {
             "approved": "Aprovado na Triagem WSI",
@@ -882,6 +1133,137 @@ async def handle_screening_completed_event(event: PlatformEvent) -> None:
         await db.close()
 
 
+async def _find_recruiter_user_id_by_email(
+    db,
+    recruiter_email: str | None,
+    company_id: str,
+) -> str | None:
+    """Localiza o user_id do recrutador pelo email para envio de bell notification.
+
+    Usa email_hash (SHA-256) para lookup seguro sem expor email plaintext.
+    Multi-tenancy: filtra por company_id para garantir que o user pertence ao tenant.
+    Fail-soft: retorna None em qualquer erro (bell é melhor-esforco).
+    """
+    if not recruiter_email:
+        return None
+    try:
+        from sqlalchemy import select as _sa_select
+        from app.auth.models import User as _User
+        from app.shared.encryption.encrypted_field_mixin import _sha256_hash
+
+        email_hash = _sha256_hash(recruiter_email.strip().lower())
+        result = await db.execute(
+            _sa_select(_User.id).where(
+                _User.email_hash == email_hash,
+                _User.company_id == company_id,
+            ).limit(1)
+        )
+        row = result.scalar_one_or_none()
+        return str(row) if row else None
+    except Exception as _exc:
+        logger.debug("[EventHandler] _find_recruiter_user_id_by_email failed: %s", _exc)
+        return None
+
+
+async def handle_candidate_applied_teams(event: PlatformEvent) -> None:
+    """A2b (2026-06-10): ao receber candidatura, notifica recrutador via Teams DM.
+
+    CandidateAppliedEvent e lean (candidate_id + vacancy_id apenas). Fazemos
+    lookup DB para obter name + title antes de chamar o engine.
+    Multi-tenancy fail-closed: valida company_id do candidato E da vaga contra
+    event.company_id (do JWT do request original) antes de qualquer fan-out.
+    Fail-soft + LOUD: erro de entrega Teams e logado mas nao aborta o fluxo.
+    """
+    candidate_id = event.payload.get("candidate_id")
+    vacancy_id = event.payload.get("vacancy_id")
+    company_id = event.company_id
+
+    if not candidate_id or not vacancy_id:
+        logger.warning(
+            "[EventHandler] handle_candidate_applied_teams: missing ids (cid=%s vid=%s), skipping",
+            candidate_id,
+            vacancy_id,
+        )
+        return
+
+    db = await _get_db()
+    try:
+        from app.models.candidate import Candidate
+        from app.models.job_vacancy import JobVacancy
+
+        cand = await db.get(Candidate, candidate_id)
+        vac = await db.get(JobVacancy, vacancy_id)
+
+        # Multi-tenancy: ambos devem pertencer ao tenant do evento.
+        if not cand or str(cand.company_id) != company_id:
+            logger.warning(
+                "[EventHandler] handle_candidate_applied_teams: candidate tenant mismatch"
+                " (expected company=%s), skipping",
+                company_id,
+            )
+            return
+        if not vac or str(vac.company_id) != company_id:
+            logger.warning(
+                "[EventHandler] handle_candidate_applied_teams: vacancy tenant mismatch"
+                " (expected company=%s), skipping",
+                company_id,
+            )
+            return
+
+        from app.domains.communication.services.teams_proactivity_engine import (
+            teams_proactivity_engine,
+        )
+
+        await teams_proactivity_engine.on_candidate_applied(
+            candidate_id=candidate_id,
+            candidate_name=cand.name or "Candidato",
+            vacancy_id=vacancy_id,
+            vacancy_title=vac.title or "Vaga",
+            company_id=company_id,
+        )
+        logger.info(
+            "[EventHandler] handle_candidate_applied_teams OK candidate=%s vacancy=%s",
+            candidate_id,
+            vacancy_id,
+        )
+        # Fatia 4 — bell notification para o recrutador da vaga (melhor-esforco).
+        try:
+            _recruiter_uid = await _find_recruiter_user_id_by_email(
+                db,
+                getattr(vac, "recruiter_email", None),
+                company_id,
+            )
+            if _recruiter_uid:
+                from lia_messaging.notification_service import (
+                    NotificationService as _NS,
+                    NotificationType as _NT,
+                )
+
+                await _NS().create_notification(
+                    user_id=_recruiter_uid,
+                    title=f"Nova candidatura: {cand.name or 'Candidato'}",
+                    message=f'Candidatura na vaga {vac.title or "Vaga"}',
+                    notification_type=_NT.INFO,
+                    category="new_application",
+                    source_trigger="candidate_applied",
+                    related_job_id=vacancy_id,
+                    related_candidate_id=candidate_id,
+                    action_url=f"/pt/vagas/{vacancy_id}/candidatos",
+                    action_label="Ver candidatos",
+                    channels=["bell"],
+                    db=db,
+                )
+                logger.debug(
+                    "[EventHandler] bell sent candidate_applied user=%s", _recruiter_uid
+                )
+        except Exception as _bell_exc:
+            logger.debug("[EventHandler] bell candidate_applied skipped: %s", _bell_exc)
+    except Exception as exc:
+        logger.warning("[EventHandler] handle_candidate_applied_teams error: %s", exc)
+    finally:
+        await db.close()
+
+
 def register_all_handlers() -> None:
     """
     Registra todos os event handlers para eventos inter-API.
@@ -895,6 +1277,7 @@ def register_all_handlers() -> None:
     register_event_handler("funil.candidate.moved", handle_candidate_moved)
     register_event_handler("onboarding.company.configured", handle_company_configured)
     register_event_handler("screening.wsi.completed", handle_screening_completed_event)
+    register_event_handler("candidate_applied", handle_candidate_applied_teams)  # A2b
     logger.info(
         "[PlatformEvents] All event handlers registered: %s",
         [

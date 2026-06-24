@@ -1,10 +1,20 @@
 "use client"
 
 import { useTranslations } from "next-intl"
-import { Filter, X } from "lucide-react"
+import { Filter, X, ArrowUpDown } from "lucide-react"
+import { useKanbanStore } from "@/stores/kanban-store"
+import { KANBAN_SORT_FIELDS, type KanbanSortField } from "./utils/kanbanHelpers"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { textStyles } from "@/lib/design-tokens"
+
+const SORT_FIELD_KEYS: Array<{ value: KanbanSortField; key: string }> = [
+  { value: 'score', key: 'sortFieldScore' },
+  { value: 'name', key: 'sortFieldName' },
+  { value: 'appliedDate', key: 'sortFieldAppliedDate' },
+  { value: 'fitScore', key: 'sortFieldFitScore' },
+  { value: 'notaLiaGeral', key: 'sortFieldNotaLiaGeral' },
+] as const
 
 const STATUS_KEYS = [
   { value: 'novo', key: 'statusNew' },
@@ -53,6 +63,10 @@ export function KanbanFiltersPanel({
   onWorkModelFilterChange,
 }: KanbanFiltersPanelProps) {
   const t = useTranslations('kanban')
+  const kanbanSortBy = useKanbanStore((s) => s.kanbanSortBy)
+  const kanbanSortOrder = useKanbanStore((s) => s.kanbanSortOrder)
+  const setKanbanSortBy = useKanbanStore((s) => s.setKanbanSortBy)
+  const setKanbanSortOrder = useKanbanStore((s) => s.setKanbanSortOrder)
   if (!open) return null
 
   const handleClear = () => {
@@ -60,6 +74,8 @@ export function KanbanFiltersPanel({
     onStatusFilterChange([])
     onWorkModelFilterChange([])
     onOriginFilterChange([])
+    setKanbanSortBy('score')
+    setKanbanSortOrder('desc')
   }
 
   const toggleItem = (list: string[], value: string, setter: (v: string[]) => void) => {
@@ -90,7 +106,49 @@ export function KanbanFiltersPanel({
 
         {/* Filtros - Scrollable */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          {/* Score LIA */}
+          {/* Sort — GAP-03-006 */}
+          <div className="space-y-2">
+            <label className="text-xs font-medium text-lia-text-primary flex items-center gap-1.5">
+              <ArrowUpDown className="w-3.5 h-3.5" />
+              {t('sortLabel')}
+            </label>
+            <select
+              data-testid="kanban-sort-field"
+              value={kanbanSortBy}
+              onChange={(e) => setKanbanSortBy(e.target.value as KanbanSortField)}
+              className="w-full px-2 py-1.5 text-xs rounded-md border border-lia-border-default bg-lia-bg-primary text-lia-text-primary focus:ring-1 focus:ring-lia-btn-primary-bg/20"
+            >
+              {SORT_FIELD_KEYS.map(({ value, key }) => (
+                <option key={value} value={value}>{t(key)}</option>
+              ))}
+            </select>
+            <div className="flex gap-1.5">
+              <button
+                data-testid="kanban-sort-asc"
+                onClick={() => setKanbanSortOrder('asc')}
+                className={`flex-1 px-2 py-1 text-xs rounded-md border transition-colors motion-reduce:transition-none ${
+                  kanbanSortOrder === 'asc'
+                    ? 'bg-lia-btn-primary-bg text-white border-lia-btn-primary-bg'
+                    : 'bg-lia-bg-primary text-lia-text-secondary border-lia-border-default hover:bg-lia-bg-secondary'
+                }`}
+              >
+                {t('sortOrderAsc')}
+              </button>
+              <button
+                data-testid="kanban-sort-desc"
+                onClick={() => setKanbanSortOrder('desc')}
+                className={`flex-1 px-2 py-1 text-xs rounded-md border transition-colors motion-reduce:transition-none ${
+                  kanbanSortOrder === 'desc'
+                    ? 'bg-lia-btn-primary-bg text-white border-lia-btn-primary-bg'
+                    : 'bg-lia-bg-primary text-lia-text-secondary border-lia-border-default hover:bg-lia-bg-secondary'
+                }`}
+              >
+                {t('sortOrderDesc')}
+              </button>
+            </div>
+          </div>
+
+          {/* Score */}
           <div className="space-y-2">
             <label className="text-xs font-medium text-lia-text-primary">
               {t('minLIAScore')}

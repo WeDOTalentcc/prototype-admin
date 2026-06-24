@@ -47,6 +47,11 @@ class WebEventRequest(WeDoBaseModel):
     event_type: str
     data: Optional[dict] = None
 
+class ProgressUpdateRequest(WeDoBaseModel):
+    phase: str | None = None
+    step_id: str | None = None
+
+
 class ChatMessageRequest(WeDoBaseModel):
     """Typed request for settings extraction chat. Sprint 2 BE-4."""
     message: str
@@ -317,5 +322,49 @@ async def get_whatsapp_context(user_id: Annotated[str, Path(pattern=DUAL_ID_PATH
         "phase": session.phase.value,
         "progress": session.progress,
     }
+
+@router.get("/status")
+async def get_onboarding_status(request: Request, company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id)
+    """Onboarding status for the current authenticated user (JWT sub claim)."""
+    user_id = getattr(request.state, "user_id", None)
+    if not user_id:
+        return {"active": False, "phase": "none", "progress": 0.0, "activation_state": "inactive"}
+    db = await _get_db()
+    session = await _load_session(db, user_id)
+    if not session:
+        return {"active": False, "phase": "none", "progress": 0.0, "activation_state": "inactive"}
+    return {
+        "active": not session.is_complete,
+        "phase": session.phase.value,
+        "progress": session.progress,
+        "activation_state": "active" if not session.is_complete else "completed",
+    }
+
+
+@router.patch("/progress")
+async def update_onboarding_progress(
+    request: Request,
+    req: ProgressUpdateRequest,
+    company_id: str = Depends(require_company_id),
+):
+    # multi-tenancy: gated via Depends(require_company_id)
+    """Update onboarding progress for the current authenticated user."""
+    user_id = getattr(request.state, "user_id", None)
+    if not user_id:
+        return {"updated": False, "reason": "no_user_id"}
+    db = await _get_db()
+    session = await _load_session(db, user_id)
+    if not session:
+        return {"updated": False, "reason": "no_session"}
+    orchestrator = await _get_orchestrator(db, tenant_id=company_id)
+    event_data = {}
+    if req.step_id:
+        event_data["step_id"] = req.step_id
+    if req.phase:
+        event_data["phase"] = req.phase
+    result = await orchestrator.handle_web_event(session, "progress_update", event_data)
+    return {"updated": True, **result}
+
 
 reorder_collection_before_item(router)

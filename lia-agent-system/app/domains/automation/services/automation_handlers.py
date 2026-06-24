@@ -30,7 +30,7 @@ async def _create_automation_task(
     Task 2.A (2026-05-25): preenche tasks table para Decidir page.
     """
     try:
-        from app.domains.tasks.repositories.tasks_repository import TasksRepository
+        from app.repositories.tasks_repository import TasksRepository
         from app.models.task import TaskPriority as _TP, TaskType as _TT
         repo = TasksRepository(db)
         task = await repo.create_task(
@@ -936,28 +936,40 @@ async def handle_job_published(
         logger.error(f"[HANDLER] Error creating job published activity: {e}")
         result["cascade_errors"].append(f"activity_creation: {e}")
 
-    try:
-        from app.domains.sourcing.services.sourcing_pipeline import SourcingPipelineService
-        sourcing_service = SourcingPipelineService()
-
-        user_credits = kwargs.get("user_credits", 100)
-        expand_to_global = kwargs.get("expand_to_global", False)
-
-        sourcing_result = await sourcing_service.run_post_publish_sourcing(
-            db=db,
-            job_id=job_id,
-            user_credits=user_credits,
-            expand_to_global=expand_to_global
-        )
-        result["sourcing_activated"] = True
-        result["sourcing_result"] = sourcing_result if isinstance(sourcing_result, dict) else {"status": "triggered"}
+    # Guard: skip sourcing if the publish endpoint already triggered it inline.
+    # The publish endpoints (lifecycle.py) call run_post_publish_sourcing directly
+    # and pass sourcing_already_triggered=True in the event payload.
+    sourcing_already_triggered = kwargs.get("sourcing_already_triggered", False)
+    if sourcing_already_triggered:
         logger.info(
-            f"[CASCADE] Sourcing pipeline activated for job {job_id} "
-            f"after publication"
+            "[HANDLER] Sourcing already triggered by publish endpoint for job %s — skipping",
+            job_id,
         )
-    except Exception as e:
-        logger.error(f"[CASCADE] Error activating sourcing for job {job_id}: {e}")
-        result["cascade_errors"].append(f"sourcing_activation: {e}")
+        result["sourcing_activated"] = False
+        result["sourcing_skipped_reason"] = "already_triggered_by_publish_endpoint"
+    else:
+        try:
+            from app.domains.sourcing.services.sourcing_pipeline import SourcingPipelineService
+            sourcing_service = SourcingPipelineService()
+
+            user_credits = kwargs.get("user_credits", 100)
+            expand_to_global = kwargs.get("expand_to_global", False)
+
+            sourcing_result = await sourcing_service.run_post_publish_sourcing(
+                db=db,
+                job_id=job_id,
+                user_credits=user_credits,
+                expand_to_global=expand_to_global
+            )
+            result["sourcing_activated"] = True
+            result["sourcing_result"] = sourcing_result if isinstance(sourcing_result, dict) else {"status": "triggered"}
+            logger.info(
+                f"[CASCADE] Sourcing pipeline activated for job {job_id} "
+                f"after publication"
+            )
+        except Exception as e:
+            logger.error(f"[CASCADE] Error activating sourcing for job {job_id}: {e}")
+            result["cascade_errors"].append(f"sourcing_activation: {e}")
 
     result["task_id"] = await _create_automation_task(
         db=db,
@@ -1202,6 +1214,12 @@ async def process_screening_queue(
 
             vc.status = "screening"
             vc.stage = "screening"
+            # Task #1306: also persist the structural stage link so the SLA
+            # detector can join by id instead of fragile name matching.
+            from app.shared.services.stage_id_resolver import resolve_recruitment_stage_id
+            vc.recruitment_stage_id = await resolve_recruitment_stage_id(
+                db, str(vc.company_id), "screening"
+            )
             vc.notes = (vc.notes or "") + "\n[Auto] Promovido da fila de espera"
 
             conversation = await whatsapp_repo.get_latest_awaiting_screening_for_candidate_vacancy(
@@ -1339,6 +1357,12 @@ async def handle_recruiter_override_approve(
 
     vc.status = "screening"
     vc.stage = "screening"
+    # Task #1306: also persist the structural stage link so the SLA detector
+    # can join by id instead of fragile name matching.
+    from app.shared.services.stage_id_resolver import resolve_recruitment_stage_id
+    vc.recruitment_stage_id = await resolve_recruitment_stage_id(
+        db, str(vc.company_id), "screening"
+    )
     vc.notes = (vc.notes or "") + "\n[Override] Priorizado manualmente pelo recrutador"
 
     additional = dict(vc.additional_data or {})

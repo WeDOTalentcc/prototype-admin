@@ -24,7 +24,7 @@ from app.shared.compliance.audit_service import audit_service as _audit_svc
 
 # === Choose Your AI: Tenant-aware LLM routing ===
 # === E6: PII stripping on all LLM calls ===
-from app.shared.pii_masking import strip_pii_for_llm_prompt
+from app.shared.pii_masking import strip_pii_for_llm_prompt, strip_pii_for_llm_prompt_async
 from app.shared.tenant_llm_context import get_current_llm_tenant
 
 T = TypeVar("T", bound=BaseModel)
@@ -48,6 +48,22 @@ _llm_streaming_callback: ContextVar = ContextVar(
 Type: Optional[Callable[[dict], Awaitable[None]]]
 When set, _generate_with_tools_claude streams text deltas via callback({"type": "token", "content": delta}).
 """
+
+
+def _mask_stream_text(text: str) -> str:
+    """Mascara PII num chunk de texto streamado ANTES de ir ao cliente.
+    Masking no PRODUTOR (canonical-fix) → todo transporte (SSE/WS) sai seguro,
+    sem repetir fix-no-consumidor. DÉBITO: mask por-delta não pega PII que
+    atravessa fronteira de token; a resposta final é re-mascarada na camada JSON.
+    Fail-safe: em erro, retorna o texto original (nunca quebra o stream)."""
+    if not text:
+        return text
+    try:
+        from app.shared.pii_masking import mask_pii
+        return mask_pii(text)
+    except Exception:
+        return text
+
 
 # === Audit 2026-05-24 (P1 fix): cache em chamadas LLM tool-calling idempotentes ===
 # Reduz top-15 latencies de 5-13s para ~ms em cache hits. Safety: só cacheia
@@ -232,7 +248,7 @@ class LLMService:
         if settings.OPENAI_API_KEY:
             if not self._openai_client:
                 self._openai_client = ChatOpenAI(
-                    model="gpt-4o",
+                    model="gpt-4o",  # MODEL-EXEMPT: OpenAI-specific, no canonical GPT constant
                     api_key=SecretStr(settings.OPENAI_API_KEY),
                     temperature=0.7,
                 )
@@ -245,7 +261,10 @@ class LLMService:
         client = self.gemini_native
         model_id = model or settings.LLM_GEMINI_MODEL
 
-        response = client.models.generate_content(
+        # P1 fix (2026-06-06): metodo async DEVE usar o seam async do SDK.
+        # client.models.generate_content (sync) dentro do event loop cai no
+        # _enforce_credit_gate_sync -> RuntimeError. Espelha generate_native_gemini.
+        response = await client.aio.models.generate_content(
             model=model_id,
             contents=prompt
         )
@@ -276,14 +295,15 @@ class LLMService:
 
         # PII strip on text content
         if isinstance(contents, str):
-            contents = strip_pii_for_llm_prompt(contents)
+            contents = await strip_pii_for_llm_prompt_async(contents)
         elif isinstance(contents, list):
-            contents = [
-                strip_pii_for_llm_prompt(c) if isinstance(c, str) else c
-                for c in contents
-            ]
+            # BUG-5: async gather to avoid blocking event loop per item
+            import asyncio as _aio
+            async def _strip_item(c):
+                return (await strip_pii_for_llm_prompt_async(c)) if isinstance(c, str) else c
+            contents = list(await _aio.gather(*[_strip_item(c) for c in contents]))
         if system_instruction:
-            system_instruction = strip_pii_for_llm_prompt(system_instruction)
+            system_instruction = await strip_pii_for_llm_prompt_async(system_instruction)
 
         tenant_id = self._current_tenant or ""
         _t0 = _time.monotonic()
@@ -339,16 +359,19 @@ class LLMService:
         """
         import time as _time
 
+        # NOTE: sync function — cannot await. strip_pii_for_llm_prompt is CPU-bound but
+        # generate_native_gemini_sync is only called from sync callers outside async paths.
+        # Async callers should use generate_native_gemini (async) which uses _async variant.
         if isinstance(contents, str):
-            contents = strip_pii_for_llm_prompt(contents)
+            contents = strip_pii_for_llm_prompt(contents)  # BUG-5-EXEMPT: sync function
         elif isinstance(contents, list):
             for i, c in enumerate(contents):
                 if isinstance(c, str):
-                    contents[i] = strip_pii_for_llm_prompt(c)
+                    contents[i] = strip_pii_for_llm_prompt(c)  # BUG-5-EXEMPT: sync function
                 elif isinstance(c, dict) and c.get("parts"):
                     for j, part in enumerate(c["parts"]):
                         if isinstance(part, dict) and "text" in part:
-                            c["parts"][j]["text"] = strip_pii_for_llm_prompt(part["text"])
+                            c["parts"][j]["text"] = strip_pii_for_llm_prompt(part["text"])  # BUG-5-EXEMPT: sync function
 
         tenant_id = self._current_tenant or ""
         _t0 = _time.monotonic()
@@ -390,7 +413,7 @@ class LLMService:
         """
         # E6: PII stripping (auto-injected)
         if "prompt" in dir():
-            prompt = strip_pii_for_llm_prompt(prompt)
+            prompt = await strip_pii_for_llm_prompt_async(prompt)
 
         Generate text using specified LLM.
         
@@ -405,7 +428,7 @@ class LLMService:
         """
         # === E6: PII stripping (LGPD Art. 12 / EU AI Act Art. 13) ===
         _original_len = len(prompt)
-        prompt = strip_pii_for_llm_prompt(prompt)
+        prompt = await strip_pii_for_llm_prompt_async(prompt)
         _stripped = _original_len != len(prompt)
 
         # === E7: Audit logging (every LLM call tracked) ===
@@ -530,7 +553,7 @@ class LLMService:
         # E6: PII stripping on message content
         for _msg in messages:
             if isinstance(_msg.get("content"), str):
-                _msg["content"] = strip_pii_for_llm_prompt(_msg["content"])
+                _msg["content"] = await strip_pii_for_llm_prompt_async(_msg["content"])
 
         # === Audit 2026-05-24 P1: cache lookup (idempotent intents) ===
         # Lookup ANTES do dispatch — hit = ~ms vs ~5-13s miss.
@@ -640,7 +663,7 @@ class LLMService:
                     async for text_delta in stream.text_stream:
                         if text_delta:
                             try:
-                                await _stream_cb({"type": "token", "content": text_delta})
+                                await _stream_cb({"type": "token", "content": _mask_stream_text(text_delta)})
                             except Exception as _cb_err:
                                 logger.warning(f"[LLM-STREAM] callback error (continuing): {_cb_err}")
                     final_message = await stream.get_final_message()
@@ -837,9 +860,9 @@ class LLMService:
         for _msg in messages:
             _content = _msg.get("content", "")
             if isinstance(_content, str) and _content:
-                _msg["content"] = strip_pii_for_llm_prompt(_content)
+                _msg["content"] = await strip_pii_for_llm_prompt_async(_content)
         if system_prompt:
-            system_prompt = strip_pii_for_llm_prompt(system_prompt)
+            system_prompt = await strip_pii_for_llm_prompt_async(system_prompt)
 
         # === E7: Audit logging ===
         _cid = getattr(self, "_current_tenant", "") or get_current_llm_tenant()
@@ -1037,7 +1060,7 @@ class LLMService:
         Gradually migrate direct .ainvoke() calls to this method.
         """
         # E6: PII stripping
-        prompt = strip_pii_for_llm_prompt(prompt)
+        prompt = await strip_pii_for_llm_prompt_async(prompt)
 
         # E7: Audit
         _cid = get_current_llm_tenant()

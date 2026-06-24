@@ -921,7 +921,15 @@ Sempre informe qual e a proxima etapa e o que precisa ser feito."""
         """Handle calibration decisions."""
         prior = context.metadata.get("wizard_state", {})
 
-        result = self.graph.resume(thread_id, prior, {
+        # Bug A/B prereq fix (2026-06-20): set current_stage="calibration" explicitly
+        # BEFORE graph.resume() so _derive_wizard_stage has a non-circular signal
+        # on the first calibration turn (no prior ws_stage_payload exists yet).
+        # Without this, _derive_wizard_stage falls through to "handoff" because
+        # it was reading ws_stage_payload.stage (circular — only set AFTER the node runs).
+        # Sensor: tests/contract/test_wizard_calibration_stage.py T-a
+        prior_with_stage = {**prior, "current_stage": "calibration"}
+
+        result = self.graph.resume(thread_id, prior_with_stage, {
             "user_query": params.get("user_query", ""),
             "calibration_candidates": params.get("candidates", []),
         })

@@ -47,7 +47,7 @@ export function SCMSectionPerguntasEdit({
   handleAddCustomQuestion, handleRemoveCustomQuestion, handleUpdateCustomQuestion,
   handleToggleBankQuestion, handleToggleCompanyDefault, handleUpdateBankQuestion,
   handleGenerateWSI, isGeneratingWSI,
-  isEditingScreening, resetScreeningEditing,
+  isEditingScreening, resetScreeningEditing, handleSaveRoteiro,
   wsiDynamicMessage, wsiGeneratedCount, wsiGenerationCompleted, wsiGenerationContext,
   wsiGenerationMode, wsiGenerationStep, wsiProgressCollapsed, setWsiProgressCollapsed,
   wsiSummaryExpanded, setWsiSummaryExpanded,
@@ -129,7 +129,7 @@ export function SCMSectionPerguntasEdit({
           <div className="relative group">
             <Brain className="w-5 h-5 cursor-help text-wedo-cyan" />
             <div className="absolute right-full mr-2 top-1/2 -translate-y-1/2 w-64 p-3 bg-lia-btn-primary-bg text-lia-btn-primary-text text-xs rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity motion-reduce:transition-none z-50">
-              <p className="leading-relaxed" aria-live="polite" aria-atomic="true">A LIA gera perguntas seguindo a metodologia WeDoTalent Skill Index, calibrando complexidade conforme senioridade e skills da vaga.</p>
+              <p className="leading-relaxed" aria-live="polite" aria-atomic="true">A IA gera perguntas seguindo a metodologia WeDoTalent Skill Index, calibrando complexidade conforme senioridade e skills da vaga.</p>
               <div className="absolute top-1/2 right-0 translate-x-1/2 -translate-y-1/2 rotate-45 w-2 h-2 bg-lia-btn-primary-bg"></div>
             </div>
           </div>
@@ -192,7 +192,7 @@ export function SCMSectionPerguntasEdit({
                           <span className="text-micro font-semibold text-lia-text-secondary">{step.num}</span>
                         )}
                       </div>
-                      <span className={`text-micro mt-1.5 font-medium whitespace-nowrap transition-colors motion-reduce:transition-none duration-300 ${wsiGenerationStep >= step.num ? 'text-wedo-cyan-dark' : 'lia-text-secondary'}`}>
+                      <span className={`text-micro mt-1.5 font-medium whitespace-nowrap transition-colors motion-reduce:transition-none duration-300 ${wsiGenerationStep >= step.num ? 'text-wedo-cyan-text' : 'lia-text-secondary'}`}>
                         {step.label}
                       </span>
                     </div>
@@ -297,13 +297,13 @@ export function SCMSectionPerguntasEdit({
                     {wsiSummaryTypingDone && (<>
                       <div className="space-y-1.5 pl-1">
                         {(wsiGenerationContext.blockBreakdown?.[2] || 0) > 0 && (
-                          <div className="flex items-start gap-2"><span className="text-lia-text-disabled mt-0.5">•</span><p className="text-base-ui text-lia-text-primary"><span className="font-semibold">{wsiGenerationContext.blockBreakdown[2]} perguntas de elegibilidade</span>, para validar aderência mínima ao cargo</p></div>
+                          <div className="flex items-start gap-2"><span className="text-lia-text-tertiary mt-0.5">•</span><p className="text-base-ui text-lia-text-primary"><span className="font-semibold">{wsiGenerationContext.blockBreakdown[2]} perguntas de elegibilidade</span>, para validar aderência mínima ao cargo</p></div>
                         )}
                         {(wsiGenerationContext.blockBreakdown?.[3] || 0) > 0 && (
-                          <div className="flex items-start gap-2"><span className="text-lia-text-disabled mt-0.5">•</span><p className="text-base-ui text-lia-text-primary"><span className="font-semibold">{wsiGenerationContext.blockBreakdown[3]} perguntas técnicas</span>, para investigar o nível de conhecimento e experiência prática</p></div>
+                          <div className="flex items-start gap-2"><span className="text-lia-text-tertiary mt-0.5">•</span><p className="text-base-ui text-lia-text-primary"><span className="font-semibold">{wsiGenerationContext.blockBreakdown[3]} perguntas técnicas</span>, para investigar o nível de conhecimento e experiência prática</p></div>
                         )}
                         {(wsiGenerationContext.blockBreakdown?.[4] || 0) > 0 && (
-                          <div className="flex items-start gap-2"><span className="text-lia-text-disabled mt-0.5">•</span><p className="text-base-ui text-lia-text-primary"><span className="font-semibold">{wsiGenerationContext.blockBreakdown[4]} perguntas comportamentais</span>, para explorar as competências exigidas para a vaga</p></div>
+                          <div className="flex items-start gap-2"><span className="text-lia-text-tertiary mt-0.5">•</span><p className="text-base-ui text-lia-text-primary"><span className="font-semibold">{wsiGenerationContext.blockBreakdown[4]} perguntas comportamentais</span>, para explorar as competências exigidas para a vaga</p></div>
                         )}
                       </div>
                       <div className="space-y-1">
@@ -560,57 +560,11 @@ export function SCMSectionPerguntasEdit({
           Cancelar
         </Button>
         <div className="flex items-center gap-2">
-          <Button size="sm" className="h-7 text-micro px-4 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text" onClick={async () => {
-            const screeningQs = Array.isArray(job.screeningQuestions) ? job.screeningQuestions : []
-            const existingCount = screeningQs.length
-            const acceptedCount = Object.values(generatedQuestions).flat().filter((q: ScreeningQuestionItem) => acceptedQuestions.has(q.id)).length
-            const totalQuestions = existingCount + acceptedCount
-            if (totalQuestions === 0) { toast.error('Selecione pelo menos uma pergunta antes de salvar o roteiro.'); return }
-            if (totalQuestions < 3) { toast.error('O roteiro precisa ter no mínimo 3 perguntas. Atualmente: ' + totalQuestions); return }
-            try {
-              const jobId = job.backendId || job.jobId || String(job.id)
-              const existingQuestions = screeningQs.map((q: ScreeningQuestionItem) => ({ id: q.id, text: q.question || q.text, category: q.category, type: q.type, weight: q.weight, skill_targeted: q.skill_targeted, block_id: q.block_id }))
-              const acceptedGenerated: ScreeningQuestionItem[] = []
-              Object.values(generatedQuestions).forEach((blockQs: ScreeningQuestionItem[]) => {
-                blockQs.forEach((q: ScreeningQuestionItem) => { if (acceptedQuestions.has(q.id)) { acceptedGenerated.push({ id: q.id, text: q.question || q.text, category: q.category, type: q.type, weight: q.weight || 0.75, skill_targeted: q.skill_targeted, block_id: q.block_id }) } })
-              })
-              const allQuestions = [...existingQuestions, ...acceptedGenerated]
-              const response = await fetch('/api/backend-proxy/wsi/questions/save', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ job_id: jobId, questions: allQuestions, source: 'manual_save' }) })
-              if (response.ok) {
-                const newScreeningQuestions = [...screeningQs, ...Object.values(generatedQuestions).flat().filter((q: ScreeningQuestionItem) => acceptedQuestions.has(q.id)).map((q: ScreeningQuestionItem) => ({ ...q, question: q.question || q.text, generated: undefined }))]
-                onJobUpdate?.({ ...job, screeningQuestions: newScreeningQuestions })
-                toast.success(`Roteiro salvo com sucesso! ${allQuestions.length} perguntas salvas.`)
-                resetScreeningEditing()
-              } else { toast.error('Erro ao salvar roteiro. Tente novamente.') }
-            } catch { toast.error('Erro ao salvar roteiro. Tente novamente.') }
-          }}>
+          <Button size="sm" className="h-7 text-micro px-4 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text" onClick={() => handleSaveRoteiro(false)}>
             <CheckCircle className="w-3 h-3 mr-1" />Salvar Alterações
           </Button>
           {(job.screeningStatus !== 'active') && (
-            <Button size="sm" className="h-7 text-micro px-4 bg-status-success hover:bg-status-success text-white" onClick={async () => {
-              const screeningQs2 = Array.isArray(job.screeningQuestions) ? job.screeningQuestions : []
-              const existingCount = screeningQs2.length
-              const acceptedCount = Object.values(generatedQuestions).flat().filter((q: ScreeningQuestionItem) => acceptedQuestions.has(q.id)).length
-              const totalQuestions = existingCount + acceptedCount
-              if (totalQuestions === 0) { toast.error('Selecione pelo menos uma pergunta antes de ativar a triagem.'); return }
-              if (totalQuestions < 3) { toast.error('O roteiro precisa ter no mínimo 3 perguntas para ativar. Atualmente: ' + totalQuestions); return }
-              try {
-                const jobId = job.backendId || job.jobId || String(job.id)
-                const existingQuestions = screeningQs2.map((q: ScreeningQuestionItem) => ({ id: q.id, text: q.question || q.text, category: q.category, type: q.type, weight: q.weight, skill_targeted: q.skill_targeted, block_id: q.block_id }))
-                const acceptedGenerated: ScreeningQuestionItem[] = []
-                Object.values(generatedQuestions).forEach((blockQs: ScreeningQuestionItem[]) => {
-                  blockQs.forEach((q: ScreeningQuestionItem) => { if (acceptedQuestions.has(q.id)) { acceptedGenerated.push({ id: q.id, text: q.question || q.text, category: q.category, type: q.type, weight: q.weight || 0.75, skill_targeted: q.skill_targeted, block_id: q.block_id }) } })
-                })
-                const allQuestions = [...existingQuestions, ...acceptedGenerated]
-                const response = await fetch('/api/backend-proxy/wsi/questions/save', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ job_id: jobId, questions: allQuestions, source: 'manual_save' }) })
-                if (response.ok) {
-                  const newScreeningQuestions = [...screeningQs2, ...Object.values(generatedQuestions).flat().filter((q: ScreeningQuestionItem) => acceptedQuestions.has(q.id)).map((q: ScreeningQuestionItem) => ({ ...q, question: q.question || q.text, generated: undefined }))]
-                  onJobUpdate?.({ ...job, screeningQuestions: newScreeningQuestions, screeningStatus: 'active' })
-                  toast.success(`Roteiro salvo e triagem ativada! ${allQuestions.length} perguntas configuradas.`)
-                  resetScreeningEditing()
-                } else { toast.error('Erro ao salvar roteiro. Tente novamente.') }
-              } catch { toast.error('Erro ao salvar roteiro. Tente novamente.') }
-            }}>
+            <Button size="sm" className="h-7 text-micro px-4 bg-status-success hover:bg-status-success text-white" onClick={() => handleSaveRoteiro(true)}>
               <Play className="w-3 h-3 mr-1" />Salvar e Ativar
             </Button>
           )}

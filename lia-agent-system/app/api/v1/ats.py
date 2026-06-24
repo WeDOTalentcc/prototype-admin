@@ -119,7 +119,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"❌ Failed to create ATS connection: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.get("/ats/connections", response_model=list[dict])
@@ -154,7 +154,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"❌ Failed to list ATS connections: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.post("/ats/connections/test", response_model=dict)
@@ -234,9 +234,9 @@ async def _test_provider_connection(
     elif provider == "pandape":
         service = PandapeService(api_key=api_key, api_url=api_endpoint)
     elif provider == "merge":
-        import httpx
+        from app.shared.http_client import get_http_client
         try:
-            async with httpx.AsyncClient() as client:
+            async with get_http_client("ats") as client:
                 resp = await client.get(
                     "https://api.merge.dev/api/ats/v1/account-details",
                     headers={"Authorization": f"Bearer {api_key}"},
@@ -288,7 +288,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Failed to save field mappings: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.get("/ats/field-mappings/{connection_id}", response_model=dict)
@@ -317,7 +317,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Failed to get field mappings: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.get("/ats/connections/{connection_id}/jobs", response_model=dict)
@@ -565,7 +565,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Failed to trigger sync: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.get("/ats/sync-jobs", response_model=list[dict])
@@ -609,7 +609,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"❌ Failed to list sync jobs: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.get("/ats/candidates", response_model=list[dict])
@@ -653,7 +653,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"❌ Failed to list ATS candidates: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.post("/ats/webhooks/{provider}", response_model=dict)
@@ -767,7 +767,7 @@ async def receive_ats_webhook(
         raise
     except Exception as e:
         logger.error(f"Failed to process webhook: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 async def _process_webhook_event(
@@ -1110,6 +1110,6 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"❌ Failed to list webhook logs: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 reorder_collection_before_item(router)

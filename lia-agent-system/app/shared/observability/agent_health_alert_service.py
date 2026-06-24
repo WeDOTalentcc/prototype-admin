@@ -80,7 +80,7 @@ class AgentHealthAlertService:
             return self._redis
         try:
             from app.core.config import settings
-            self._redis = aioredis.from_url(settings.REDIS_URL, decode_responses=True)
+            self._redis = aioredis.from_url(settings.REDIS_URL, decode_responses=True, socket_connect_timeout=5, socket_timeout=5)
             await self._redis.ping()
             logger.debug("[AgentHealthAlertService] Connected to Redis")
         except Exception as exc:

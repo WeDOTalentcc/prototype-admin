@@ -36,7 +36,7 @@ export function SettingsEditModeToggle({ hubId, className = "" }: Props) {
         inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md
         text-xs font-medium border transition-colors motion-reduce:transition-none
         ${isEditing
-          ? "bg-wedo-cyan/10 text-wedo-cyan border-wedo-cyan/30"
+          ? "bg-wedo-cyan/10 text-wedo-cyan-text border-wedo-cyan/30"
           : "bg-lia-bg-secondary text-lia-text-secondary border-lia-border-default hover:bg-lia-bg-primary"
         }
         ${className}

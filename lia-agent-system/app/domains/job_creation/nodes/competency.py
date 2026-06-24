@@ -33,7 +33,9 @@ def competency_node(state: JobCreationState) -> JobCreationState:
     # Lazy import of helpers defined in graph.py (avoids circular import).
     from app.domains.job_creation.graph import (  # noqa: E402
         _emit_wizard_step_audit,
-        _get_question_distribution,
+    )
+    from app.domains.job_creation.helpers.wsi_distribution import (
+        block_distribution as _get_question_distribution,
     )
 
     t0 = time.time()

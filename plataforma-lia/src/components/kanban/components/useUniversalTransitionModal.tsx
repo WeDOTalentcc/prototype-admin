@@ -1,7 +1,8 @@
 "use client"
 
 import { useState, useEffect, useMemo } from 'react'
-import { useInterpretContext, type InterpretChatMessage as ChatMessage } from '@/hooks/shared/use-interpret-context'
+import { setLiaModal } from '@/lib/lia-context-store'
+import { useTransitionChat, type ChatMessage } from '@/hooks/shared/use-transition-chat'
 import { useTransitionContext, type CandidateContext, type JobContext } from '@/hooks/recruitment/use-transition-context'
 import { useRecruitmentStages } from '@/hooks/recruitment/use-recruitment-stages'
 import { isLiaAutoAllowed } from '../utils/action-matrix'
@@ -60,59 +61,59 @@ export interface UniversalTransitionModalProps {
 
 export const ACTION_BEHAVIOR_CONFIG: Record<string, { label: string; icon: React.ReactNode; description: string }> = {
   intake: {
-    label: 'Orientação LIA',
-    icon: <Brain className="w-3.5 h-3.5 text-wedo-cyan" />,
-    description: 'LIA orienta o recrutador sobre o candidato recebido',
+    label: 'Orientação IA',
+    icon: <Brain className="w-3.5 h-3.5 text-wedo-cyan-text" />,
+    description: 'IA orienta o recrutador sobre o candidato recebido',
   },
   screening: {
     label: 'Convidar para Triagem WSI',
     icon: <ClipboardList className="w-3.5 h-3.5" />,
-    description: 'LIA conduz triagem automatizada com o candidato',
+    description: 'IA conduz triagem automatizada com o candidato',
   },
   scheduling: {
     label: 'Abrir Agendamento',
     icon: <Calendar className="w-3.5 h-3.5" />,
-    description: 'LIA envia convite de agendamento ao candidato',
+    description: 'IA envia convite de agendamento ao candidato',
   },
   evaluation: {
     label: 'Enviar Teste',
     icon: <FileText className="w-3.5 h-3.5" />,
-    description: 'LIA envia teste técnico ou avaliação',
+    description: 'IA envia teste técnico ou avaliação',
   },
   verification: {
     label: 'Solicitar Documentos',
     icon: <FileText className="w-3.5 h-3.5" />,
-    description: 'LIA solicita documentos necessários',
+    description: 'IA solicita documentos necessários',
   },
   offer: {
     label: 'Enviar Proposta',
     icon: <Gift className="w-3.5 h-3.5" />,
-    description: 'LIA prepara e envia proposta formal',
+    description: 'IA prepara e envia proposta formal',
   },
   passive: {
-    label: 'Orientação LIA',
-    icon: <Brain className="w-3.5 h-3.5 text-wedo-cyan" />,
-    description: 'LIA orienta sobre a movimentação do candidato',
+    label: 'Orientação IA',
+    icon: <Brain className="w-3.5 h-3.5 text-wedo-cyan-text" />,
+    description: 'IA orienta sobre a movimentação do candidato',
   },
   standby: {
     label: 'Banco de Talentos',
-    icon: <Brain className="w-3.5 h-3.5 text-wedo-cyan" />,
-    description: 'LIA registra candidato no banco de talentos',
+    icon: <Brain className="w-3.5 h-3.5 text-wedo-cyan-text" />,
+    description: 'IA registra candidato no banco de talentos',
   },
   conclusion_hired: {
     label: 'Enviar Boas-vindas',
     icon: <Mail className="w-3.5 h-3.5" />,
-    description: 'LIA envia mensagem de boas-vindas e próximos passos',
+    description: 'IA envia mensagem de boas-vindas e próximos passos',
   },
   conclusion_rejected: {
     label: 'Enviar Feedback',
     icon: <MessageSquare className="w-3.5 h-3.5" />,
-    description: 'LIA envia feedback construtivo ao candidato',
+    description: 'IA envia feedback construtivo ao candidato',
   },
   conclusion_declined: {
     label: 'Agradecimento',
     icon: <Mail className="w-3.5 h-3.5" />,
-    description: 'LIA envia agradecimento e mantém porta aberta',
+    description: 'IA envia agradecimento e mantém porta aberta',
   },
 }
 
@@ -143,6 +144,8 @@ export function useUniversalTransitionModal({
   const [showAllPerCandidate, setShowAllPerCandidate] = useState(false)
   const [policyWarnings, setPolicyWarnings] = useState<string[]>([])
   const [policyMetadata, setPolicyMetadata] = useState<Record<string, unknown>>({})
+  const [bulkExample, setBulkExample] = useState<{ body: string; highRisk: boolean } | null>(null)
+  const [isLoadingBulkExample, setIsLoadingBulkExample] = useState(false)
   const [selectedToStage, setSelectedToStage] = useState(toStage)
   const [selectedToStageDisplayName, setSelectedToStageDisplayName] = useState(toStageDisplayName)
   const [currentActionBehavior, setCurrentActionBehavior] = useState(actionBehavior)
@@ -158,6 +161,13 @@ export function useUniversalTransitionModal({
       setShowStageSelector(false)
     }
   }, [isOpen, toStage, toStageDisplayName, actionBehavior, subStatusOptions])
+
+  // P0-2 (2026-06-18): inform LIA which modal is currently open.
+  // Cleanup returns null so LIA knows the modal closed if component unmounts.
+  useEffect(() => {
+    setLiaModal(isOpen ? 'kanban-transition' : null)
+    return () => setLiaModal(null)
+  }, [isOpen])
 
   const handleStageSelect = (stage: AvailableStage) => {
     setSelectedToStage(stage.id)
@@ -214,7 +224,7 @@ export function useUniversalTransitionModal({
     companyId,
   })
 
-  const { sendMessage, messages, result: interpretResult, isLoading: isInterpreting, reset: resetInterpret } = useInterpretContext()
+  const { sendMessage, messages, result: interpretResult, isLoading: isInterpreting, reset: resetInterpret, hitlPending, sendApproval } = useTransitionChat()
 
   const firstCandidateId = candidates[0]?.id
   const firstCandidateName = candidates[0]?.name
@@ -324,6 +334,21 @@ export function useUniversalTransitionModal({
   }
 
   const handleConfirm = async () => {
+    // Fluxo unico (decisao Paulo 2026-06-10): reprovacao INDIVIDUAL via
+    // "Confirmar com LIA" abre o editor de feedback (texto gerado pela IA) para
+    // REVISAO; o candidato e movido ao ENVIAR (moveOnSend). Bulk e outras
+    // transicoes seguem o caminho normal (onConfirm).
+    if (action === 'lia_auto' && candidates.length === 1 && currentActionBehavior === 'conclusion_rejected' && onOpenSpecializedModal) {
+      onOpenSpecializedModal('rejection-feedback', {
+        candidates,
+        toStage: selectedToStage,
+        subStatus,
+        fromStage,
+        moveOnSend: true,
+      })
+      onClose()
+      return
+    }
     setIsSubmitting(true)
     try {
       await onConfirm({
@@ -360,8 +385,40 @@ export function useUniversalTransitionModal({
     }
   }
 
+  // Bulk 1-exemplo (decisao Paulo): ao reprovar em lote via IA, busca o feedback
+  // do 1o candidato como EXEMPLO representativo (read-only). Cada candidato recebe
+  // seu proprio texto no envio; este e so para o recrutador conferir o tom.
+  const _isRejectedBatchForExample = selectedToStage === 'rejected' && candidates.length > 1
+  useEffect(() => {
+    if (!isOpen || !_isRejectedBatchForExample || action !== 'lia_auto' || candidates.length === 0) {
+      setBulkExample(null)
+      return
+    }
+    let cancelled = false
+    const firstId = candidates[0].id
+    setIsLoadingBulkExample(true)
+    fetch('/api/backend-proxy/transition/preview-feedback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        vacancy_candidate_id: firstId,
+        to_stage: selectedToStage,
+        sub_status: perCandidateSubStatus[firstId] || subStatus || null,
+        channel: 'email',
+      }),
+    })
+      .then(r => (r.ok ? r.json() : null))
+      .then(d => { if (!cancelled && d) setBulkExample({ body: d.body || '', highRisk: !!d.high_risk }) })
+      .catch(() => {})
+      .finally(() => { if (!cancelled) setIsLoadingBulkExample(false) })
+    return () => { cancelled = true }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, _isRejectedBatchForExample, action, candidates.length, selectedToStage])
+
   return {
     subStatus,
+    bulkExample,
+    isLoadingBulkExample,
     action,
     setAction,
     isSubmitting,
@@ -399,5 +456,7 @@ export function useUniversalTransitionModal({
     handleOpenManualModal,
     prompt,
     setPrompt,
+    hitlPending,
+    sendApproval,
   }
 }

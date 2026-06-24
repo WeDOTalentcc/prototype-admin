@@ -38,17 +38,17 @@ const INSIGHT_STYLES: Record<LiaInsight["type"], {
   analysis: {
     bg: "bg-wedo-purple/10",
     border: "border-wedo-purple/30",
-    iconColor: "text-wedo-purple",
+    iconColor: "text-lia-text-secondary",
     badgeText: "Análise",
-    badgeBg: "bg-wedo-purple/15 text-wedo-purple",
+    badgeBg: "bg-wedo-purple/15 text-wedo-purple-text",
     icon: Search,
   },
   comparative: {
     bg: "bg-wedo-cyan/10",
     border: "border-wedo-cyan/30",
-    iconColor: "text-wedo-cyan-dark",
+    iconColor: "text-lia-text-secondary",
     badgeText: "Comparativo",
-    badgeBg: "bg-wedo-cyan/15 text-wedo-cyan-dark",
+    badgeBg: "bg-wedo-cyan/15 text-wedo-cyan-text",
     icon: ArrowRightLeft,
   },
   attention: {
@@ -85,7 +85,7 @@ export function LiaAnalysisPanel({ liaAnalysis }: LiaAnalysisPanelProps) {
           <div className="w-6 h-6 bg-lia-bg-tertiary rounded-xl flex items-center justify-center">
             <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
           </div>
-          <h3 className="text-base-ui font-semibold text-lia-text-primary">Análise LIA</h3>
+          <h3 className="text-base-ui font-semibold text-lia-text-primary">Análise de IA</h3>
         </div>
       </div>
 

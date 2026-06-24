@@ -8,7 +8,6 @@ from .pipeline_monitor import PipelineMonitor
 from .planned_task_service import PlannedTaskService
 from .prediction_action_bridge import PredictionActionBridge
 from .proactive_alert_service import ProactiveAlertService
-from .proactive_service import ProactiveService
 from .stage_automation_engine import StageAutomationEngine
 from .stage_transition_automation import StageTransitionAutomationService
 from .task_service import TaskService

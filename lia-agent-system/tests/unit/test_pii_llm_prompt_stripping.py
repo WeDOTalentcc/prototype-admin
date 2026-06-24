@@ -21,14 +21,14 @@ class TestStripPIIForLLMPrompt(unittest.TestCase):
         text = "Candidato CPF 123.456.789-09 tem experiência em Python"
         result = self.strip(text)
         self.assertNotIn("123.456.789-09", result)
-        self.assertIn("[CPF REMOVIDO]", result)
+        self.assertIn("REMOVIDO]", result)  # regex [CPF REMOVIDO] ou Presidio
         self.assertIn("Python", result)
 
     def test_email_removed(self):
         text = "Contato: joao.silva@empresa.com.br para entrevista"
         result = self.strip(text)
         self.assertNotIn("joao.silva@empresa.com.br", result)
-        self.assertIn("[EMAIL REMOVIDO]", result)
+        self.assertIn("REMOVIDO]", result)  # regex [EMAIL REMOVIDO] ou Presidio [EMAIL_ADDRESS REMOVIDO]
         self.assertIn("entrevista", result)
 
     def test_phone_removed(self):
@@ -67,3 +67,15 @@ class TestStripPIIForLLMPrompt(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def test_mask_names_false_preserva_nome_mascara_contato():
+    """Fix #4 2026-06-06: chat do recrutador preserva NOME de candidato/vaga
+    (autorizado, mesmo tenant) mas mantém CPF/email mascarados. Espelha o base
+    _sanitize_messages_pii(mask_names=False). Regressão: 'Felipe Almeida' não
+    pode virar '[PERSON REMOVIDO]'."""
+    from app.shared.pii_masking import strip_pii_for_llm_prompt
+    out = strip_pii_for_llm_prompt("Felipe Almeida, CPF 123.456.789-00", mask_names=False)
+    assert "Felipe Almeida" in out
+    assert "[PERSON REMOVIDO]" not in out
+    assert "123.456.789-00" not in out

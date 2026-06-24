@@ -91,6 +91,8 @@ from app.schemas.company import (
 )
 from app.domains.company.services.company_configuration_service import company_config_service
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.errors import LIAError
+from app.domains.ai.services.context_aggregator_service import context_aggregator
 
 FRONTEND_URL = os.getenv("FRONTEND_URL", "https://plataforma-lia.replit.app")
 
@@ -144,7 +146,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error resolving tenant: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/onboarding", response_model=None)
@@ -413,7 +415,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error processing onboarding data: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/profile", response_model=CompanyProfileResponse)
@@ -568,7 +570,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error fetching company profile: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/profile", response_model=CompanyProfileResponse)
@@ -600,7 +602,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error creating company profile: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.put("/profile/{profile_id}", response_model=CompanyProfileResponse)
@@ -639,12 +641,13 @@ company_id: str = Depends(require_company_id)):
         updated = await profile_repo.update(profile_id, update_data)
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Updated company profile: {updated.name}")
+        context_aggregator.clear_cache(str(company_id))
         return updated
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Error updating company profile: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/profile/{profile_id}/logo", response_model=CompanyProfileResponse)
@@ -780,7 +783,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error fetching company profile with relations: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/stats", response_model=None)
@@ -851,6 +854,6 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error getting company stats: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 

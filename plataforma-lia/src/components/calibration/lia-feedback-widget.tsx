@@ -203,7 +203,7 @@ export function LIAFeedbackWidget({
           )}
           onClick={() => handleFeedback(true)}
           disabled={isSubmitting || feedbackState !== "none"}
-          title="Concordo com a IA"
+          title="Concordo"
         >
           <ThumbsUp className="w-4 h-4" />
         </Button>

@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import { useState, useEffect } from"react"
 import { Button } from"@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
@@ -164,6 +165,9 @@ export function EmailTemplatesManager() {
   const [isFormModalOpen, setIsFormModalOpen] = useState(false)
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('email-template-preview', isPreviewModalOpen)
+  useLiaModalTracking('email-template-delete', isDeleteModalOpen)
   const [selectedTemplate, setSelectedTemplate] = useState<EmailTemplate | null>(null)
   const [templateToDelete, setTemplateToDelete] = useState<EmailTemplate | null>(null)
   const [deleting, setDeleting] = useState(false)

@@ -1,14 +1,17 @@
 "use client"
-
-import React from "react"
+import React, { useState } from "react"
 import TalentPoolsTab from "@/components/pages-candidates/TalentPoolsTab"
-import { useRouter } from "next/navigation"
 
 export default function BancosClient() {
-  const router = useRouter()
+  const [openPoolId, setOpenPoolId] = useState<string | null>(null)
+
   return (
     <div className="h-full p-6">
-      <TalentPoolsTab onSelectPool={(id) => router.push(`/bancos-de-talentos/${id}`)} />
+      <TalentPoolsTab
+        onSelectPool={(id) => setOpenPoolId(id)}
+        openPoolId={openPoolId}
+        onClosePool={() => setOpenPoolId(null)}
+      />
     </div>
   )
 }

@@ -197,7 +197,7 @@ export function KanbanToolbar({
               icon={<ChevronsLeftRight />}
               trailing={
                 <span
-                  className={`text-xs font-medium ${showColumnConfig ? 'text-lia-text-disabled' : 'text-lia-text-tertiary'}`}
+                  className={`text-xs font-medium ${showColumnConfig ? 'text-lia-text-tertiary' : 'text-lia-text-tertiary'}`}
                   aria-live="polite"
                   aria-atomic="true"
                 >

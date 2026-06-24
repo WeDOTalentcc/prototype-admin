@@ -14,17 +14,17 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from app.core.sentry import init_sentry
+from lia_config.sentry import init_sentry
 init_sentry()
 
-from app.core.config import settings
-from app.core.database import init_db
-from app.core.logging_config import configure_logging
-from app.shared.pii_masking import install_global_pii_masking
-from app.config.langsmith import configure_langsmith
-from app.middleware.rate_limiter import RateLimitMiddleware
-from app.middleware.request_id import RequestIdMiddleware
-from app.core.logging_middleware import StructuredLoggingMiddleware
+from lia_config import settings
+from app.core.database import init_db  # ACCEPTED-MONOLITH: init_db orquestra 30+ migration helpers em database.py — extração deferida
+from lia_config.logging_config import configure_logging
+from lia_pii import install_global_pii_masking
+from lia_config.langsmith import configure_langsmith
+from lia_config.rate_limiter import RateLimitMiddleware
+from lia_config.request_id import RequestIdMiddleware
+from lia_config.logging_middleware import StructuredLoggingMiddleware
 
 configure_langsmith()
 configure_logging()

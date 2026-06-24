@@ -52,6 +52,7 @@ from ._shared import (
 )
 from app.domains.credits.services.credit_service import CreditService, get_credit_service
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 from app.shared.types import WeDoBaseModel
 
 router = APIRouter()
@@ -171,6 +172,28 @@ company_id: str = Depends(require_company_id)):
         )
         
         result = await pearch_svc.hybrid_search(db, hybrid_request)
+
+        # 4.3+5.0: boost via pgvector + adaptive K (fail-soft)
+        _pgv_ids: set[str] = set()
+        try:
+            from app.domains.ai.services.candidate_embedding_service import (
+                candidate_embedding_service as _ces,
+                adaptive_k,
+            )
+            if reference_profile.get("id"):
+                _pgv_results = await _ces.find_similar_candidates(
+                    candidate=reference_profile,
+                    company_id=company_id,
+                    db=db,
+                    limit=request.limit * 2,
+                )
+                _pgv_scores = [r.get("similarity", 0) for r in _pgv_results]
+                _k = adaptive_k(_pgv_scores, max_k=request.limit)
+                _pgv_results = _pgv_results[:_k]
+                _pgv_ids = {r["candidate_id"] for r in _pgv_results}
+        except Exception as _pgv_exc:
+            import logging
+            logging.getLogger(__name__).debug("[similar] pgvector boost failed (ok): %s", _pgv_exc)
         
         candidates = []
         for profile in result.local_candidates:
@@ -194,7 +217,7 @@ company_id: str = Depends(require_company_id)):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Similar search failed: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 
 # ============================================================================
@@ -237,7 +260,6 @@ company_id: str = Depends(require_company_id)):
     from collections import Counter
 
 # RAILS-DEPRECATED: This endpoint manages Rails-owned entities (candidates/jobs/applies/users).
-# Direct DB calls will be replaced by RailsAdapter after ats-api-rails handoff.
 # See: app/domains/integrations_hub/services/rails_adapter.py
     
     source_count = len([u for u in urls if u.strip()]) + len(cvs)

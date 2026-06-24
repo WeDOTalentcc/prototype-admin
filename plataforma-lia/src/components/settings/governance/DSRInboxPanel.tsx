@@ -415,7 +415,7 @@ export function DSRInboxPanel({ defaultRequestType }: { defaultRequestType?: str
       {/* WT-2022 P1-W4-01: modal inline para ações DSR (substitui window.prompt/alert nativo) */}
       {actionModal.type && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-card rounded-lg p-6 w-96 max-w-full mx-4 shadow-xl">
+          <div className="bg-card rounded-xl p-6 w-96 max-w-full mx-4 shadow-xl">
             <h3 className="font-semibold text-lg mb-4">
               {actionModal.type === "assign" && "Atribuir Responsável"}
               {actionModal.type === "verify" && "Verificar Identidade"}
@@ -424,13 +424,13 @@ export function DSRInboxPanel({ defaultRequestType }: { defaultRequestType?: str
               {actionModal.type === "reject" && "Rejeitar Solicitação"}
             </h3>
             {actionModal.errorMsg && (
-              <p className="text-xs text-status-error mb-3 rounded bg-status-error/10 p-2">
+              <p className="text-xs text-status-error mb-3 rounded-md bg-status-error/10 p-2">
                 {actionModal.errorMsg}
               </p>
             )}
             <input
               type="text"
-              className="w-full border rounded px-3 py-2 mb-4 text-sm"
+              className="w-full border rounded-md px-3 py-2 mb-4 text-sm"
               placeholder={
                 actionModal.type === "assign" ? "Email do responsável" :
                 actionModal.type === "verify" ? "Método de verificação (ex: email_confirmation, gov_id)" :
@@ -444,7 +444,7 @@ export function DSRInboxPanel({ defaultRequestType }: { defaultRequestType?: str
             <div className="flex gap-2 justify-end">
               <button
                 type="button"
-                className="px-4 py-2 text-sm border rounded hover:bg-muted/50"
+                className="px-4 py-2 text-sm border rounded-md hover:bg-muted/50"
                 onClick={() => setActionModal({ type: null, requestId: null, value: "", errorMsg: null })}
               >
                 Cancelar
@@ -478,7 +478,7 @@ function SummaryCard({
   return (
     <div className={cn(cardStyles.default, "p-3")}>
       <div className={textStyles.subtitleMuted}>{label}</div>
-      <div className={cn("mt-1 font-mono text-xl font-semibold", color)}>{value}</div>
+      <div className={cn("mt-1 font-data tabular-nums text-xl font-semibold", color)}>{value}</div>
     </div>
   )
 }

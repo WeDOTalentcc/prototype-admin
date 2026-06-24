@@ -90,11 +90,16 @@ class AutomationScheduler:
         suficiente. Para multi-instância, usar solução externa (Cloud Scheduler,
         Celery Beat com Redis backend, ou APScheduler 4.x quando estável).
         """
+        import zoneinfo
         from apscheduler.jobstores.memory import MemoryJobStore
         jobstores = {"default": MemoryJobStore()}
         logger.info("[AutomationScheduler] Usando MemoryJobStore")
         job_defaults = {"coalesce": True, "max_instances": 1, "misfire_grace_time": 60}
-        return AsyncIOScheduler(jobstores=jobstores, job_defaults=job_defaults)
+        return AsyncIOScheduler(
+            jobstores=jobstores,
+            job_defaults=job_defaults,
+            timezone=zoneinfo.ZoneInfo("America/Sao_Paulo"),
+        )
     
     def _get_email_service(self):
         """Lazy load EmailService."""
@@ -256,6 +261,41 @@ class AutomationScheduler:
                 replace_existing=True,
             )
 
+            self.scheduler.add_job(
+                self.run_teams_proactive_checks,
+                IntervalTrigger(hours=4),
+                id="teams_proactive_checks",
+                name="A2 — Teams proactive cards (stalled pipelines + deadlines)",
+                replace_existing=True,
+            )
+
+            # Frente C — detectores proativos (15) por empresa, independente do MonitoringLoop
+
+            self.scheduler.add_job(
+                self.run_expire_pending_offers,
+                IntervalTrigger(hours=1),
+                id="expire_pending_offers",
+                name="2.13 — Expirar propostas com deadline vencido",
+                replace_existing=True,
+            )
+
+            self.scheduler.add_job(
+                self.run_proactive_detection,
+                IntervalTrigger(hours=1),
+                id="proactive_detection",
+                name="Proactive detectors (15) por empresa — independente do MonitoringLoop",
+                replace_existing=True,
+            )
+
+            # F3 — AutonomousActionsEngine: executa ações de baixo risco automaticamente
+            self.scheduler.add_job(
+                self._run_autonomous_actions,
+                IntervalTrigger(minutes=30),
+                id="autonomous_actions",
+                name="F3 — AutonomousActionsEngine (low-risk auto-execute)",
+                replace_existing=True,
+            )
+
             self.scheduler.start()
             # Daily digest — 08:00 BRT, Mon–Fri
             self.scheduler.add_job(
@@ -265,6 +305,21 @@ class AutomationScheduler:
                 replace_existing=True,
             )
 
+            # A2 — Teams daily digest (DM do bot), 08:00 BRT Mon-Fri (Sao Paulo tz explicit)
+            self.scheduler.add_job(
+                self.run_teams_daily_digest,
+                CronTrigger(
+                    day_of_week="mon-fri",
+                    hour=8,
+                    minute=0,
+                    timezone="America/Sao_Paulo",
+                ),
+                id="teams_daily_digest",
+                name="A2 — Teams daily digest per recruiter",
+                replace_existing=True,
+                misfire_grace_time=3600,
+            )
+
             self._is_running = True
             logger.info("✅ Automation Scheduler started with 10 periodic jobs")
             
@@ -272,6 +327,25 @@ class AutomationScheduler:
             logger.error(f"❌ Failed to start Automation Scheduler: {e}")
             raise
     
+    @staticmethod
+    def _is_digest_due(frequency: str) -> bool:
+        """Verifica se é hora de enviar o digest conforme frequência configurada.
+
+        O scheduler cron roda Mon-Fri às 08h. A decisão:
+        - daily / twice_daily: sempre (cron já limita a dias úteis)
+        - weekly: somente segunda-feira (weekday == 0)
+        - monthly: somente dia 1 do mês
+
+        Qualquer valor desconhecido → True (fail-open, envia por segurança).
+        """
+        now = datetime.now(UTC)
+        if frequency == "weekly":
+            return now.weekday() == 0  # somente segunda-feira
+        if frequency == "monthly":
+            return now.day == 1
+        # daily, twice_daily, ou desconhecido → enviar
+        return True
+
     async def _run_daily_digest(self):
         """Cron job: send daily morning digest to all recruiters (08:00 BRT Mon-Fri)."""
         logger.info("[AutomationScheduler] Running daily platform digest...")
@@ -860,6 +934,50 @@ Equipe de Recrutamento
         except Exception as e:
             logger.error(f"❌ [Scheduler] Error in pipeline_monitor: {e}")
     
+    # E5 (2026-06-09): destinatarios de alertas proativos = TODOS os recrutadores
+    # ativos (admin/manager/recruiter), nao so 1 admin/empresa. Decisao Paulo:
+    # cada recrutador recebe conforme sua preferencia (cooldown por-user evita spam).
+    # Strings literais (StrEnum.value) p/ nao exigir import de UserRole no nivel de classe.
+    PROACTIVE_ALERT_RECIPIENT_ROLES = ("admin", "manager", "recruiter")
+
+    @staticmethod
+    async def _select_proactive_alert_recipients(db):
+        """Retorna [(company_id, user_id)] de todos os recrutadores ativos.
+
+        Substitui a antiga query func.min(User.id) group by company_id (que
+        limitava a 1 admin/empresa). Sem group_by: cada admin/manager/recruiter
+        ativo recebe seus alertas conforme AlertPreference + cooldown por-user.
+        """
+        from sqlalchemy import select as _select
+        from app.auth.models import User
+
+        res = await db.execute(
+            _select(User.company_id, User.id).where(
+                User.role.in_(AutomationScheduler.PROACTIVE_ALERT_RECIPIENT_ROLES),
+                User.is_active.is_(True),
+                User.company_id.isnot(None),
+            )
+        )
+        return list(res.all())
+
+    @staticmethod
+    async def _select_active_company_ids(db) -> list:
+        """Retorna company_ids distintos com pelo menos um usuario ativo.
+
+        Usado por run_proactive_detection para iterar por empresa sem repetir.
+        Diferente de _select_proactive_alert_recipients (que retorna pares user+company
+        para envio de alertas individuais): aqui queremos 1 execucao de detectores por empresa.
+        """
+        from sqlalchemy import select as _select
+        from app.auth.models import User
+
+        res = await db.execute(
+            _select(User.company_id)
+            .where(User.is_active.is_(True), User.company_id.isnot(None))
+            .distinct()
+        )
+        return [str(row[0]) for row in res.all()]
+
     async def run_proactive_alerts(self):
         """P0-3 (auditoria Configuracoes): dispara ProactiveAlertService autonomamente.
 
@@ -869,24 +987,15 @@ Equipe de Recrutamento
         """
         logger.info("[Scheduler] Running proactive_alerts job")
         try:
-            from sqlalchemy import func
-            from app.auth.models import User, UserRole
             from app.domains.automation.services.proactive_alert_service import (
                 proactive_alert_service,
             )
             async with async_session_factory() as db:
                 # TENANT-EXEMPT: cron system-wide; check_all_conditions reaplica company_id por tenant
-                result = await db.execute(
-                    select(User.company_id, func.min(User.id))
-                    .where(
-                        User.role == UserRole.admin,
-                        User.is_active.is_(True),
-                        User.company_id.isnot(None),
-                    )
-                    .group_by(User.company_id)
-                )
-                pairs = result.all()
-                logger.info(f"[Scheduler] proactive_alerts: {len(pairs)} empresas")
+                # E5 (2026-06-09): TODOS os recrutadores ativos (admin/manager/recruiter),
+                # nao so 1 admin/empresa. Cada um recebe conforme sua preferencia.
+                pairs = await AutomationScheduler._select_proactive_alert_recipients(db)
+                logger.info(f"[Scheduler] proactive_alerts: {len(pairs)} destinatarios")
                 for company_id, user_id in pairs:
                     try:
                         await proactive_alert_service.check_all_conditions(
@@ -899,6 +1008,82 @@ Equipe de Recrutamento
                         logger.error(f"[Scheduler] proactive_alerts company={company_id} falhou: {e}")
         except Exception as e:
             logger.error(f"[Scheduler] Error in proactive_alerts: {e}")
+
+    async def run_teams_proactive_checks(self):
+        """A2 (2026-06-09): aciona TeamsProactivityEngine periodicamente.
+
+        Antes so via REST manual (teams.py) — nenhum scheduler acionava, entao os
+        cards proativos do Teams (DM do bot por recrutador) nunca eram postados.
+        company_id=None => processa todas as empresas. Posta pipelines parados +
+        deadlines proximos. Complementa o canal compartilhado (webhook via E4).
+        """
+        logger.info("[Scheduler] Running teams_proactive_checks job")
+        try:
+            from app.domains.communication.services.teams_proactivity_engine import (
+                teams_proactivity_engine,
+            )
+
+            stalled = await teams_proactivity_engine.check_stalled_pipelines()
+            deadlines = await teams_proactivity_engine.check_approaching_deadlines()
+            logger.info(
+                "[Scheduler] teams_proactive_checks: stalled=%s deadlines=%s",
+                stalled,
+                deadlines,
+            )
+        except Exception as e:
+            logger.error(f"[Scheduler] Error in teams_proactive_checks: {e}")
+
+    async def run_proactive_detection(self):
+        """Frente C: executa os 15 detectores proativos por empresa.
+
+        Roda independente do MonitoringLoop (que era o unico trigger em dev).
+        O MonitoringLoop mantem seu piggyback como defesa-em-profundidade.
+        Cada empresa e isolada: erro em uma nao afeta as outras.
+        """
+        logger.info("[Scheduler] Running proactive_detection job")
+        try:
+            from app.shared.services.proactive_detector_service import (
+                proactive_detector_service,
+            )
+            async with async_session_factory() as db:
+                company_ids = await AutomationScheduler._select_active_company_ids(db)
+                logger.info(
+                    "[Scheduler] proactive_detection: %s companies para detectar",
+                    len(company_ids),
+                )
+                detected_total = 0
+                for company_id in company_ids:
+                    try:
+                        result = await proactive_detector_service.run_for_company(
+                            db, company_id
+                        )
+                        detected_total += result.get("hints_persisted", 0)
+                    except Exception as exc:
+                        await db.rollback()
+                        logger.error(
+                            "[Scheduler] proactive_detection company=%s falhou: %s",
+                            company_id,
+                            exc,
+                        )
+                logger.info(
+                    "[Scheduler] proactive_detection: %s hints persistidos total",
+                    detected_total,
+                )
+        except Exception as exc:
+            logger.error("[Scheduler] Error in proactive_detection: %s", exc)
+
+    async def run_teams_daily_digest(self):
+        """A2 (2026-06-09): digest diario do TeamsProactivityEngine (DM do bot)."""
+        logger.info("[Scheduler] Running teams_daily_digest job")
+        try:
+            from app.domains.communication.services.teams_proactivity_engine import (
+                teams_proactivity_engine,
+            )
+
+            sent = await teams_proactivity_engine.send_daily_digest()
+            logger.info(f"[Scheduler] teams_daily_digest: {sent} enviados")
+        except Exception as e:
+            logger.error(f"[Scheduler] Error in teams_daily_digest: {e}")
 
     async def run_learning_automation(self):
         """Run learning automation: pattern detection and skill promotion for all companies."""
@@ -981,6 +1166,50 @@ Equipe de Recrutamento
                 pass
             logger.error("M2 expire_trials failed: %s", exc)
 
+    async def run_expire_pending_offers(self) -> None:
+        """2.13 — Mark offers as expired when response_deadline passed.
+
+        Runs hourly. Queries ALL tenants for pending offers with deadline < now.
+        For each: marks status=expired + fires OFFER_EXPIRED trigger (fail-soft).
+        """
+        try:
+            from app.core.database import async_session_factory
+            from app.domains.offer.repositories.offer_repository import OfferRepository
+            from app.domains.offer.services.offer_service import OfferService
+
+            async with async_session_factory() as db:
+                repo = OfferRepository(db)
+                expired_offers = await repo.list_deadline_passed(limit=500)
+
+                if not expired_offers:
+                    logger.debug("[expire_offers] no pending expired offers found")
+                    return
+
+                logger.info("[expire_offers] found %d offers to expire", len(expired_offers))
+
+                for offer in expired_offers:
+                    try:
+                        svc = OfferService(db)
+                        await svc.mark_expired(
+                            offer_id=offer.id,
+                            company_id=offer.company_id,
+                        )
+                        await db.commit()
+                        logger.info(
+                            "[expire_offers] expired offer=%s company=%s candidate=%s",
+                            offer.id, offer.company_id, offer.candidate_name,
+                        )
+                    except Exception as _e:
+                        await db.rollback()
+                        logger.warning(
+                            "[expire_offers] failed to expire offer=%s: %s",
+                            offer.id, _e,
+                        )
+
+        except Exception as exc:
+            logger.error("[expire_offers] scheduler job failed: %s", exc)
+
+
     async def run_lgpd_cleanup(self):
         """
         L4 — Execute LGPD data retention cleanup (real deletions, not dry-run).
@@ -997,6 +1226,67 @@ Equipe de Recrutamento
             )
         except Exception as exc:
             logger.error("L4 lgpd_cleanup failed: %s", exc)
+
+
+    async def _run_autonomous_actions(self) -> None:
+        """F3 — Wire AutonomousActionsEngine no scheduler.
+
+        Para cada empresa ativa, coleta os alerts do MonitoringLoop (via run_checks)
+        e os repassa para AutonomousActionsEngine.process_monitoring_alerts().
+        Ações de baixo risco com confidence >= 0.85 são executadas automaticamente.
+        Ações de médio risco geram notificação. Alto risco requer confirmação.
+        """
+        logger.info("[Scheduler] Running autonomous_actions job")
+        try:
+            from app.domains.recruiter_assistant.services.autonomous_actions_engine import (
+                AutonomousActionsEngine,
+            )
+            from app.domains.recruiter_assistant.services.monitoring_loop import (
+                MonitoringLoop,
+            )
+
+            engine = AutonomousActionsEngine.get_instance()
+            monitoring = MonitoringLoop.get_instance()
+
+            async with async_session_factory() as db:
+                company_ids = await AutomationScheduler._select_active_company_ids(db)
+
+            logger.info(
+                "[Scheduler] autonomous_actions: %s companies para processar",
+                len(company_ids),
+            )
+            actions_total = 0
+            for company_id in company_ids:
+                try:
+                    # Obtém alerts já armazenados no MonitoringLoop (sem novo I/O por empresa)
+                    alerts = monitoring.get_alerts(company_id)
+                    if not alerts:
+                        # Se não há alerts em memória, roda run_checks para popula-los
+                        alerts = await monitoring.run_checks(company_id)
+                    if alerts:
+                        actions = await engine.process_monitoring_alerts(
+                            company_id=company_id,
+                            alerts=alerts,
+                        )
+                        actions_total += len(actions)
+                        logger.debug(
+                            "[Scheduler] autonomous_actions company=%s alerts=%s actions=%s",
+                            company_id,
+                            len(alerts),
+                            len(actions),
+                        )
+                except Exception as exc:
+                    logger.warning(
+                        "[Scheduler] autonomous_actions company=%s falhou: %s",
+                        company_id,
+                        exc,
+                    )
+            logger.info(
+                "[Scheduler] autonomous_actions concluído: %s actions propostas",
+                actions_total,
+            )
+        except Exception as exc:
+            logger.error("[Scheduler] Error in autonomous_actions: %s", exc, exc_info=True)
 
 
 automation_scheduler = AutomationScheduler()

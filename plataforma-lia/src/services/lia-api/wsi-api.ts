@@ -27,9 +27,9 @@ import type {
 //   - on 401/403 fires the same relogin redirect used by `useSessionRefresh`
 //     (`/login?reason=session_expired`), preventing the Next dev overlay
 //     and silent failures in production when the WorkOS session expires.
-// `updateScreeningStatus` and `regenerateWSIQuestions` are intentionally left
-// alone: they hit `BACKEND_URL` directly, outside the middleware gate that
-// produces the 401 we are normalizing.
+// `updateScreeningStatus` hits `BACKEND_URL` directly (intentional: custom
+// bearer token). `regenerateWSIQuestions` now routes through the proxy.
+
 
 export async function wsiGenerateQuestions(request: GenerateQuestionsRequest): Promise<GenerateQuestionsResponse> {
   const response = await fetch(`/api/backend-proxy/api/wsi/generate-questions`, {
@@ -70,7 +70,7 @@ export async function wsiGetSession(sessionId: string): Promise<WSISessionRespon
 }
 
 export async function wsiGetCandidateResults(candidateId: string, limit: number = 10): Promise<WSIResultsResponse> {
-  const response = await fetch(`/api/backend-proxy/api/wsi/results/candidate/${candidateId}?limit=${limit}`, {
+  const response = await fetch(`/api/backend-proxy/api/wsi/results/${candidateId}?limit=${limit}`, {
     headers: getAuthHeaders(),
   })
   if (!response.ok) await throwLiaApiError(response, 'Failed to get candidate WSI results')
@@ -199,7 +199,7 @@ export async function regenerateWSIQuestions(
   request: RegenerateWSIQuestionsRequest
 ): Promise<RegenerateWSIQuestionsResponse> {
   try {
-    const response = await fetch(`${BACKEND_URL}/wsi/regenerate-questions`, {
+    const response = await fetch(`/api/backend-proxy/api/wsi/regenerate-questions`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(request)

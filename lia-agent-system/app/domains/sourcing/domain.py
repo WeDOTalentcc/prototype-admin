@@ -399,7 +399,7 @@ class SourcingDomain(ComplianceDomainPrompt):
 
         embedding_svc = EmbeddingService()
         try:
-            query_embedding = await embedding_svc.generate_embedding(query_text)
+            query_embedding = await embedding_svc.generate_embedding(query_text, company_id=context.tenant_id)
         except Exception as exc:
             logger.warning(f"Embedding generation failed for semantic search: {exc}")
             return DomainResponse.error_response(

@@ -21,6 +21,8 @@ from app.domains.job_management.repositories.job_vacancy_screening_repository im
 from app.domains.job_management.dependencies import get_job_vacancy_screening_repo
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+from app.shared.errors import LIAError
+from app.shared.optimistic_lock import check_optimistic_lock
 
 router = APIRouter()
 
@@ -81,6 +83,8 @@ class ScreeningConfigRequest(WeDoBaseModel):
     scheduling: ScreeningConfigScheduling | None = None
     feedback_templates: ScreeningConfigFeedback | None = None
     wsi_skills: list[str] | None = []
+    # GAP-05-004: Optimistic locking control field
+    expected_updated_at: datetime | None = None
 
 
 class ScreeningConfigResponse(BaseModel):
@@ -101,6 +105,8 @@ class ScreeningStatusUpdateRequest(WeDoBaseModel):
     screening_status: str
     pause_reason: str | None = None
     scheduled_end_date: str | None = None
+    # GAP-05-004: Optimistic locking control field
+    expected_updated_at: datetime | None = None
 
 
 # ─── Routes ──────────────────────────────────────────────────────────────────
@@ -152,7 +158,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting screening config: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.put("/vagas/{job_id}/screening-config", response_model=ScreeningConfigResponse)
@@ -169,6 +175,9 @@ company_id: str = Depends(require_company_id)):
 
         if not job:
             raise HTTPException(status_code=404, detail=f"Vaga não encontrada: {job_id}")
+
+        # GAP-05-004: Optimistic locking
+        check_optimistic_lock(job.updated_at, config_data.expected_updated_at)
 
         new_config = {}
 
@@ -224,7 +233,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error(f"Error updating screening config: {e}", exc_info=True)
         await repo.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.put("/vagas/{job_id}/screening-status", response_model=None)
@@ -293,4 +302,4 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error updating screening status: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")

@@ -18,6 +18,7 @@ from app.core.database import get_db
 from app.domains.job_management.services.vacancy_search_service import vacancy_search_service
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+from app.shared.errors import LIAError
 
 logger = logging.getLogger(__name__)
 
@@ -100,7 +101,7 @@ company_id: str = Depends(require_company_id)) -> VacancySearchResponse:
         raise
     except Exception as e:
         logger.error(f"Error in Fast Track vacancy search: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/vacancy-full/{vacancy_id}", response_model=None)
@@ -124,7 +125,7 @@ company_id: str = Depends(require_company_id)) -> dict[str, Any]:
         raise
     except Exception as e:
         logger.error(f"Error getting vacancy full details: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/vacancy-criteria-extract", response_model=VacancyCriteriaExtractionResponse)
@@ -155,7 +156,7 @@ company_id: str = Depends(require_company_id)) -> VacancyCriteriaExtractionRespo
         raise
     except Exception as e:
         logger.error(f"Error extracting vacancy criteria: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/vacancy-adjustments", response_model=VacancyAdjustmentsResponse)
@@ -205,4 +206,4 @@ company_id: str = Depends(require_company_id)) -> VacancyAdjustmentsResponse:
         raise
     except Exception as e:
         logger.error(f"Error applying vacancy adjustments: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")

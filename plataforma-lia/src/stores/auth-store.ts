@@ -140,6 +140,13 @@ export const useAuthStore = create<AuthStore>()(
       },
 
       initAuth: async () => {
+        const safetyTimer = setTimeout(() => {
+          if (get().isLoading) {
+            set({ isLoading: false }, false, 'auth/init/safety-timeout')
+          }
+        }, 15000)
+
+        try {
         if (typeof window !== 'undefined' && (window as unknown as Record<string, unknown>).__INITIAL_USER__) {
           const serverData = (window as unknown as Record<string, unknown>).__INITIAL_USER__ as Record<string, unknown>
           const roleStr = String(serverData.role || 'viewer')
@@ -233,6 +240,9 @@ export const useAuthStore = create<AuthStore>()(
         }
 
         set({ isLoading: false }, false, 'auth/init/done')
+        } finally {
+          clearTimeout(safetyTimer)
+        }
       },
     }),
     { name: 'AuthStore' }

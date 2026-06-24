@@ -10,11 +10,12 @@ from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.domains.notifications.repositories.alert_repository import AlertRepository
+from app.repositories.alert_repository import AlertRepository
 from app.domains.job_management.services.job_alert_service import job_alert_service
 from app.models.alert import AlertConfig, AlertPreference, AlertSeverity
 from app.shared.tenant_guard import get_verified_company_id
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 from app.shared.types import WeDoBaseModel
 from typing import Annotated
 from fastapi import Path
@@ -251,7 +252,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error fetching alert config: {e}")
-        raise HTTPException(status_code=500, detail=f"Failed to fetch alert config: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.put("/config", response_model=AlertConfigResponse, deprecated=True)
@@ -317,7 +318,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error updating alert config: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 class AlertPreferenceChannels(BaseModel):
@@ -429,7 +430,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error fetching alert preferences: {e}")
-        raise HTTPException(status_code=500, detail=f"Failed to fetch alert preferences: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/preferences", response_model=None)
@@ -478,7 +479,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error creating alert preferences: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.put("/preferences", response_model=None)

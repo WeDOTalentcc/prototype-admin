@@ -9,6 +9,57 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.job_vacancy import JobVacancy
 
 
+# -- GAP-03-005: dynamic sort for list endpoint ----------------------------
+# Allowlist: only these columns can be used in order_by. Prevents injection.
+ALLOWED_SORT_FIELDS: dict[str, str] = {
+    "created_at": "created_at",
+    "title": "title",
+    "status": "status",
+    "updated_at": "updated_at",
+}
+
+
+def resolve_sort_clause(sort_by: str | None, sort_order: str):
+    """Return (column_property, direction) for the given sort params.
+
+    Raises ValueError on invalid input (endpoint converts to HTTP 422).
+    """
+    sort_order = (sort_order or "desc").lower().strip()
+    if sort_order not in ("asc", "desc"):
+        raise ValueError(f"sort_order must be asc or desc, got {sort_order!r}")
+
+    field_name = (sort_by or "updated_at").lower().strip()
+    if field_name not in ALLOWED_SORT_FIELDS:
+        raise ValueError(
+            f"sort_by={field_name!r} not allowed. "
+            f"Allowed: {sorted(ALLOWED_SORT_FIELDS)}"
+        )
+    return getattr(JobVacancy, ALLOWED_SORT_FIELDS[field_name]), sort_order
+
+
+# -- P1-2: classificacao de funil (pura, testavel) --------------------------
+# Mapeia o ``stage`` de vacancy_candidates para o bucket do funil consumido
+# pelo FE ({screening, interview, final, hired}). Stages de sourcing/rejected
+# ficam só no ``total``. Sensor: tests/unit/test_funnel_stage_classification.py
+_FUNNEL_SCREENING_STAGES = {"screening", "triagem"}
+_FUNNEL_FINAL_STAGES = {"offer", "final", "oferta"}
+_FUNNEL_HIRED_STAGES = {"hired", "contratado"}
+
+
+def classify_funnel_stage(stage):
+    """stage (str|None) -> 'screening'|'interview'|'final'|'hired'|None."""
+    s = (stage or "").strip().lower()
+    if s in _FUNNEL_SCREENING_STAGES:
+        return "screening"
+    if s == "entrevista" or s.startswith("interview"):
+        return "interview"
+    if s in _FUNNEL_FINAL_STAGES:
+        return "final"
+    if s in _FUNNEL_HIRED_STAGES:
+        return "hired"
+    return None
+
+
 class JobVacancyCRUDRepository:
     def __init__(self, db: AsyncSession):
         self.db = db
@@ -21,6 +72,21 @@ class JobVacancyCRUDRepository:
         count_stmt = select(func.count(JobVacancy.id)).where(search_filter)
         count_result = await self.db.execute(count_stmt)
         return count_result.scalar() or 0
+
+    async def count_by_status(self, company_id: str) -> dict[str, int]:
+        """Contagem ACURADA de vagas por status (company-scoped). A IA narrava
+        números ERRADOS (ex: '2 ativas' em vez de 6) porque contava da lista
+        TRUNCADA por limit; este breakdown vem de um GROUP BY real. Bug live
+        Paulo 2026-06-06 (103 total vs UI 50; ativas 2 vs 6)."""
+        if not company_id:
+            return {}
+        stmt = (
+            select(JobVacancy.status, func.count(JobVacancy.id))
+            .where(JobVacancy.company_id == company_id)
+            .group_by(JobVacancy.status)
+        )
+        result = await self.db.execute(stmt)
+        return {str(st): int(ct) for st, ct in result.all() if st}
 
     async def search_vacancies(self, search_filter, offset: int, page_size: int):
         # TENANT-EXEMPT: dynamic builder — see search_count above.
@@ -115,13 +181,18 @@ class JobVacancyCRUDRepository:
         visibility: Optional[str] = None,
         skip: int = 0,
         limit: int = 500,
+        sort_by: str | None = None,
+        sort_order: str = "desc",
     ):
+        col, direction = resolve_sort_clause(sort_by, sort_order)
+        order_clause = col.asc() if direction == "asc" else col.desc()
+
         query = select(JobVacancy).where(JobVacancy.company_id == company_id)
         if status:
             query = query.where(JobVacancy.status == status)
         if visibility:
             query = query.where(JobVacancy.visibility == visibility)
-        query = query.offset(skip).limit(limit).order_by(JobVacancy.created_at.desc())
+        query = query.offset(skip).limit(limit).order_by(order_clause)
         result = await self.db.execute(query)
         return result.scalars().all()
 
@@ -196,7 +267,7 @@ class JobVacancyCRUDRepository:
         from app.models.job_vacancy import JobVacancy
 
         valid_statuses = [
-            "Concluída", "Fechada", "Filled", "Closed", "Cancelada", "Cancelled",
+            "Concluída", "Cancelada", "Arquivada",
             "Ativa", "Active", "Open", "Em Andamento", "active", "ativa", "open",
         ]
         conditions = [
@@ -248,6 +319,26 @@ class JobVacancyCRUDRepository:
             )
         )
         return result.scalar_one_or_none()
+
+    async def owned_by_company(self, identifier: str, company_id) -> bool:
+        """True se existe vaga desta company cujo id (UUID) OU job_id casa com identifier.
+
+        Gate de ownership para writes que recebem o identificador do payload
+        (ex: POST /wsi/questions/save). job_screening_questions e
+        screening_question_sets nao tem RLS — este e o ponto canonico de
+        validacao multi-tenant (audit 2026-06-05, P0 cross-tenant write).
+        """
+        conditions = [JobVacancy.job_id == identifier]
+        try:
+            conditions.append(JobVacancy.id == UUID(str(identifier)))
+        except (ValueError, AttributeError, TypeError):
+            pass
+        result = await self.db.execute(
+            select(JobVacancy.id)
+            .where(JobVacancy.company_id == company_id, or_(*conditions))
+            .limit(1)
+        )
+        return result.scalar_one_or_none() is not None
 
     async def search_by_title_ilike(self, title_pattern: str, company_id):
         result = await self.db.execute(
@@ -420,9 +511,13 @@ class JobVacancyCRUDRepository:
         company_id: str,
         status: str = "all",
         department: str = "all",
-        limit: int = 30,
+        limit: int = 50,
+        title_query: str | None = None,
     ) -> dict:
         """Vacancy list with candidate counts per stage.
+
+        Args:
+            title_query: Optional substring filter on job title (case-insensitive).
 
         Returns dict with keys: jobs (list), total.
         """
@@ -439,8 +534,13 @@ class JobVacancyCRUDRepository:
                 FROM job_vacancies jv
                 WHERE (:status = 'all' OR status ILIKE :status_val)
                   AND (:dept = 'all' OR department ILIKE :dept_val)
+                  AND (CAST(:title_q AS VARCHAR) IS NULL OR title ILIKE :title_q_val)
                   AND company_id = :company_id
                 ORDER BY
+                    CASE status
+                        WHEN 'Ativa' THEN 1 WHEN 'Aprovada' THEN 2
+                        WHEN 'Rascunho' THEN 3 WHEN 'Concluída' THEN 4
+                        WHEN 'Arquivada' THEN 5 ELSE 6 END,
                     CASE priority WHEN 'alta' THEN 1 WHEN 'média' THEN 2 ELSE 3 END,
                     created_at DESC
                 LIMIT :lim
@@ -450,8 +550,10 @@ class JobVacancyCRUDRepository:
                 "status_val": f"%{status}%",
                 "dept": department,
                 "dept_val": f"%{department}%",
+                "title_q": title_query,
+                "title_q_val": f"%{title_query}%" if title_query else None,
                 "company_id": cid,
-                "lim": limit,
+                "lim": 100 if title_query else limit,
             },
         )
         jobs = []
@@ -472,6 +574,7 @@ class JobVacancyCRUDRepository:
                 SELECT COUNT(*) AS total FROM job_vacancies
                 WHERE (:status = 'all' OR status ILIKE :status_val)
                   AND (:dept = 'all' OR department ILIKE :dept_val)
+                  AND (CAST(:title_q AS VARCHAR) IS NULL OR title ILIKE :title_q_val)
                   AND company_id = :company_id
             """),
             {
@@ -479,6 +582,8 @@ class JobVacancyCRUDRepository:
                 "status_val": f"%{status}%",
                 "dept": department,
                 "dept_val": f"%{department}%",
+                "title_q": title_query,
+                "title_q_val": f"%{title_query}%" if title_query else None,
                 "company_id": cid,
             },
         )
@@ -588,6 +693,117 @@ class JobVacancyCRUDRepository:
             "avg_time_to_hire": round(float(data.get("avg_ttf") or 0), 1),
             "fill_rate": round(closed / total * 100, 1) if total > 0 else 0.0,
         }
+
+    async def aggregate_list_metrics(
+        self,
+        vacancy_ids: list[str],
+        company_id: str,
+    ) -> dict[str, dict]:
+        """P1-2: métricas reais por vaga para a lista de Gestão de Vagas.
+
+        Substitui ``generate_lia_metrics`` (que FABRICAVA números com
+        ``random.uniform`` — proibido pela regra de proveniência honesta do
+        CLAUDE.md). Agrega 3 fontes canônicas company-scoped, cada uma em UMA
+        query GROUP BY (sem N+1):
+          - ``vacancy_candidates`` por stage  -> candidates_count + funnel_data
+          - ``wsi_sessions``       por status -> triagens_*/sem_resposta
+          - ``interviews``         por status -> entrevistas_agendadas
+
+        Retorna ``{vacancy_id: {candidates_count, funnel_data, lia_metrics}}``.
+        Vaga sem dados -> ausente do dict (caller usa defaults zerados).
+
+        Multi-tenancy: company_id validado via _require_company_id fail-closed.
+        ``wsi_sessions`` não tem company_id -> JOIN job_vacancies p/ escopar.
+        """
+        from sqlalchemy import text as _text
+
+        cid = self._require_company_id(company_id)
+        if not vacancy_ids:
+            return {}
+
+        def _blank() -> dict:
+            return {
+                "candidates_count": 0,
+                "funnel_data": {
+                    "total": 0, "screening": 0, "interview": 0,
+                    "final": 0, "hired": 0,
+                },
+                "lia_metrics": {
+                    "pipeline_lia": 0,
+                    "triagens_agendadas": 0,
+                    "triagens_realizadas": 0,
+                    "sem_resposta": 0,
+                    "entrevistas_agendadas": 0,
+                },
+            }
+
+        out: dict[str, dict] = {}
+
+        # (1) vacancy_candidates -> candidates_count + funnel buckets (por stage)
+        vc_rows = await self.db.execute(
+            _text("""
+                SELECT CAST(vacancy_id AS text) AS vid, stage, COUNT(*) AS cnt
+                FROM vacancy_candidates
+                WHERE vacancy_id = ANY(CAST(:ids AS uuid[]))
+                  AND company_id = :cid
+                GROUP BY vacancy_id, stage
+            """),
+            {"ids": vacancy_ids, "cid": cid},
+        )
+        for r in vc_rows.mappings():
+            vid = str(r["vid"])
+            cnt = int(r["cnt"] or 0)
+            entry = out.setdefault(vid, _blank())
+            entry["candidates_count"] += cnt
+            entry["funnel_data"]["total"] += cnt
+            entry["lia_metrics"]["pipeline_lia"] += cnt
+            bucket = classify_funnel_stage(r["stage"])
+            if bucket:
+                entry["funnel_data"][bucket] += cnt
+
+        # (2) wsi_sessions -> triagens agendadas/realizadas + sem_resposta
+        wsi_rows = await self.db.execute(
+            _text("""
+                SELECT CAST(s.job_vacancy_id AS text) AS vid, s.status, COUNT(*) AS cnt
+                FROM wsi_sessions s
+                JOIN job_vacancies jv ON jv.id = s.job_vacancy_id
+                WHERE s.job_vacancy_id = ANY(CAST(:ids AS uuid[]))
+                  AND jv.company_id = :cid
+                GROUP BY s.job_vacancy_id, s.status
+            """),
+            {"ids": vacancy_ids, "cid": cid},
+        )
+        for r in wsi_rows.mappings():
+            vid = str(r["vid"])
+            status = (r["status"] or "").lower()
+            cnt = int(r["cnt"] or 0)
+            lm = out.setdefault(vid, _blank())["lia_metrics"]
+            if status == "completed":
+                lm["triagens_realizadas"] += cnt
+                lm["triagens_agendadas"] += cnt
+            elif status == "in_progress":
+                lm["triagens_agendadas"] += cnt
+            elif status == "cancelled":
+                lm["sem_resposta"] += cnt
+
+        # (3) interviews -> entrevistas agendadas (scheduled = não-cancelada)
+        iv_rows = await self.db.execute(
+            _text("""
+                SELECT CAST(job_vacancy_id AS text) AS vid, COUNT(*) AS cnt
+                FROM interviews
+                WHERE job_vacancy_id = ANY(CAST(:ids AS uuid[]))
+                  AND company_id = :cid
+                  AND (status IS NULL OR status <> 'cancelled')
+                GROUP BY job_vacancy_id
+            """),
+            {"ids": vacancy_ids, "cid": cid},
+        )
+        for r in iv_rows.mappings():
+            vid = str(r["vid"])
+            cnt = int(r["cnt"] or 0)
+            out.setdefault(vid, _blank())["lia_metrics"]["entrevistas_agendadas"] += cnt
+
+        return out
 
     async def compare_jobs_by_ids(
         self,

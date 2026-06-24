@@ -124,21 +124,32 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
               onSaveEnrichedJD={async (enrichedData) => {
                 if (!job) return
                 const jobId = job.backendId || job.jobId || String(job.id)
+                if (!jobId || jobId === 'undefined') { console.error('[onSaveEnrichedJD] jobId inválido', job); throw new Error('ID da vaga inválido. Recarregue a página.') }
                 await fetch(`/api/backend-proxy/job-vacancies/${jobId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ enriched_jd: enrichedData }) })
                 onJobUpdate?.({ ...job, enrichedJd: enrichedData })
               }}
               onUpdateOfficialJD={async (updates) => {
                 if (!job) return
                 const jobId = job.backendId || job.jobId || String(job.id)
+                if (!jobId || jobId === 'undefined') { console.error('[onUpdateOfficialJD] jobId inválido', job); throw new Error('ID da vaga inválido. Recarregue a página.') }
                 // T-1166 — JDArrayEditor edits `responsibilities` as the
                 // duties list. We MUST send it to the dedicated backend column
                 // (migration 132) instead of overloading `requirements`.
                 await fetch(`/api/backend-proxy/job-vacancies/${jobId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ description: updates.description, responsibilities: updates.responsibilities, requirements: updates.requirements, technical_requirements: updates.technicalSkills?.map((s: string) => ({ category: 'Técnica', technology: s, level: 'Intermediário', required: true })), behavioral_competencies: updates.behavioralCompetencies?.map((c: string) => ({ competency: c, weight: 'Importante' })) }) })
                 onJobUpdate?.({ ...job, description: updates.description || job.description, responsibilities: updates.responsibilities || job.responsibilities, requirements: updates.requirements || job.requirements, technicalRequirements: updates.technicalSkills?.map((s: string) => ({ category: 'Técnica', technology: s, level: 'Intermediário', required: true })) || job.technicalRequirements, behavioralCompetencies: updates.behavioralCompetencies?.map((c: string) => ({ competency: c, weight: 'Importante' })) || job.behavioralCompetencies })
               }}
+              onSaveDefinitiva={async (enrichedData, updates) => {
+                if (!job) return
+                const jobId = job.backendId || job.jobId || String(job.id)
+                if (!jobId || jobId === 'undefined') { console.error('[onSaveDefinitiva] jobId inválido', job); throw new Error('ID da vaga inválido. Recarregue a página.') }
+                // P1-1 fix: 1 PUT atômico com enriched_jd + campos canônicos
+                await fetch(`/api/backend-proxy/job-vacancies/${jobId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ enriched_jd: enrichedData, description: updates.description, responsibilities: updates.responsibilities, requirements: updates.requirements, technical_requirements: updates.technicalSkills?.map((s: string) => ({ category: 'Técnica', technology: s, level: 'Intermediário', required: true })), behavioral_competencies: updates.behavioralCompetencies?.map((c: string) => ({ competency: c, weight: 'Importante' })) }) })
+                onJobUpdate?.({ ...job, enrichedJd: enrichedData, description: updates.description || job.description, responsibilities: updates.responsibilities || job.responsibilities, requirements: updates.requirements || job.requirements, technicalRequirements: updates.technicalSkills?.map((s: string) => ({ category: 'Técnica', technology: s, level: 'Intermediário', required: true })) || job.technicalRequirements, behavioralCompetencies: updates.behavioralCompetencies?.map((c: string) => ({ competency: c, weight: 'Importante' })) || job.behavioralCompetencies })
+              }}
               onSaveJDInline={async (updates) => {
                 if (!job) return
                 const jobId = job.backendId || job.jobId || String(job.id)
+                if (!jobId || jobId === 'undefined') { console.error('[onSaveJDInline] jobId inválido', job); throw new Error('ID da vaga inválido. Recarregue a página.') }
                 // T-1166 — same as onUpdateOfficialJD: persist responsibilities separately.
                 await fetch(`/api/backend-proxy/job-vacancies/${jobId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ description: updates.description, responsibilities: updates.responsibilities, requirements: updates.requirements, technical_requirements: updates.technicalSkills?.map((s: string) => ({ category: 'Técnica', technology: s, level: 'Intermediário', required: true })), behavioral_competencies: updates.behavioralCompetencies?.map((c: string) => ({ competency: c, weight: 'Importante' })) }) })
                 onJobUpdate?.({ ...job, description: updates.description || job.description, responsibilities: updates.responsibilities || job.responsibilities, requirements: updates.requirements || job.requirements, technicalRequirements: updates.technicalSkills?.map((s: string) => ({ category: 'Técnica', technology: s, level: 'Intermediário', required: true })) || job.technicalRequirements, behavioralCompetencies: updates.behavioralCompetencies?.map((c: string) => ({ competency: c, weight: 'Importante' })) || job.behavioralCompetencies })
@@ -185,14 +196,14 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                     return (
                       <div key={block.id} className={`px-3 py-2 rounded-md ${isAutomatic ? 'bg-lia-bg-secondary/50 border border-lia-border-subtle' : totalBlockCount > 0 ? 'bg-lia-bg-primary border border-lia-border-subtle' : 'bg-lia-bg-primary border border-lia-border-subtle border-dashed/50'}`}>
                         <div className="flex items-center gap-2">
-                          <span className={`text-micro font-semibold rounded-full w-5 h-5 flex items-center justify-center shrink-0 ${isAutomatic ? 'bg-lia-bg-tertiary' : 'text-lia-text-disabled'}`}>{block.id}</span>
+                          <span className={`text-micro font-semibold rounded-full w-5 h-5 flex items-center justify-center shrink-0 ${isAutomatic ? 'bg-lia-bg-tertiary' : 'text-lia-text-tertiary'}`}>{block.id}</span>
                           <span className={`text-xs font-medium ${isAutomatic ? 'text-lia-text-tertiary' : 'text-lia-text-primary'}`}>{block.name}</span>
                           {isAutomatic ? (
                             <span className="text-micro px-1.5 py-0.5 bg-lia-bg-tertiary text-lia-text-secondary rounded-full font-medium uppercase tracking-wide">Automático</span>
                           ) : totalBlockCount > 0 ? (
                             <span className="text-micro text-lia-text-tertiary">({totalBlockCount} {totalBlockCount === 1 ? 'pergunta' : 'perguntas'})</span>
                           ) : (
-                            <span className="text-micro text-lia-text-disabled italic">Nenhuma pergunta</span>
+                            <span className="text-micro text-lia-text-muted italic">Nenhuma pergunta</span>
                           )}
                         </div>
                         {block.id === 2 && (
@@ -215,11 +226,11 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                             <div className="bg-lia-bg-primary border border-lia-border-subtle rounded-lg px-2.5 py-2">
                               <p className="text-micro text-lia-text-secondary leading-relaxed whitespace-pre-line">{formatMessageWithVariables(WSI_AUTOMATIC_MESSAGES[block.id].message)}</p>
                             </div>
-                            <p className="text-micro text-lia-text-disabled mt-1 italic">{WSI_AUTOMATIC_MESSAGES[block.id].note}</p>
+                            <p className="text-micro text-lia-text-muted mt-1 italic">{WSI_AUTOMATIC_MESSAGES[block.id].note}</p>
                           </div>
                         )}
                         {isAutomatic && !WSI_AUTOMATIC_MESSAGES[block.id] && (
-                          <p className="text-micro text-lia-text-disabled ml-7 mt-0.5">{block.description}</p>
+                          <p className="text-micro text-lia-text-muted ml-7 mt-0.5">{block.description}</p>
                         )}
                       </div>
                     )

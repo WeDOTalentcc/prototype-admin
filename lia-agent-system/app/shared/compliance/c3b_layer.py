@@ -135,7 +135,17 @@ async def pre_compliance(
 
     try:
         from app.shared.pii_masking import strip_pii_for_llm_prompt
-        stripped = strip_pii_for_llm_prompt(message)
+        # mask_names=False: ambos os callers (chat.py chat-page + agent_chat_ws
+        # bolha) sao chat do RECRUTADOR — nome/titulo sao necessarios+autorizados
+        # p/ busca por entidade; a Layer 4 NER falso-positivava 'Diretor Juridico'
+        # como PERSON. CPF/email/telefone (Layer 1/3) seguem mascarados.
+        # NOTA (Gap F, 2026-06-08): o caller candidate-facing (candidate_portal.py)
+        # NAO passa por este pre_compliance — ele chama strip_pii_for_llm_prompt
+        # diretamente com mask_names=True (default), pois o candidato nao precisa
+        # de busca por entidade e nomes/PII devem ser mascarados. Se um caller
+        # candidate-facing for roteado por aqui no futuro, escopar mask_names
+        # por `domain` (candidate_self_service => True).
+        stripped = strip_pii_for_llm_prompt(message, mask_names=False)
         if stripped != message:
             clean = stripped
             pii_stripped = True

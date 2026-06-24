@@ -8,6 +8,12 @@ const UnifiedChatConditional = dynamic(
   { ssr: false }
 )
 
+
+const GlobalSelectionChat = dynamic(
+  () => import("@/components/shared/GlobalSelectionChat").then((m) => ({ default: m.GlobalSelectionChat })),
+  { ssr: false }
+)
+
 const WeeklyDigestChatProvider = dynamic(
   () =>
     import("@/components/notifications/weekly-digest-chat-provider").then((m) => ({
@@ -22,6 +28,7 @@ export default function DeferredLayoutClients() {
       <UnifiedChatConditional />
       <WeeklyDigestChatProvider />
       <LIAGlobalModals />
+      <GlobalSelectionChat />
     </>
   )
 }

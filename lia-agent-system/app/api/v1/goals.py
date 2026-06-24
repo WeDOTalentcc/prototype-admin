@@ -12,14 +12,15 @@ from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
-from app.domains.goals.dependencies import get_goals_repo
-from app.domains.goals.repositories.goals_repository import GoalsRepository
+from app.repositories.dependencies import get_goals_repo
+from app.repositories.goals_repository import GoalsRepository
 from app.models.goal import Goal
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 from app.shared.types import WeDoBaseModel
 from typing import Annotated
 from fastapi import Path
 from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
+from app.shared.errors import LIAError
 
 logger = logging.getLogger(__name__)
 
@@ -134,7 +135,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error listing goals: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/by-user/{user_id}", response_model=None)
@@ -181,7 +182,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting goals for user {user_id}: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/{goal_id}", response_model=GoalResponse)
@@ -202,7 +203,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error fetching goal: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("", response_model=GoalResponse)
@@ -229,7 +230,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error creating goal: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.put("/{goal_id}", response_model=GoalResponse)
@@ -254,7 +255,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error updating goal: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.delete("/{goal_id}", response_model=None)
@@ -275,7 +276,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error deleting goal: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/bulk", response_model=None)
@@ -300,7 +301,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error creating goals in bulk: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/templates/list", response_model=list[GoalTemplateResponse])
@@ -323,7 +324,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error listing goal templates: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/templates", response_model=GoalTemplateResponse)
@@ -343,7 +344,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error creating goal template: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/seed-templates", response_model=None)
@@ -450,7 +451,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error seeding goal templates: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 class GoalImportResponse(BaseModel):
@@ -545,7 +546,7 @@ async def download_goals_import_template(company_id: str = Depends(require_compa
         raise
     except Exception as e:
         logger.error(f"Error generating goals import template: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/import", response_model=GoalImportResponse)
@@ -672,6 +673,6 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
     except Exception as e:
         await repo.rollback()
         logger.error(f"Error importing goals: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 reorder_collection_before_item(router)

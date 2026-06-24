@@ -41,6 +41,7 @@ from app.shared.pii_masking import mask_pii
 from app.shared.resilience.circuit_breaker import GEMINI_LIVE_CIRCUIT
 from fastapi import Depends
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 from app.shared.types import WeDoBaseModel
 from typing import Annotated
 from fastapi import Path
@@ -229,7 +230,7 @@ company_id: str = Depends(require_company_id)) -> StartSessionResponse:
         raise
     except Exception as e:
         logger.error("[GEMINI VOICE] Start session error: %s", e)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 _active_ws_sessions: dict[str, bool] = {}

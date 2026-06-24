@@ -4,6 +4,7 @@ LIA Assistant — Feature Flags endpoints.
 Extracted from lia_assistant.py (Phase 5 decomposition).
 All routes share prefix="/lia" to preserve existing /api/v1/lia/feature-flags/* URLs.
 """
+from app.middleware.request_id import get_correlation_id
 import logging
 import uuid
 from datetime import datetime as dt
@@ -23,6 +24,7 @@ from app.core.database import get_db
 from app.shared.governance.feature_flag_service import FeatureFlagService, get_feature_flag_service
 from app.shared.pii_masking import mask_pii as _mask_pii  # P1-3: LGPD redaction on free-text fields
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.errors import LIAError
 from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
@@ -107,6 +109,8 @@ def _enforce_hitl_gate(flag_key: str, current_user: User) -> None:
     """
     if not _is_sensitive_flag(flag_key):
         return
+    # PERM-EXEMPT: feature flag sensitivity, context-specific
+    # PERM-EXEMPT: feature flag sensitivity gate, context-specific
     if getattr(current_user, "role", None) == UserRole.admin:
         return
     raise HTTPException(
@@ -154,7 +158,9 @@ def _enforce_flag_tenant(
     Raises:
       HTTPException(403) when a non-admin sends a mismatched company_id.
     """
+    # PERM-EXEMPT: feature flag sensitivity, context-specific
     # Admins keep their full powers (global flags + cross-tenant)
+    # PERM-EXEMPT: feature flag sensitivity gate, context-specific
     if getattr(current_user, "role", None) == UserRole.admin:
         return str(request_company_id) if request_company_id else None
 
@@ -236,7 +242,7 @@ company_id: str = Depends(require_company_id)) -> FeatureFlagResponse:
                 )
                 if tenant_id:
                     await AuditService().log_action(
-                        trace_id=str(uuid_uuid4()),
+                        trace_id=get_correlation_id(),
                         company_id=str(tenant_id),
                         action_type="feature_flag_change",
                         actor=str(actor_id),
@@ -270,7 +276,7 @@ company_id: str = Depends(require_company_id)) -> FeatureFlagResponse:
         raise
     except Exception as e:
         logger.error(f"Error setting feature flag: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/feature-flags", response_model=None)
@@ -298,7 +304,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error getting feature flags: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/feature-flags/check/{flag_key}", response_model=None)
@@ -325,7 +331,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error checking feature flag: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 # ---------------------------------------------------------------------------
@@ -389,7 +395,7 @@ class FeatureFlagToggleRejectRequest(WeDoBaseModel):
 def _build_approvals_repo(db: AsyncSession):
     """Lazy import + builder so the module-level imports don't pull
     approvals into every consumer of feature-flag endpoints."""
-    from app.domains.approvals.repositories.approvals_repository import (
+    from app.repositories.approvals_repository import (
         ApprovalsRepository,
     )
     return ApprovalsRepository(db)
@@ -558,7 +564,7 @@ company_id: str = Depends(require_company_id)) -> FeatureFlagToggleApprovalRespo
     try:
         from app.shared.compliance.audit_service import AuditService
         await AuditService().log_action(
-            trace_id=str(uuid_uuid4()),
+            trace_id=get_correlation_id(),
             company_id=company_id,
             action_type="feature_flag_change",
             actor=str(requester_id),
@@ -592,8 +598,10 @@ async def list_pending_feature_flag_approvals(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
 company_id: str = Depends(require_company_id)) -> dict[str, Any]:
+    # PERM-EXEMPT: feature flag sensitivity, context-specific
     """Admin-only: list pending feature_flag_toggle approval requests
     for the user's company. Non-admin returns 403."""
+    # PERM-EXEMPT: feature flag sensitivity gate, context-specific
     if getattr(current_user, "role", None) != UserRole.admin:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -643,9 +651,11 @@ company_id: str = Depends(require_company_id)) -> FeatureFlagToggleApprovalRespo
     3. Approval must be in pending state.
 
     On approve: invokes ff_svc.set_flag with admin context (bypassing
+    # PERM-EXEMPT: feature flag sensitivity, context-specific
     HITL) using the payload stored in target_data. Status flips to
     approved. Audit + email notify.
     """
+    # PERM-EXEMPT: feature flag sensitivity gate, context-specific
     if getattr(current_user, "role", None) != UserRole.admin:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -718,7 +728,7 @@ company_id: str = Depends(require_company_id)) -> FeatureFlagToggleApprovalRespo
     try:
         from app.shared.compliance.audit_service import AuditService
         await AuditService().log_action(
-            trace_id=str(uuid_uuid4()),
+            trace_id=get_correlation_id(),
             company_id=str(approval.company_id),
             action_type="feature_flag_change",
             actor=str(getattr(current_user, "id", "admin")),
@@ -767,10 +777,12 @@ company_id: str = Depends(require_company_id)) -> FeatureFlagToggleApprovalRespo
     2. Self-rejection blocked
     3. Approval must be in pending state (else 409)
 
+    # PERM-EXEMPT: feature flag sensitivity, context-specific
     On reject: status flips to rejected, rejection_reason persisted,
     audit log fires workflow_state=rejected, requester emailed (fail-soft).
     ff_svc.set_flag is NEVER called.
     """
+    # PERM-EXEMPT: feature flag sensitivity gate, context-specific
     if getattr(current_user, "role", None) != UserRole.admin:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -814,7 +826,7 @@ company_id: str = Depends(require_company_id)) -> FeatureFlagToggleApprovalRespo
     try:
         from app.shared.compliance.audit_service import AuditService
         await AuditService().log_action(
-            trace_id=str(uuid_uuid4()),
+            trace_id=get_correlation_id(),
             company_id=str(approval.company_id),
             action_type="feature_flag_change",
             actor=str(getattr(current_user, "id", "admin")),
@@ -890,7 +902,7 @@ async def sweep_expired_approvals(
             from app.shared.compliance.audit_service import AuditService
             payload = approval.target_data or {}
             await AuditService().log_action(
-                trace_id=str(uuid_uuid4()),
+                trace_id=get_correlation_id(),
                 company_id=str(company_id),
                 action_type="feature_flag_change",
                 actor="system:expiry_sweep",

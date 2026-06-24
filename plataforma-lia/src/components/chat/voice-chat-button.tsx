@@ -461,7 +461,7 @@ export function VoiceChatButton({
         variant="ghost"
         size="icon"
         disabled
-        className={cn("h-8 w-8 text-lia-text-disabled focus-visible:ring-2 focus-visible:ring-lia-border-default", className)}
+        className={cn("h-8 w-8 text-lia-text-muted focus-visible:ring-2 focus-visible:ring-lia-border-default", className)}
         title="Chat por voz não disponível"
         aria-label="Chat por voz não disponível"
       >
@@ -485,7 +485,7 @@ export function VoiceChatButton({
       className={cn(
         "transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-lia-border-default",
         mode === 'streaming'
-          ? "text-wedo-cyan hover:text-wedo-cyan-dark hover:bg-wedo-cyan/10 animate-pulse motion-reduce:animate-none px-3"
+          ? "text-wedo-cyan-text hover:text-wedo-cyan-dark hover:bg-wedo-cyan/10 animate-pulse motion-reduce:animate-none px-3"
           : mode === 'recording'
             ? "text-status-error hover:text-status-error hover:bg-status-error/10 animate-pulse motion-reduce:animate-none px-3"
             : mode === 'playing'

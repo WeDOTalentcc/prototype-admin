@@ -15,13 +15,15 @@ domains:
     - "list(a|ar|ando|e|em|ei)?\\s+(\\w+\\s+)*vagas?"
     - "ver\\s+(\\w+\\s+)*vagas?"
     - "mostrar?\\s+(\\w+\\s+)*vagas?"
+    - "filtr\\w*\\s+(\\w+\\s+)*vagas?"
+    - "\\bvagas?\\s+\\w+"
     - "minhas?\\s+vagas?"
     - "quais\\s+(\\w+\\s+)*vagas?"
     - "quantas\\s+vagas?"
-    - "vagas?\\s+(abertas?|ativas?|em\\s+aberto|em\\s+andamento|pendentes?|fechadas?|pausadas?|canceladas?)"
+    - "vagas?\\s+(abertas?|ativas?|em\\s+aberto|em\\s+andamento|pendentes?|fechadas?|pausadas?|canceladas?|publicadas?|urgentes?|encerradas?|arquivadas?)"
     - "ranking\\s+d[eo]?\\s+vagas?"
     - "\\bfunil\\s+d[ae]\\s+vaga"
-    - "detalhes\\s+d[ae]\\s+vaga"
+    - "detalhes?\\s+d[ae]\\s+vaga"
     # ── Criação / Edição
     - "editar?\\s+\\w*\\s*vaga"
     - "atualizar?\\s+\\w*\\s*vaga"
@@ -367,3 +369,23 @@ domains:
     - "informa[çc][oõ]es\\s+d[ae]\\s+empresa"
     - "dados\\s+d[ae]\\s+empresa"
     - "atualizar?\\s+\\w*\\s*perfil\\s+d[ae]\\s+empresa"
+
+offer_concierge:
+  domain: offer
+  agent: offer_concierge
+  priority: 55
+  description: "Agente de proposta — N2 concierge + N3 negociador gated"
+  intents:
+    - "proposta\\s+d[ae]\\s+emprego"
+    - "carta\\s+d[ae]\\s+oferta"
+    - "oferta\\s+(salarial|d[ae]\\s+trabalho)"
+    - "status\\s+d[a]\\s+proposta"
+    - "candidato\\s+aceitou"
+    - "prazo\\s+d[ae]\\s+resposta"
+    - "negoci[aã]\\w*\\s+(salarial|d[ae]\\s+oferta|d[ae]\\s+proposta)"
+    - "contra[\\-\\s]proposta"
+    - "data\\s+d[ae]\\s+in[ií]cio"
+    - "enviar\\s+proposta"
+    - "rascunho\\s+d[ae]\\s+proposta"
+    - "carta\\s+oferta"
+    - "onboarding\\s+(data|prazo|inicio)"

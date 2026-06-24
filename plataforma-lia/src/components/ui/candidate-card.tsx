@@ -275,7 +275,7 @@ export function CandidateCard({
                         <div className="animate-spin motion-reduce:animate-none rounded-full h-5 w-5 border-b-2 border-lia-border-medium"></div>
                       </div>
                     ) : communications.length === 0 ? (
-                      <div className="text-center py-3 text-xs text-lia-text-disabled">
+                      <div className="text-center py-3 text-xs text-lia-text-muted">
                         Nenhuma comunicação registrada
                       </div>
                     ) : (
@@ -294,7 +294,7 @@ export function CandidateCard({
                                   {comm.subject || comm.message_preview?.slice(0, 50) || 'Mensagem'}
                                 </span>
                               </div>
-                              <div className="flex items-center gap-2 text-micro text-lia-text-disabled">
+                              <div className="flex items-center gap-2 text-micro text-lia-text-muted">
                                 <span>{formatDate(comm.sent_at || comm.created_at)}</span>
                                 <span className="flex items-center gap-0.5">
                                   {getStatusIcon(comm.status)}
@@ -309,7 +309,7 @@ export function CandidateCard({
                           <Button
                             variant="link"
                             size="sm"
-                            className="w-full h-6 text-xs text-wedo-cyan"
+                            className="w-full h-6 text-xs text-wedo-cyan-text"
                             onClick={onViewMoreCommunications}
                           >
                             Ver mais ({totalCommunications - 5} comunicações)

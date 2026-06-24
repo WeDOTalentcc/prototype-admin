@@ -99,6 +99,34 @@ class SalaryBandRepository:
             score += 1
         return score
 
+    def match_from_bands(
+        self,
+        bands: list[SalaryBand],
+        *,
+        seniority_level: str,
+        department: str | None = None,
+        contract_type: str | None = None,
+        subsidiary: str | None = None,
+        subsidiary_cnpj: str | None = None,
+    ) -> SalaryBand | None:
+        """Matching PURO (sem DB) sobre bandas ja carregadas. Mesma regra do
+        match_band; extraido p/ enriquecer listas SEM N+1 (uma leitura das
+        bandas + casa cada vaga em memoria). Prefere a mais especifica; empate
+        -> menor order."""
+        sen_key = to_match_seniority_key(seniority_level) if seniority_level else ""
+        con_key = to_match_contract_key(contract_type) if contract_type else ""
+        matched = [
+            b for b in bands
+            if to_match_seniority_key(b.level) == sen_key
+            and matches_dimension_list(b.contract_types, con_key, to_match_contract_key)
+            and matches_department(b.departments, department)
+            and matches_subsidiaries(b.subsidiaries, subsidiary, subsidiary_cnpj)
+        ]
+        if not matched:
+            return None
+        matched.sort(key=lambda b: (-self._scope_specificity(b), b.order or 0))
+        return matched[0]
+
     async def match_band(
         self,
         company_id: str,
@@ -113,19 +141,14 @@ class SalaryBandRepository:
         Prefere a mais especifica; empate -> menor order."""
         self._require_company_id(company_id)
         bands = await self.list_for_company(company_id, active_only=True)
-        sen_key = to_match_seniority_key(seniority_level) if seniority_level else ""
-        con_key = to_match_contract_key(contract_type) if contract_type else ""
-        matched = [
-            b for b in bands
-            if to_match_seniority_key(b.level) == sen_key
-            and matches_dimension_list(b.contract_types, con_key, to_match_contract_key)
-            and matches_department(b.departments, department)
-            and matches_subsidiaries(b.subsidiaries, subsidiary, subsidiary_cnpj)
-        ]
-        if not matched:
-            return None
-        matched.sort(key=lambda b: (-self._scope_specificity(b), b.order or 0))
-        return matched[0]
+        return self.match_from_bands(
+            bands,
+            seniority_level=seniority_level,
+            department=department,
+            contract_type=contract_type,
+            subsidiary=subsidiary,
+            subsidiary_cnpj=subsidiary_cnpj,
+        )
 
     async def get_band_map(self, company_id: str) -> dict[str, dict]:
         """{level: faixa-base} p/ o preview do modal de verba (sem contexto de vaga).

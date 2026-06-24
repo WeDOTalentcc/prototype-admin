@@ -18,6 +18,8 @@ from app.core.database import AsyncSessionLocal
 
 from app.shared.tool_handler import tool_handler
 from app.shared.messaging.rails_event_publisher import publish_rails_event  # noqa: F401 — module-level for test patching
+from app.domains.candidates.repositories.vacancy_candidate_repository import VacancyCandidateRepository  # ADR-001
+from app.domains.candidates.repositories.candidate_repository import CandidateRepository  # ADR-001: nome candidato
 
 logger = logging.getLogger(__name__)
 
@@ -75,6 +77,16 @@ async def _wrap_move_candidate(**kwargs: Any) -> dict[str, Any]:
     target_stage = kwargs.get("target_stage", "unknown")
     reason = kwargs.get("reason", "")
     company_id = kwargs.get("company_id", "")  # P0.A canonical: tenant gate
+    # F3: HITL gate — mover candidato é mutação; dormante com LIA_HITL_GATE off.
+    from app.shared.hitl.hitl_approval_context import hitl_preflight as _hitl_preflight
+    _hitl_block = _hitl_preflight(
+        tool="move_candidate",
+        domain="cv_screening",
+        message="Mover candidato de etapa é uma ação que requer confirmação.",
+        data={"candidate_id": candidate_id, "target_stage": target_stage},
+    )
+    if _hitl_block is not None:
+        return _hitl_block
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.warning(f"[pipeline_tools] move_candidate called: candidate={candidate_id} target={target_stage} reason={reason}")
     async with AsyncSessionLocal() as session:
@@ -665,45 +677,59 @@ async def _wrap_finalize_hiring(**kwargs: Any) -> dict[str, Any]:
     company_id = kwargs.get("company_id", "")  # P0.A canonical: hiring write gate
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[pipeline_tools] finalize_hiring called for candidate={candidate_id}")
-    async with AsyncSessionLocal() as session:
-        check = await session.execute(
-            text("""
-                SELECT vc.stage, vc.status, c.name
-                FROM vacancy_candidates vc
-                JOIN candidates c ON c.id = vc.candidate_id
-                WHERE vc.candidate_id = :candidate_id
-                  AND vc.company_id = :company_id
-                ORDER BY vc.updated_at DESC LIMIT 1
-            """),
-            {"candidate_id": candidate_id, "company_id": company_id},
+    # ADR-001: sem SQL inline — usa VacancyCandidateRepository + CandidateRepository
+    async with AsyncSessionLocal() as db:
+        repo = VacancyCandidateRepository(db)
+        candidate_repo = CandidateRepository(db)
+
+        # 1. Buscar vacancy_candidate via repositório (substitui SELECT inline)
+        vc = await repo.get_most_recent_for_candidate(
+            candidate_id=candidate_id,
+            company_id=company_id,
         )
-        check_row = check.mappings().first()
-        if not check_row:
+        if not vc:
             return {"success": False, "data": {}, "message": f"Candidato {candidate_id} não encontrado no pipeline."}
 
+        # Guardar estado anterior para o response
+        previous_stage = vc.stage
+        previous_status = vc.status
+
+        # Buscar nome do candidato via repositório
+        candidate_obj = await candidate_repo.get_by_id_str(str(candidate_id), company_id=company_id)
+        candidate_name = candidate_obj.name if candidate_obj else str(candidate_id)
+
+        # 2. Atualizar via repositório — corrige status='contratado'→'hired' (VALID_STATUSES)
         # P0.A canonical: hiring transition is CRITICAL write — tenant gate mandatory.
-        await session.execute(
-            text("""
-                UPDATE vacancy_candidates
-                SET status = 'contratado', stage = 'Contratado', updated_at = NOW()
-                WHERE candidate_id = :candidate_id
-                  AND company_id = :company_id
-            """),
-            {"candidate_id": candidate_id, "company_id": company_id},
-        )
-        await session.commit()
+        vc.stage = "Contratado"
+        vc.status = "hired"  # fix: "contratado" não estava em VALID_STATUSES
+        try:
+            updated = await repo.update(vc)
+        except Exception as e:
+            logger.error("[pipeline_tools] finalize_hiring: falha ao persistir contratação", exc_info=True)
+            return {
+                "success": False,
+                "data": {},
+                "message": "Erro ao persistir contratação — tente novamente.",
+            }
+
+        # B2: setar Candidate.is_hired=True (campo para LGPD guard + UI chip)
+        if candidate_obj:
+            candidate_obj.is_hired = True
+            candidate_obj.hired_at = datetime.utcnow()
+            await db.commit()
+
         return {
             "success": True,
             "data": {
                 "candidate_id": candidate_id,
-                "candidate_name": check_row["name"],
+                "candidate_name": candidate_name,
                 "hired": True,
-                "previous_stage": check_row["stage"],
-                "previous_status": check_row["status"],
+                "previous_stage": previous_stage,
+                "previous_status": previous_status,
                 "new_stage": "Contratado",
-                "new_status": "contratado",
+                "new_status": "hired",
             },
-            "message": f"Contratação de {check_row['name']} finalizada com sucesso.",
+            "message": f"Contratação de {candidate_name} finalizada com sucesso.",
         }
 @tool_handler("cv_screening")
 async def _wrap_update_status(**kwargs: Any) -> dict[str, Any]:
@@ -938,6 +964,15 @@ async def _wrap_search_talent_pool(**kwargs):
             )
             candidates = [dict(r) for r in rows.mappings()]
 
+            if not candidates:
+                from app.orchestrator.context.empty_result_guidance import build_empty_result_guidance
+                _g = build_empty_result_guidance("candidato", {"skills": skills, "location": location, "query": query})
+                return {
+                    "success": True,
+                    "data": {"candidates": [], "total": 0, "pool_filter": {"skills": skills, "location": location, "query": query}, **_g},
+                    "message": _g.get("guidance") or "Nenhum candidato no talent pool com esses criterios.",
+                }
+
             return {
                 "success": True,
                 "data": {
@@ -994,7 +1029,8 @@ async def _wrap_get_company_culture(**kwargs):
                     "message": f"company_id inválido: {company_id}",
                 }
 
-            culture = await repo.get_for_company(cid_uuid)
+            # Fase 5.1 gate: unapproved auto culture is withheld from the agent.
+            culture = await repo.get_for_agent_context(cid_uuid)
             if not culture:
                 return {
                     "success": False,

@@ -3,8 +3,8 @@
 import React, { useState, useRef, useEffect } from "react"
 import {
   Brain, X, Maximize2, PanelRight, MessageSquare, Minimize2,
-  Plus, MoreHorizontal, ChevronDown, Pencil, Trash2, ArrowRightLeft,
-  CheckCircle2, Briefcase
+  Plus, MoreHorizontal, ChevronDown, Pencil, Trash2,
+  CheckCircle2, Briefcase, CornerDownRight
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useTranslations } from 'next-intl'
@@ -28,7 +28,6 @@ interface Props {
   onModeChange: (mode: ChatMode) => void
   onClose: () => void
   onNewChat: () => void
-  onSwitchTask?: () => void
   conversationTitle?: string | null
   isConnected: boolean
   transportMode?: TransportMode
@@ -52,6 +51,14 @@ interface Props {
   showOpenJobButton?: boolean
   /** Fired when the user clicks the "Ver vaga" shortcut. */
   onOpenJob?: () => void
+  /**
+   * Task #1291 — when true (floating mode only, after the window has been
+   * dragged away from its dock), render a discreet "back to corner" button
+   * that returns the floating window to the bottom-right corner.
+   */
+  showResetFloatingButton?: boolean
+  /** Fired when the user clicks the "back to corner" button. */
+  onResetFloatingPosition?: () => void
 }
 
 export function UnifiedChatHeader({
@@ -59,7 +66,6 @@ export function UnifiedChatHeader({
   onModeChange,
   onClose,
   onNewChat,
-  onSwitchTask,
   conversationTitle,
   isConnected,
   transportMode,
@@ -70,6 +76,8 @@ export function UnifiedChatHeader({
   autoSaveLabel,
   showOpenJobButton,
   onOpenJob,
+  showResetFloatingButton,
+  onResetFloatingPosition,
 }: Props) {
   const t = useTranslations('chat.header')
   const [showModeMenu, setShowModeMenu] = useState(false)
@@ -168,6 +176,7 @@ export function UnifiedChatHeader({
           align === "left" ? "left-0" : "right-0",
         )}
       >
+
         <button
           onClick={handleStartRename}
           className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-lia-text-secondary hover:bg-lia-bg-secondary"
@@ -199,7 +208,7 @@ export function UnifiedChatHeader({
         <span className={cn("text-sm font-medium text-lia-text-primary truncate", maxWidthClass)}>
           {title}
         </span>
-        <ChevronDown className="w-3 h-3 text-lia-text-disabled group-hover:text-lia-text-secondary flex-shrink-0" />
+        <ChevronDown className="w-3 h-3 text-lia-text-muted group-hover:text-lia-text-secondary flex-shrink-0" />
       </button>
       {optionsAnchor === "title" && renderConversationMenu("left")}
     </div>
@@ -213,33 +222,30 @@ export function UnifiedChatHeader({
         {mode === "fullscreen" ? (
           <div className="flex items-center gap-1 min-w-0">
             <span className="text-sm text-lia-text-secondary">
-              LIA
+              IA
             </span>
             <span className="text-sm text-lia-text-disabled">/</span>
             {isRenaming ? renderTitle() : renderTitleButton("max-w-[200px]")}
           </div>
         ) : (
-          isRenaming ? renderTitle() : renderTitleButton("max-w-[160px]")
+          isRenaming ? renderTitle() : renderTitleButton(mode === "floating" ? "max-w-[120px]" : "max-w-[160px]")
         )}
 
         {isConnected && (
           <span className="w-1.5 h-1.5 rounded-full bg-status-success flex-shrink-0" title={t('connected')} />
         )}
-        {transportMode && (
+        {transportMode && mode !== "floating" && (
           <TransportModeIndicator transportMode={transportMode} isReconnecting={isReconnecting} />
         )}
 
         {/* Active task pill (Tezi Task Context Bar pattern) */}
         {activeTaskLabel && (
-          <button
-            onClick={onSwitchTask}
-            className="flex items-center gap-1 px-2 py-0.5 rounded-md border border-lia-border-subtle bg-lia-bg-secondary text-lia-text-secondary hover:text-lia-text-primary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none flex-shrink-0 max-w-[200px]"
-            title={`${activeTaskLabel} — trocar conversa (⌘K)`}
-            aria-label={`Tarefa ativa: ${activeTaskLabel}. Clique para trocar`}
+          <span
+            className="flex items-center px-2 py-0.5 rounded-md border border-lia-border-subtle bg-lia-bg-secondary text-lia-text-secondary flex-shrink-0 max-w-[200px]"
+            aria-label={`Tarefa ativa: ${activeTaskLabel}`}
           >
             <span className="text-xs truncate">{activeTaskLabel}</span>
-            <ArrowRightLeft className="w-3 h-3 flex-shrink-0 opacity-60" aria-hidden="true" />
-          </button>
+          </span>
         )}
 
         {/* "Ver vaga" — re-open the right-side wizard panel after the
@@ -248,7 +254,7 @@ export function UnifiedChatHeader({
         {showOpenJobButton && onOpenJob && (
           <button
             onClick={onOpenJob}
-            className="flex items-center gap-1 px-2 py-0.5 rounded-md border border-wedo-cyan/40 bg-wedo-cyan/10 text-wedo-cyan hover:bg-wedo-cyan/20 transition-colors motion-reduce:transition-none flex-shrink-0"
+            className="flex items-center gap-1 px-2 py-0.5 rounded-md border border-wedo-cyan/40 bg-wedo-cyan/10 text-wedo-cyan-text hover:bg-wedo-cyan/20 transition-colors motion-reduce:transition-none flex-shrink-0"
             title="Reabrir o painel da vaga em criação"
             aria-label="Reabrir o painel lateral da vaga em criação"
             data-testid="open-job-panel-button"
@@ -273,7 +279,7 @@ export function UnifiedChatHeader({
         )}
       </div>
 
-      <div className="flex items-center gap-0.5">
+      <div className={cn("flex items-center", mode === "floating" ? "gap-1" : "gap-0.5")}>
         <button
           onClick={onNewChat}
           className="p-1.5 rounded-md text-lia-border-strong hover:text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
@@ -283,14 +289,19 @@ export function UnifiedChatHeader({
           <Plus className="w-4 h-4" />
         </button>
 
-        {onSwitchTask && (
+
+        {/* Task #1291 — "back to corner": only shown in floating mode once the
+            window has been dragged away from its dock. Returns it to the
+            bottom-right corner (its original position). */}
+        {showResetFloatingButton && onResetFloatingPosition && (
           <button
-            onClick={onSwitchTask}
+            onClick={onResetFloatingPosition}
             className="p-1.5 rounded-md text-lia-border-strong hover:text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
-            title={t('switchChat', { shortcut: '\u2318K' })}
-            aria-label={t('switchChatLabel')}
+            title="Voltar ao canto"
+            aria-label="Voltar a janela flutuante ao canto inferior direito"
+            data-testid="floating-reset-button"
           >
-            <ArrowRightLeft className="w-4 h-4" />
+            <CornerDownRight className="w-4 h-4" />
           </button>
         )}
 
@@ -328,7 +339,7 @@ export function UnifiedChatHeader({
                     <opt.icon className="w-4 h-4" />
                     <span>{opt.label}</span>
                     {mode === opt.mode && (
-                      <span className="ml-auto text-wedo-cyan text-xs">{'\u2713'}</span>
+                      <span className="ml-auto text-lia-text-muted text-xs">{'\u2713'}</span>
                     )}
                   </button>
                 ))}

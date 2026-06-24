@@ -97,9 +97,9 @@ export function TemplateSuggestionToast({
   // Ícone baseado no motivo
   const getReasonIcon = () => {
     if (suggestion.repetitions >= 3) {
-      return <Zap className="w-4 h-4 text-wedo-orange" />
+      return <Zap className="w-4 h-4 text-wedo-orange-text" />
     } else if (suggestion.complexity >= 8) {
-      return <Brain className="w-4 h-4 text-wedo-cyan" />
+      return <Brain className="w-4 h-4 text-wedo-cyan-text" />
     } else {
       return <Lightbulb className="w-4 h-4 text-lia-text-secondary" />
     }
@@ -198,7 +198,7 @@ export function TemplateSuggestionToast({
 
           {/* Footer */}
           <div className="mt-3 pt-2 border-t border-lia-border-subtle dark:border-lia-border-default flex items-center justify-between text-xs text-lia-text-primary">
-            <span>💡 LIA Intelligence</span>
+            <span>💡 IA Intelligence</span>
             <button
               onClick={() => {/* Abrir configurações */}}
               className="hover:text-lia-text-secondary transition-colors motion-reduce:transition-none"

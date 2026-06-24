@@ -230,7 +230,7 @@ export function ExpertiseAreasInput({
                 )}
               >
                 {item.type === 'ai' ? (
-                  <div className="flex items-center gap-2 text-wedo-purple">
+                  <div className="flex items-center gap-2 text-lia-text-secondary">
                     <Brain className="w-4 h-4 text-wedo-cyan" />
                     <span>{item.label}</span>
                   </div>

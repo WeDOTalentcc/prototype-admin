@@ -40,10 +40,6 @@ export const LazyTechnicalTestModal = lazy(() =>
   import("./technical-test-modal").then(m => ({ default: m.TechnicalTestModal }))
 )
 
-export const LazyLiaAnalysisModal = lazy(() =>
-  import("./lia-analysis-modal").then(m => ({ default: m.LiaAnalysisModal }))
-)
-
 export const LazyAddCandidatesToVacancyModal = lazy(() =>
   import("./add-candidates-to-vacancy-modal").then(m => ({ default: m.AddCandidatesToVacancyModal }))
 )

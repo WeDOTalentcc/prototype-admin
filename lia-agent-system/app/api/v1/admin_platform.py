@@ -23,6 +23,7 @@ from app.auth.dependencies import require_admin
 from app.auth.models import User
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+from app.shared.errors import LIAError
 
 logger = logging.getLogger(__name__)
 
@@ -107,7 +108,7 @@ async def hubspot_webhook(request: Request, ):
         raise
     except Exception as e:
         logger.error(f"[hubspot-webhook] Error: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 # ─── POST /automation/onboard-client ─────────────────────────────────────────
@@ -166,7 +167,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"[onboard-client] Error: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 # ─── GET /automation/onboarding-status ───────────────────────────────────────
@@ -195,7 +196,7 @@ async def get_onboarding_status(_admin: User = Depends(require_admin), company_i
         raise
     except Exception as e:
         logger.error(f"[onboarding-status] Error: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 # ─── GET /admin/integrations/health ──────────────────────────────────────────

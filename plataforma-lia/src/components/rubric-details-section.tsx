@@ -198,7 +198,7 @@ export function RubricDetailsSection({
 
             <div className="mt-2 pt-2 space-y-1 border-t border-t-lia-border-subtle">
               {[
-                { label: 'Versão', value: 'LIA CV Analyzer v1.0' },
+                { label: 'Versão', value: 'IA CV Analyzer v1.0' },
                 { label: 'Data/Hora', value: new Date().toLocaleString('pt-BR') },
               ].map((item, idx) => (
                 <div key={`just-${idx}`} className="flex items-center justify-between">

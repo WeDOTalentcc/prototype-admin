@@ -89,7 +89,7 @@ export function OnboardingSettingsChat({ userId }: Props) {
             <p className="text-sm text-lia-text-secondary">
               Olá! Vou ajudar você a configurar sua empresa via chat.
             </p>
-            <p className="text-xs text-lia-text-disabled mt-1">
+            <p className="text-xs text-lia-text-muted mt-1">
               Responda as perguntas e as informações serão salvas automaticamente.
             </p>
           </div>
@@ -112,16 +112,7 @@ export function OnboardingSettingsChat({ userId }: Props) {
         {loading && (
           <div className="flex justify-start">
             <div className="bg-lia-bg-secondary border border-lia-border-subtle px-3 py-2.5 rounded-xl">
-              <div className="flex gap-1 items-center">
-                {[0, 150, 300].map((delay) => (
-                  <span
-                    key={delay}
-                    className="w-1.5 h-1.5 bg-wedo-cyan rounded-full animate-bounce"
-                    style={{ animationDelay: `${delay}ms` }}
-                    aria-hidden="true"
-                  />
-                ))}
-              </div>
+              <span className="text-xs text-lia-text-secondary animate-pulse motion-reduce:animate-none" aria-hidden="true">Pensando…</span>
             </div>
           </div>
         )}

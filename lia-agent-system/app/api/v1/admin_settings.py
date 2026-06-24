@@ -14,8 +14,8 @@ from app.models.admin_settings import (
     NOTIFICATION_EVENT_TYPES,
     PermissionLevel,
 )
-from app.domains.admin_settings.dependencies import get_admin_settings_repo
-from app.domains.admin_settings.repositories.admin_settings_repository import (
+from app.repositories.dependencies import get_admin_settings_repo
+from app.repositories.admin_settings_repository import (
     AdminSettingsRepository,
 )
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
@@ -23,6 +23,7 @@ from app.shared.types import WeDoBaseModel
 from typing import Annotated
 from fastapi import Path
 from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
+from app.shared.errors import LIAError
 
 logger = logging.getLogger(__name__)
 
@@ -138,7 +139,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error listing roles: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/roles", response_model=None)
@@ -167,7 +168,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error creating role: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.put("/roles/{role_id}", response_model=None)
@@ -204,7 +205,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error updating role: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.delete("/roles/{role_id}", response_model=None)
@@ -234,7 +235,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error deleting role: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/roles/initialize", response_model=None)
@@ -257,7 +258,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error initializing default roles: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/user-roles", response_model=None)
@@ -284,7 +285,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error listing user roles: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/user-roles", response_model=None)
@@ -328,7 +329,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error assigning role: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.delete("/user-roles/{assignment_id}", response_model=None)
@@ -355,7 +356,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error removing role assignment: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/notification-policies", response_model=None)
@@ -382,7 +383,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error listing notification policies: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/notification-policies", response_model=None)
@@ -415,7 +416,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error creating notification policy: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.put("/notification-policies/{policy_id}", response_model=None)
@@ -453,7 +454,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error updating notification policy: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.delete("/notification-policies/{policy_id}", response_model=None)
@@ -480,7 +481,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error deleting notification policy: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/security", response_model=None)
@@ -502,7 +503,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error getting security settings: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.put("/security", response_model=None)
@@ -542,7 +543,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error updating security settings: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/audit-logs", response_model=None)
@@ -592,7 +593,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error getting audit logs: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/permissions-matrix", response_model=None)

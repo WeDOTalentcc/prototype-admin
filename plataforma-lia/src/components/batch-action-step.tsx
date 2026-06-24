@@ -220,7 +220,7 @@ export function BatchReviewStep({
           </Card>
           <Card>
             <CardContent className="p-4 text-center">
-              <div className="text-2xl font-semibold text-wedo-purple mb-1">
+              <div className="text-2xl font-semibold text-lia-text-primary mb-1">
                 {batchAction.type === 'move' ? selectedCount : 0}
               </div>
               <div className="text-sm text-lia-text-secondary">Serão Movidos</div>

@@ -28,6 +28,7 @@ export type IntegrationCategory =
   | "communication"
   | "crm_hris"
   | "mcps_apis"
+  | "job_board"
 
 export interface IntegrationCapability {
   name: string
@@ -70,19 +71,40 @@ export const categories: CategoryInfo[] = [
   { id: "communication", label: "Comunicação", icon: "message-circle" },
   { id: "crm_hris", label: "CRM & HRIS", icon: "building" },
   { id: "mcps_apis", label: "MCPs & APIs", icon: "code" },
+  { id: "job_board", label: "Job Boards", icon: "briefcase" },
 ]
 
 export const integrations: Integration[] = [
   {
+    id: "linkedin_jobs",
+    name: "LinkedIn Jobs",
+    shortDescription: "Publique vagas no LinkedIn automaticamente",
+    fullDescription:
+      "Publique vagas da plataforma diretamente no LinkedIn Jobs e no feed da empresa. Os candidatos são redirecionados para o portal WeDOTalent para candidatura. Suporta publicação como Job Posting estruturado e/ou post social no feed da organização.",
+    category: "job_board",
+    status: "not_configured",
+    iconBg: "bg-wedo-cyan/10",
+    iconColor: "text-lia-text-secondary",
+    iconLetter: "LI",
+    connectAction: "config",
+    capabilities: [
+      { name: "Publicação de Vagas", description: "Job Posting estruturado no LinkedIn Jobs" },
+      { name: "Post no Feed", description: "Compartilhamento social no feed da empresa" },
+      { name: "Redirecionamento", description: "Candidatos direcionados ao portal WeDOTalent" },
+      { name: "Token Manual", description: "Configure seu access_token sem OAuth" },
+    ],
+    configFields: ["LINKEDIN_ACCESS_TOKEN", "LINKEDIN_ORG_ID"],
+  },
+  {
     id: "gemini",
     name: "Google Gemini",
-    shortDescription: "Modelo de IA principal da plataforma LIA",
+    shortDescription: "Modelo de IA principal da WeDOTalent",
     fullDescription:
-      "Google Gemini é o provedor de IA padrão da plataforma LIA. Utilizado para análise de currículos, geração de perguntas de entrevista, avaliação de candidatos e interações conversacionais. Suporta modelos Gemini 2.0 Flash e Pro.",
+      "Google Gemini é o provedor de IA padrão da WeDOTalent. Utilizado para análise de currículos, geração de perguntas de entrevista, avaliação de candidatos e interações conversacionais. Suporta modelos Gemini 2.0 Flash e Pro.",
     category: "ai_models",
     status: "connected",
-    iconBg: "bg-blue-500/10",
-    iconColor: "text-blue-600 dark:text-blue-400",
+    iconBg: "bg-wedo-cyan/10",
+    iconColor: "text-lia-text-secondary",
     iconLetter: "G",
     isActiveProvider: true,
     connectAction: "config",
@@ -100,11 +122,11 @@ export const integrations: Integration[] = [
     name: "Anthropic Claude",
     shortDescription: "Modelo de IA alternativo com raciocínio avançado",
     fullDescription:
-      "Anthropic Claude oferece capacidades avançadas de raciocínio e análise. Disponível como provedor alternativo ou fallback na plataforma LIA, com suporte a Claude 3.5 Sonnet e Haiku.",
+      "Anthropic Claude oferece capacidades avançadas de raciocínio e análise. Disponível como provedor alternativo ou fallback na WeDOTalent, com suporte a Claude 3.5 Sonnet e Haiku.",
     category: "ai_models",
     status: "connected",
-    iconBg: "bg-orange-500/10",
-    iconColor: "text-orange-600 dark:text-orange-400",
+    iconBg: "bg-wedo-orange/10",
+    iconColor: "text-wedo-orange-text",
     iconLetter: "C",
     isActiveProvider: false,
     connectAction: "config",
@@ -121,11 +143,11 @@ export const integrations: Integration[] = [
     name: "OpenAI GPT",
     shortDescription: "Modelo de IA com ampla base de conhecimento",
     fullDescription:
-      "OpenAI GPT oferece modelos versáteis com ampla base de conhecimento. Disponível como provedor terciário na cadeia de fallback da plataforma LIA, suportando GPT-4o e GPT-4o-mini. Essencial para transcrição de áudio (Whisper STT) e voz da LIA (TTS) nas triagens — sem esta chave, as funcionalidades de voz ficam indisponíveis.",
+      "OpenAI GPT oferece modelos versáteis com ampla base de conhecimento. Disponível como provedor terciário na cadeia de fallback da WeDOTalent, suportando GPT-4o e GPT-4o-mini. Essencial para transcrição de áudio (Whisper STT) e voz da IA (TTS) nas triagens — sem esta chave, as funcionalidades de voz ficam indisponíveis.",
     category: "ai_models",
     status: "connected",
-    iconBg: "bg-emerald-500/10",
-    iconColor: "text-emerald-600 dark:text-emerald-400",
+    iconBg: "bg-wedo-green/10",
+    iconColor: "text-lia-text-secondary",
     iconLetter: "O",
     isActiveProvider: false,
     connectAction: "config",
@@ -134,7 +156,7 @@ export const integrations: Integration[] = [
       { name: "Embeddings", description: "Representações vetoriais para busca semântica" },
       { name: "Function Calling", description: "Integração com ferramentas da plataforma" },
       { name: "Transcrição (Whisper)", description: "STT para áudio de candidatos em triagens" },
-      { name: "Voz da LIA (TTS)", description: "Síntese de voz para perguntas da LIA em triagens" },
+      { name: "Voz da IA (TTS)", description: "Síntese de voz para perguntas de IA em triagens" },
       { name: "Fallback Provider", description: "Terceiro na cadeia de resiliência" },
     ],
     configFields: ["OPENAI_API_KEY"],
@@ -144,11 +166,11 @@ export const integrations: Integration[] = [
     name: "Gupy",
     shortDescription: "ATS líder no mercado brasileiro",
     fullDescription:
-      "Integração com a Gupy, plataforma líder de recrutamento no Brasil. Sincronize vagas, candidatos e etapas do processo seletivo automaticamente com a plataforma LIA.",
+      "Integração com a Gupy, plataforma líder de recrutamento no Brasil. Sincronize vagas, candidatos e etapas do processo seletivo automaticamente com a WeDOTalent.",
     category: "ats",
     status: "not_configured",
-    iconBg: "bg-pink-500/10",
-    iconColor: "text-pink-600 dark:text-pink-400",
+    iconBg: "bg-wedo-magenta/10",
+    iconColor: "text-wedo-magenta-text",
     iconLetter: "Gy",
     connectAction: "config",
     capabilities: [
@@ -164,11 +186,11 @@ export const integrations: Integration[] = [
     name: "Pandapé",
     shortDescription: "ATS do grupo InfoJobs para gestão de talentos",
     fullDescription:
-      "Integração com Pandapé (InfoJobs) para gestão completa do ciclo de recrutamento. Conecte vagas, candidatos e processos seletivos diretamente à plataforma LIA.",
+      "Integração com Pandapé (InfoJobs) para gestão completa do ciclo de recrutamento. Conecte vagas, candidatos e processos seletivos diretamente à WeDOTalent.",
     category: "ats",
     status: "not_configured",
-    iconBg: "bg-green-500/10",
-    iconColor: "text-green-600 dark:text-green-400",
+    iconBg: "bg-wedo-green-bright/10",
+    iconColor: "text-lia-text-secondary-bright",
     iconLetter: "Pp",
     connectAction: "config",
     capabilities: [
@@ -183,11 +205,11 @@ export const integrations: Integration[] = [
     name: "Merge.dev",
     shortDescription: "API unificada para 40+ ATS e HRIS",
     fullDescription:
-      "Merge.dev oferece uma API unificada que conecta a plataforma LIA a mais de 40 sistemas ATS e HRIS, incluindo Greenhouse, Lever, BambooHR e outros. Uma integração, múltiplas plataformas.",
+      "Merge.dev oferece uma API unificada que conecta a WeDOTalent a mais de 40 sistemas ATS e HRIS, incluindo Greenhouse, Lever, BambooHR e outros. Uma integração, múltiplas plataformas.",
     category: "ats",
     status: "not_configured",
-    iconBg: "bg-violet-500/10",
-    iconColor: "text-violet-600 dark:text-violet-400",
+    iconBg: "bg-wedo-purple/10",
+    iconColor: "text-lia-text-secondary",
     iconLetter: "M",
     connectAction: "config",
     capabilities: [
@@ -206,8 +228,8 @@ export const integrations: Integration[] = [
       "Conecte sua conta Google Workspace para criar eventos com link do Google Meet automaticamente ao agendar entrevistas. A integração utiliza OAuth 2.0 para acesso seguro ao calendário.",
     category: "calendar",
     status: "not_configured",
-    iconBg: "bg-red-500/10",
-    iconColor: "text-red-500 dark:text-red-400",
+    iconBg: "bg-status-error/10",
+    iconColor: "text-status-error",
     iconLetter: "GC",
     connectAction: "oauth",
     capabilities: [
@@ -225,8 +247,8 @@ export const integrations: Integration[] = [
       "Integração com Microsoft Calendar via Microsoft Graph API. Configure as credenciais Azure para habilitar agendamento automático de entrevistas pelo Outlook.",
     category: "calendar",
     status: "not_configured",
-    iconBg: "bg-sky-500/10",
-    iconColor: "text-sky-600 dark:text-sky-400",
+    iconBg: "bg-wedo-cyan/10",
+    iconColor: "text-lia-text-secondary",
     iconLetter: "MC",
     connectAction: "config",
     capabilities: [
@@ -245,8 +267,8 @@ export const integrations: Integration[] = [
       "Envie notificações de recrutamento diretamente para canais do Microsoft Teams. Configure webhooks para alertas de novos candidatos, mudanças de status e atualizações de processo seletivo.",
     category: "communication",
     status: "not_configured",
-    iconBg: "bg-indigo-500/10",
-    iconColor: "text-indigo-600 dark:text-indigo-400",
+    iconBg: "bg-wedo-purple/10",
+    iconColor: "text-lia-text-secondary",
     iconLetter: "T",
     connectAction: "webhook",
     capabilities: [
@@ -265,8 +287,8 @@ export const integrations: Integration[] = [
       "Integração com WhatsApp Business API para comunicação direta com candidatos. Envie convites para entrevistas, atualizações de status e mensagens automatizadas.",
     category: "communication",
     status: "coming_soon",
-    iconBg: "bg-green-500/10",
-    iconColor: "text-green-600 dark:text-green-400",
+    iconBg: "bg-wedo-green-bright/10",
+    iconColor: "text-lia-text-secondary-bright",
     iconLetter: "W",
     connectAction: "none",
     capabilities: [
@@ -283,8 +305,8 @@ export const integrations: Integration[] = [
       "Configure um servidor SMTP personalizado para envio de emails da plataforma. Personalize templates, remetente e domínio para comunicações com candidatos.",
     category: "communication",
     status: "coming_soon",
-    iconBg: "bg-amber-500/10",
-    iconColor: "text-amber-600 dark:text-amber-400",
+    iconBg: "bg-wedo-amber/10",
+    iconColor: "text-wedo-amber",
     iconLetter: "E",
     connectAction: "none",
     capabilities: [
@@ -298,11 +320,11 @@ export const integrations: Integration[] = [
     name: "Salesforce",
     shortDescription: "CRM líder mundial para gestão de relacionamento",
     fullDescription:
-      "Integração planejada com Salesforce para sincronizar dados de candidatos, empresas clientes e processos seletivos entre a plataforma LIA e seu CRM.",
+      "Integração planejada com Salesforce para sincronizar dados de candidatos, empresas clientes e processos seletivos entre a WeDOTalent e seu CRM.",
     category: "crm_hris",
     status: "coming_soon",
-    iconBg: "bg-blue-500/10",
-    iconColor: "text-blue-600 dark:text-blue-400",
+    iconBg: "bg-wedo-cyan/10",
+    iconColor: "text-lia-text-secondary",
     iconLetter: "SF",
     connectAction: "none",
     capabilities: [
@@ -319,8 +341,8 @@ export const integrations: Integration[] = [
       "Integração planejada com SAP SuccessFactors para conectar processos de recrutamento com a gestão de capital humano da sua organização.",
     category: "crm_hris",
     status: "coming_soon",
-    iconBg: "bg-blue-700/10",
-    iconColor: "text-blue-700 dark:text-blue-300",
+    iconBg: "bg-wedo-purple/10",
+    iconColor: "text-lia-text-secondary",
     iconLetter: "SAP",
     connectAction: "none",
     capabilities: [
@@ -334,11 +356,11 @@ export const integrations: Integration[] = [
     name: "Workday",
     shortDescription: "Plataforma de RH e finanças empresarial",
     fullDescription:
-      "Integração planejada com Workday para conectar o recrutamento da plataforma LIA com a gestão de pessoas e processos de admissão da sua organização.",
+      "Integração planejada com Workday para conectar o recrutamento da WeDOTalent com a gestão de pessoas e processos de admissão da sua organização.",
     category: "crm_hris",
     status: "coming_soon",
-    iconBg: "bg-orange-500/10",
-    iconColor: "text-orange-600 dark:text-orange-400",
+    iconBg: "bg-wedo-orange/10",
+    iconColor: "text-wedo-orange-text",
     iconLetter: "Wd",
     connectAction: "none",
     capabilities: [
@@ -352,11 +374,11 @@ export const integrations: Integration[] = [
     name: "Webhook Customizado",
     shortDescription: "Notifique sistemas externos via webhooks HTTP",
     fullDescription:
-      "Configure webhooks HTTP para notificar seus sistemas quando eventos de recrutamento acontecem na plataforma LIA. Suporta POST com payload JSON customizável e autenticação via headers.",
+      "Configure webhooks HTTP para notificar seus sistemas quando eventos de recrutamento acontecem na WeDOTalent. Suporta POST com payload JSON customizável e autenticação via headers.",
     category: "mcps_apis",
     status: "not_configured",
-    iconBg: "bg-gray-500/10",
-    iconColor: "text-gray-600 dark:text-gray-400",
+    iconBg: "bg-lia-text-tertiary/10",
+    iconColor: "text-lia-text-tertiary",
     iconLetter: "WH",
     connectAction: "webhook",
     capabilities: [
@@ -371,13 +393,13 @@ export const integrations: Integration[] = [
   {
     id: "api-rest",
     name: "API REST",
-    shortDescription: "Acesso programático à plataforma LIA via API",
+    shortDescription: "Acesso programático à WeDOTalent via API",
     fullDescription:
-      "A API REST da plataforma LIA permite acesso programático completo para integração com qualquer sistema. Documentação OpenAPI disponível para desenvolvedores.",
+      "A API REST da WeDOTalent permite acesso programático completo para integração com qualquer sistema. Documentação OpenAPI disponível para desenvolvedores.",
     category: "mcps_apis",
     status: "connected",
-    iconBg: "bg-cyan-500/10",
-    iconColor: "text-cyan-600 dark:text-cyan-400",
+    iconBg: "bg-wedo-cyan/10",
+    iconColor: "text-lia-text-secondary",
     iconLetter: "API",
     connectAction: "none",
     capabilities: [

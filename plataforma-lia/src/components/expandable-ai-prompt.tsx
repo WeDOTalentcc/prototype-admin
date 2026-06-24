@@ -84,12 +84,12 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
           <div className="flex items-center gap-2 mb-2">
             <LIAIcon size="sm" />
             <span className="text-base-ui font-semibold text-lia-text-primary" aria-live="polite" aria-atomic="true">
-              Análise LIA para candidato específico
+              Análise de IA para candidato específico
             </span>
           </div>
           <div className="flex items-center gap-3 bg-lia-bg-primary rounded-xl px-3 py-2 border border-lia-border-subtle">
             <Avatar className="w-8 h-8">
-              <AvatarFallback className="bg-wedo-green-light/10 text-wedo-green-light text-sm">
+              <AvatarFallback className="bg-wedo-green-light/10 text-lia-text-muted-light text-sm">
                 {(candidateContext.name as string)?.split(' ').map((n: string) => n[0]).join('') || 'C'}
               </AvatarFallback>
             </Avatar>
@@ -101,7 +101,7 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
                 {candidateContext.position} • Score: {(candidateContext as any).liaAnalysis?.score || candidateContext.score}%
               </div>
             </div>
-            <Chip variant="neutral" muted className="bg-wedo-green-light/10 text-wedo-green-light border-0 text-micro">
+            <Chip variant="neutral" muted className="bg-wedo-green-light/10 text-lia-text-muted-light border-0 text-micro">
               Foco Individual
             </Chip>
           </div>

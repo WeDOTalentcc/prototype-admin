@@ -20,6 +20,8 @@ from datetime import datetime
 from enum import Enum
 from typing import Any
 
+from app.schemas.qualification_matrix import QualificationMatrix as _QualMatrix
+
 
 from app.config.industry_weights import ScoringWeights, get_weights_for_industry
 
@@ -267,6 +269,18 @@ class LIAScoreResult:
             "strengths": self.strengths,
             "concerns": self.concerns,
         }
+
+
+
+
+def must_have_prerequisites_score(matrix) -> float:
+    """3.1: 0-100 baseado em must_have_met/must_have_total.
+    0 must_haves -> 100 (sem penalidade). 0/N met -> 0."""
+    total = getattr(matrix, 'must_have_total', 0) or 0
+    if total == 0:
+        return 100.0
+    met = getattr(matrix, 'must_have_met', 0) or 0
+    return round(100.0 * met / total, 2)
 
 
 class LIAScoreService:
@@ -916,9 +930,9 @@ class LIAScoreService:
         """
         Get calibration adjustment from pre-fetched data + search feedback.
 
-        Sources (combined):
+        Sources:
         1. calibration_data dict (passed by caller, e.g. from CalibrationService)
-        2. _search_feedback_cache (loaded by load_search_feedback_for_ranking)
+        (search feedback movido p/ o funil como boost stateless — load_search_feedback, P1-3)
 
         The adjustment is a value between -5 and +5 that adjusts the final
         score based on recruiter feedback patterns.
@@ -932,17 +946,11 @@ class LIAScoreService:
         if calibration_data:
             adjustment += calibration_data.get("adjustment", 0.0)
 
-        # Source 2: search feedback (like/dislike history)
-        if candidate_id and hasattr(self, "_search_feedback_cache"):
-            # ORCHESTRATOR-GHOST-EXEMPT: _search_feedback_cache lazy-init by load_search_feedback_for_ranking (guarded by hasattr above)
-            fb = self._search_feedback_cache.get(candidate_id)
-            if fb:
-                # like = +2.5 boost, dislike = -2.5 penalty (configurable via weight)
-                weight = getattr(self, "_feedback_boost_weight", 2.5)
-                if fb == "like":
-                    adjustment += weight
-                elif fb == "dislike":
-                    adjustment -= weight
+        # Source 2 (search feedback) REMOVIDO daqui (P1-3): vivia em
+        # o cache de instancia (atributo no singleton), estado mutavel
+        # compartilhado -> vazava cross-tenant. O boost por feedback agora e
+        # stateless e escopado por company_id no funil (search.py via
+        # lia_score_service.load_search_feedback).
 
         return max(-5.0, min(5.0, adjustment))
 
@@ -1194,6 +1202,8 @@ class LIAScoreService:
         job_requirements: dict[str, Any] | None = None,
         calibration_data: dict[str, Any] | None = None,
         last_activity_date: datetime | None = None,
+        prerequisites_score: float | None = None,
+        qualification_matrix=None,
     ) -> RankingScoreResult:
         """
         Calculate unified LIA ranking score for a candidate.
@@ -1235,7 +1245,12 @@ class LIAScoreService:
         data_availability = self._determine_data_availability(has_rubricas, has_wsi, has_prereq)
         weights = WEIGHT_DISTRIBUTION[data_availability]
         
-        prerequisites_score = self._calculate_prerequisites_score(candidate, job_requirements)
+        # 3.1: override via matrix ou param direto
+        if prerequisites_score is None and qualification_matrix is not None:
+            prerequisites_score = must_have_prerequisites_score(qualification_matrix)
+        elif prerequisites_score is None:
+            prerequisites_score = self._calculate_prerequisites_score(candidate, job_requirements)
+
         
         if last_activity_date is None:
             last_activity_str = candidate.get("last_activity") or candidate.get("updated_at") or candidate.get("last_seen")
@@ -1296,70 +1311,54 @@ class LIAScoreService:
             reasoning=reasoning,
         )
     
-    async def load_search_feedback_for_ranking(
+    async def load_search_feedback(
         self,
         candidate_ids: list[str],
+        company_id: str,
         job_id: str | None = None,
-        company_id: str | None = None,
         user_id: str | None = None,
-        feedback_boost_weight: float = 2.5,
-    ) -> None:
+    ) -> dict[str, str]:
+        """Carrega feedback de busca (like/dislike) ESCOPADO por company_id.
+
+        STATELESS (P1-3): retorna {candidate_id: feedback_type}, sem tocar
+        estado de instancia. O service e singleton compartilhado entre tenants;
+        estado de instancia (cache de feedback no singleton) vazaria feedback
+        cross-tenant sob concorrencia async. company_id e OBRIGATORIO
+        (fail-closed multi-tenancy / REGRA ZERO). Usa tenant_session para RLS
+        como defesa-em-profundidade; o WHERE company_id e a barreira real
+        (a app conecta como superuser, RLS inerte na sessao).
         """
-        Pre-load SearchFeedback for a batch of candidates before ranking.
-
-        Populates self._search_feedback_cache: {candidate_id: "like"|"dislike"}
-        Called once before rank_candidates() to avoid N+1 queries.
-
-        Args:
-            candidate_ids: List of candidate IDs in the ranking batch.
-            job_id: Filter feedback by job (optional — broader if None).
-            company_id: Tenant isolation (required in production).
-            user_id: Filter by specific recruiter (optional — broader if None).
-            feedback_boost_weight: Points to add/subtract per feedback (default 2.5).
-        """
-        self._search_feedback_cache: dict[str, str] = {}
-        self._feedback_boost_weight = feedback_boost_weight
-
-        if not candidate_ids:
-            return
-
+        fb_map: dict[str, str] = {}
+        if not candidate_ids or not company_id:
+            return fb_map
         try:
-            from app.core.database import AsyncSessionLocal
+            from app.core.database import tenant_session
             from sqlalchemy import and_, select
+            from lia_models.search_feedback import SearchFeedback
 
-            async with AsyncSessionLocal() as db:
-                from lia_models.search_feedback import SearchFeedback
+            conditions = [
+                SearchFeedback.candidate_id.in_(candidate_ids),
+                SearchFeedback.company_id == str(company_id),
+            ]
+            if job_id:
+                conditions.append(SearchFeedback.job_id == job_id)
+            if user_id:
+                conditions.append(SearchFeedback.user_id == user_id)
 
-                conditions = [SearchFeedback.candidate_id.in_(candidate_ids)]
-                if job_id:
-                    conditions.append(SearchFeedback.job_id == job_id)
-                if user_id:
-                    conditions.append(SearchFeedback.user_id == user_id)
+            query = select(
+                SearchFeedback.candidate_id,
+                SearchFeedback.feedback_type,
+            ).where(and_(*conditions)).order_by(SearchFeedback.created_at.desc())
 
-                query = select(
-                    SearchFeedback.candidate_id,
-                    SearchFeedback.feedback_type,
-                ).where(and_(*conditions)).order_by(SearchFeedback.created_at.desc())
-
+            async with tenant_session(str(company_id)) as db:
                 result = await db.execute(query)
-                rows = result.all()
-
-                # Most recent feedback per candidate wins
-                for cid, fb_type in rows:
-                    if cid not in self._search_feedback_cache:
-                        self._search_feedback_cache[cid] = fb_type
-
-            if self._search_feedback_cache:
-                likes = sum(1 for v in self._search_feedback_cache.values() if v == "like")
-                dislikes = sum(1 for v in self._search_feedback_cache.values() if v == "dislike")
-                logger.info(
-                    "[LIAScore] Loaded search feedback for %d candidates: %d likes, %d dislikes (job=%s)",
-                    len(self._search_feedback_cache), likes, dislikes, job_id,
-                )
-
+                for cid, fb_type in result.all():
+                    if cid not in fb_map:
+                        fb_map[cid] = fb_type
         except Exception as exc:
-            logger.warning("[LIAScore] Failed to load search feedback (no boost applied): %s", exc)
-            self._search_feedback_cache = {}
+            logger.warning("[LIAScore] load_search_feedback falhou (sem boost): %s", exc)
+            return {}
+        return fb_map
 
     def rank_candidates(
         self,

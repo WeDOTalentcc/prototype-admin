@@ -14,7 +14,8 @@ import json
 import logging
 import uuid
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -231,6 +232,15 @@ async def save_questions(
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Save screening questions for a job vacancy."""
+    # P0 (audit 2026-06-05): valida ownership do job_id contra o company_id do JWT
+    # ANTES de qualquer escrita. job_screening_questions/screening_question_sets nao
+    # tem RLS — este e o gate multi-tenant canonico (fail-closed no produtor).
+    # FORA do try/except abaixo: senao o HTTPException 404 seria engolido pelo fallback.
+    from app.domains.job_management.repositories.job_vacancy_crud_repository import (
+        JobVacancyCrudRepository,
+    )
+    if not await JobVacancyCrudRepository(db).owned_by_company(request.job_id, company_id):
+        raise HTTPException(status_code=404, detail="Vaga nao encontrada para esta empresa.")
     try:
         for q in request.questions:
             q_id = q.get("id", f"q_{uuid.uuid4().hex[:12]}")
@@ -257,10 +267,16 @@ company_id: str = Depends(require_company_id)):
             )
             logger.info(f"Saved question set version for job {request.job_id}")
         except Exception as version_err:
-            logger.warning(f"Failed to save question set version: {version_err}")
+            # Audit C9/#1 (2026-06-05): o set versionado NAO e opcional.
+            # save_question_set faz o db.commit() de flat+set juntos; se falhar,
+            # o flat fica uncommitted. Rollback descarta tudo e propaga a falha
+            # em vez de mascarar com success:True (orfao flat sem set versionado).
+            logger.error(f"Failed to save question set version (rolling back): {version_err}", exc_info=True)
+            await db.rollback()
+            return {"success": False, "error": f"version_save_failed: {version_err}"}
         return {"success": True, "saved_count": len(request.questions)}
     except Exception as e:
-        logger.error(f"Failed to save questions: {e}")
+        logger.error(f"Failed to save questions: {e}", exc_info=True)
         try:
             await db.rollback()
             await db.execute(text("""
@@ -311,10 +327,14 @@ company_id: str = Depends(require_company_id)):
                 )
                 logger.info(f"Saved question set version for job {request.job_id}")
             except Exception as version_err:
-                logger.warning(f"Failed to save question set version: {version_err}")
+                # Audit C9/#1 (2026-06-05): set versionado NAO e opcional (mesma
+                # transacao do flat). Rollback + propaga a falha em vez de success:True.
+                logger.error(f"Failed to save question set version (rolling back): {version_err}", exc_info=True)
+                await db.rollback()
+                return {"success": False, "error": f"version_save_failed: {version_err}"}
             return {"success": True, "saved_count": len(request.questions)}
         except Exception as e2:
-            logger.error(f"Failed even after table creation: {e2}")
+            logger.error(f"Failed even after table creation: {e2}", exc_info=True)
             return {"success": False, "error": str(e2)}
 
 
@@ -340,7 +360,7 @@ company_id: str = Depends(require_company_id)):
             "created_at": qs.created_at.isoformat() if qs.created_at else None,
         }
     except Exception as e:
-        logger.error(f"Failed to get active question set: {e}")
+        logger.error(f"Failed to get active question set: {e}", exc_info=True)
         return {"success": False, "error": str(e)}
 
 
@@ -355,7 +375,7 @@ company_id: str = Depends(require_company_id)):
         versions = await sqs_svc.list_versions(db, job_id)
         return {"success": True, "versions": versions, "total": len(versions)}
     except Exception as e:
-        logger.error(f"Failed to list question set versions: {e}")
+        logger.error(f"Failed to list question set versions: {e}", exc_info=True)
         return {"success": False, "error": str(e)}
 
 
@@ -383,7 +403,7 @@ company_id: str = Depends(require_company_id)):
             "created_at": qs.created_at.isoformat() if qs.created_at else None,
         }
     except Exception as e:
-        logger.error(f"Failed to get question set version: {e}")
+        logger.error(f"Failed to get question set version: {e}", exc_info=True)
         return {"success": False, "error": str(e)}
 
 
@@ -398,5 +418,97 @@ company_id: str = Depends(require_company_id)):
         result = await sqs_svc.check_version_consistency(db, job_id)
         return {"success": True, **result}
     except Exception as e:
-        logger.error(f"Failed to check consistency: {e}")
+        logger.error(f"Failed to check consistency: {e}", exc_info=True)
         return {"success": False, "error": str(e)}
+
+
+# ── Regenerate questions ─────────────────────────────────────────────────────
+
+
+class RegenerateQuestionsRequest(BaseModel):
+    """Regeneração de perguntas WSI — company_id vem do JWT, não do payload."""
+    model_config = ConfigDict(extra="ignore")  # FE envia company_id; ignorar (REGRA 2: JWT é canônico)
+
+    job_title: str = "Professional"
+    current_questions: list[dict] = Field(default_factory=list)
+    technical_skills: list[str] = Field(default_factory=list)
+    behavioral_competencies: list[str] = Field(default_factory=list)
+    seniority: str | None = "pleno"
+    max_questions: int | None = None
+    job_vacancy_id: str | None = None
+
+
+class RegenerateQuestionsResponse(BaseModel):
+    success: bool
+    questions: list[WSIQuestionOutput]
+    questions_added: int
+    questions_removed: int
+    quality_warnings: list[str]
+
+
+@router.post("/regenerate-questions", response_model=RegenerateQuestionsResponse)
+async def regenerate_questions(
+    request: RegenerateQuestionsRequest,
+    wsi_svc: WSIService = Depends(get_wsi_service),
+    company_id: str = Depends(require_company_id),
+):
+    """Regenera perguntas WSI reutilizando a pipeline canonical do generate-questions.
+
+    Retorna no formato {success, questions, questions_added, questions_removed, quality_warnings}
+    esperado pelo wizard FE (useWizardFlow / WsiQuestionsPanel).
+
+    Diferença de generate-questions: não persiste sessão nem set — é uma operação
+    de pré-visualização/regeneração que o FE decide se salva depois.
+    """
+    all_skills = request.technical_skills or ["Problem Solving", "Communication"]
+    behavioral = request.behavioral_competencies or []
+    seniority = request.seniority or "pleno"
+    requested_count = request.max_questions or 5
+    mode = "full" if requested_count > 10 else "compact"
+
+    try:
+        wsi_questions = await wsi_svc.generate_from_simple_inputs(
+            skills=all_skills,
+            behavioral=behavioral,
+            seniority=seniority,
+            job_description=None,
+            mode=mode,
+            max_questions=requested_count,
+        )
+    except Exception as exc:
+        logger.error(
+            "regenerate-questions: generate_from_simple_inputs falhou: %s",
+            exc,
+            exc_info=True,
+        )
+        raise HTTPException(status_code=503, detail="Serviço WSI indisponível, tente novamente.")
+
+    session_id = f"regen_{uuid.uuid4().hex[:12]}"
+    questions: list[WSIQuestionOutput] = []
+    for idx, wq in enumerate(wsi_questions):
+        question_id = f"q_{session_id}_{idx + 1}"
+        bloom_level = _FRAMEWORK_BLOOM_MAP.get(wq.framework, 3)
+        category = _FRAMEWORK_CATEGORY_MAP.get(wq.framework, "technical")
+        questions.append(
+            WSIQuestionOutput(
+                id=question_id,
+                text=wq.question_text,
+                bloom_level=bloom_level,
+                bloom_level_name=BLOOM_LEVELS.get(bloom_level, BLOOM_LEVELS[3])["name"],
+                skill_targeted=wq.competency,
+                question_type=wq.question_type,
+                block_id=3 if category == "technical" else 4,
+                category=category,
+                is_eliminatory=False,
+            )
+        )
+
+    prev_count = len(request.current_questions)
+    new_count = len(questions)
+    return RegenerateQuestionsResponse(
+        success=True,
+        questions=questions,
+        questions_added=max(0, new_count - prev_count),
+        questions_removed=max(0, prev_count - new_count),
+        quality_warnings=[],
+    )

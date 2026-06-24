@@ -112,7 +112,12 @@ class TalentPoolReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAg
         """All tools for the talent pool domain (LangGraph uses full set)."""
         from lia_agents_core.tool_adapter import tool_definition_to_langchain_tool
 
-        tool_defs = get_talent_pool_tools() + self._get_all_enhanced_tools()
+        from app.domains.recruiter_assistant.agents.ui_tool_registry import (
+            get_open_ui_tools,
+            get_table_state_tools,
+        )
+        # Grant UI: open_ui + apply_table_state surface=talent_pool (ponte FE ativa).
+        tool_defs = get_talent_pool_tools() + get_open_ui_tools() + get_table_state_tools() + self._get_all_enhanced_tools()
         return [tool_definition_to_langchain_tool(td) for td in tool_defs]
 
     # ── Output extraction ────────────────────────────────────────────────────

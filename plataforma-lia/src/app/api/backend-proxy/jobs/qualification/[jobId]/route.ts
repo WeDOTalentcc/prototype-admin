@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
+import { getAuthHeaders } from '@/lib/api/auth-headers'
 import { validateParams, validateBody } from '@/lib/api/validate'
 import { z } from 'zod'
 
@@ -20,7 +21,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const backendUrl = `${BACKEND_URL}/api/v1/jobs/qualification/${jobId}`
     const response = await fetch(backendUrl, {
       method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(request),
     })
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
@@ -42,7 +43,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const backendUrl = `${BACKEND_URL}/api/v1/jobs/qualification/${jobId}/classify`
     const response = await fetch(backendUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(request),
     })
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
@@ -68,7 +69,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const backendUrl = `${BACKEND_URL}/api/v1/jobs/qualification/${jobId}/override`
     const response = await fetch(backendUrl, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(request),
       body: JSON.stringify(body),
     })
     if (!response.ok) {

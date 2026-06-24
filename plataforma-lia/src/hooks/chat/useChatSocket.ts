@@ -1,4 +1,5 @@
 "use client";
+import type { ResponseBlock } from "@/types/rrp-blocks";
 
 /**
  * useChatSocket — WebSocket connection management and event handling for LIA chat.
@@ -79,6 +80,7 @@ export interface UseChatSocketReturn {
   activePlanId: string | null;
 
   conversationIdFromWs: string | null;
+  clearActivityState: () => void;
 }
 
 export function useChatSocket({
@@ -101,6 +103,15 @@ export function useChatSocket({
   >([]);
   const [activePlanId, setActivePlanId] = useState<string | null>(null);
   const [thinkingSteps, setThinkingSteps] = useState<string[]>([]);
+  // (2026-06-05) Marca de fim-de-turno: começa `true` para que a PRIMEIRA
+  // atividade de cada turno LIMPE os passos do turno anterior (antes não havia
+  // reset → "understanding/composing" acumulavam entre turnos e dentro do turno
+  // a cada iteração do agentic_loop). Vira `false` na 1ª atividade do turno e
+  // volta a `true` no `message`/`error`. Não limpamos no fim do turno para o
+  // card persistir durante o hand-off gracioso até o próximo turno começar.
+  const turnClosedRef = useRef(true);
+  // BUG-7: track last wsSend timestamp to discard residual WS events (< 150ms)
+  const _lastSentMsRef = useRef(0);
   const [isThinking, setIsThinking] = useState(false);
   const [fairnessWarnings, setFairnessWarnings] = useState<string[]>([]);
   const [backgroundTasks, setBackgroundTasks] = useState<BackgroundTaskEvent[]>(
@@ -200,7 +211,15 @@ export function useChatSocket({
       case "thinking":
         setIsThinking(true);
         if (event.content) {
-          setThinkingSteps((prev) => [...prev, event.content as string]);
+          const _content = event.content as string;
+          // BUG-7: discard residual events from prior WS turn (within 150ms of wsSend)
+          if (turnClosedRef.current && Date.now() - _lastSentMsRef.current < 150) break;
+          const _reset = turnClosedRef.current;
+          if (_reset) turnClosedRef.current = false;
+          setThinkingSteps((prev) => {
+            const base = _reset ? [] : prev;
+            return base.includes(_content) ? base : [...base, _content];
+          });
         }
         break;
 
@@ -374,7 +393,17 @@ export function useChatSocket({
             : event.type === "tool_started"
               ? `\ud83d\udd27 ${_name}\u2026`
               : `\u2713 ${_name}`;
-        setThinkingSteps((prev) => [...prev, label]);
+        // Reset no 1º passo de um novo turno + dedupe: o agentic_loop reemite
+        // a mesma fase ("understanding"/"composing") a cada iteração; sem isto
+        // o card mostrava as fases repetidas N vezes e acumuladas entre turnos.
+        // BUG-7: discard residual events from prior WS turn (within 150ms of wsSend)
+        if (turnClosedRef.current && Date.now() - _lastSentMsRef.current < 150) break;
+        const _resetTurn = turnClosedRef.current;
+        if (_resetTurn) turnClosedRef.current = false;
+        setThinkingSteps((prev) => {
+          const base = _resetTurn ? [] : prev;
+          return base.includes(label) ? base : [...base, label];
+        });
         if (event.type === "tool_finished") {
           agentActivityBufferRef.current.push({
             kind: "tool",
@@ -386,11 +415,21 @@ export function useChatSocket({
                 : undefined,
           });
         } else if (event.type === "reasoning_step") {
-          agentActivityBufferRef.current.push({
-            kind: "reasoning",
-            name: (actEvent.label as string) || "",
-            status: "ok",
-          });
+          // Dedupe por fase no buffer persistido (vira message.metadata.
+          // agent_activity -> AgentActivitySummary): o agentic_loop reemite a
+          // mesma fase a cada iteração; sem isto o resumo histórico repetia
+          // "understanding"/"composing" N vezes. Buffer é resetado por turno.
+          const _phase = (actEvent.label as string) || "";
+          const _dup = agentActivityBufferRef.current.some(
+            (a) => a.kind === "reasoning" && a.name === _phase,
+          );
+          if (!_dup) {
+            agentActivityBufferRef.current.push({
+              kind: "reasoning",
+              name: _phase,
+              status: "ok",
+            });
+          }
         }
         if (typeof window !== "undefined") {
           window.dispatchEvent(
@@ -402,6 +441,7 @@ export function useChatSocket({
 
       case "message":
         setIsThinking(false);
+        turnClosedRef.current = true;
         hitlRef.current = null;
         setHitlPending(null);
         if (
@@ -435,12 +475,27 @@ export function useChatSocket({
               ? (eventRec.ui_action_params as Record<string, unknown>)
               : undefined;
           const _activity = agentActivityBufferRef.current;
+          const responseBlocks = Array.isArray(eventRec.response_blocks)
+            ? (eventRec.response_blocks as ResponseBlock[])
+            : undefined;
+          const wsStagePayload =
+            eventRec.ws_stage_payload &&
+            typeof eventRec.ws_stage_payload === "object"
+              ? (eventRec.ws_stage_payload as {
+                  stage: string
+                  data: Record<string, unknown>
+                  completeness?: number
+                  requires_approval?: boolean
+                })
+              : undefined;
           const extras =
-            uiAction || uiActionParams || _activity.length
+            uiAction || uiActionParams || _activity.length || responseBlocks || wsStagePayload
               ? {
                   ui_action: uiAction,
                   ui_action_params: uiActionParams,
                   agent_activity: _activity.length ? [..._activity] : undefined,
+                  response_blocks: responseBlocks,
+                  ws_stage_payload: wsStagePayload,
                 }
               : undefined;
           agentActivityBufferRef.current = [];
@@ -448,18 +503,38 @@ export function useChatSocket({
         }
         break;
 
-      case "error":
+      case "error": {
         // BUG-AUDIT #277 / H7: garantir que "LIA digitando" sai quando
         // qualquer caminho (WS, SSE) reporta erro — sem isso o indicador
         // ficava preso ligado quando o stream quebrava antes do primeiro
         // evento "message".
         setIsThinking(false);
+        turnClosedRef.current = true;
+        // Harness fix (2026-06-06): NUNCA engolir o erro. O produtor
+        // (agent_chat_sse.py / chat.py) ja manda uma mensagem clara
+        // (ex: budget_exhausted → "Limite diario de uso de IA atingido...").
+        // Surfacar como mensagem visivel ao usuario — sem isso um limite de
+        // cota ou falha de LLM se disfarca de "chat morto". Mesmo caminho do
+        // branch "clarification".
+        const errEvent = event as unknown as {
+          message?: string;
+          error_code?: string;
+        };
+        const errMessage =
+          errEvent.message?.trim() ||
+          "Nao consegui responder agora. Tente novamente em instantes.";
+        onCompleteRef.current?.(errMessage, undefined, {
+          isError: true,
+          errorCode: errEvent.error_code,
+        });
         break;
+      }
 
       case "clarification": {
         // Tier 8 fallback from cascaded_router — backend sends:
         // { type: "clarification", question: string, options: string[] | {label,value}[] }
         setIsThinking(false);
+        turnClosedRef.current = true;
         const evt = event as unknown as {
           question?: string;
           options?: Array<string | { label?: string; value?: string }>;
@@ -498,19 +573,62 @@ export function useChatSocket({
     transportMode,
     connect,
     disconnect,
-    sendMessage: wsSend,
+    sendMessage: _wsSendRaw,
     sendRaw,
     clearTokens,
-    sendMessageViaSSE,
+    sendMessageViaSSE: _sendViaSSERaw,
   } = useAgentStreaming(sessionId, { authToken: wsAuthToken }, handleEvent);
 
+  // BUG-3 fix: isConnected from useAgentStreaming is stale in wsAuthToken effect closure.
+  // Use a ref that stays current without triggering the effect on every isConnected change.
+  const _isConnectedForReconnRef = useRef(isConnected);
   useEffect(() => {
-    if (wsAuthToken && isConnected) {
+    _isConnectedForReconnRef.current = isConnected;
+  });
+  useEffect(() => {
+    if (wsAuthToken && _isConnectedForReconnRef.current) {
       disconnect();
       setTimeout(() => connect(), 50);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [wsAuthToken]);
+
+  // Fix reasoning bleed (2026-06-06): reseta thinkingSteps + turnClosedRef ao
+  // ENVIAR nova mensagem (sinal inequivoco de novo turno). Sem isto, os passos
+  // de turnos anteriores vazavam no expander "X passos" do turno atual (o reset
+  // via turnClosedRef no fim do turno SSE nao era confiavel). Produtor unico.
+  const wsSend = useCallback(
+    (content: string, context: Record<string, unknown>, domain: string) => {
+      _lastSentMsRef.current = Date.now();
+      setThinkingSteps([]);
+      agentActivityBufferRef.current = [];
+      turnClosedRef.current = true;
+      return _wsSendRaw(content, context, domain);
+    },
+    [_wsSendRaw],
+  );
+  const sendMessageViaSSE = useCallback(
+    (
+      sid: string,
+      message: string,
+      domain?: string,
+      context?: Record<string, unknown>,
+      conversationId?: string | null,
+    ) => {
+      _lastSentMsRef.current = Date.now();
+      setThinkingSteps([]);
+      agentActivityBufferRef.current = [];
+      turnClosedRef.current = true;
+      _sendViaSSERaw(sid, message, domain, context, conversationId);
+    },
+    [_sendViaSSERaw],
+  );
+
+  const clearActivityState = useCallback(() => {
+    setThinkingSteps([]);
+    agentActivityBufferRef.current = [];
+    turnClosedRef.current = true;
+  }, []);
 
   return {
     tokens,
@@ -540,5 +658,6 @@ export function useChatSocket({
     activePlanId,
     conversationIdFromWs,
     setIsThinking, // expor para que useChatMessages dispare o indicador "LIA digitando" também no caminho REST/SSE (BUG-13)
+    clearActivityState,
   };
 }

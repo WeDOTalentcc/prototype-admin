@@ -10,6 +10,7 @@ import {
   Scale, ClipboardList, FileText, Edit, Calendar, Play, Pause, AlertCircle
 } from 'lucide-react'
 import { useScreeningConfig, limitToApprovalPreset, approvalPresetToLimit } from '@/hooks/recruitment/useScreeningConfig'
+import { wsiPresetToScore } from '@/lib/wsi/visual'
 import { CompanyBankQuestions } from './CompanyBankQuestions'
 import { CompanyDefaultQuestions } from "./CompanyDefaultQuestions"
 import { CustomQuestions } from './CustomQuestions'
@@ -65,7 +66,7 @@ export const SCREENING_SECTIONS = [
     id: "descricao",
     title: "Descrição do Cargo",
     icon: FileText,
-    description: "Informações da vaga para a LIA",
+    description: "Informações da vaga para a IA",
   },
   {
     id: "perguntas",
@@ -78,7 +79,7 @@ export const SCREENING_SECTIONS = [
 function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiveSection, _hideOwnSidebar }: ScreeningConfigManagerProps & { _externalActiveSection?: string; _hideOwnSidebar?: boolean }) {
   const core = useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, _externalActiveSection, _hideOwnSidebar })
   const {
-    activeSection, companyQuestions, configDone, currentSection, customQuestions, disabledCompanyQIds, editAutoApprovalPreset, editAvailableHours, editAvailableHoursInherited, editCalendarProvider, editChannels, editChannelsMasterEnabled, editWhatsappMode, editFallbackOrder, editInterviewDuration, editMaxRetries, editMinScorePreset, editPrimaryChannel, editSchedulingEnabled, editSchedulingMinScorePreset, editTimeoutHours, getConfigStatusInfo, isEditingScreening, isEditingScreeningConfig, screeningConfigLoadError, retryScreeningConfig, jdDone, questionsDone, resetScreeningEditing, screeningConfig, selectedBankQuestions, setActiveSection, setEditAutoApprovalPreset, setEditAvailableHours, setEditAvailableHoursInherited, setEditCalendarProvider, setEditChannels, setEditChannelsMasterEnabled, setEditWhatsappMode, setEditFallbackOrder, setEditInterviewDuration, setEditMaxRetries, setEditMinScorePreset, setEditPrimaryChannel, setEditSchedulingEnabled, setEditSchedulingMinScorePreset, setEditTimeoutHours, setIsEditingScreening, setIsEditingScreeningConfig, setShowScreeningToggleConfirm, showScreeningToggleConfirm, updateScreeningConfig,
+    companyScreeningDefaults, activeSection, companyQuestions, configDone, currentSection, customQuestions, disabledCompanyQIds, editAutoApprovalPreset, editAvailableHours, editAvailableHoursInherited, editCalendarProvider, editChannels, editChannelsMasterEnabled, editWhatsappMode, editFallbackOrder, editInterviewDuration, editMaxRetries, editMinScorePreset, editPrimaryChannel, editSchedulingEnabled, editSchedulingMinScorePreset, editTimeoutHours, getConfigStatusInfo, isEditingScreening, isEditingScreeningConfig, screeningConfigLoadError, retryScreeningConfig, jdDone, questionsDone, resetScreeningEditing, screeningConfig, selectedBankQuestions, setActiveSection, setEditAutoApprovalPreset, setEditAvailableHours, setEditAvailableHoursInherited, setEditCalendarProvider, setEditChannels, setEditChannelsMasterEnabled, setEditWhatsappMode, setEditFallbackOrder, setEditInterviewDuration, setEditMaxRetries, setEditMinScorePreset, setEditPrimaryChannel, setEditSchedulingEnabled, setEditSchedulingMinScorePreset, setEditTimeoutHours, setIsEditingScreening, setIsEditingScreeningConfig, setShowScreeningToggleConfirm, showScreeningToggleConfirm, updateScreeningConfig,
   } = core
 
   if (screeningConfigLoadError) {
@@ -108,7 +109,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                   onClick={() => setActiveSection(section.id)}
                   className={`w-full flex items-center gap-3 px-3 py-3 rounded-md text-left transition-colors motion-reduce:transition-none font-open-sans text-xs leading-[1.125rem] font-medium ${
  activeSection === section.id
-                      ? 'bg-lia-bg-secondary border border-lia-btn-primary-bg text-wedo-cyan-dark'
+                      ? 'bg-lia-bg-secondary border border-lia-btn-primary-bg text-wedo-cyan-text'
                       : 'hover:bg-lia-interactive-hover text-lia-text-primary border border-transparent'
                   }`}
                   
@@ -174,29 +175,22 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                           setEditPrimaryChannel(screeningConfig.screening_channels?.primary_channel ?? 'chat_web')
                           setEditFallbackOrder(screeningConfig.screening_channels?.fallback_order ?? ['whatsapp'])
                           setEditMinScorePreset(screeningConfig.settings?.min_score_preset ?? 'recommended')
-                          setEditTimeoutHours(screeningConfig.settings?.response_timeout_hours ?? 48)
-                          setEditMaxRetries(screeningConfig.settings?.max_retries ?? 2)
+                          setEditTimeoutHours(screeningConfig.settings?.response_timeout_hours ?? companyScreeningDefaults?.settings?.response_timeout_hours ?? 48)
+                          setEditMaxRetries(screeningConfig.settings?.max_retries ?? companyScreeningDefaults?.settings?.max_retries ?? 2)
                           setEditSchedulingEnabled(screeningConfig.scheduling?.auto_enabled ?? true)
                           setEditSchedulingMinScorePreset(screeningConfig.scheduling?.min_score_for_auto_preset ?? 'recommended')
                           setEditCalendarProvider(screeningConfig.scheduling?.calendar_provider ?? 'Microsoft')
                           setEditAvailableHours(screeningConfig.scheduling?.available_hours ?? '9h-18h')
                           setEditAvailableHoursInherited(screeningConfig.scheduling?.available_hours_inherited ?? true)
                           setEditInterviewDuration(screeningConfig.scheduling?.interview_duration_min ?? 60)
-                          setEditAutoApprovalPreset(screeningConfig.settings?.auto_approval_preset ?? limitToApprovalPreset(screeningConfig.settings?.auto_approval_limit))
+                          setEditAutoApprovalPreset(screeningConfig.settings?.auto_approval_preset ?? limitToApprovalPreset(screeningConfig.settings?.auto_approval_limit) ?? companyScreeningDefaults?.settings?.auto_approval_preset ?? 'recommended')
                         }
                       }}>
                         Cancelar
                       </Button>
                       <Button size="sm" className="gap-1.5 text-xs rounded-md bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover" onClick={async () => {
                         try {
-                          // Task #512 (PR3 #497) — escala WSI 0-10
-                          const presetToScore = (preset: string) => {
-                            switch(preset) {
-                              case 'rigorous': return 8.4
-                              case 'flexible': return 6.0
-                              default: return 7.6
-                            }
-                          }
+                          // wsiPresetToScore importado de @/lib/wsi/visual
                           const success = await updateScreeningConfig({
                             channels_master_enabled: editChannelsMasterEnabled,
                             channels: {
@@ -218,7 +212,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                                 }),
                             },
                             settings: {
-                              min_score: presetToScore(editMinScorePreset),
+                              min_score: wsiPresetToScore(editMinScorePreset),
                               min_score_preset: editMinScorePreset,
                               response_timeout_hours: editTimeoutHours,
                               max_retries: editMaxRetries,
@@ -229,7 +223,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                             },
                             scheduling: {
                               auto_enabled: editSchedulingEnabled,
-                              min_score_for_auto: presetToScore(editSchedulingMinScorePreset),
+                              min_score_for_auto: wsiPresetToScore(editSchedulingMinScorePreset),
                               min_score_for_auto_preset: editSchedulingMinScorePreset,
                               calendar_provider: editCalendarProvider,
                               available_hours: editAvailableHours,
@@ -249,6 +243,46 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                       }}>
                         <Save className="w-3.5 h-3.5" />
                         Salvar
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-xs rounded-md gap-1 text-lia-text-secondary hover:text-lia-text-primary"
+                        title="Carregar padrões de triagem configurados em Dados da Empresa"
+                        onClick={async () => {
+                          try {
+                            const res = await fetch("/api/backend-proxy/company/screening-config-defaults")
+                            if (!res.ok) return
+                            const d = await res.json()
+                            const cfg = d?.screening_config_defaults ?? d
+                            const s = cfg?.settings ?? {}
+                            const ch = cfg?.channels ?? {}
+                            if (s.min_score != null) {
+                              setEditMinScorePreset(s.min_score_preset ?? "custom")
+                            }
+                            if (s.response_timeout_hours != null) setEditTimeoutHours(Number(s.response_timeout_hours))
+                            if (s.max_retries != null) setEditMaxRetries(Number(s.max_retries))
+                            if (Object.keys(ch).length > 0) {
+                              setEditChannels({
+                                whatsapp: ch.whatsapp?.enabled ?? true,
+                                chat_web: ch.chat_web?.enabled ?? true,
+                                phone_pstn: ch.phone_pstn?.enabled ?? false,
+                                voice_web: ch.voice_web?.enabled ?? false,
+                              })
+                            }
+                            const sched = cfg?.scheduling ?? {}
+                            if (sched.auto_enabled != null) setEditSchedulingEnabled(Boolean(sched.auto_enabled))
+                            if (sched.interview_duration_min != null) setEditInterviewDuration(Number(sched.interview_duration_min))
+                            if (typeof window !== "undefined") {
+                              import("sonner").then(({ toast }) =>
+                                toast.success("Padrões da empresa carregados. Revise e salve.")
+                              )
+                            }
+                          } catch {}
+                        }}
+                      >
+                        <RotateCcw className="w-3 h-3" />
+                        Restaurar padrão
                       </Button>
                     </div>
                   )}
@@ -288,7 +322,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                         />
                       </button>
                     ) : job.screeningStatus === 'completed' ? (
-                      <span className="text-micro font-medium px-2 py-0.5 rounded-full bg-wedo-cyan/15 text-wedo-cyan-dark">
+                      <span className="text-micro font-medium px-2 py-0.5 rounded-full bg-wedo-cyan/15 text-wedo-cyan-text">
                         Concluída
                       </span>
                     ) : (
@@ -368,7 +402,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                     </div>
                     <p className="text-xs leading-relaxed text-lia-text-secondary"  aria-live="polite" aria-atomic="true">
                       {showScreeningToggleConfirm === 'activate'
-                        ? 'A LIA começará a avaliar candidatos automaticamente conforme as configurações definidas neste roteiro.'
+                        ? 'A IA começará a avaliar candidatos automaticamente conforme as configurações definidas neste roteiro.'
                         : 'Candidatos em avaliação serão mantidos no estado atual até a reativação. Nenhum novo candidato será triado enquanto a triagem estiver pausada.'
                       }
                     </p>

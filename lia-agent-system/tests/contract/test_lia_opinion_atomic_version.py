@@ -36,7 +36,7 @@ import pytest
 
 def test_repo_exposes_atomic_version_method():
     """OpinionsRepository must expose create_wsi_opinion_with_atomic_version."""
-    from app.domains.opinions.repositories.opinions_repository import (
+    from app.repositories.opinions_repository import (
         OpinionsRepository,
     )
 
@@ -49,7 +49,7 @@ def test_repo_exposes_atomic_version_method():
 
 def test_atomic_version_method_signature():
     """Pin the kwargs surface so endpoint callers and tests cannot drift."""
-    from app.domains.opinions.repositories.opinions_repository import (
+    from app.repositories.opinions_repository import (
         OpinionsRepository,
     )
 
@@ -84,7 +84,7 @@ def test_atomic_version_method_signature():
 def test_repo_exposes_company_id_for_vacancy_helper():
     """get_company_id_for_vacancy is the repo-side tenant lookup so the
     endpoint never trusts the request payload for company_id."""
-    from app.domains.opinions.repositories.opinions_repository import (
+    from app.repositories.opinions_repository import (
         OpinionsRepository,
     )
 
@@ -100,7 +100,7 @@ def test_repo_exposes_company_id_for_vacancy_helper():
 def test_create_wsi_opinion_rejects_empty_company_id():
     """ADR-001 anatomy: every public repo write must call _require_company_id.
     Empty company_id must raise ValueError before any DB call."""
-    from app.domains.opinions.repositories.opinions_repository import (
+    from app.repositories.opinions_repository import (
         OpinionsRepository,
     )
 
@@ -138,7 +138,7 @@ def test_create_wsi_opinion_rejects_empty_company_id():
 def test_create_wsi_opinion_rejects_missing_candidate_id():
     """candidate_id is structurally required — without it the archive
     UPDATE would have no scope and could clobber other candidates."""
-    from app.domains.opinions.repositories.opinions_repository import (
+    from app.repositories.opinions_repository import (
         OpinionsRepository,
     )
 
@@ -174,7 +174,7 @@ def test_create_wsi_opinion_rejects_missing_candidate_id():
 def test_create_wsi_opinion_issues_exactly_two_statements():
     """One UPDATE (archive previous current) + one INSERT (atomic write).
     Anything more would re-open a multi-statement race window."""
-    from app.domains.opinions.repositories.opinions_repository import (
+    from app.repositories.opinions_repository import (
         OpinionsRepository,
     )
 
@@ -225,7 +225,7 @@ def test_create_wsi_opinion_atomic_sql_contains_select_max_inside_insert():
     BOTH ``INSERT INTO lia_opinions`` AND ``SELECT MAX(version)`` — proving
     that the next-version computation lives inside the same statement that
     inserts, eliminating the read-then-write race condition."""
-    from app.domains.opinions.repositories.opinions_repository import (
+    from app.repositories.opinions_repository import (
         OpinionsRepository,
     )
 
@@ -289,7 +289,7 @@ def test_create_wsi_opinion_atomic_sql_contains_select_max_inside_insert():
 def test_create_wsi_opinion_archive_scope_includes_company_id():
     """The archive UPDATE must filter by company_id — without it a writer
     could deactivate is_current=true rows belonging to another tenant."""
-    from app.domains.opinions.repositories.opinions_repository import (
+    from app.repositories.opinions_repository import (
         OpinionsRepository,
     )
 
@@ -335,7 +335,7 @@ def test_create_wsi_opinion_does_not_commit_inside_repo():
     """Transaction ownership belongs to the request scope (FastAPI Depends).
     Committing inside the repo would break atomicity with wsi_results +
     wsi_sessions writes that the endpoint performs in the same request."""
-    from app.domains.opinions.repositories.opinions_repository import (
+    from app.repositories.opinions_repository import (
         OpinionsRepository,
     )
 

@@ -34,6 +34,7 @@ from pydantic import BaseModel
 from app.shared.pii_masking import mask_pii
 from fastapi import Depends
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.errors import LIAError
 from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
@@ -173,7 +174,7 @@ company_id: str = Depends(require_company_id)) -> VoiceStreamStartResponse:
         raise
     except Exception as e:
         logger.error("[VOICE STREAM] Start session error: %s", e)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.websocket("/voice-stream/live")

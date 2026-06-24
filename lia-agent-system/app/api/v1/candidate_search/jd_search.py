@@ -17,6 +17,7 @@ from ._shared import (
     get_pearch_service,
 )
 from app.shared.security.require_company_id import require_company_id
+from app.domains.recruitment.repositories.search_feedback_repository import SearchFeedbackRepository
 
 router = APIRouter()
 
@@ -152,7 +153,7 @@ company_id: str = Depends(require_company_id)):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Job description search failed: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/candidates/refine", response_model=SearchResponseDTO)
@@ -163,6 +164,7 @@ async def refine_search(
     require_emails: bool = Query(False, description="Task #1219 — load-more do modo 'Híbrida com email': completa o incremento só com candidatos COM email"),
     require_phone_numbers: bool = Query(False, description="Apenas perfis com telefone"),
     docid_blacklist: str | None = Query(None, description="docids já exibidos (CSV) — não repetir no incremento"),
+    search_fingerprint: str | None = Query(None, description="Fingerprint da busca original — auto-exclui candidatos com dislike"),
     db: AsyncSession = Depends(get_db)
 ,
     pearch_svc: PearchService = Depends(get_pearch_service),
@@ -174,17 +176,29 @@ company_id: str = Depends(require_company_id)):
     Use para adicionar critérios ou pedir mais resultados sem custo completo.
     """
     try:
-        _blacklist = (
-            [d.strip() for d in docid_blacklist.split(",") if d.strip()]
-            if docid_blacklist else None
+        # Build effective docid blacklist: explicit + auto-disliked via search_fingerprint
+        _explicit_blacklist: set[str] = (
+            {d.strip() for d in docid_blacklist.split(",") if d.strip()}
+            if docid_blacklist else set()
         )
+        if search_fingerprint:
+            _feedback_repo = SearchFeedbackRepository(db=db)
+            _disliked_ids = await _feedback_repo.get_disliked_candidate_ids(
+                company_id=company_id,
+                search_fingerprint=search_fingerprint,
+            )
+            # NOTE: candidate_id (local UUID) may differ from Pearch docid namespace.
+            # If they differ, Pearch silently ignores unknown docids — UX degradation only, no data risk.
+            _explicit_blacklist.update(_disliked_ids)
+        _effective_blacklist: list[str] | None = list(_explicit_blacklist) if _explicit_blacklist else None
+
         result = await pearch_svc.refine_search(
             thread_id=thread_id,
             additional_query=additional_query,
             limit=limit,
             require_emails=require_emails,
             require_phone_numbers=require_phone_numbers,
-            docid_blacklist=_blacklist,
+            docid_blacklist=_effective_blacklist,
         )
         
         candidates = [
@@ -221,7 +235,7 @@ company_id: str = Depends(require_company_id)):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Refine failed: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/candidates/local", response_model=SearchResponseDTO)
@@ -274,7 +288,7 @@ company_id: str = Depends(require_company_id)):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Local search failed: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 
 class ParseQueryRequest(WeDoBaseModel):
@@ -291,6 +305,7 @@ class ParsedEntities(BaseModel):
     skills: list[str] = Field(default_factory=list)
     seniority: str | None = None
     company: str | None = None
+    work_model: str | None = None
 
 
 class ParseQueryResponse(BaseModel):
@@ -299,6 +314,66 @@ class ParseQueryResponse(BaseModel):
     entities: ParsedEntities
     confidence: float = 0.0
     suggestions: list[str] = Field(default_factory=list)
+
+
+def _extract_search_entities(query: str) -> dict:
+    """
+    Extrai entidades de uma query de busca (work_model, location, job_title, etc.).
+    Thin wrapper testável que encapsula a lógica de regex do handler.
+    """
+    import re as _re
+
+    def _normalize(t):
+        import unicodedata
+        return unicodedata.normalize("NFD", t).encode("ascii", "ignore").decode("ascii").lower()
+
+    q = query.lower().strip()
+    result = {"work_model": None, "location": None, "job_title": None, "seniority": None,
+              "years_experience": None, "skills": [], "industry": None, "company": None}
+
+    _work_model_map = {
+        "remote": "remote", "remoto": "remote",
+        "hibrido": "hybrid", "presencial": "onsite",
+        "home office": "remote", "anywhere": "remote", "global": "remote",
+    }
+    _work_model_accented = {"híbrido": "hybrid"}
+    _wm_terms = list(_work_model_map.keys()) + list(_work_model_accented.keys())
+    wm_pat = r"\b(" + "|".join(_re.escape(t) for t in sorted(_wm_terms, key=len, reverse=True)) + r")\b"
+    wm_m = _re.search(wm_pat, q, _re.IGNORECASE)
+    if wm_m:
+        _raw = wm_m.group(0).lower()
+        result["work_model"] = _work_model_accented.get(_raw) or _work_model_map.get(_raw, _raw)
+
+    # Simplified location check (cities only, not full list)
+    # BUG-LOCATION-DIACRITICS (2026-06-09): normalizar query e cidades para cobrir
+    # inputs sem acento ("sao paulo" vs "sao paulo").
+    cities = ["sao paulo", "sp", "rio de janeiro", "rj", "belo horizonte", "bh",
+              "brasilia", "df", "curitiba", "porto alegre", "poa", "salvador",
+              "fortaleza", "recife", "manaus", "florianopolis", "campinas",
+              "brasil", "brazil", "portugal", "argentina"]
+    _city_display = {"sao paulo": "Sao Paulo", "rio de janeiro": "Rio de Janeiro",
+                     "belo horizonte": "Belo Horizonte", "brasilia": "Brasilia",
+                     "florianopolis": "Florianopolis", "porto alegre": "Porto Alegre"}
+    def _ascii_norm(t):
+        import unicodedata as _ud
+        return _ud.normalize("NFD", t).encode("ascii", "ignore").decode("ascii").lower()
+    q_norm = _ascii_norm(q)
+    city_pat = r"\b(" + "|".join(_re.escape(c) for c in sorted(cities, key=len, reverse=True)) + r")\b"
+    loc_m = _re.search(city_pat, q_norm, _re.IGNORECASE)
+    if loc_m:
+        matched = loc_m.group(0).lower()
+        result["location"] = _city_display.get(matched, matched).title()
+
+    job_titles_sample = [
+        "product manager", "desenvolvedor", "developer", "engenheiro de software",
+        "software engineer", "data scientist", "analista", "designer",
+    ]
+    jt_pat = r"\b(" + "|".join(_re.escape(t) for t in sorted(job_titles_sample, key=len, reverse=True)) + r")\b"
+    jt_m = _re.search(jt_pat, q, _re.IGNORECASE)
+    if jt_m:
+        result["job_title"] = jt_m.group(0).strip().title()
+
+    return result
 
 
 @router.post("/parse-query", response_model=ParseQueryResponse)
@@ -341,15 +416,44 @@ async def parse_search_query(request: ParseQueryRequest, company_id: str = Depen
         'amapá', 'ap', 'rondônia', 'ro', 'roraima', 'rr'
     ]
     
-    work_models = ['remote', 'remoto', 'híbrido', 'hibrido', 'presencial', 'home office', 'anywhere', 'global']
+    # work_model terms extraídos SEPARADAMENTE de location — não são cidades.
+    _work_model_map = {
+        'remote': 'remote', 'remoto': 'remote',
+        'hibrido': 'hybrid', 'presencial': 'onsite',
+        'home office': 'remote', 'anywhere': 'remote', 'global': 'remote',
+    }
+    # 'híbrido' com acento tratado via normalização abaixo
+    _work_model_accented = {'híbrido': 'hybrid'}
+
     countries_regions = ['brasil', 'brazil', 'usa', 'eua', 'estados unidos', 'europa', 'latam', 'américa latina', 'portugal', 'argentina', 'chile', 'méxico', 'canada', 'uk', 'reino unido', 'alemanha', 'espanha']
-    
-    all_locations = brazilian_cities + brazilian_states + work_models + countries_regions
-    location_pattern = r'\b(' + '|'.join(re.escape(loc) for loc in all_locations) + r')\b'
-    
-    match = re.search(location_pattern, query, re.IGNORECASE)
+
+    # 1a. Work model — primeiro, antes de location (evita misclassificação)
+    _wm_terms = list(_work_model_map.keys()) + list(_work_model_accented.keys())
+    wm_pattern = r'\b(' + '|'.join(re.escape(t) for t in sorted(_wm_terms, key=len, reverse=True)) + r')\b'
+    wm_match = re.search(wm_pattern, query, re.IGNORECASE)
+    if wm_match:
+        _raw = wm_match.group(0).lower()
+        entities.work_model = _work_model_accented.get(_raw) or _work_model_map.get(_raw, _raw)
+        confidence += 0.2
+
+    # 1b. Location — apenas cidades/estados/países (sem work_model)
+    # BUG-LOCATION-DIACRITICS (2026-06-09): normalizar query para cobrir inputs
+    # sem acento ("sao paulo" vs "sao paulo"). Busca em q_ascii mas preserva
+    # nome original para display.
+    import unicodedata as _ud_loc
+    def _loc_norm(t):
+        return _ud_loc.normalize("NFD", t).encode("ascii", "ignore").decode("ascii").lower()
+    q_ascii = _loc_norm(query)
+    all_locations = brazilian_cities + brazilian_states + countries_regions
+    all_locations_ascii = [_loc_norm(loc) for loc in all_locations]
+    location_pattern = r'\b(' + '|'.join(re.escape(loc) for loc in all_locations_ascii) + r')\b'
+
+    match = re.search(location_pattern, q_ascii, re.IGNORECASE)
     if match:
-        entities.location = match.group(0).strip().title()
+        # recuperar nome original com acento para exibicao
+        matched_ascii = match.group(0).lower()
+        orig_name = next((o for o, a in zip(all_locations, all_locations_ascii) if a == matched_ascii), match.group(0))
+        entities.location = orig_name.strip().title()
         confidence += 0.2
     else:
         em_pattern = r'\bem\s+([a-záàâãéèêíïóôõöúçñ\s]{3,25})(?:\s+com|\s+que|\s+de|\s+e\s|,|$)'
@@ -642,4 +746,5 @@ from app.api.v1.candidate_search.contact import RevealContactResponse  # noqa: F
 
 # Sprint F.3 #25 canonical-fix: RevealCostEstimate moved to api/v1/candidate_search/contact.py
 from app.api.v1.candidate_search.contact import RevealCostEstimate  # noqa: F401  (re-export for backward compat)
+from app.shared.errors import LIAError
 

@@ -274,9 +274,9 @@ export function MultimodalUpload({
                 <span className={cn(
                   "inline-flex items-center gap-1 text-micro mt-1 px-2 py-0.5 rounded-full",
                   resultType === 'resume' 
-                    ? "bg-wedo-purple/15 text-wedo-purple"
+                    ? "bg-wedo-purple/15 text-wedo-purple-text"
                     : resultType === 'image'
-                      ? "bg-wedo-cyan/15 text-wedo-cyan-dark"
+                      ? "bg-wedo-cyan/15 text-wedo-cyan-text"
                       : "bg-status-warning/15 text-status-warning"
                 )}>
                   {resultType === 'resume' ? 'Currículo' : resultType === 'image' ? 'Imagem' : 'Documento'}

@@ -26,6 +26,7 @@ from app.domains.job_management.services.wizard_data_priority_service import (
 )
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+from app.shared.errors import LIAError
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -155,7 +156,7 @@ company_id: str = Depends(require_company_id)) -> FieldSuggestionsResponse:
         raise
     except Exception as e:
         logger.error(f"Error getting suggestion for field {field}: {e}")
-        raise HTTPException(status_code=500, detail=f"Error getting suggestion: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/suggestions/all", response_model=None)
@@ -231,7 +232,7 @@ company_id: str = Depends(require_company_id)) -> AllFieldSuggestionsResponse:
         raise
     except Exception as e:
         logger.error(f"Error getting all suggestions: {e}")
-        raise HTTPException(status_code=500, detail=f"Error getting suggestions: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/similar-jobs", response_model=None)
@@ -270,7 +271,7 @@ company_id: str = Depends(require_company_id)) -> list[SimilarJobResponse]:
         raise
     except Exception as e:
         logger.error(f"Error getting similar jobs: {e}")
-        raise HTTPException(status_code=500, detail=f"Error finding similar jobs: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/data-coverage", response_model=None)
@@ -326,7 +327,7 @@ company_id: str = Depends(require_company_id)) -> dict[str, Any]:
         raise
     except Exception as e:
         logger.error(f"Error getting data coverage: {e}")
-        raise HTTPException(status_code=500, detail=f"Error getting coverage: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/sources-priority", response_model=None)

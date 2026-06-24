@@ -10,6 +10,28 @@ from app.domains.registry import register_domain
 
 logger = logging.getLogger(__name__)
 
+def _normalize_calibration_candidate(c: dict) -> dict:
+    """P2.6-BE: Normaliza shape de candidato para CalibrationResultCard.
+
+    Suporta multiplos shapes (sourcing, db-fallback, custom agents).
+    score=0.0 padrao: candidatos de calibracao ainda nao foram pontuados;
+    o recrutador avalia via aprovacao/rejeicao.
+    """
+    return {
+        "id": str(c.get("id") or c.get("candidate_id") or ""),
+        "name": c.get("name") or c.get("full_name") or "Candidato",
+        "score": float(
+            c.get("score")
+            or c.get("calibration_score")
+            or c.get("match_score")
+            or c.get("ai_score")
+            or 0.0
+        ),
+        "stage": c.get("stage") or c.get("current_stage") or c.get("current_title"),
+    }
+
+
+
 # Fase 5: _KEYWORD_ACTION_MAP loaded from capabilities.yaml (LIA-I05)
 _capabilities_yaml_path = Path(__file__).parent / 'config' / 'capabilities.yaml'
 _KEYWORD_ACTION_MAP: dict[str, str] = (
@@ -208,9 +230,29 @@ class AgentStudioDomain(ComplianceDomainPrompt):
                 "\n\nAvalie cada perfil com 👍 (aprovar) ou 👎 (rejeitar) para calibrar o agente."
             )
 
+            # P2.6-BE: emitir response_blocks calibration_result p/ CalibrationResultCard
+            _candidates_normalized = [
+                _normalize_calibration_candidate(c) for c in candidates[:20]
+            ]
+            _scores = [c["score"] for c in _candidates_normalized if c["score"] > 0]
+            _average_score = round(sum(_scores) / len(_scores), 1) if _scores else 0.0
+
             return DomainResponse.success_response(
                 message=msg,
-                data={"candidates": candidates, "total": len(candidates), "agent_id": agent_id},
+                data={
+                    "candidates": candidates,
+                    "total": len(candidates),
+                    "agent_id": agent_id,
+                    "response_blocks": [
+                        {
+                            "type": "calibration_result",
+                            "data": {
+                                "candidates": _candidates_normalized,
+                                "average_score": _average_score,
+                            },
+                        }
+                    ],
+                },
                 domain_id=self.domain_id,
                 action_id="calibrate_agent",
                 suggestions=["Aprovar candidato", "Rejeitar candidato", "Ver estratégia do agente"],
@@ -578,6 +620,28 @@ class AgentStudioDomain(ComplianceDomainPrompt):
                     return DomainResponse.error_response(error="Agente não encontrado.")
                 if agent.status not in ("active", "draft"):
                     return DomainResponse.error_response(error="Agente não está ativo.")
+
+                # ── P0-2 Onda 0 (2026-06-12): review gate ────────────────────────────────
+                # Agentes instalados do marketplace ficam em pending_review ate aprovacao
+                # explicita de admin WeDOTalent. O gate verifica se o listing associado
+                # (se existir) esta em pending_review — e bloqueia a execucao ate aprovacao.
+                # Agentes criados diretamente pelo tenant (sem listing) nao tem este gate.
+                _listing = getattr(agent, "marketplace_listing", None)
+                if _listing is not None:
+                    _listing_status = getattr(_listing, "status", None) or "pending_review"
+                    if _listing_status == "pending_review":
+                        logger.warning(
+                            "[AgentStudio][P0-2] Execute bloqueado: agent=%s listing_status=%s — aguarda aprovacao admin",
+                            agent_id, _listing_status,
+                        )
+                        return DomainResponse.error_response(
+                            error=(
+                                f"Agente '{agent.name}' aguarda aprovacao de admin WeDOTalent "
+                                "antes de poder executar. Status: pending_review."
+                            ),
+                            domain_id=self.domain_id,
+                            action_id="execute_custom_agent",
+                        )
 
                 runtime = get_or_create_runtime(
                     agent_id=str(agent.id), agent_name=agent.name,

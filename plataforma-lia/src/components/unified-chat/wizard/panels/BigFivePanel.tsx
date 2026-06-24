@@ -83,7 +83,7 @@ export function BigFivePanel({ data }: Props) {
             <div className="flex items-center justify-between text-xs">
               <span className="text-lia-text-primary font-medium">
                 {t.rank != null && (
-                  <span className="text-wedo-cyan mr-1">#{t.rank}</span>
+                  <span className="text-lia-text-secondary mr-1">#{t.rank}</span>
                 )}
                 {t.label}
               </span>
@@ -99,7 +99,7 @@ export function BigFivePanel({ data }: Props) {
             {t.evidence.length > 0 && (
               <div className="pl-2 border-l-2 border-lia-border-subtle">
                 {t.evidence.slice(0, 2).map((e, i) => (
-                  // A-09 / WCAG 2.1 AA 1.4.3: was `text-[10px] text-lia-text-disabled`
+                  // A-09 / WCAG 2.1 AA 1.4.3: was `text-[10px] text-lia-text-muted`
                   // (~9 px / ~2.85:1 contrast). Promoted to `text-xs` (12 px) +
                   // `text-lia-text-secondary` (#6B7280, ≥4.5:1 on white).
                   <p key={i} className="text-xs text-lia-text-secondary italic leading-tight">

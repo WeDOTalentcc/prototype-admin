@@ -36,7 +36,7 @@ function getScoreColor(score: number): string {
 }
 
 function ScoreBar({ value, max = 100 }: { value: number | null; max?: number }) {
-  if (value == null) return <span className="text-micro text-lia-text-disabled">—</span>
+  if (value == null) return <span className="text-micro text-lia-text-muted">—</span>
   const pct = Math.round((value / max) * 100)
   return (
     <div className="flex items-center gap-1.5">
@@ -56,6 +56,8 @@ function ScoreBar({ value, max = 100 }: { value: number | null; max?: number }) 
   )
 }
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
+
 export function CandidateCompareModal({
   open,
   onClose,
@@ -63,6 +65,8 @@ export function CandidateCompareModal({
   jobId,
   companyId,
 }: CandidateCompareModalProps) {
+  // P0-2 (2026-06-18): notify LIA which modal is open
+  useLiaModalTracking('candidate-compare', open)
   const { data, loading, error, compare, reset } = useCandidateCompare()
 
   useEffect(() => {
@@ -90,7 +94,7 @@ export function CandidateCompareModal({
 
         {loading && (
           <div className="flex items-center justify-center py-10" role="status" aria-live="polite" aria-label="Carregando...">
-            <Loader2 className="h-5 w-5 animate-spin motion-reduce:animate-none text-lia-text-disabled" />
+            <Loader2 className="h-5 w-5 animate-spin motion-reduce:animate-none text-lia-text-muted" />
             <span className="ml-2 text-sm text-lia-text-tertiary">Comparando...</span>
           </div>
         )}

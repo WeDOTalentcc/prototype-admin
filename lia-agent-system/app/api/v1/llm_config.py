@@ -9,6 +9,7 @@ Allows tenant admins to:
 - List available providers
 """
 import logging
+from app.shared.errors import LIAInternalError
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -23,7 +24,7 @@ from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
 from app.shared.tenant_llm_context import clear_tenant_config_cache, refresh_byok_active_flag
 from app.domains.ai.repositories.llm_config_repository import LlmConfigRepository
-from app.domains.admin.repositories.audit_log_repository import AuditLogRepository
+from app.repositories.audit_log_repository import AuditLogRepository
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
 
@@ -258,7 +259,7 @@ company_id: str = Depends(require_company_id)):
         )
 
         try:
-            from app.domains.admin.repositories.audit_log_repository import AuditLogRepository
+            from app.repositories.audit_log_repository import AuditLogRepository
             audit_repo = AuditLogRepository(db)
             await audit_repo.create_log({
                 "user_id": str(current_user.id),
@@ -285,7 +286,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error("[LLMConfig] Update error: %s", e)
-        raise HTTPException(500, f"Failed to update config: {e}")
+        raise LIAInternalError(f"Failed to update config: {e}")
 
 
 @router.post("/test", response_model=TestProviderResponse)

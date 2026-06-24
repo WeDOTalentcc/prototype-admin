@@ -14,4 +14,12 @@ Sub-modules:
 """
 from .service import TriagemSessionService, get_triagem_service, triagem_service
 
-__all__ = ["TriagemSessionService", "get_triagem_service", "triagem_service"]
+from .whatsapp_consent import TriagemWhatsAppConsentService, maybe_send_expiry_reminder
+
+__all__ = [
+    "TriagemSessionService",
+    "get_triagem_service",
+    "triagem_service",
+    "TriagemWhatsAppConsentService",
+    "maybe_send_expiry_reminder",
+]

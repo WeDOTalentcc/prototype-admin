@@ -21,6 +21,7 @@ import {
   formatDateValue,
 } from "./job-edit-tab.constants"
 import { ScreeningBadge } from "./ScreeningBadge"
+import { screeningToggleState } from "./screeningToggle"
 import { LiaEditor } from "@/components/ui/lia-editor"
 import { sanitizeHtml } from "@/lib/sanitize"
 import { RemoteCombobox, type RemoteComboboxOption } from "@/components/ui/remote-combobox"
@@ -68,6 +69,14 @@ export function JobInfoGeralSection({
 }: JobInfoGeralSectionProps) {
   const [departmentQuery, setDepartmentQuery] = React.useState("")
   const [cityQuery, setCityQuery] = React.useState("")
+  const [screeningStatusLocal, setScreeningStatusLocal] = React.useState<string>(
+    (job?.screeningStatus as string) || "not_configured"
+  )
+  React.useEffect(() => {
+    setScreeningStatusLocal((job?.screeningStatus as string) || "not_configured")
+  }, [job?.screeningStatus])
+
+  const [approvalPending, setApprovalPending] = React.useState(false)
 
   const { options: statusOptions, isLoading: statusLoading } = useJobStatuses()
   const { options: priorityOptions, isLoading: priorityLoading } = useJobPriorities()
@@ -77,6 +86,50 @@ export function JobInfoGeralSection({
   const { options: seniorityOptions, isLoading: seniorityLoading } = useJobSeniorities()
   const { options: departmentOptions, isLoading: departmentLoading } = useDepartmentsSearch(departmentQuery)
   const { options: cityOptions, isLoading: cityLoading } = useCitiesSearch(cityQuery)
+
+  const handleToggleScreening = async (on: boolean) => {
+    const newStatus = on ? "active" : "paused"
+    const prev = screeningStatusLocal
+    setScreeningStatusLocal(newStatus)
+    const jid = String((job?.backendId as string) || (job?.id as string) || "")
+    try {
+      const res = await fetch(`/api/backend-proxy/job-vacancies/${jid}/screening-status`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ screening_status: newStatus }),
+      })
+      if (!res.ok) throw new Error(String(res.status))
+      toast.success(on ? "Triagem ativada" : "Triagem pausada")
+    } catch {
+      setScreeningStatusLocal(prev)
+      toast.error("Não foi possível alterar a triagem. Tente novamente.", { description: "Verifique sua conexão e tente novamente." })
+    }
+  }
+
+
+  const handleRequestApproval = async () => {
+    const jid = String((job?.backendId as string) || (job?.id as string) || "")
+    if (!jid) return
+    setApprovalPending(true)
+    try {
+      const res = await fetch(`/api/backend-proxy/job-vacancies/${jid}/request-approval`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data?.detail?.message || String(res.status))
+      }
+      toast.success("Aprovação solicitada! Aprovadores foram notificados por e-mail.")
+    } catch (err) {
+      setApprovalPending(false)
+      toast.error("Não foi possível solicitar aprovação.", {
+        description: String(err instanceof Error ? err.message : err),
+      })
+    }
+  }
 
   return (
     <div className="space-y-5">
@@ -129,29 +182,78 @@ export function JobInfoGeralSection({
               </div>
               <div>
                 <label className={labelClass}>Triagem</label>
-                <div
-                  className={`w-full px-3 py-2 text-xs rounded-md border cursor-pointer transition-colors hover:bg-lia-interactive-hover ${
-                    (job?.screeningStatus || "not_configured") === "active"
-                      ? "border-status-success/30 bg-status-success/10/50 text-status-success dark:border-status-success/30 dark:bg-status-success/20"
-                      : (job?.screeningStatus || "not_configured") === "paused"
-                      ? "border-status-warning/30 bg-status-warning/10/50 text-status-warning dark:border-status-warning/30 dark:bg-status-warning/20"
-                      : (job?.screeningStatus || "not_configured") === "completed"
-                      ? "border-wedo-cyan/30 bg-wedo-cyan/10/50 text-wedo-cyan-dark dark:border-wedo-cyan/30"
-                      : "border-lia-border-subtle bg-lia-bg-secondary text-lia-text-secondary"
-                  }`}
-                  onClick={() => setActiveSection("configuracoes")}
-                  title="Clique para ir às Configurações de Triagem"
-                >
-                  {(() => {
-                    const s = (job?.screeningStatus || "not_configured") as ScreeningStatus
-                    const icons: Record<ScreeningStatus, string> = {
-                      active: "●", paused: "◉", completed: "✓", not_started: "○", not_configured: "○",
-                    }
-                    return `${icons[s]} ${SCREENING_STATUS_LABELS[s]}`
-                  })()}
-                </div>
+                {(() => {
+                  const st = screeningToggleState(screeningStatusLocal)
+                  if (st.mode === "toggle") {
+                    return (
+                      <div className="flex items-center gap-2 h-[38px] px-3 py-2 rounded-md border border-lia-border-subtle bg-lia-bg-primary">
+                        <Switch checked={st.checked} onCheckedChange={handleToggleScreening} className="data-[state=checked]:bg-status-success" />
+                        <span className="text-xs text-lia-text-secondary">{st.checked ? "● Ativa" : "◉ Pausada"}</span>
+                      </div>
+                    )
+                  }
+                  if (st.mode === "readonly") {
+                    return (
+                      <div className="w-full px-3 py-2 text-xs rounded-md border border-wedo-cyan/30 bg-wedo-cyan/10 text-wedo-cyan-text">✓ Concluída</div>
+                    )
+                  }
+                  return (
+                    <button type="button" onClick={() => setActiveSection("configuracoes")} className="w-full px-3 py-2 text-xs rounded-md border border-lia-border-subtle bg-lia-bg-secondary text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors text-left" title="Configurar a triagem desta vaga">
+                    ○ Configurar triagem
+                    </button>
+                  )
+                })()}
               </div>
             </div>
+
+            {/* Sprint 1 Aprovação — toggle para solicitar aprovação de negócio (2026-06-21) */}
+            {(() => {
+              const approvalStatus = (job?.approval_status as string) || null
+              const approvalRequestedAt = (job?.approval_requested_at as string) || null
+              const isPending = approvalRequestedAt && approvalStatus === "pendente"
+              const isApproved = approvalStatus === "aprovado"
+              const isRejected = approvalStatus === "rejeitado"
+              const approverName = (job?.approver_name as string) || null
+
+              if (isPending) {
+                return (
+                  <div className="mt-3 pt-3 border-t border-lia-border-subtle flex items-center gap-3">
+                    <span className={labelClass + " mb-0"}>Aprovação</span>
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-amber-300/50 bg-amber-50/30 text-amber-700 text-xs">
+                      <span className="animate-pulse">●</span>
+                      <span>Aguardando aprovação{approverName ? ` de ${approverName}` : ""}</span>
+                    </div>
+                  </div>
+                )
+              }
+              if (isApproved) {
+                return (
+                  <div className="mt-3 pt-3 border-t border-lia-border-subtle flex items-center gap-3">
+                    <span className={labelClass + " mb-0"}>Aprovação</span>
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-status-success/30 bg-status-success/10 text-status-success text-xs">
+                      ✓ Aprovado
+                    </div>
+                  </div>
+                )
+              }
+              return (
+                <div className="mt-3 pt-3 border-t border-lia-border-subtle flex items-center gap-3">
+                  <span className={labelClass + " mb-0"}>Aprovação</span>
+                  <button
+                    type="button"
+                    disabled={!isEditing || approvalPending}
+                    onClick={handleRequestApproval}
+                    className="px-3 py-1.5 text-xs rounded-md border border-lia-border-subtle bg-lia-bg-secondary text-lia-text-secondary hover:bg-lia-interactive-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    title="Solicitar aprovação de gestor antes de publicar"
+                  >
+                    {approvalPending ? "Solicitando..." : isRejected ? "Solicitar novamente" : "Solicitar aprovação"}
+                  </button>
+                  {isRejected && (
+                    <span className="text-xs text-red-500">Aprovação rejeitada</span>
+                  )}
+                </div>
+              )
+            })()}
           </CardContent>
         </Card>
       </div>
@@ -177,10 +279,12 @@ export function JobInfoGeralSection({
                   disabled={!isEditing}
                 />
               </div>
-              <div>
-                <label className={labelClass}>Localização<ScreeningBadge /></label>
-                <input type="text" className={inputClass(!isEditing)} value={(jobEditForm.location as string) || ""} onChange={(e) => updateField("location", e.target.value)} disabled={!isEditing} placeholder="Ex: São Paulo, SP" />
-              </div>
+              {jobEditForm.workModel !== "remoto" && (
+                <div>
+                  <label className={labelClass}>Endereço<ScreeningBadge /></label>
+                  <input type="text" className={inputClass(!isEditing)} value={(jobEditForm.location as string) || ""} onChange={(e) => updateField("location", e.target.value)} disabled={!isEditing} placeholder="Ex: Av. Paulista, 1000 - Bela Vista, São Paulo" />
+                </div>
+              )}
               <div>
                 <label className={labelClass}>Cidade<ScreeningBadge /></label>
                 <RemoteCombobox
@@ -207,7 +311,7 @@ export function JobInfoGeralSection({
                 <label className={labelClass}>
                   Modelo de Trabalho<ScreeningBadge />
                   {Boolean((companyDefaults as Record<string, unknown>)?.workModel) && !jobEditForm.workModel && (
-                    <span className="ml-1.5 text-micro text-wedo-cyan-dark font-normal">(padrão: {(companyDefaults as Record<string, unknown>)?.workModel as string})</span>
+                    <span className="ml-1.5 text-micro text-wedo-cyan-text font-normal">(padrão: {(companyDefaults as Record<string, unknown>)?.workModel as string})</span>
                   )}
                 </label>
                 <RemoteCombobox
@@ -227,7 +331,7 @@ export function JobInfoGeralSection({
                 <label className={labelClass}>
                   Tipo de Contrato<ScreeningBadge />
                   {Boolean((companyDefaults as Record<string, unknown>)?.employmentTypes) && ((companyDefaults as Record<string, unknown>)?.employmentTypes as string[]).length > 0 && !jobEditForm.type && (
-                    <span className="ml-1.5 text-micro text-wedo-cyan-dark font-normal">(padrão: {((companyDefaults as Record<string, unknown>)?.employmentTypes as string[])[0]})</span>
+                    <span className="ml-1.5 text-micro text-wedo-cyan-text font-normal">(padrão: {((companyDefaults as Record<string, unknown>)?.employmentTypes as string[])[0]})</span>
                   )}
                 </label>
                 <RemoteCombobox
@@ -319,7 +423,7 @@ export function JobInfoGeralSection({
         <h3 className={groupHeaderClass}>
           Idiomas<ScreeningBadge />
           {Boolean((companyDefaults as Record<string, unknown>)?.defaultLanguages) && ((companyDefaults as Record<string, unknown>)?.defaultLanguages as string[]).length > 0 && (
-            <span className="ml-1.5 text-micro text-wedo-cyan-dark font-normal normal-case tracking-normal">
+            <span className="ml-1.5 text-micro text-lia-text-muted font-normal normal-case tracking-normal">
               (padrão empresa: {((companyDefaults as Record<string, unknown>)?.defaultLanguages as string[]).join(", ")})
             </span>
           )}
@@ -450,35 +554,13 @@ export function JobInfoGeralSection({
       </div>
 
       <div>
-        <h3 className={groupHeaderClass}>Mercado-Alvo</h3>
-        <Card className="border border-lia-border-subtle">
-          <CardContent className="p-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className={labelClass}>Setor</label>
-                <input type="text" className={inputClass(!isEditing)} value={(jobEditForm.targetSector as string) || ""} onChange={(e) => updateField("targetSector", e.target.value)} disabled={!isEditing} placeholder="Ex: Tecnologia" />
-              </div>
-              <div>
-                <label className={labelClass}>Segmento</label>
-                <input type="text" className={inputClass(!isEditing)} value={(jobEditForm.targetSegment as string) || ""} onChange={(e) => updateField("targetSegment", e.target.value)} disabled={!isEditing} placeholder="Ex: Fintechs" />
-              </div>
-              <div className="col-span-2">
-                <label className={labelClass}>Público-Alvo</label>
-                <textarea className={`${inputClass(!isEditing)} resize-none`} rows={2} value={(jobEditForm.targetAudience as string) || ""} onChange={(e) => updateField("targetAudience", e.target.value)} disabled={!isEditing} placeholder="Descreva o perfil ideal do candidato..." />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div>
         <h3 className={groupHeaderClass}>Canais de Publicação</h3>
         <Card className="border border-lia-border-subtle">
           <CardContent className="p-4">
             <div className="space-y-0">
               <div className="flex items-center justify-between py-2.5 dark:border-lia-border-strong">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-wedo-cyan/10 flex items-center justify-center"><Linkedin className="w-4 h-4 text-wedo-cyan-dark" /></div>
+                  <div className="w-8 h-8 rounded-lg bg-wedo-cyan/10 flex items-center justify-center"><Linkedin className="w-4 h-4 text-wedo-cyan-text" /></div>
                   <div>
                     <span className="text-xs font-medium text-lia-text-primary">LinkedIn</span>
                     <p className="text-xs text-lia-text-secondary">Publicar vaga no LinkedIn</p>
@@ -498,7 +580,7 @@ export function JobInfoGeralSection({
               </div>
               <div className="flex items-center justify-between py-2.5">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-wedo-purple/10 dark:bg-wedo-purple/20 flex items-center justify-center"><Search className="w-4 h-4 text-wedo-purple" /></div>
+                  <div className="w-8 h-8 rounded-lg bg-wedo-purple/10 dark:bg-wedo-purple/20 flex items-center justify-center"><Search className="w-4 h-4 text-wedo-purple-text" /></div>
                   <div>
                     <span className="text-xs font-medium text-lia-text-primary">Indeed</span>
                     <p className="text-xs text-lia-text-secondary">Publicar vaga no Indeed</p>
@@ -586,7 +668,7 @@ export function JobInfoGeralSection({
         <h3 className={groupHeaderClass}>Link de Candidatura</h3>
         <Card className="border border-lia-border-subtle">
           <CardContent className="p-4">
-            {(jobEditForm.status === "Ativa" || jobEditForm.status === "Paralisada" || jobEditForm.status === "Concluída") && (publicLink || jobEditForm.public_url) ? (
+            {(jobEditForm.status === "Ativa" || jobEditForm.status === "Pausada" || jobEditForm.status === "Paralisada" || jobEditForm.status === "Concluída") && (publicLink || jobEditForm.public_url) ? (
               <div className="space-y-2">
                 <p className="text-xs text-lia-text-secondary">Link público para candidatos se candidatarem:</p>
                 <div className="flex items-center gap-2">

@@ -11,9 +11,8 @@ import {
   RecruitmentJourneyConfig,
 } from"@/components/settings/RecruitmentJourneyConfig"
 import { PipelineTemplatesTab } from "@/components/settings/recruitment/pipeline-templates-tab"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useTranslations } from "next-intl"
-import { textStyles, actionButtonStyles } from '@/lib/design-tokens'
+import { textStyles, actionButtonStyles, tabStyles } from '@/lib/design-tokens'
 import { useRecruitmentHub } from './useRecruitmentHub'
 import { usePipelineTemplates } from '@/hooks/pipeline/use-pipeline-templates'
 
@@ -37,6 +36,7 @@ export function RecruitmentPipelineTab() {
   const [showSaveForm, setShowSaveForm] = useState(false)
   const [templateName, setTemplateName] = useState('')
   const [isSavingTemplate, setIsSavingTemplate] = useState(false)
+  const [activeSubTab, setActiveSubTab] = useState<'default' | 'templates'>('default')
 
   const handleSaveAsTemplate = async () => {
     const trimmed = templateName.trim()
@@ -110,25 +110,39 @@ export function RecruitmentPipelineTab() {
   }
 
   return (
-    <Tabs defaultValue="default" className="w-full" data-testid="pipeline-tab-root">
-      <TabsList className="mb-4">
-        <TabsTrigger value="default" data-testid="pipeline-subtab-default">
+    <div className="w-full" data-testid="pipeline-tab-root">
+      <div className={`${tabStyles.pillContainer} mb-4`} role="tablist">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeSubTab === 'default'}
+          onClick={() => setActiveSubTab('default')}
+          data-testid="pipeline-subtab-default"
+          className={activeSubTab === 'default' ? tabStyles.pillActive : tabStyles.pill}
+        >
           {t("recruitment.pipeline.subTabs.default")}
-        </TabsTrigger>
-        <TabsTrigger value="templates" data-testid="pipeline-subtab-templates">
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeSubTab === 'templates'}
+          onClick={() => setActiveSubTab('templates')}
+          data-testid="pipeline-subtab-templates"
+          className={activeSubTab === 'templates' ? tabStyles.pillActive : tabStyles.pill}
+        >
           {t("recruitment.pipeline.subTabs.templates")}
-        </TabsTrigger>
-      </TabsList>
-      <TabsContent value="default" className="space-y-6">
+        </button>
+      </div>
+      {activeSubTab === 'default' && (
     <div className="space-y-6" data-testid="pipeline-tab-default-content">
       {error && (
-        <div className="px-2 py-1.5 rounded-xl flex items-center gap-2 bg-status-error/10 border border-status-error/30 text-status-error">
+        <div className="px-2 py-1.5 rounded-full flex items-center gap-2 bg-status-error/10 border border-status-error/30 text-status-error">
           <AlertCircle className="w-4 h-4" />
           <span className={textStyles.body}>{error}</span>
         </div>
       )}
       {successMessage && (
-        <div className="px-2 py-1.5 rounded-xl flex items-center gap-2 bg-status-success/10 border border-status-success/30 text-status-success dark:bg-status-success/20 dark:border-status-success/30 dark:text-status-success">
+        <div className="px-2 py-1.5 rounded-full flex items-center gap-2 bg-status-success/10 border border-status-success/30 text-status-success dark:bg-status-success/20 dark:border-status-success/30 dark:text-status-success">
           <CheckCircle className="w-4 h-4" />
           <span className={textStyles.body}>{successMessage}</span>
         </div>
@@ -182,7 +196,7 @@ export function RecruitmentPipelineTab() {
                     onChange={e => setTemplateName(e.target.value)}
                     placeholder="Nome do template..."
                     aria-label="Nome do template"
-                    className="text-xs px-2.5 py-1.5 rounded-lg border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 w-44"
+                    className="text-xs px-2.5 py-1.5 rounded-md border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 w-44"
                     onKeyDown={e => {
                       if (e.key === 'Enter') handleSaveAsTemplate()
                       if (e.key === 'Escape') { setShowSaveForm(false); setTemplateName('') }
@@ -238,10 +252,12 @@ export function RecruitmentPipelineTab() {
         </CardContent>
       </Card>
     </div>
-      </TabsContent>
-      <TabsContent value="templates" className="space-y-6" data-testid="pipeline-tab-templates-content">
-        <PipelineTemplatesTab />
-      </TabsContent>
-    </Tabs>
+      )}
+      {activeSubTab === 'templates' && (
+        <div className="space-y-6" data-testid="pipeline-tab-templates-content">
+          <PipelineTemplatesTab />
+        </div>
+      )}
+    </div>
   )
 }

@@ -216,7 +216,7 @@ export function WSIQuestionsPanel({
                 Gerar Perguntas com IA
               </CardTitle>
               <p className="text-xs mt-1 text-lia-text-secondary" aria-live="polite" aria-atomic="true">
-                A LIA cria perguntas WSI personalizadas baseadas na vaga e competências definidas
+                A IA cria perguntas WSI personalizadas baseadas na vaga e competências definidas
               </p>
             </div>
           </div>

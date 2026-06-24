@@ -122,7 +122,7 @@ export function AgentCreationPreview({ description, onClose, onCreated }: AgentC
       {/* Body */}
       <div className="flex-1 overflow-auto p-4 space-y-3">
         <div className={cn(cardStyles.flat, "p-3")}>
-          <p className="text-[10px] text-lia-text-disabled uppercase font-semibold">{t('yourRequest')}</p>
+          <p className="text-[10px] text-lia-text-tertiary uppercase font-semibold">{t('yourRequest')}</p>
           <p className="text-xs text-lia-text-secondary mt-1">{description}</p>
         </div>
 
@@ -161,7 +161,7 @@ export function AgentCreationPreview({ description, onClose, onCreated }: AgentC
                 ))}
               </div>
 
-              <div className="flex items-center gap-3 pt-1 text-[10px] text-lia-text-disabled">
+              <div className="flex items-center gap-3 pt-1 text-[10px] text-lia-text-muted">
                 <span>{t('context')}: {config.suggested_context_level}</span>
                 <span>{t('steps')}: {config.suggested_max_steps}</span>
                 <span>{t('temp')}: {config.suggested_temperature}</span>
@@ -176,7 +176,7 @@ export function AgentCreationPreview({ description, onClose, onCreated }: AgentC
               <button
                 type="button"
                 onClick={() => setShowPrompt(!showPrompt)}
-                className="flex items-center gap-1 text-[10px] text-lia-text-disabled hover:text-lia-text-secondary pt-1"
+                className="flex items-center gap-1 text-[10px] text-lia-text-muted hover:text-lia-text-secondary pt-1"
               >
                 {showPrompt ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
                 {showPrompt ? t('hidePrompt') : t('viewFullPrompt')}

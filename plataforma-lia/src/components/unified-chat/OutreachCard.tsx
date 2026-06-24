@@ -37,7 +37,7 @@ const CHANNEL_META: Record<OutreachChannel, { icon: React.ElementType; label: st
   email: { icon: Mail, label: "Email", color: "text-lia-text-secondary" },
   whatsapp: { icon: MessageSquare, label: "WhatsApp", color: "text-status-success" },
   phone: { icon: Phone, label: "Ligação", color: "text-lia-text-secondary" },
-  webchat: { icon: Globe, label: "Chat Web", color: "text-wedo-cyan" },
+  webchat: { icon: Globe, label: "Chat Web", color: "text-lia-text-secondary" },
   voip: { icon: Mic2, label: "VoIP", color: "text-lia-text-secondary" },
 }
 
@@ -110,7 +110,7 @@ export function OutreachCard({ data }: Props) {
 
       {/* VoIP extra info */}
       {/*
-        A-09 / WCAG 2.1 AA 1.4.3: previously `text-[10px] text-lia-text-disabled`
+        A-09 / WCAG 2.1 AA 1.4.3: previously `text-[10px] text-lia-text-muted`
         (~9 px after Tailwind base, ~2.85:1 contrast). Promoted to `text-xs`
         (12 px) and `text-lia-text-secondary` (#6B7280, ≥4.5:1 on white).
       */}
@@ -163,7 +163,7 @@ function EmailContent({
       {hasMore && (
         <button
           onClick={onToggle}
-          className="flex items-center gap-0.5 text-[10px] text-wedo-cyan hover:underline"
+          className="flex items-center gap-0.5 text-[10px] text-lia-text-muted hover:underline"
         >
           {expanded ? (
             <><ChevronUp className="w-3 h-3" aria-hidden="true" /> ver menos</>
@@ -188,7 +188,7 @@ function WhatsAppContent({
   return (
     <div className="space-y-1">
       {/* A-09 / WCAG 2.1 AA 1.4.3: phone & template promoted from
-          `text-[10px] text-lia-text-disabled` to `text-xs text-lia-text-secondary`. */}
+          `text-[10px] text-lia-text-muted` to `text-xs text-lia-text-secondary`. */}
       {phone && (
         <p className="text-xs text-lia-text-secondary">{phone}</p>
       )}
@@ -210,7 +210,7 @@ function ScriptContent({ script, duration }: { script?: string[]; duration?: str
   return (
     <div className="space-y-1">
       {/* A-09 / WCAG 2.1 AA 1.4.3: duration & step counters promoted from
-          `text-[10px] text-lia-text-disabled` to `text-xs text-lia-text-secondary`. */}
+          `text-[10px] text-lia-text-muted` to `text-xs text-lia-text-secondary`. */}
       {duration && (
         <p className="text-xs text-lia-text-secondary">
           Duração estimada: {duration}

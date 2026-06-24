@@ -55,7 +55,36 @@ export function useTalentPools() {
     return res.json()
   }
 
+  const updatePool = async (
+    poolId: string,
+    params: {
+      name?: string
+      description?: string
+      ideal_profile_id?: string
+      status?: string
+      agent_sourcing_enabled?: boolean
+    }
+  ) => {
+    const res = await fetch(`/api/backend-proxy/talent-pools/${poolId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ talent_pool: params }),
+    })
+    if (!res.ok) throw new Error("Failed to update pool")
+    await loadPools()
+    return res.json()
+  }
+
+  const archivePool = async (poolId: string) => {
+    const res = await fetch(`/api/backend-proxy/talent-pools/${poolId}`, {
+      method: "DELETE",
+    })
+    if (!res.ok) throw new Error("Failed to archive pool")
+    await loadPools()
+    return res.json()
+  }
+
   const activePools = pools.filter(p => p.status === "active")
 
-  return { pools, activePools, isLoading, error, loadPools, createPool }
+  return { pools, activePools, isLoading, error, loadPools, createPool, updatePool, archivePool }
 }

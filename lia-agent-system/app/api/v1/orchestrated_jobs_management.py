@@ -9,6 +9,7 @@ v2.0: Closed-loop action execution - LIA executes job management actions directl
 instead of requiring manual user interaction through UI modals.
 """
 import logging
+from app.shared.errors import LIAInternalError
 import uuid
 from typing import Any
 
@@ -54,9 +55,9 @@ _ANALYTICAL_COMMAND_TYPES = {
 }
 
 INTENT_TO_UI_ACTION: dict[str, str] = {
-    "criar_vaga": "start_job_wizard",
-    "create_job": "start_job_wizard",
-    "nova_vaga": "start_job_wizard",
+    "criar_vaga": "start_wizard_seeded",
+    "create_job": "start_wizard_seeded",
+    "nova_vaga": "start_wizard_seeded",
     "pausar_vaga": "pause_job",
     "fechar_vaga": "close_job",
     "duplicar_vaga": "duplicate_job",
@@ -421,6 +422,76 @@ async def orchestrated_jobs_management(request: OrchestratedJobsManagementReques
             logger.info(f"[JobsManagement] ActionExecutor intent: {jobs_mgmt_intent}")
             extracted_entities = _extract_jobs_mgmt_entities(request)
 
+            # === BULK: per-job actions with multiple selected_jobs ===
+            _PER_JOB_BULK_INTENTS = {"pausar_vaga", "fechar_vaga", "duplicar_vaga", "reabrir_vaga"}
+            _INTENT_ACTION_LABEL = {
+                "pausar_vaga": "pausada",
+                "fechar_vaga": "fechada",
+                "duplicar_vaga": "duplicada",
+                "reabrir_vaga": "reaberta",
+            }
+            selected_jobs = request.selected_jobs or []
+            if jobs_mgmt_intent in _PER_JOB_BULK_INTENTS and len(selected_jobs) > 1:
+                logger.info(
+                    f"[JobsManagement] Bulk {jobs_mgmt_intent} over {len(selected_jobs)} jobs"
+                )
+                succeeded: list[str] = []
+                failed: list[str] = []
+                ctx = {
+                    "conversation_id": conv_id,
+                    "user_id": request.user_id,
+                    "jobs_context": request.jobs_context,
+                }
+                for job in selected_jobs:
+                    job_id = str(job.get("id", job.get("job_id", "")))
+                    job_title = job.get("title", job.get("job_title", job_id))
+                    if not job_id:
+                        failed.append(job_title or "?")
+                        continue
+                    bulk_entities = dict(extracted_entities)
+                    bulk_entities["job_id"] = job_id
+                    bulk_entities["job_title"] = job_title
+                    try:
+                        r = await action_executor.try_execute(
+                            intent=jobs_mgmt_intent,
+                            entities=bulk_entities,
+                            candidates_data=[],
+                            context=ctx,
+                        )
+                        if r.status == "executed":
+                            succeeded.append(job_title)
+                        else:
+                            failed.append(job_title)
+                    except Exception as bulk_err:
+                        logger.warning(
+                            f"[JobsManagement] Bulk {jobs_mgmt_intent} failed for {job_id}: {bulk_err}"
+                        )
+                        failed.append(job_title)
+
+                action_label = _INTENT_ACTION_LABEL.get(jobs_mgmt_intent, "processada")
+                if succeeded and not failed:
+                    msg = f"{len(succeeded)} vaga(s) {action_label}(s) com sucesso: {', '.join(succeeded)}."
+                elif succeeded:
+                    msg = (
+                        f"{len(succeeded)} vaga(s) {action_label}(s) com sucesso: {', '.join(succeeded)}. "
+                        f"Falhou: {', '.join(failed)}."
+                    )
+                else:
+                    msg = f"Não foi possível executar a ação nas vagas: {', '.join(failed)}."
+
+                return OrchestratedJobsManagementResponse(
+                    success=bool(succeeded),
+                    content=msg,
+                    agent_used="ActionExecutor",
+                    intent_detected=jobs_mgmt_intent,
+                    confidence=1.0,
+                    suggested_prompts=["Como estão as vagas?", "Quais vagas precisam de atenção?"],
+                    conversation_id=conv_id,
+                    action_executed=bool(succeeded),
+                    action_result={"succeeded": succeeded, "failed": failed},
+                    action_type=INTENT_TO_UI_ACTION.get(jobs_mgmt_intent, jobs_mgmt_intent),
+                )
+
             action_result = await action_executor.try_execute(
                 intent=jobs_mgmt_intent,
                 entities=extracted_entities,
@@ -531,10 +602,7 @@ async def orchestrated_jobs_management(request: OrchestratedJobsManagementReques
         raise
     except Exception as e:
         logger.error(f"[JobsManagement] Error: {e}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error processing jobs management chat: {str(e)}",
-        )
+        raise LIAInternalError("Internal server error")
 
 
 @router.get("/jobs-management/intents", response_model=None)
@@ -581,7 +649,7 @@ async def get_jobs_management_intents(company_id: str = Depends(require_company_
                 "id": "criar_vaga",
                 "description": "Criar nova vaga",
                 "keywords": ["criar vaga", "nova vaga", "abrir vaga"],
-                "ui_action": "start_job_wizard",
+                "ui_action": "start_wizard_seeded",
             },
             {
                 "id": "pausar_vaga",

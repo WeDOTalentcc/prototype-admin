@@ -7,6 +7,19 @@
  */
 import { describe, expect, it, vi } from "vitest"
 import { act, render, waitFor } from "@testing-library/react"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import type { ReactElement } from "react"
+
+// DigitalTwinEmptyState chama useAiPersona() -> useQueryClient(), então qualquer
+// render de TwinsList precisa de um QueryClientProvider no contexto.
+function renderWithQueryClient(ui: ReactElement) {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  })
+  return render(
+    <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>,
+  )
+}
 
 vi.mock("next-intl", () => ({
   useTranslations: () => (key: string, vars?: Record<string, unknown>) => {
@@ -16,7 +29,6 @@ vi.mock("next-intl", () => ({
 }))
 
 import {
-  DigitalTwinHeader,
   TwinsList,
 } from "../DigitalTwinComponents"
 import SourcingTab from "@/components/pages-talent-pools/sub-tabs/sourcing-tab"
@@ -28,17 +40,6 @@ _viCanonical.mock("@/hooks/talent-pools/use-ideal-profile", () => ({
 }))
 
 describe("Agent Studio — harmonização visual (Task #1044)", () => {
-  it("DigitalTwinHeader renderiza header curto (h2 text-sm) sem hero/gradient", () => {
-    const { container } = render(<DigitalTwinHeader />)
-    const h2 = container.querySelector("h2")
-    expect(h2).not.toBeNull()
-    expect(h2?.className).toContain("text-sm")
-    expect(h2?.className).toContain("font-semibold")
-    // Não deve trazer eyebrow/gradient/blob do hero antigo
-    expect(container.querySelector(".bg-gradient-to-br")).toBeNull()
-    expect(container.querySelector("section")).toBeNull()
-  })
-
   it("DigitalTwinOnboarding REMOVIDO (P0 rewrite 2026-05-26): export não existe", async () => {
     // Antes da rewrite, página Gêmeos Digitais renderizava 4 cards "Passo 1-4"
     // + banner com citação concorrente (Eightfold Andromeda). Paulo locked 2026-05-26:
@@ -89,7 +90,7 @@ describe("Agent Studio — harmonização visual (Task #1044)", () => {
     vi.stubGlobal("fetch", fetchMock)
     let result: ReturnType<typeof render> | null = null
     await act(async () => {
-      result = render(<TwinsList onCreateTwin={() => {}} />)
+      result = renderWithQueryClient(<TwinsList onCreateTwin={() => {}} />)
     })
     const { container } = result!
     await waitFor(() => {
@@ -110,14 +111,16 @@ describe("Agent Studio — harmonização visual (Task #1044)", () => {
     vi.stubGlobal("fetch", fetchMock)
     let result: ReturnType<typeof render> | null = null
     await act(async () => {
-      result = render(<TwinsList onCreateTwin={() => {}} />)
+      result = renderWithQueryClient(<TwinsList onCreateTwin={() => {}} />)
     })
     const { container } = result!
     await waitFor(() => {
-      // Sub-header canonical aparece (TwinsList tem header próprio agora).
-      // O mock useTranslations devolve a key crua, então procuramos por elas.
-      expect(container.textContent).toMatch(/subheader|headerTitle/i)
+      // Loading concluído (estado vazio renderizado).
+      expect(container.textContent).not.toContain("loadingTwins")
     })
+    // Header duplicado removido: TwinsList NÃO renderiza header próprio
+    // (headerTitle/subheader) — o header é do pai (AgentStudioPage via TabSectionHeader).
+    expect(container.textContent).not.toMatch(/subheader|headerTitle/i)
     // NÃO renderiza 4-step onboarding section nem banner concorrente.
     // (Conteúdo do banner removido: "Eightfold" / "DIFERENCIAL" / 4 step blocks.)
     expect(container.textContent).not.toMatch(/Eightfold/i)

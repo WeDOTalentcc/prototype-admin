@@ -27,7 +27,7 @@ class JobAlertRepository:
         # at session level.
         result = await self.db.execute(
             select(JobVacancy).where(
-                and_(JobVacancy.status == "open", JobVacancy.created_at < cutoff_date)
+                and_(JobVacancy.status.in_(["Ativa", "Pausada"]), JobVacancy.created_at < cutoff_date)
             )
         )
         return list(result.scalars().all())
@@ -36,7 +36,7 @@ class JobAlertRepository:
         # TENANT-EXEMPT: scheduler system-context — see list_open_jobs_created_before.
         result = await self.db.execute(
             select(JobVacancy).where(
-                and_(JobVacancy.status == "open", JobVacancy.updated_at < cutoff_date)
+                and_(JobVacancy.status.in_(["Ativa", "Pausada"]), JobVacancy.updated_at < cutoff_date)
             )
         )
         return list(result.scalars().all())
@@ -44,7 +44,7 @@ class JobAlertRepository:
     async def list_open_jobs(self) -> list[JobVacancy]:
         # TENANT-EXEMPT: scheduler system-context — see list_open_jobs_created_before.
         result = await self.db.execute(
-            select(JobVacancy).where(JobVacancy.status == "open")
+            select(JobVacancy).where(JobVacancy.status.in_(["Ativa", "Pausada"]))
         )
         return list(result.scalars().all())
 
@@ -144,7 +144,7 @@ class JobAlertRepository:
         result = await self.db.execute(
             select(JobVacancy).where(
                 and_(
-                    JobVacancy.status == "open",
+                    JobVacancy.status.in_(["Ativa", "Pausada"]),
                     JobVacancy.deadline_closing >= from_date,
                     JobVacancy.deadline_closing <= to_date,
                 )

@@ -171,7 +171,7 @@ export function getSuggestedActions(
     baseActions.push({
       id: 'triagem_wsi',
       name: 'Convidar para Triagem WSI',
-      description: 'Enviar convite para triagem com a LIA',
+      description: 'Enviar convite para triagem com nossa assistente',
       icon: React.createElement(ClipboardList, { className: "h-4 w-4" }),
       color: 'cyan',
       recommended: true,
@@ -312,7 +312,7 @@ export function generateDefaultMessage(
   if (action.templateCategory === 'screening') {
     return {
       subject: `Próximo passo: Avaliação - ${jobTitle}`,
-      message: `Olá ${firstName},\n\nEstamos avançando em nosso processo seletivo para ${jobTitle} e gostaríamos de convidá-lo(a) para uma triagem rápida com a nossa assistente LIA.\n\n📋 Sobre a triagem:\n• Duração estimada: 15-20 minutos\n• Formato: Conversa por chat ou WhatsApp\n• Objetivo: Conhecer melhor sua forma de pensar e resolver problemas\n\nClique no link abaixo para iniciar:\n[Link para triagem]\n\nQualquer dúvida, estamos à disposição!\n\nAtenciosamente,\nEquipe de Recrutamento`,
+      message: `Olá ${firstName},\n\nEstamos avançando em nosso processo seletivo para ${jobTitle} e gostaríamos de convidá-lo(a) para uma triagem rápida com a nossa assistente virtual.\n\n📋 Sobre a triagem:\n• Duração estimada: 15-20 minutos\n• Formato: Conversa por chat ou WhatsApp\n• Objetivo: Conhecer melhor sua forma de pensar e resolver problemas\n\nClique no link abaixo para iniciar:\n[Link para triagem]\n\nQualquer dúvida, estamos à disposição!\n\nAtenciosamente,\nEquipe de Recrutamento`,
     }
   }
 

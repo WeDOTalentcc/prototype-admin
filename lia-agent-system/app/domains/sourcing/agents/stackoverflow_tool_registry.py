@@ -13,6 +13,7 @@ from lia_agents_core.tool_adapter import ToolDefinition
 from lia_agents_core.tool_adapter import ToolOutput
 
 from app.shared.tool_handler import tool_handler
+from app.domains.sourcing.fairness import run_sourcing_fairness_check
 
 logger = logging.getLogger(__name__)
 
@@ -35,18 +36,15 @@ async def _wrap_so_search_experts(**kwargs: Any) -> dict[str, Any]:
         return {"success": False, "data": {}, "message": "Parâmetro 'tag' é obrigatório (ex: python, react)."}
 
     query_str = f"{tag} {location}"
-    try:
-        _fg = FairnessGuard()
-        _fg_result = _fg.check(query_str)
-        if _fg_result.is_blocked:
-            return {
+    _fg_blocked, _fg_block_msg = run_sourcing_fairness_check(
+        FairnessGuard().check, query_str, registry_name="stackoverflow_tool_registry",
+    )
+    if _fg_blocked:
+        return {
                 "success": False,
                 "data": {},
-                "message": _fg_result.educational_message or "Busca bloqueada por critério discriminatório.",
+                "message": _fg_block_msg or "Busca bloqueada por critério discriminatório.",
             }
-    except Exception as _fg_exc:
-        logger.debug("[so_tools] FairnessGuard check skipped: %s", _fg_exc)
-
     result = await stackoverflow_service.search_users_by_tag(
         tag=tag,
         min_reputation=min_reputation,

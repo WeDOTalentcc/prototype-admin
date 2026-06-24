@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 /**
  * AutomationLogsView — Sprint C canonical impeccable + Sprint C.5 CSV export.
  *
@@ -118,6 +119,8 @@ export function AutomationLogsView() {
   const [selectedAutomationId, setSelectedAutomationId] = useState<string | "all">("all")
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all")
   const [selectedLog, setSelectedLog] = useState<LogEntry | null>(null)
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('automation-log-detail', !!selectedLog)
 
   // Quando "all", precisa agregar logs de multiplas automations.
   // Por agora: se "all", lista vazia + hint "selecione uma automacao".
@@ -197,7 +200,7 @@ export function AutomationLogsView() {
               onClick={() => setStatusFilter(s)}
               className={`text-xs px-2 py-1 rounded-md border transition-colors motion-reduce:transition-none ${
                 statusFilter === s
-                  ? "bg-wedo-cyan/10 text-wedo-cyan border-wedo-cyan/40"
+                  ? "bg-wedo-cyan/10 text-wedo-cyan-text border-wedo-cyan/40"
                   : "bg-lia-bg-primary text-lia-text-secondary border-lia-border-default hover:bg-lia-bg-secondary"
               }`}
               data-testid={`filter-status-${s}`}
@@ -237,7 +240,7 @@ export function AutomationLogsView() {
           data-testid="logs-hint-select"
         >
           <Sparkles
-            className="w-8 h-8 text-wedo-cyan mb-3"
+            className="w-8 h-8 text-wedo-cyan-text mb-3"
             aria-hidden="true"
           />
           <p className="text-sm font-medium text-lia-text-primary mb-1">

@@ -36,6 +36,7 @@ export function JDEvaluationPanel({
   onSaveEnrichedJD,
   onUpdateOfficialJD,
   onUpdateJobDescription,
+  onSaveDefinitiva,
   enrichedJd,
   isGenerating = false,
   className,
@@ -51,7 +52,7 @@ export function JDEvaluationPanel({
     seniority, department, description, hasQuestions, enrichedJd,
     companyId, companyName, companyDescription, companyIndustry,
     benefits, interviewStages,
-    onSaveJDInline, onSaveEnrichedJD, onUpdateOfficialJD, onUpdateJobDescription,
+    onSaveJDInline, onSaveEnrichedJD, onUpdateOfficialJD, onUpdateJobDescription, onSaveDefinitiva,
   })
 
   const {
@@ -60,10 +61,10 @@ export function JDEvaluationPanel({
     editTechSkills, setEditTechSkills, editBehavCompetencies, setEditBehavCompetencies,
     isSavingInline, newItem, setNewItem, editingField, setEditingField, saveError,
     aiTechSuggestions, setAiTechSuggestions, aiBehavSuggestions, setAiBehavSuggestions,
-    isLoadingTechSuggestions, isLoadingBehavSuggestions,
+    isLoadingTechSuggestions, isLoadingBehavSuggestions, aiRespSuggestions, setAiRespSuggestions, isLoadingRespSuggestions,
     generatedJD, isGeneratingJD, copiedJD, isSavingDefinitive, isSavingWithJD,
     jdTypedMessage, jdDynamicMessage, jdGenerationStep, jdGenerationError,
-    fetchTechSuggestions, fetchBehavSuggestions, generateJD, handleCopyJD,
+    fetchTechSuggestions, fetchBehavSuggestions, fetchResponsibilitiesSuggestions, generateJD, handleCopyJD,
     fetchEvaluation, handleSaveRascunho, handleSaveDefinitiva, handleSaveAndUpdateJD, handleCancel,
     isExtracting, extractError, extractFromText,
   } = hook
@@ -87,19 +88,19 @@ export function JDEvaluationPanel({
           <div className="px-4 py-2.5 border-t border-lia-border-subtle bg-lia-bg-primary">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-lia-border-subtle bg-lia-bg-secondary text-micro text-lia-text-secondary">
-                <ListChecks className="w-3 h-3 text-lia-text-disabled" />
+                <ListChecks className="w-3 h-3 text-lia-text-muted" />
                 Responsabilidades: {responsibilities.length}
               </span>
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-lia-border-subtle bg-lia-bg-secondary text-micro text-lia-text-secondary">
-                <Code className="w-3 h-3 text-lia-text-disabled" />
+                <Code className="w-3 h-3 text-lia-text-muted" />
                 Comp. Técnicas: {technicalSkills.length}
               </span>
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-lia-border-subtle bg-lia-bg-secondary text-micro text-lia-text-secondary">
-                <Users className="w-3 h-3 text-lia-text-disabled" />
+                <Users className="w-3 h-3 text-lia-text-muted" />
                 Comp. Comportamentais: {behavioralCompetencies.length}
               </span>
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-lia-border-subtle bg-lia-bg-secondary text-micro text-lia-text-secondary">
-                <FileText className="w-3 h-3 text-lia-text-disabled" />
+                <FileText className="w-3 h-3 text-lia-text-muted" />
                 JD: {description ? 'Sim' : 'Não'}
               </span>
             </div>
@@ -211,6 +212,15 @@ export function JDEvaluationPanel({
                         onNewItemChange={setNewItem}
                         onStartEditing={setEditingField}
                         onStopEditing={() => setEditingField(null)}
+                        aiSuggestions={aiRespSuggestions.map(r => ({ label: r, key: r }))}
+                        isLoadingAI={isLoadingRespSuggestions}
+                        onFetchAI={fetchResponsibilitiesSuggestions}
+                        onAcceptSuggestion={(key) => {
+                          if (!editResponsibilities.includes(key)) {
+                            setEditResponsibilities(prev => [...prev, key])
+                          }
+                          setAiRespSuggestions(prev => prev.filter(r => r !== key))
+                        }}
                       />
 
                       <JDArrayEditor
@@ -279,7 +289,7 @@ export function JDEvaluationPanel({
 
                   {/* T-1167 (Bug #2 / Opção B) — aviso visual explícito da diferença entre Rascunho e Definitiva */}
                   <div className="flex items-start gap-2 mt-4 px-3 py-2 rounded-md bg-lia-bg-secondary border border-lia-border-subtle">
-                    <Info className="h-3.5 w-3.5 text-lia-text-disabled shrink-0 mt-0.5" />
+                    <Info className="h-3.5 w-3.5 text-lia-text-muted shrink-0 mt-0.5" />
                     <p className="text-micro text-lia-text-secondary leading-relaxed">
                       <span className="font-semibold">Rascunho</span> guarda uma cópia privada (apenas neste painel) e <span className="font-semibold">não atualiza</span> os campos canônicos da vaga. Para publicar Responsabilidades / Competências oficialmente, use <span className="font-semibold">Salvar Versão Definitiva</span>.
                     </p>

@@ -153,14 +153,14 @@ export function ComplianceOverviewPanel({ onNavigateToSubsection }: Props = {}) 
                 </div>
                 <div>
                   <p className="text-xs text-lia-text-secondary">{metric.title}</p>
-                  <p className="text-2xl font-semibold text-lia-text-primary">{metric.value}</p>
+                  <p className={textStyles.kpi}>{metric.value}</p>
                 </div>
                 <p className="text-xs text-lia-text-secondary leading-snug">{metric.context}</p>
                 {metric.subsectionLink && onNavigateToSubsection && (
                   <button
                     type="button"
                     onClick={() => onNavigateToSubsection(metric.subsectionLink!)}
-                    className="flex items-center gap-1 text-xs text-wedo-cyan hover:underline mt-1"
+                    className="flex items-center gap-1 text-xs text-lia-text-muted hover:underline mt-1"
                     data-testid={`compliance-card-link-${metric.id}`}
                   >
                     Ver detalhes <ArrowRight className="w-3 h-3" aria-hidden="true" />

@@ -147,19 +147,19 @@ class TestWSApprovalResponseContract:
 
     def test_ws_handler_contains_approval_response_handling(self):
         """Verifica que agent_chat_ws.py contém tratamento para approval_response."""
-        import app.api.v1.agent_chat_ws as ws_module
+        import app.api.v1.agent_chat_sse as ws_module
         source = inspect.getsource(ws_module)
         assert "approval_response" in source
 
     def test_ws_handler_contains_approval_confirmed(self):
-        """Verifica que agent_chat_ws.py envia approval_confirmed."""
-        import app.api.v1.agent_chat_ws as ws_module
+        """Verifica que approval_confirmed está definido no serializer."""
+        import app.shared.chat_event_serializer as ws_module
         source = inspect.getsource(ws_module)
         assert "approval_confirmed" in source
 
     def test_ws_handler_calls_hitl_service(self):
         """Verifica que agent_chat_ws importa/usa hitl_service."""
-        import app.api.v1.agent_chat_ws as ws_module
+        import app.api.v1.agent_chat_sse as ws_module
         source = inspect.getsource(ws_module)
         assert "hitl_service" in source
 

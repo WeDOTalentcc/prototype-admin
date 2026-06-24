@@ -192,3 +192,35 @@ DEFAULT_BEHAVIORAL_WEIGHT: float = 0.375
 # Peso da elegibilidade quando presente (20% do total, restante em 80%)
 ELIGIBILITY_WEIGHT: float = 0.20
 NON_ELIGIBILITY_WEIGHT: float = 0.80
+
+
+# ---------------------------------------------------------------------------
+# Conversão canônica: escala WSI 0-10 → escala LIA 0-100
+# ---------------------------------------------------------------------------
+# A escala WSI interna (session.wsi_final_score) opera em 0-10.
+# vacancy_candidates.lia_score e calculate_ranking_score(wsi_score=...) esperam 0-100.
+# Esta função é a ÚNICA forma correta de fazer essa conversão — não usar magic × 10 inline.
+#
+# Cadeia canônica:
+#   resposta individual (1-5)
+#   → calculate_final_wsi_score (0-5)
+#   → _calculate_final_score × 2.0 (0-10, session.wsi_final_score)
+#   → wsi_score_to_lia_scale × 10 (0-100, lia_score / wsi_score para ranking)
+
+_LIA_SCALE_FACTOR: float = 10.0  # fator de conversão 0-10 → 0-100
+
+
+def wsi_score_to_lia_scale(score_0_10: float) -> float:
+    """Converte score WSI de escala 0-10 para escala LIA 0-100.
+
+    Usado em completion.py (P0-1) e em qualquer caller de calculate_ranking_score
+    que precise converter session.wsi_final_score para o wsi_score param.
+
+    Args:
+        score_0_10: Score WSI na escala canônica 0-10 (session.wsi_final_score).
+    Returns:
+        Score na escala 0-100, arredondado a 1 casa decimal, clamped em [0, 100].
+    """
+    raw = score_0_10 * _LIA_SCALE_FACTOR
+    return round(min(100.0, max(0.0, raw)), 1)
+

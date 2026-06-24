@@ -108,7 +108,7 @@ class TestErasureCascade:
         # Verifica que o campo existe como chave possível via importação do repositório
         import importlib
         mod = importlib.import_module(
-            "app.domains.data_subject.repositories.data_subject_repository"
+            "app.repositories.data_subject_repository"
         )
         import inspect
         src = inspect.getsource(mod)
@@ -122,7 +122,7 @@ class TestErasureCascade:
         import inspect
         import importlib
         mod = importlib.import_module(
-            "app.domains.data_subject.repositories.data_subject_repository"
+            "app.repositories.data_subject_repository"
         )
         src = inspect.getsource(mod)
         assert "subject_email" in src, "Erasure deve usar subject_email como filtro"
@@ -135,7 +135,7 @@ class TestErasureCascade:
         import inspect
         import importlib
         mod = importlib.import_module(
-            "app.domains.data_subject.repositories.data_subject_repository"
+            "app.repositories.data_subject_repository"
         )
         src = inspect.getsource(mod)
         # Verifica que existe catch para erasure failure (non-fatal pattern)

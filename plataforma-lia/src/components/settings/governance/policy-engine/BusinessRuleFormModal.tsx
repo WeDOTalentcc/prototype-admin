@@ -1,9 +1,11 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import React, { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { FormField } from "@/components/ui/form-field"
 import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import {
@@ -74,6 +76,9 @@ export function BusinessRuleFormModal({
   onSubmit,
   initialData,
 }: BusinessRuleFormModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('business-rule-form', open)
+
   // Hooks SEMPRE no topo (Rules-of-Hooks discipline)
   const [form, setForm] = useState<BusinessRuleInput>(emptyInput())
   const [conditionsText, setConditionsText] = useState<string>("{}")
@@ -150,32 +155,28 @@ export function BusinessRuleFormModal({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-3 py-1.5" data-testid="business-rule-form">
-          <div>
-            <Label htmlFor="br-name" className={textStyles.label}>Nome</Label>
+          <FormField label="Nome" required labelClassName={textStyles.label}>
             <Input
-              id="br-name"
               data-field="rule_name"
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
               placeholder="Ex: deny_high_risk_offers"
-              className="mt-1 rounded-full text-xs py-1.5 px-2"
+              className="rounded-full text-xs py-1.5 px-2"
               required
               maxLength={255}
             />
-          </div>
+          </FormField>
 
-          <div>
-            <Label htmlFor="br-desc" className={textStyles.label}>Descrição</Label>
+          <FormField label="Descrição" labelClassName={textStyles.label}>
             <Textarea
-              id="br-desc"
               data-field="description"
               value={form.description ?? ""}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
               placeholder="Explique quando essa regra dispara"
-              className="mt-1 rounded-xl text-xs py-1.5 px-2"
+              className="rounded-xl text-xs py-1.5 px-2"
               rows={2}
             />
-          </div>
+          </FormField>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -197,10 +198,8 @@ export function BusinessRuleFormModal({
               </Select>
             </div>
 
-            <div>
-              <Label htmlFor="br-priority" className={textStyles.label}>Prioridade (1-1000)</Label>
+            <FormField label="Prioridade (1-1000)" labelClassName={textStyles.label}>
               <Input
-                id="br-priority"
                 data-field="priority"
                 type="number"
                 min={1}
@@ -209,39 +208,31 @@ export function BusinessRuleFormModal({
                 onChange={(e) =>
                   setForm({ ...form, priority: parseInt(e.target.value, 10) || 100 })
                 }
-                className="mt-1 rounded-full text-xs py-1.5 px-2"
+                className="rounded-full text-xs py-1.5 px-2"
               />
-            </div>
+            </FormField>
           </div>
 
-          <div>
-            <Label htmlFor="br-actions" className={textStyles.label}>
-              Actions (lista separada por vírgula)
-            </Label>
+          <FormField label="Actions (lista separada por vírgula)" labelClassName={textStyles.label}>
             <Input
-              id="br-actions"
               data-field="actions"
               value={actionsText}
               onChange={(e) => setActionsText(e.target.value)}
               placeholder="Ex: send_offer, escalate_to_manager"
-              className="mt-1 rounded-full text-xs py-1.5 px-2"
+              className="rounded-full text-xs py-1.5 px-2"
             />
-          </div>
+          </FormField>
 
-          <div>
-            <Label htmlFor="br-conditions" className={textStyles.label}>
-              Conditions (JSON)
-            </Label>
+          <FormField label="Conditions (JSON)" labelClassName={textStyles.label}>
             <Textarea
-              id="br-conditions"
               data-field="conditions"
               value={conditionsText}
               onChange={(e) => setConditionsText(e.target.value)}
               placeholder='{"salary_above": 10000}'
-              className="mt-1 rounded-xl text-xs py-1.5 px-2 font-mono"
+              className="rounded-xl text-xs py-1.5 px-2 font-mono"
               rows={4}
             />
-          </div>
+          </FormField>
 
           <div className="flex items-center justify-between p-2.5 rounded-xl bg-lia-bg-secondary">
             <div>

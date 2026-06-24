@@ -72,6 +72,21 @@ def _derive_wizard_stage(state: dict) -> str:
     painel lateral é stage-driven. Derivamos o stage do conteúdo do estado
     para o painel transicionar naturalmente (ficha → JD → publicado).
     """
+    # Bug B fix (2026-06-20): read current_stage directly from state.
+    # The PREVIOUS fix read ws_stage_payload.stage which is built AFTER
+    # _derive_wizard_stage is called (circular dependency). First calibration
+    # turn never showed candidates because no previous ws_stage_payload existed
+    # (calibration_node had not run yet), so this block never matched.
+    # Fix: _handle_calibration in domain.py sets current_stage="calibration"
+    # explicitly BEFORE calling graph.resume(), making it a reliable signal.
+    # calibration_complete guard preserved for post-advance_calibration handoff.
+    #
+    # Sensor: tests/contract/test_wizard_calibration_stage.py T-b (RED→GREEN)
+    if (
+        state.get("current_stage") == "calibration"
+        and not state.get("calibration_complete")
+    ):
+        return "calibration"
     # Navegação explícita OU pós-publish → handoff (o FE auto-navega para a
     # página de vagas quando currentStage == "handoff").
     if state.get("_navigate_to_jobs") or state.get("job_id"):
@@ -92,8 +107,135 @@ def _derive_wizard_stage(state: dict) -> str:
         return "competency"
     return "intake"
 
+def _consume_panel_pref(state: dict) -> str | None:
+    """Manus F1 — preferência de painel one-shot (tools open_panel/close_panel).
+
+    Remove ``panel_pref`` do state (pop) e retorna o valor SE válido
+    ("expanded" | "docked"). One-shot por design: o pop acontece ANTES de
+    ``_persist_orchestrator_state`` (que usa ``update_state`` = MERGE no
+    checkpoint), então a key nunca chega ao checkpoint — o FE recebe a
+    preferência UMA vez no payload do ``wizard_stage`` e as etapas seguintes
+    não re-forçam o modo (preserva a escolha manual do recrutador). Valor
+    inválido é consumido e descartado (não emite).
+    """
+    pref = state.pop("panel_pref", None)
+    return pref if pref in ("expanded", "docked") else None
+
+
 # Keys carried forward from context into wizard state
-_CONTEXT_CARRY_KEYS = ("right_panel_form", "attached_file_text", "tenant_context_snippet")
+_CONTEXT_CARRY_KEYS = ("right_panel_form", "attached_file_text", "tenant_context_snippet", "parsed_manager_name", "parsed_manager_email")
+
+# Fase 3 fix (2026-06-21): per-vacancy fields to clear when a terminal wizard
+# reuses the same session_id. thread_id is keyed by (company_id, session_id)
+# so the LangGraph checkpoint persists across vacancies in the same session.
+#
+# C2 hardening (2026-06-21): preserve-allowlist inversion.
+# Instead of enumerating which fields to wipe (brittle — new fields in
+# JobCreationState are silently missed), we now enumerate which fields to
+# PRESERVE and wipe everything else dynamically.
+#
+# _WIZARD_SESSION_PRESERVE_KEYS: session-scoped fields that must survive
+# when starting a new vacancy within the same chat session.
+#
+# _WIZARD_FRESH_FIELDS: known per-vacancy reset values (type-preserving).
+# Used as override map by _build_wipe_payload(). Fields in JobCreationState
+# that are NOT in this map get a type-inferred reset value (None/[]/""/"").
+# Keep this dict updated whenever you add a field with a non-trivial reset.
+_WIZARD_SESSION_PRESERVE_KEYS: frozenset = frozenset({
+    # Identity — same user/company/session across vacancies
+    "company_id",
+    "session_id",
+    "user_id",
+    "auth_token",
+    "language",
+    "workspace_id",
+    # Recruiter — same person creates multiple vacancies in the same session
+    "parsed_recruiter_name",
+    "parsed_recruiter_email",
+    # Tenant context — global company config, not per-vacancy
+    "tenant_context_snippet",
+})
+
+_WIZARD_FRESH_FIELDS: dict = {
+    # Identity / routing — prevent intake_node from short-circuiting
+    "job_id": None,
+    "parsed_title": "",
+    "parsed_seniority": "",
+    "parsed_department": "",
+    "parsed_location": None,
+    "parsed_model": "",            # correct field name (state.py); was parsed_work_model
+    "jd_enriched": None,
+    "jd_enriched_present": False,
+    # Gate flags — prevent skipping stages that already completed for vacancy A
+    "intake_approved": None,
+    "intake_salary_suggested": False,
+    "gate_resume_message": "",
+    # V1 audit 2026-06-21: 4 additional critical orphans detected
+    "wsi_questions": [],           # vacancy B must regenerate questions for its own JD
+    "questions_approved": None,    # False/None forces question approval step to re-run
+    "eligibility_questions": [],   # vacancy B must regenerate eligibility for its own role
+    "stage_history": [],           # stale history confuses supervisor routing
+    # Calibration — candidates and completion are per-vacancy
+    "calibration_candidates": [],
+    "calibration_complete": False,
+    # Conversation history — must start fresh so B doesn't see A's chat
+    "conversation_messages": [],
+    "current_stage": None,
+    # Calibration config — reset to production default for each vacancy
+    "calibration_threshold": 5,
+}
+
+
+def _build_wipe_payload() -> dict:
+    """Build the full per-vacancy wipe dict dynamically from JobCreationState.
+
+    Enumerates all fields in JobCreationState.__annotations__ and assigns
+    type-appropriate reset values. Fields in _WIZARD_SESSION_PRESERVE_KEYS
+    are excluded (they survive across vacancies in the same session).
+    Fields with an explicit entry in _WIZARD_FRESH_FIELDS use that value
+    (correct semantics, e.g. None vs False vs []).
+
+    This means any new field added to JobCreationState is automatically
+    wiped without manual intervention — zero maintenance overhead.
+    """
+    import typing as _typing
+
+    try:
+        from app.domains.job_creation.state import JobCreationState
+        hints = _typing.get_type_hints(JobCreationState)
+    except Exception:
+        # Fallback: use the known static dict if import fails at module load
+        return dict(_WIZARD_FRESH_FIELDS)
+
+    wipe: dict = {}
+    for field, hint in hints.items():
+        if field in _WIZARD_SESSION_PRESERVE_KEYS:
+            continue
+        # Use explicit reset value if known
+        if field in _WIZARD_FRESH_FIELDS:
+            wipe[field] = _WIZARD_FRESH_FIELDS[field]
+            continue
+        # Type-infer reset value
+        origin = getattr(hint, "__origin__", None)
+        args = getattr(hint, "__args__", ())
+        # Optional[X] = Union[X, None] — origin is Union, NoneType in args
+        if origin is _typing.Union and type(None) in args:
+            wipe[field] = None
+        elif origin is list:
+            wipe[field] = []
+        elif origin is dict:
+            wipe[field] = {}
+        elif hint is str:
+            wipe[field] = ""
+        elif hint is bool:
+            wipe[field] = False
+        elif hint is int:
+            wipe[field] = 0
+        elif hint is float:
+            wipe[field] = 0.0
+        else:
+            wipe[field] = None
+    return wipe
 
 # ── Sprint F.2-v2 (2026-05-26) — Supervisor skip with content threshold ──
 # Sprint F.2 (2026-05-20) introduziu skip binário do supervisor quando
@@ -391,6 +533,64 @@ def _emit_silent_fallback(
         )
 
 
+
+def _enrich_state_with_hiring_policy(state: dict, row: object) -> None:
+    """Enrich wizard state with company hiring-policy data from a DB row.
+
+    Row columns expected (positional): pipeline_rules, screening_rules,
+    automation_rules, screening_config_defaults.  Any column may be None.
+
+    Responsibilities:
+    - Build ``hiring_policy_summary`` string for wizard_gate_classifier context.
+    - Store ``screening_config_defaults`` dict so downstream wizard nodes can
+      inherit company defaults (P0 ghost-setting fix 2026-06-21).
+    - Apply enabled channels to ``contact_channels`` via setdefault (non-destructive).
+    - Track applied defaults in ``company_defaults_applied`` for audit transparency.
+    """
+    if not row:
+        return
+
+    pr = (row[0] or {}) if len(row) > 0 else {}
+    sr = (row[1] or {}) if len(row) > 1 else {}
+    ar = (row[2] or {}) if len(row) > 2 else {}
+    scd = (row[3] or {}) if len(row) > 3 else {}
+
+    # ── Build hiring_policy_summary (existing behaviour, preserved) ──────────
+    parts: list[str] = []
+    if pr.get("manager_approval_for_offer") is not None:
+        parts.append(f"aprovação_gestor_oferta={pr['manager_approval_for_offer']}")
+    if sr.get("min_quality_score") is not None:
+        parts.append(f"qualidade_min_jd={sr['min_quality_score']}")
+    if ar.get("auto_approve_threshold") is not None:
+        parts.append(f"auto_approve_threshold={ar['auto_approve_threshold']}")
+    if ar.get("automation_level"):
+        parts.append(f"automação={ar['automation_level']}")
+    if parts and not state.get("hiring_policy_summary"):
+        state["hiring_policy_summary"] = " | ".join(parts)[:500]
+        logger.info(
+            "[WizardSession] hiring_policy_summary injected (%d fields)", len(parts)
+        )
+
+    # ── Store screening_config_defaults (P0 fix) ─────────────────────────────
+    if scd and not state.get("screening_config_defaults"):
+        state["screening_config_defaults"] = scd
+        applied: list[str] = list(state.get("company_defaults_applied") or [])
+        applied.append("screening_config_defaults")
+
+        # Apply enabled channels → contact_channels (setdefault — never overwrites)
+        channels: dict = scd.get("channels", {})
+        enabled = [ch for ch, v in channels.items() if isinstance(v, dict) and v.get("enabled")]
+        if enabled and not state.get("contact_channels"):
+            state["contact_channels"] = enabled
+            applied.append("contact_channels")
+
+        state["company_defaults_applied"] = applied
+        logger.info(
+            "[WizardSession] screening_config_defaults inherited from company policy (%d channels enabled)",
+            len(enabled),
+        )
+
+
 class WizardSessionService:
     """Manages JobCreationGraph invocation with per-session state accumulation.
 
@@ -464,6 +664,31 @@ class WizardSessionService:
         from app.shared.sessions import is_wizard_session_active as _canonical
 
         return await _canonical(company_id, session_id)
+
+    @classmethod
+    async def _wipe_terminal_checkpoint(cls, thread_id: str, wiz_g) -> None:
+        """Wipe per-vacancy fields from a terminal checkpoint before starting new wizard.
+
+        Fase 3 fix: when current_stage is in terminal set ('completed'/'handoff'/'done'),
+        the LangGraph checkpoint still holds job_id, calibration_candidates, jd_enriched
+        from the previous vacancy. Calling update_state with _WIZARD_FRESH_FIELDS
+        overwrites those stale values (last-value reducer) so intake_node cannot
+        short-circuit with wrong data.
+
+        Called before wiz_g.invoke() in both code paths that detect a terminal stage.
+        """
+        try:
+            config = {"configurable": {"thread_id": thread_id}}
+            await asyncio.to_thread(wiz_g._graph.update_state, config, _build_wipe_payload())
+            logger.info(
+                "[WizardSession] Fase3 wipe: checkpoint cleared for new wizard thread=%s",
+                thread_id,
+            )
+        except Exception as wipe_exc:
+            logger.warning(
+                "[WizardSession] Fase3 wipe FAILED (non-blocking) thread=%s: %s",
+                thread_id, wipe_exc,
+            )
 
     @staticmethod
     async def _get_prior_state(thread_id: str) -> dict:
@@ -640,6 +865,20 @@ class WizardSessionService:
             for k in _CONTEXT_CARRY_KEYS:
                 if ctx.get(k):
                     state[k] = ctx[k]
+            # W0-A: recruiter from context (first turn) or prior_state (subsequent turns)
+            if ctx.get("user_name"):
+                state["parsed_recruiter_name"] = ctx["user_name"]
+            if ctx.get("user_email"):
+                state["parsed_recruiter_email"] = ctx["user_email"]
+            # B8 Peça 2: manager from chat general (pending_manager carry)
+            if ctx.get("parsed_manager_name") and not state.get("parsed_manager_name"):
+                state["parsed_manager_name"] = ctx["parsed_manager_name"]
+            if ctx.get("parsed_manager_email") and not state.get("parsed_manager_email"):
+                state["parsed_manager_email"] = ctx["parsed_manager_email"]
+            # W0-B: extract jd_similar_reuse_id from right_panel_form if present
+            _rpf = ctx.get("right_panel_form") or {}
+            if _rpf.get("jd_similar_reuse_id"):
+                state["jd_similar_reuse_id"] = str(_rpf["jd_similar_reuse_id"])
             logger.info(
                 "[WizardSession] Continuing session thread=%s stage=%s conv_turns=%d",
                 thread_id,
@@ -668,6 +907,16 @@ class WizardSessionService:
         for k in _CONTEXT_CARRY_KEYS:
             if ctx.get(k):
                 state[k] = ctx[k]
+        # W0-A: recruiter identity from session user (passed via context by SSE/REST endpoint)
+        state["parsed_recruiter_name"] = ctx.get("user_name") or None
+        state["parsed_recruiter_email"] = ctx.get("user_email") or None
+        # B8 Peça 2: manager from chat general (pending_manager carry)
+        state["parsed_manager_name"] = ctx.get("parsed_manager_name") or None
+        state["parsed_manager_email"] = ctx.get("parsed_manager_email") or None
+        # W0-B: extract jd_similar_reuse_id from right_panel_form if present
+        _rpf = ctx.get("right_panel_form") or {}
+        if _rpf.get("jd_similar_reuse_id"):
+            state["jd_similar_reuse_id"] = str(_rpf["jd_similar_reuse_id"])
         return state
 
     # ── Task #1127 (T1.1 + T2.1 + T2.2) — Supervisor pre-graph ────────
@@ -937,25 +1186,30 @@ class WizardSessionService:
 
     # ── Orquestrador conversacional (strangler-fig, Paulo 2026-05-31) ────
     # Caminho alternativo ao pipeline LangGraph: um tool-calling agent
-    # state-aware. Ligado por LIA_WIZARD_ORCHESTRATOR (default OFF). Quando
+    # state-aware. Ligado por LIA_WIZARD_ORCHESTRATOR (default ON). Quando
     # ON, BYPASSA o graph completamente — lê o state via checkpointer
     # (mesma fonte do graph), roda o orquestrador, e persiste o state
     # mutado via update_state. Coexistência: o schema JobCreationState é o
     # mesmo, então alternar a flag preserva a sessão.
     @staticmethod
     def _orchestrator_enabled() -> bool:
-        """Lê a flag de os.environ (prod/Secrets) OU do .env (dev).
+        """Default ON (Fase 8). Grafo legado requer flag explícita =0.
 
         No setup Replit dev, o ``.env`` NÃO é injetado em ``os.environ``
         (pydantic-settings o lê para o objeto Settings, não para o environ).
         Para a flag funcionar em dev sem precisar de Secret nem restart com
         export, fazemos fallback para uma leitura cacheada do ``.env``.
-        Fail-open: qualquer erro → False (orquestrador desligado).
         """
-        _TRUTHY = ("1", "true", "yes", "on")
+        _FALSY = ("0", "false", "no", "off")
         val = os.environ.get("LIA_WIZARD_ORCHESTRATOR")
         if val is not None:
-            return val.strip().lower() in _TRUTHY
+            result = val.strip().lower() not in _FALSY
+            if not result:
+                logger.warning(
+                    "[WizardSession] LIA_WIZARD_ORCHESTRATOR=%s — routing via GRAPH LEGADO. "
+                    "Desde Fase 8, o default é orchestrator (ON).", val,
+                )
+            return result
         try:
             from dotenv import dotenv_values  # type: ignore
             cached = getattr(WizardSessionService, "_dotenv_cache", None)
@@ -963,9 +1217,20 @@ class WizardSessionService:
                 cached = dotenv_values(".env") or {}
                 WizardSessionService._dotenv_cache = cached  # type: ignore[attr-defined]
             dv = (cached.get("LIA_WIZARD_ORCHESTRATOR") or "").strip().lower()
-            return dv in _TRUTHY
-        except Exception:  # noqa: BLE001 — fail-open
-            return False
+            if dv and dv in _FALSY:
+                logger.warning(
+                    "[WizardSession] LIA_WIZARD_ORCHESTRATOR=%s (.env) — routing via GRAPH LEGADO.", dv,
+                )
+                return False
+            if dv:
+                return True
+        except Exception:  # noqa: BLE001
+            pass
+        logger.warning(
+            "[WizardSession] LIA_WIZARD_ORCHESTRATOR UNSET — defaulting to ORCHESTRATOR (Fase 8). "
+            "Set =0 explicitly to use legacy graph.",
+        )
+        return True
 
     @classmethod
     async def _persist_orchestrator_state(
@@ -1013,6 +1278,21 @@ class WizardSessionService:
         from app.domains.job_creation.state import calculate_completeness
 
         state = dict(prior_state or {})
+
+        # ── Terminal stage guard (belt-and-suspenders) ─────────────────
+        # When the checkpoint is at a terminal stage, the previous wizard
+        # is finished. Reset to fresh state so a new wizard can start.
+        _prior_stage = state.get('current_stage', '')
+        if _prior_stage in {'handoff', 'completed', 'done'}:
+            logger.info(
+                "[WizardOrchestrator] terminal stage: stage=%s thread=%s "
+                "— resetting to fresh state + wiping checkpoint for new wizard",
+                _prior_stage, thread_id,
+            )
+            from app.domains.job_creation.graph import get_job_creation_graph
+            _orch_wiz_g = get_job_creation_graph()
+            await WizardSessionService._wipe_terminal_checkpoint(thread_id, _orch_wiz_g)
+            state = {}
         # Carrega campos do context (right_panel_form, tenant snippet) p/ o state.
         for k in _CONTEXT_CARRY_KEYS:
             if context and context.get(k) is not None:
@@ -1032,10 +1312,67 @@ class WizardSessionService:
         _raw_msg = (context or {}).get("_raw_user_message") or user_message or ""
         _email = _extract_manager_email(_raw_msg)
         if _email:
-            state["parsed_manager_email"] = _email
+            # Bug 2a fix: skip if email matches the recruiter's own email.
+            # parsed_recruiter_email is set from JWT/session at login time.
+            _recruiter_email = (state.get("parsed_recruiter_email") or "").lower().strip()
+            if _email.lower() != _recruiter_email:
+                state["parsed_manager_email"] = _email
+                logger.info(
+                    "[WizardOrchestrator] manager_email capturado deterministicamente "
+                    "(len=%d) thread=%s", len(_email), thread_id,
+                )
+                # H2-warning: dominio diferente do recrutador pode indicar email
+                # de outra empresa (sem validacao de tenant para manager).
+                _mgr_domain = _email.split("@")[-1].lower()
+                if _recruiter_email and _mgr_domain != _recruiter_email.split("@")[-1].lower():
+                    logger.warning(
+                        "[WizardOrchestrator] manager_email dominio difere do recrutador "
+                        "(%s vs %s) — sem validacao de tenant, thread=%s",
+                        _mgr_domain,
+                        _recruiter_email.split("@")[-1].lower(),
+                        thread_id,
+                    )
+            else:
+                logger.debug(
+                    "[WizardOrchestrator] manager_email ignorado (igual ao email do recrutador) "
+                    "thread=%s", thread_id,
+                )
+
+        # ── Captura determinISTICa do NOME do gestor (audit 2026-06-05) ─────
+        # Mesma razao do email (decisao Paulo 2026-05-31, estendida): por LGPD
+        # o nome e mascarado (Presidio PERSON) ANTES do LLM, que entao o
+        # INVENTA a cada turno (Carlos Mendes -> Ricardo Almeida...).
+        # Capturamos do texto CRU no servidor -- NUNCA pelo LLM. Fontes:
+        # (1) texto cru ("o gestor e Paulo Moraes" / correcao "nao e X e Y"),
+        # (2) derivacao do email (paulo.moraes@ -> Paulo Moraes). Sugestao a
+        # confirmar. Corre a cada turno: a correcao vence; sem sinal, mantem.
+        from app.domains.job_creation.helpers.manager_identity import (
+            derive_name_from_email,
+            extract_manager_name_from_text,
+        )
+        _mgr_hint = False
+        for _m in reversed(state.get("conversation_messages") or []):
+            if _m.get("role") == "assistant":
+                _c = (_m.get("content") or "").lower()
+                _mgr_hint = (
+                    "nome do gestor" in _c
+                    or "gestor responsavel" in _c
+                    or "gestor responsável" in _c
+                    or "quem e o gestor" in _c
+                    or "quem é o gestor" in _c
+                )
+                break
+        _mgr_name = extract_manager_name_from_text(
+            _raw_msg, manager_context_hint=_mgr_hint
+        )
+        if not _mgr_name and _email:
+            _mgr_name = derive_name_from_email(_email)
+        if _mgr_name:
+            state["parsed_manager_name"] = _mgr_name
+            state["manager_name_suggested"] = True
             logger.info(
-                "[WizardOrchestrator] manager_email capturado deterministicamente "
-                "(len=%d) thread=%s", len(_email), thread_id,
+                "[WizardOrchestrator] manager_name capturado deterministicamente "
+                "(len=%d) thread=%s", len(_mgr_name), thread_id,
             )
 
         ctx = ToolContext(
@@ -1088,23 +1425,36 @@ class WizardSessionService:
         conv.append({"role": "assistant", "content": result.reply})
         new_state["conversation_messages"] = conv[-50:]
 
+        # Manus F1 — panel_pref one-shot: consumir (pop) ANTES do persist
+        # para a key nunca chegar ao checkpoint (update_state faz MERGE —
+        # pop pós-persist não removeria, e os turnos seguintes re-emitiriam).
+        panel_pref = _consume_panel_pref(new_state)
+
         await cls._persist_orchestrator_state(thread_id, new_state)
 
         # Payload alinhado ao contrato canonical do painel (DRY com _ficha_data
         # do intake_gate) + campos de gestor + JD enriquecida. O FE substitui
         # stageData pelo payload (não faz merge) — por isso é cumulativo.
         try:
-            from app.domains.job_creation.nodes.intake_gate import _ficha_data
+            from app.domains.job_creation.helpers.ficha_builder import build_ficha_data as _ficha_data
             data = _ficha_data(new_state, result.reply)
             # Gestor (não cobertos por _ficha_data) — painel renderiza estes.
             data["parsed_manager_name"] = new_state.get("parsed_manager_name")
             data["parsed_manager_email"] = new_state.get("parsed_manager_email")
+            # T10: stakeholders/envolvidos adicionais
+            if new_state.get("parsed_stakeholders"):
+                data["parsed_stakeholders"] = new_state["parsed_stakeholders"]
             # Responsabilidades confirmadas (item #2) — surfacar pro painel.
             if new_state.get("confirmed_responsibilities"):
                 data["confirmed_responsibilities"] = new_state.get("confirmed_responsibilities")
             # Idiomas confirmados (item #3) — surfacar pro painel.
             if new_state.get("confirmed_languages"):
                 data["confirmed_languages"] = new_state.get("confirmed_languages")
+            # Bug 3a fix: Benefits and variable compensation — surface to JobCreationPanel.
+            if new_state.get("confirmed_benefits"):
+                data["confirmed_benefits"] = new_state.get("confirmed_benefits")
+            if new_state.get("confirmed_variable_compensation"):
+                data["confirmed_variable_compensation"] = new_state.get("confirmed_variable_compensation")
             # B3 fix: competency_tree p/ o CompetencyPanel (add/remove).
             _ctree = _competency_tree_for_panel(new_state)
             if _ctree:
@@ -1170,6 +1520,25 @@ class WizardSessionService:
                 data["wsi_questions_used_fallback"] = new_state.get(
                     "wsi_questions_used_fallback", False
                 )
+                # Task-6 fix: expor seniority_level + screening_mode +
+                # expected_distribution para o FE abandonar MIN_DISTRIBUTION
+                # hardcoded e usar os dados canônicos do YAML.
+                try:
+                    from app.domains.job_creation.helpers.wsi_distribution import (
+                        block_distribution as _block_dist,
+                    )
+                    _seniority = new_state.get("seniority_resolved") or "pleno"
+                    _mode = new_state.get("screening_mode") or "compact"
+                    data["seniority_level"] = _seniority
+                    data["screening_mode"] = _mode
+                    data["expected_distribution"] = _block_dist(
+                        mode=_mode, seniority=_seniority
+                    )
+                except Exception as _t6_exc:  # noqa: BLE001 — best-effort, não bloqueia painel
+                    logger.debug(
+                        "[WizardOrchestrator] expected_distribution calc falhou: %s",
+                        _t6_exc,
+                    )
                 # Gate de distribuição (mesma lógica do approve_wsi_questions,
                 # fail-open): popula distribution_gap para o banner do
                 # WsiQuestionsPanel disparar também no caminho live.
@@ -1185,6 +1554,31 @@ class WizardSessionService:
                         "[WizardOrchestrator] distribution_gap calc falhou: %s",
                         _dg_exc,
                     )
+            # W1-A: Perguntas de elegibilidade — surfacar para EligibilityPanel.
+            # EligibilityPanel usa data["questions"] (igual ao WSI).
+            # Só preenche quando WSI ainda não foi gerado (eligibility vem antes).
+            _elig_q = new_state.get("eligibility_questions")
+            if _elig_q and not new_state.get("wsi_questions"):
+                data["questions"] = _elig_q
+
+            # Bug 13: Calibração — alimenta WizardCalibrationCard
+            # threshold: like + dislike contam; skip NÃO (decisão 2026-06-19)
+            if new_state.get("calibration_candidates") and stage == "calibration":
+                _cands = new_state.get("calibration_candidates") or []
+                _threshold = new_state.get("calibration_threshold", 5)
+                _signal_count = sum(
+                    1 for c in _cands
+                    if c.get("decision") in ("approved", "rejected")
+                )
+                _approved_count = sum(
+                    1 for c in _cands if c.get("decision") == "approved"
+                )
+                _can_advance = new_state.get("can_advance", _signal_count >= _threshold)
+                data["candidates"] = _cands
+                data["threshold"] = _threshold
+                data["signal_count"] = _signal_count
+                data["approved_count"] = _approved_count
+                data["can_advance"] = _can_advance
             if new_state.get("job_id"):
                 data["job_id"] = new_state.get("job_id")
                 data["share_link"] = new_state.get("share_link")
@@ -1192,17 +1586,63 @@ class WizardSessionService:
             if stage == "handoff":
                 _jid = new_state.get("job_id")
                 data["handoff_url"] = f"/jobs/{_jid}" if _jid else "/jobs"
+            # Manus F1 — preferência de painel one-shot (open_panel/
+            # close_panel). Emitida UMA vez; já removida do state acima.
+            if panel_pref:
+                data["panel_pref"] = panel_pref
             payload = build_ws_stage_payload(
                 stage=stage,
                 requires_approval=bool(new_state.get("requires_approval")),
                 data=data,
                 completeness=calculate_completeness(stage),
             )
-        except Exception as exc:  # noqa: BLE001 — payload é best-effort
+            # Bug #3 fix: surface response_blocks (RRP juicybox cards) from orchestrator
+            if result.response_blocks:
+                payload["response_blocks"] = result.response_blocks
+            # P0-E fix (2026-06-14): user pediu "me leve pro chat full" no wizard.
+            # Emite ui_action="navigate_to" page="chat" para o SSE handler propagar
+            # ao frontend (useUIAction.dispatchOrEmit -> router.push /pt/chat).
+            if new_state.get("_navigate_to_fullscreen_chat"):
+                payload["ui_action"] = "navigate_to"
+                payload["ui_action_params"] = {"page": "chat"}
+            # Fase C — calibração concluída: navegar para página da vaga (kanban + busca).
+            if new_state.get("_navigate_to_search") and new_state.get("job_id"):
+                payload["ui_action"] = "navigate_to"
+                payload["ui_action_params"] = {"page": "vaga_detalhe", "id": new_state["job_id"]}
+        except Exception as exc:  # noqa: BLE001  # REGRA-4-EXEMPT: payload é best-effort (UI continua com payload vazio), reply já foi gerado
             logger.warning(
-                "[WizardOrchestrator] payload build failed: %s", exc
+                "[WizardOrchestrator] payload build failed: %s", type(exc).__name__,
+                exc_info=True,
             )
-            payload = {}
+            # FIX defect #1: NEVER set payload = {} — empty dict is falsy,
+            # SSE handler skips panel_update, panel disappears. Build a
+            # minimal valid payload so the panel stays alive.
+            payload = {
+                "type": "wizard_stage",
+                "stage": stage,
+                "data": {
+                    "message": result.reply or "[Estado do wizard em atualização]",
+                },
+                "requires_approval": False,
+            }
+
+        # ── Fix: mark wizard checkpoint as completed after handoff ──────
+        # Same fix as the graph path — the orchestrator persists
+        # current_stage="handoff" but never transitions to "completed".
+        if stage == "handoff" and thread_id:
+            try:
+                await cls._persist_orchestrator_state(
+                    thread_id, {"current_stage": "completed"}
+                )
+                logger.info(
+                    "[WizardOrchestrator] marked checkpoint completed after "
+                    "handoff thread=%s", thread_id,
+                )
+            except Exception as _mark_exc:  # REGRA-4-EXEMPT: marcar checkpoint é best-effort, falha não cancela o turn
+                logger.warning(
+                    "[WizardOrchestrator] failed to mark checkpoint completed "
+                    "(fail-open): %s", type(_mark_exc).__name__,
+                )
 
         logger.info(
             "[WizardOrchestrator] turn done thread=%s tools=%s iters=%d "
@@ -1248,7 +1688,7 @@ class WizardSessionService:
 
         # ── Orquestrador conversacional (flag LIA_WIZARD_ORCHESTRATOR) ──
         # Quando ON, bypassa o pipeline LangGraph e roda o tool-calling
-        # agent state-aware. Default OFF — zero impacto em produção.
+        # agent state-aware. Default ON (Fase 8) — grafo legado requer flag explícita =0.
         if cls._orchestrator_enabled():
             logger.info(
                 "[WizardSession] routing via ORCHESTRATOR thread=%s", thread_id,
@@ -1285,6 +1725,15 @@ class WizardSessionService:
         _prior_stage = None
         if isinstance(prior_state, dict):
             _prior_stage = prior_state.get("current_stage")
+        # ── Terminal stage guard (graph path) ─────────────────────
+        if _prior_stage in ('handoff', 'completed', 'done'):
+            logger.info(
+                "[WizardSession] terminal stage (graph): stage=%s "
+                "thread=%s — resetting prior_state + wiping checkpoint for new wizard",
+                _prior_stage, thread_id,
+            )
+            await cls._wipe_terminal_checkpoint(thread_id, wiz_g)
+            prior_state = {}
         _skip_supervisor = _compute_supervisor_skip(user_message, _prior_stage)
         _msg_len = len((user_message or "").strip())
         # Sprint F.4 (iter 3) — diagnostic INFO so we can see supervisor
@@ -1407,6 +1856,23 @@ class WizardSessionService:
             context=context,
             prior_state=prior_state,
         )
+
+        # ── Create-from-source seeding (PR-A5b — fresh session only) ──
+        # If the recruiter started the wizard from a template/vacancy, the
+        # source descriptor arrives in context["seed_source"]. Build the
+        # seed via the canonical producer + merge it into the fresh state
+        # (user input on later turns wins — precedence handled by the mapper).
+        # Only on a brand-new session: never re-seed a continuing turn.
+        seed_source = (context or {}).get("seed_source")
+        if seed_source and not prior_state and company_id:
+            from app.core.database import AsyncSessionLocal
+            from app.domains.job_creation.helpers.seed_session import (
+                seed_initial_state,
+            )
+            async with AsyncSessionLocal() as _seed_db:
+                await seed_initial_state(
+                    state, seed_source, str(company_id), _seed_db
+                )
 
         # ── Manager preferences injection (GUIDE — fail-open) ──────────
         # Only on the first message of a session (when manager_email is known)
@@ -1535,7 +2001,7 @@ class WizardSessionService:
                 async with AsyncSessionLocal() as _hp_db:
                     row = (await _hp_db.execute(
                         _sql_text(
-                            "SELECT pipeline_rules, screening_rules, automation_rules "
+                            "SELECT pipeline_rules, screening_rules, automation_rules, screening_config_defaults "
                             "FROM company_hiring_policies "
                             "WHERE company_id = CAST(:cid AS uuid) "
                             "LIMIT 1"
@@ -1543,31 +2009,17 @@ class WizardSessionService:
                         {"cid": str(company_id)},
                     )).first()
                 if row:
-                    pr, sr, ar = row[0] or {}, row[1] or {}, row[2] or {}
-                    parts: list[str] = []
-                    if pr.get("manager_approval_for_offer") is not None:
-                        parts.append(
-                            f"aprovação_gestor_oferta={pr['manager_approval_for_offer']}"
-                        )
-                    if sr.get("min_quality_score") is not None:
-                        parts.append(f"qualidade_min_jd={sr['min_quality_score']}")
-                    if ar.get("auto_approve_threshold") is not None:
-                        parts.append(
-                            f"auto_approve_threshold={ar['auto_approve_threshold']}"
-                        )
-                    if ar.get("automation_level"):
-                        parts.append(f"automação={ar['automation_level']}")
-                    if parts:
-                        state["hiring_policy_summary"] = " | ".join(parts)[:500]
-                        logger.info(
-                            "[WizardSession] hiring_policy_summary injected (%d fields)",
-                            len(parts),
-                        )
+                    _enrich_state_with_hiring_policy(state, row)
             except Exception as _hp_exc:
-                # Fail-open: classifier opera com summary vazio, mantém allowlist intacta.
-                logger.debug(
-                    "[WizardSession] hiring_policy_summary lazy-load failed (fail-open): %s",
+                # Fail-open: wizard segue sem herdar defaults. DEVE ser visível em prod.
+                # ADR-001-EXEMPT: lazy-load hiring_policy na invocação do wizard — não há
+                # HiringPolicyRepository no path do wizard; injeção por DI seria prematura
+                # para lazy-load one-shot. P0 fix 2026-06-21: warning, não debug.
+                logger.warning(
+                    "[WizardSession] hiring_policy lazy-load FAILED (fail-open) — "
+                    "company defaults NOT inherited: %s | company_id=%s",
                     _hp_exc,
+                    company_id,
                 )
 
         tokens_emitted = 0
@@ -1720,6 +2172,34 @@ class WizardSessionService:
                     "[WizardSession] wizard_stage sync failed (fail-open): %s", _ws_exc,
                 )
 
+
+        # ── Fix: mark wizard checkpoint as completed after handoff ──────
+        # handoff_node sets current_stage="handoff" for the WS payload,
+        # but never transitions to "completed". Without this, the
+        # checkpointer keeps the session "active" and the next page load
+        # rehydrates the stale handoff panel ("Vaga publicada" on a fresh
+        # conversation). We update the checkpoint AFTER the learning loop
+        # and wizard_stage sync (which both check for "handoff") so they
+        # see the original stage, then mark as terminal.
+        if result.get("current_stage") == "handoff" and thread_id:
+            try:
+                import asyncio as _asyncio_mark
+                _mark_config = {"configurable": {"thread_id": thread_id}}
+                await _asyncio_mark.to_thread(
+                    wiz_g._graph.update_state,
+                    _mark_config,
+                    {"current_stage": "completed"},
+                )
+                logger.info(
+                    "[WizardSession] marked checkpoint completed after handoff "
+                    "thread=%s session=%s",
+                    thread_id, session_id,
+                )
+            except Exception as _mark_exc:
+                logger.warning(
+                    "[WizardSession] failed to mark checkpoint completed "
+                    "(fail-open, TTL will expire): %s", _mark_exc,
+                )
 
         stage_payload = result.get("ws_stage_payload") or {}
         stage_data = stage_payload.get("data") or {}

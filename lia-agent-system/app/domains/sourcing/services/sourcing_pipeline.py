@@ -23,9 +23,9 @@ from app.domains.interview_scheduling.repositories.interview_repository import (
 from app.domains.job_management.repositories.job_vacancy_crud_repository import (
     JobVacancyCRUDRepository,
 )
-from app.domains.notifications.repositories.alert_repository import AlertRepository
+from app.repositories.alert_repository import AlertRepository
 from app.domains.sourcing.services.pearch_service import pearch_service
-from app.domains.tasks.repositories.tasks_repository import TasksRepository
+from app.repositories.tasks_repository import TasksRepository
 from lia_models.alert import Alert, AlertSeverity, AlertStatus, AlertType
 from lia_models.candidate import Candidate
 from lia_models.interview import Interview

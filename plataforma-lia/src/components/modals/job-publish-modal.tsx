@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import { useState, useEffect, useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -15,6 +16,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 import { cn } from "@/lib/utils"
+import { useAiPersona } from "@/hooks/company/use-ai-persona"
 import {
   Share2,
   Loader2,
@@ -97,6 +99,11 @@ export function JobPublishModal({
   onUnpublish,
   onOpenCommunicationModal
 }: JobPublishModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('job-publish', isOpen)
+
+  const { persona } = useAiPersona()
+  const personaName = persona?.name ?? "IA"
   const [selectedChannels, setSelectedChannels] = useState<Set<string>>(new Set())
   const [scheduleType, setScheduleType] = useState<'now' | 'scheduled'>('now')
   const [scheduleDate, setScheduleDate] = useState('')
@@ -105,6 +112,7 @@ export function JobPublishModal({
   const [autoSearchGlobal, setAutoSearchGlobal] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [channelInfoModal, setChannelInfoModal] = useState<{ name: string; message: string; configUrl?: string } | null>(null)
+  useLiaModalTracking('job-publish-channel-info', !!channelInfoModal)
   const [integrationHealth, setIntegrationHealth] = useState<Record<string, { configured: boolean }>>({})
 
   const PUBLICATION_CHANNELS: ChannelConfig[] = BASE_CHANNELS.map((ch) => {
@@ -417,7 +425,7 @@ export function JobPublishModal({
                         <div>
                           <Label className="text-micro text-lia-text-secondary mb-1 block">
                             Previsão de descongelamento
-                            <span className="text-lia-text-disabled ml-1">(LIA irá notificá-lo)</span>
+                            <span className="text-lia-text-disabled ml-1">{`(${personaName} irá notificá-lo)`}</span>
                           </Label>
                           <Input
                             type="date"
@@ -449,7 +457,7 @@ export function JobPublishModal({
                         {notifyApplicants && (
                           <div className="mt-1.5 flex items-center gap-1.5 text-micro text-lia-text-secondary bg-lia-bg-secondary/50 px-2 py-1 rounded-full">
                             <Brain className="w-3 h-3 text-wedo-cyan" />
-                            <span>LIA abrirá o modal de envio por email/WhatsApp com template sugerido</span>
+                            <span>{`${personaName} abrirá o modal`} de envio por email/WhatsApp com template sugerido</span>
                           </div>
                         )}
                       </div>
@@ -582,7 +590,7 @@ export function JobPublishModal({
                           <Label htmlFor="autoSearchInternal" className="text-xs font-medium text-lia-text-primary cursor-pointer">
                             Busca na base interna
                           </Label>
-                          <p className="text-micro text-lia-text-secondary" aria-live="polite" aria-atomic="true">LIA encontra candidatos no banco de talentos</p>
+                          <p className="text-micro text-lia-text-secondary" aria-live="polite" aria-atomic="true">{`${personaName} encontra candidatos no banco de talentos`}</p>
                         </div>
                       </div>
                       

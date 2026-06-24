@@ -63,7 +63,7 @@ def _where_clause(stmt) -> str:
 @pytest.mark.asyncio
 async def test_alert_get_config_by_id_with_company_filters() -> None:
     """AlertRepository.get_config_by_id MUST add company_id filter when passed."""
-    from app.domains.notifications.repositories.alert_repository import (
+    from app.repositories.alert_repository import (
         AlertRepository,
     )
 
@@ -82,7 +82,7 @@ async def test_alert_get_config_by_id_with_company_filters() -> None:
 @pytest.mark.asyncio
 async def test_alert_get_preference_with_company_filters() -> None:
     """AlertRepository.get_preference MUST add company_id filter when passed."""
-    from app.domains.notifications.repositories.alert_repository import (
+    from app.repositories.alert_repository import (
         AlertRepository,
     )
 
@@ -167,7 +167,7 @@ async def test_integrations_hub_get_connection_by_id_with_company_filters() -> N
 @pytest.mark.asyncio
 async def test_goals_get_by_id_with_company_filters() -> None:
     """GoalsRepository.get_by_id MUST add company_id filter when passed."""
-    from app.domains.goals.repositories.goals_repository import (
+    from app.repositories.goals_repository import (
         GoalsRepository,
     )
 
@@ -184,7 +184,7 @@ async def test_goals_get_by_id_with_company_filters() -> None:
 @pytest.mark.asyncio
 async def test_goals_list_goals_with_company_filters() -> None:
     """GoalsRepository.list_goals MUST add company_id filter when passed."""
-    from app.domains.goals.repositories.goals_repository import (
+    from app.repositories.goals_repository import (
         GoalsRepository,
     )
 
@@ -204,7 +204,7 @@ async def test_goals_list_goals_with_company_filters() -> None:
 @pytest.mark.asyncio
 async def test_email_templates_get_by_id_with_company_filters() -> None:
     """EmailTemplatesRepository.get_by_id MUST add company_id filter when passed."""
-    from app.domains.email_templates.repositories.email_templates_repository import (
+    from app.repositories.email_templates_repository import (
         EmailTemplatesRepository,
     )
 
@@ -245,7 +245,7 @@ async def test_data_incident_get_by_id_with_company_filters() -> None:
 @pytest.mark.asyncio
 async def test_journey_mapping_get_blueprint_with_company_filters() -> None:
     """JourneyMappingRepository.get_blueprint MUST add company_id filter when passed."""
-    from app.domains.journey_mapping.repositories.journey_mapping_repository import (
+    from app.repositories.journey_mapping_repository import (
         JourneyMappingRepository,
     )
 
@@ -265,7 +265,7 @@ async def test_journey_mapping_get_blueprint_with_company_filters() -> None:
 @pytest.mark.asyncio
 async def test_alert_get_config_by_id_without_company_omits_filter() -> None:
     """get_config_by_id without company_id — backwards-compat path."""
-    from app.domains.notifications.repositories.alert_repository import (
+    from app.repositories.alert_repository import (
         AlertRepository,
     )
 
@@ -284,7 +284,7 @@ async def test_alert_get_config_by_id_without_company_omits_filter() -> None:
 @pytest.mark.asyncio
 async def test_goals_get_by_id_without_company_omits_filter() -> None:
     """GoalsRepository.get_by_id without company_id — backwards-compat path."""
-    from app.domains.goals.repositories.goals_repository import (
+    from app.repositories.goals_repository import (
         GoalsRepository,
     )
 

@@ -5,6 +5,7 @@ v4.0: Unified pipeline via MainOrchestrator.process() + ContextAdapter.from_tale
       FairnessGuard, PendingAction, ActionExecutor, CascadedRouter all handled centrally.
 """
 import logging
+from app.shared.errors import LIAInternalError
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -114,9 +115,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"[TalentChat] Error: {e}", exc_info=True)
-        raise HTTPException(
-            status_code=500, detail=f"Error processing talent chat: {str(e)}"
-        )
+        raise LIAInternalError("Internal server error")
 
 @router.get("/talent-chat/intents", response_model=None)
 async def get_talent_chat_intents(company_id: str = Depends(require_company_id)):
@@ -133,7 +132,7 @@ async def get_talent_chat_intents(company_id: str = Depends(require_company_id))
             {"id": "contact_candidate", "description": "Contatar candidatos", "keywords": ["email", "contatar", "whatsapp"], "ui_action": "open_communication_modal"},
             {"id": "schedule_interview", "description": "Agendar entrevistas", "keywords": ["agendar", "entrevista"], "ui_action": "open_schedule_modal"},
             {"id": "wsi_screening", "description": "Triagem WSI", "keywords": ["triagem", "screening", "wsi"], "ui_action": "open_screening_modal"},
-            {"id": "criar_vaga", "description": "Criar nova vaga", "keywords": ["criar vaga", "nova vaga", "abrir vaga"], "ui_action": "start_job_wizard"},
+            {"id": "criar_vaga", "description": "Criar nova vaga", "keywords": ["criar vaga", "nova vaga", "abrir vaga"], "ui_action": "start_wizard_seeded"},
         ],
         "context": "talent_funnel",
     }

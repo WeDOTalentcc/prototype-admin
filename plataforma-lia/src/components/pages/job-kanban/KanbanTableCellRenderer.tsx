@@ -17,8 +17,10 @@ import {
 import {
   Brain, Target, Fingerprint,
   ThumbsUp, XCircle, Flag, Eye, ChevronDown, CheckCircle,
-  MoreVertical, Video, BrainCircuit,
+  ChevronRight, MoreVertical, Video, BrainCircuit,
 } from"lucide-react"
+import { CandidateChatPopover } from "@/components/shared/CandidateChatPopover"
+import { CandidateMoveDropdown } from "@/components/shared/CandidateMoveDropdown"
 import { renderScoreCell } from"./KanbanScoreCells"
 import { renderPearchCell } from"./KanbanPearchCells"
 import type {
@@ -57,6 +59,7 @@ export function createKanbanCellRenderer(props: KanbanTableCellRendererProps) {
     openTransition,
     onTransitionRequired,
     onStatusChange,
+    onDirectTransition,
     onCandidateClick,
   } = props
 
@@ -147,13 +150,24 @@ export function createKanbanCellRenderer(props: KanbanTableCellRendererProps) {
                 </div>
               )}
             </div>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 group/name">
               {!!(isDemo) && (
-                <span className="text-micro font-medium text-lia-text-disabled">[D]</span>
+                <span className="text-micro font-medium text-lia-text-tertiary">[D]</span>
               )}
-              <span className="font-medium text-sm text-lia-text-primary">
-                {candidate.name as string}
-              </span>
+              <CandidateChatPopover
+                candidateId={candidate.id as string}
+                candidateName={candidate.name as string}
+                jobId={jobVacancyId}
+              >
+                <span
+                  className="font-medium text-sm text-lia-text-primary"
+                  data-lia-entity-type="candidate"
+                  data-lia-entity-id={candidate.id as string}
+                  data-lia-entity-label={candidate.name as string}
+                >
+                  {candidate.name as string}
+                </span>
+              </CandidateChatPopover>
               {(() => {
                 const dataRequest = getDataRequestForCandidate(candidate.id as string)
                 if (!dataRequest) return null
@@ -190,58 +204,34 @@ export function createKanbanCellRenderer(props: KanbanTableCellRendererProps) {
         )
 
       case 'stage': {
-        const stageDropdownStages = dynamicStages.map(s => ({ id: s.id, name: s.name, displayName: s.displayName, color: s.color }))
-        const currentStageObj = stageDropdownStages.find(s => s.id === ((candidate.stageId as string | undefined) || (candidate.stage as string | undefined)))
+        const candidateStageId = (candidate.stageId as string | undefined) || (candidate.stage as string | undefined)
+        const currentStageObj = dynamicStages.find(s => s.id === candidateStageId)
+        const vcId = (candidate as Record<string, unknown>).vacancy_candidate_id as string | undefined
         return (
-          <Popover>
-            <PopoverTrigger asChild>
+          <CandidateMoveDropdown
+            jobId={jobVacancyId || ""}
+            candidateId={candidate.id as string}
+            vacancyCandidateId={vcId}
+            currentStage={candidateStageId}
+            candidateName={candidate.name as string}
+            subFlyoutSide="right"
+            onMoveRequested={(toStage) => openTransition([candidate], candidateStageId || "", toStage)}
+            trigger={
               <button className="inline-flex items-center gap-1 group/stage" onClick={(e) => e.stopPropagation()}>
                 <Chip variant="neutral" muted
                   className="text-xs font-semibold border-0 whitespace-nowrap text-lia-text-primary cursor-pointer"
-                  style={{backgroundColor: currentStageObj?.color || 'var(--lia-border-subtle)'}}
+                  style={{ backgroundColor: currentStageObj?.color || "var(--lia-border-subtle)" }}
                 >
-                  {currentStageObj?.displayName || (candidate.stage as string | undefined)}
+                  {currentStageObj?.displayName || candidateStageId}
                 </Chip>
-                <ChevronDown className="w-3 h-3 text-lia-text-disabled group-hover/stage:text-lia-text-secondary transition-colors motion-reduce:transition-none" />
+                <ChevronDown className="w-3 h-3 text-lia-text-muted group-hover/stage:text-lia-text-secondary transition-colors motion-reduce:transition-none" />
               </button>
-            </PopoverTrigger>
-            <PopoverContent className="w-44 p-1.5" align="start" sideOffset={4}>
-              <div className="space-y-0.5">
-                {stageDropdownStages.map((stage) => {
-                  const isCurrent = stage.id === ((candidate.stageId as string | undefined) || (candidate.stage as string | undefined))
-                  return (
-                    <button
-                      key={stage.id}
-                      className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-xs transition-colors motion-reduce:transition-none ${
-                        isCurrent
-                          ? 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary font-bold'
-                          : 'hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover/50'
-                      }`}
-
-                      onClick={() => {
-                        if (!isCurrent) {
-                          onTransitionRequired([candidate], (candidate.stageId as string | undefined) || (candidate.stage as string | undefined) || '', stage.id)
-                        }
-                      }}
-                    >
-                      <div
-                        className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                        style={{backgroundColor: stage.color}}
-                      />
-                      <span className="flex-1 text-left text-lia-text-primary truncate">
-                        {stage.displayName}
-                      </span>
-                      {isCurrent && <CheckCircle className="w-3.5 h-3.5 text-wedo-cyan flex-shrink-0" />}
-                    </button>
-                  )
-                })}
-              </div>
-            </PopoverContent>
-          </Popover>
+            }
+          />
         )
       }
 
-      case 'status': {
+            case 'status': {
         const hasScheduledInterview = !!candidate.agendada
         return (
           <div className="flex items-center gap-1.5">
@@ -264,7 +254,7 @@ export function createKanbanCellRenderer(props: KanbanTableCellRendererProps) {
                   onSetTransitionInterviewAlert({ name: candidate.name as string, date: dateStr })
                   openTransition([candidate], stage, stage)
                 }}
-                className="w-5 h-5 rounded-md flex items-center justify-center text-wedo-cyan-dark hover:bg-wedo-cyan/10 dark:hover:bg-wedo-cyan-dark/20 transition-colors motion-reduce:transition-none flex-shrink-0"
+                className="w-5 h-5 rounded-md flex items-center justify-center text-wedo-cyan-text hover:bg-wedo-cyan/10 dark:hover:bg-wedo-cyan-dark/20 transition-colors motion-reduce:transition-none flex-shrink-0"
                 title={t('manageInterviewTitle', { date: (candidate.interviewDate as string | undefined) || new Date(candidate.agendada as string).toLocaleDateString('pt-BR') })}
               >
                 <Video className="w-3 h-3" />

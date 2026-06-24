@@ -8,6 +8,7 @@ import {
   Mail, Phone, Search, Upload, Wand2, X, Zap
 } from "lucide-react"
 import { MAX_SIMILAR_URLS, MAX_CV_FILES } from "./hooks/smartSearchConstants"
+import { useAiPersona } from "@/hooks/company/use-ai-persona"
 
 interface SSISimilarModeProps {
   similarUrls: string[]
@@ -41,6 +42,8 @@ interface SSISimilarModeProps {
 }
 
 export function SSISimilarMode(props: SSISimilarModeProps) {
+  const { persona } = useAiPersona()
+  const personaName = persona?.name ?? "IA"
   const {
     similarUrls, updateSimilarUrl, handleKeyDown, removeSimilarUrl, addSimilarUrl,
     cvFileInputRef, handleCvUpload, similarCvFiles, removeCvFile,
@@ -96,7 +99,7 @@ export function SSISimilarMode(props: SSISimilarModeProps) {
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="top" className="text-xs max-w-sidebar-content !animate-none !duration-0">
-                  Adicione até 3 perfis para a LIA criar um perfil ideal combinado
+                  Adicione até 3 perfis para {personaName} criar um perfil ideal combinado
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -154,7 +157,7 @@ export function SSISimilarMode(props: SSISimilarModeProps) {
 
     {hasMultipleSources() && !showCombinedSuggestions && (
       <Button onClick={analyzeProfiles} disabled={isAnalyzingProfiles} className="w-full text-xs h-9 bg-lia-btn-primary-bg">
-        {isAnalyzingProfiles ? (<><Loader2 className="w-3.5 h-3.5 mr-2 animate-spin motion-reduce:animate-none" />Analisando perfis...</>) : (<><Wand2 className="w-3.5 h-3.5 mr-2" />Analisar e combinar perfis com LIA</>)}
+        {isAnalyzingProfiles ? (<><Loader2 className="w-3.5 h-3.5 mr-2 animate-spin motion-reduce:animate-none" />Analisando perfis...</>) : (<><Wand2 className="w-3.5 h-3.5 mr-2" />{`Analisar e combinar perfis com ${personaName}`}</>)}
       </Button>
     )}
 
@@ -163,12 +166,12 @@ export function SSISimilarMode(props: SSISimilarModeProps) {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
-            <span className="text-xs font-medium text-lia-text-primary">Perfil Ideal sugerido pela LIA</span>
+            <span className="text-xs font-medium text-lia-text-primary">{`Perfil Ideal sugerido por ${personaName}`}</span>
           </div>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger><HelpCircle className="w-3.5 h-3.5 text-lia-text-secondary" /></TooltipTrigger>
-              <TooltipContent side="top" className="text-xs max-w-[280px]">A LIA analisou os perfis e combinou skills, experiências e senioridade em comum. Edite ou remova tags antes de buscar.</TooltipContent>
+              <TooltipContent side="top" className="text-xs max-w-[280px]">{`${personaName} analisou os perfis e combinou`} skills, experiências e senioridade em comum. Edite ou remova tags antes de buscar.</TooltipContent>
             </Tooltip>
           </TooltipProvider>
         </div>
@@ -229,7 +232,7 @@ export function SSISimilarMode(props: SSISimilarModeProps) {
                     </TooltipTrigger>
                     <TooltipContent side="bottom" className="!animate-none !duration-0">
                       <p className="text-xs font-medium">Buscar Similares</p>
-                      <p className="text-xs text-lia-text-disabled" aria-live="polite" aria-atomic="true">Encontra candidatos com perfil similar</p>
+                      <p className="text-xs text-lia-text-muted" aria-live="polite" aria-atomic="true">Encontra candidatos com perfil similar</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -274,7 +277,7 @@ export function SSISimilarMode(props: SSISimilarModeProps) {
                   </TooltipTrigger>
                   <TooltipContent side="bottom" className="!animate-none !duration-0">
                     <p className="text-xs font-medium">Buscar Similares</p>
-                    <p className="text-xs text-lia-text-disabled" aria-live="polite" aria-atomic="true">Encontra candidatos com perfil similar</p>
+                    <p className="text-xs text-lia-text-muted" aria-live="polite" aria-atomic="true">Encontra candidatos com perfil similar</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -289,7 +292,7 @@ export function SSISimilarMode(props: SSISimilarModeProps) {
       <div className="flex items-start gap-2">
         <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-lia-text-secondary" />
         <p className="text-xs text-lia-text-secondary">
-          <strong>Dica:</strong> Cole 1 a 3 links do LinkedIn ou faça upload de até 2 CVs. Com 2+ perfis, a LIA combina as melhores características e sugere palavras-chave para encontrar candidatos similares.
+          <strong>Dica:</strong> Cole 1 a 3 links do LinkedIn ou faça upload de até 2 CVs. Com 2+ perfis, `${personaName} combina as melhores características` e sugere palavras-chave para encontrar candidatos similares.
         </p>
       </div>
     </div>
@@ -305,8 +308,8 @@ function ScopeButton({ icon: Icon, active, activeColor, onClick, label, sublabel
     : activeColor === 'wedo-orange' ? 'bg-wedo-orange/15 ring-1 ring-wedo-orange'
     : activeColor === 'wedo-cyan' ? 'bg-wedo-cyan/15 ring-1 ring-lia-btn-primary-bg/20'
     : ''
-  const textClass = activeColor === 'wedo-green' ? 'text-wedo-green'
-    : activeColor === 'wedo-orange' ? 'text-wedo-orange'
+  const textClass = activeColor === 'wedo-green' ? 'text-wedo-green-text'
+    : activeColor === 'wedo-orange' ? 'text-wedo-orange-text'
     : activeColor === 'wedo-cyan' ? 'text-lia-text-primary'
     : ''
   return (
@@ -320,7 +323,7 @@ function ScopeButton({ icon: Icon, active, activeColor, onClick, label, sublabel
         </TooltipTrigger>
         <TooltipContent side="bottom" className="!animate-none !duration-0">
           <p className="text-xs font-medium">{label}</p>
-          <p className="text-xs text-lia-text-disabled">{sublabel}</p>
+          <p className="text-xs text-lia-text-muted">{sublabel}</p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>

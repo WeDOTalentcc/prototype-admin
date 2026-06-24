@@ -20,11 +20,15 @@ from typing import Any
 from uuid import UUID
 
 from app.domains.cv_screening.repositories.screening_repository import ScreeningRepository
+from app.domains.candidates.repositories.vacancy_candidate_repository import VacancyCandidateRepository
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal
-from app.domains.cv_screening.services.rubric_evaluation_service import rubric_evaluation_service
+from app.domains.cv_screening.services.rubric_evaluation_service import (
+    rubric_evaluation_service,
+    RubricEvaluationError,
+)
 from lia_models.candidate import Candidate, VacancyCandidate
 from lia_models.job_vacancy import JobVacancy
 from lia_models.rubric import JobRequirement
@@ -121,11 +125,63 @@ class CVScoringService:
             
             job_info = await self._get_job_info(vacancy_id, db)
             
-            evaluation_result = await rubric_evaluation_service.evaluate_candidate(
-                candidate_data=candidate_data,
-                requirements=requirements
-            )
-            
+            try:
+                evaluation_result = await rubric_evaluation_service.evaluate_candidate(
+                    candidate_data=candidate_data,
+                    requirements=requirements
+                )
+            except RubricEvaluationError as eval_err:
+                logger.error(
+                    "[CV_SCORING] Evaluation FAILED for candidate=%s vacancy=%s: %s",
+                    candidate_id, vacancy_id, eval_err, exc_info=True,
+                )
+                # Status FIRST — protects candidate from limbo
+                await self._update_candidate_score(
+                    candidate_id=candidate_id,
+                    vacancy_id=vacancy_id,
+                    score=None,
+                    cv_fit_score=None,
+                    sub_status="cv_pending_review",
+                    db=db,
+                    company_id=company_id,
+                )
+                await db.commit()
+
+                # Activity SECOND — observability, best-effort
+                try:
+                    await activity_service.create_activity(
+                        activity_type="cv_screening_failed",
+                        title="CV Screening Automático — Falha",
+                        description="Avaliação IA indisponível. Requer revisão manual do recrutador.",
+                        actor_id="cv_screening_agent",
+                        actor_name="CV Screening Agent",
+                        actor_type="agent",
+                        target_id=candidate_id,
+                        target_type="candidate",
+                        extra_data={
+                            "vacancy_id": vacancy_id,
+                            "company_id": company_id,
+                            "error": str(eval_err),
+                            "needs_manual_review": True,
+                        },
+                        category="screening",
+                    )
+                except Exception as act_exc:
+                    logger.warning(
+                        "[CV_SCORING] Activity creation failed (status already saved): %s",
+                        act_exc,
+                    )
+
+                return {
+                    "success": False,
+                    "error": "evaluation_unavailable",
+                    "sub_status": "cv_pending_review",
+                    "needs_manual_review": True,
+                    "message": "Avaliação IA indisponível. Candidato movido para revisão manual.",
+                    "candidate_id": candidate_id,
+                    "vacancy_id": vacancy_id,
+                }
+
             screening_result = self._build_screening_result(
                 candidate_data=candidate_data,
                 evaluation_result=evaluation_result,
@@ -146,28 +202,30 @@ class CVScoringService:
                 sub_status=sub_status,
                 db=db
             )
-            
-            await activity_service.create_activity(
-                activity_type="cv_screening_completed",
-                title="CV Screening Automático Concluído",
-                description=f"Score: {rubric_score:.1f}% - {recommendation}",
-                actor_id="cv_screening_agent",
-                actor_name="CV Screening Agent",
-                actor_type="agent",
-                target_id=candidate_id,
-                target_type="candidate",
-                extra_data={
-                    "vacancy_id": vacancy_id,
-                    "company_id": company_id,
-                    "rubric_score": rubric_score,
-                    "cv_fit_score": cv_fit["cv_fit_score"],
-                    "recommendation": recommendation,
-                    "sub_status": sub_status
-                },
-                category="screening"
-            )
-            
             await db.commit()
+
+            try:
+                await activity_service.create_activity(
+                    activity_type="cv_screening_completed",
+                    title="CV Screening Automático Concluído",
+                    description=f"Score: {rubric_score:.1f}% - {recommendation}",
+                    actor_id="cv_screening_agent",
+                    actor_name="CV Screening Agent",
+                    actor_type="agent",
+                    target_id=candidate_id,
+                    target_type="candidate",
+                    extra_data={
+                        "vacancy_id": vacancy_id,
+                        "company_id": company_id,
+                        "rubric_score": rubric_score,
+                        "cv_fit_score": cv_fit["cv_fit_score"],
+                        "recommendation": recommendation,
+                        "sub_status": sub_status
+                    },
+                    category="screening"
+                )
+            except Exception as act_exc:
+                logger.warning("Activity creation failed (score already saved): %s", act_exc)
             
             logger.info(
                 f"✅ [CV_SCORING] Completed screening for candidate={candidate_id}: "
@@ -569,48 +627,29 @@ class CVScoringService:
         self,
         candidate_id: str,
         vacancy_id: str,
-        score: float,
-        cv_fit_score: float,
+        score: float | None,
+        cv_fit_score: float | None,
         sub_status: str,
-        db: AsyncSession
+        db: AsyncSession,
+        company_id: str = "",
     ) -> None:
-        """Update candidate with screening score."""
-        try:
-            # ADR-001-EXEMPT: VacancyCandidate.job_vacancy_id is used here (legacy column name)
-            # while screening_repository.get_vacancy_candidate uses VacancyCandidate.vacancy_id.
-            # Keeping inline preserves existing semantics; Sprint 6 follow-up to consolidate.
-            result = await db.execute(
-                select(VacancyCandidate).where(
-                    VacancyCandidate.candidate_id == UUID(candidate_id),
-                    VacancyCandidate.job_vacancy_id == UUID(vacancy_id)
-                )
-            )
-            vc = result.scalar_one_or_none()
-            
-            if vc:
-                if hasattr(vc, 'cv_score'):
-                    vc.cv_score = score
-                if hasattr(vc, 'cv_fit_score'):
-                    vc.cv_fit_score = cv_fit_score
-                if hasattr(vc, 'sub_status'):
-                    vc.sub_status = sub_status
-                if hasattr(vc, 'screening_completed_at'):
-                    vc.screening_completed_at = datetime.utcnow()
-                
-                if hasattr(vc, 'ai_analysis'):
-                    current_analysis = vc.ai_analysis or {}
-                    current_analysis["cv_screening"] = {
-                        "rubric_score": score,
-                        "cv_fit_score": cv_fit_score,
-                        "sub_status": sub_status,
-                        "evaluated_at": datetime.utcnow().isoformat(),
-                        "note": "WSI completo requer triagem conversacional"
-                    }
-                    vc.ai_analysis = current_analysis
-                
-                logger.info(f"📊 [CV_SCORING] Updated VacancyCandidate score: candidate={candidate_id}, rubric={score}%, cv_fit={cv_fit_score}")
-        except Exception as e:
-            logger.error(f"Error updating candidate score: {e}")
+        """Update candidate with screening score via VacancyCandidateRepository (ADR-001)."""
+        if not company_id:
+            logger.warning("[CV_SCORING] company_id ausente em _update_candidate_score — skip update (multi-tenancy)")
+            return
+        repo = VacancyCandidateRepository(db)
+        rowcount = await repo.update_screening_score(
+            candidate_id=candidate_id,
+            vacancy_id=vacancy_id,
+            company_id=company_id,
+            cv_score=score,
+            cv_fit_score=cv_fit_score,
+            sub_status=sub_status,
+        )
+        if rowcount:
+            logger.info(f"[CV_SCORING] score atualizado: candidate={candidate_id} rubric={score}% cv_fit={cv_fit_score}")
+        else:
+            logger.warning(f"[CV_SCORING] VacancyCandidate não encontrado para update: candidate={candidate_id} vacancy={vacancy_id}")
 
 
 cv_scoring_service = CVScoringService()

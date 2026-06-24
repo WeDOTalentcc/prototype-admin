@@ -3,7 +3,7 @@ import { jwtVerify } from 'jose'
 import { verifyAndDecodeSession } from '@/lib/session-crypto'
 import { getDevToken, isDevAutoLoginEnabled } from '@/lib/auth/dev-auto-login'
 import createMiddleware from 'next-intl/middleware'
-import { routing } from '@/i18n/routing'
+import { routing } from '@/i18n/routing-config'
 import { locales, defaultLocale } from '@/i18n/config'
 
 const DEV_AUTO_LOGIN = isDevAutoLoginEnabled()
@@ -35,10 +35,12 @@ const PUBLIC_PATHS = [
 
 const PUBLIC_API_PATHS = [
   '/api/auth',
-  '/api/backend-proxy/auth/login',
-  '/api/backend-proxy/auth/register',
+  '/api/backend-proxy/auth',
   '/api/public-proxy',
   '/api/portal',
+  '/api/v1/teams/messages',
+  '/api/v1/teams/webhook',
+  '/api/v1/teams/health',
 ]
 
 const STATIC_PATHS = [
@@ -47,6 +49,7 @@ const STATIC_PATHS = [
   '/logos',
   '/images',
   '/favicon',
+  '/__mockup',
 ]
 
 function stripLocalePrefix(pathname: string): string {
@@ -71,7 +74,11 @@ function isPublicPath(strippedPathname: string): boolean {
 
 function isPublicApiPath(pathname: string): boolean {
   if (PUBLIC_API_PATHS.some(p => pathname.startsWith(p))) return true
-  if (pathname.startsWith('/api/v1')) return true
+  // P1-5 (audit 2026-06-05): REMOVIDO `if (pathname.startsWith('/api/v1')) return true`.
+  // A regra blanket marcava TODO /api/v1 como público → o middleware encaminhava
+  // sem Bearer → backend 401 (quebrava agendar entrevista / gerar e-mail LIA).
+  // Fluxos públicos reais usam prefixos dedicados (/api/auth, /api/public-proxy,
+  // /api/portal) já listados em PUBLIC_API_PATHS.
   return false
 }
 
@@ -107,6 +114,48 @@ function denyAccess(request: NextRequest, pathname: string): NextResponse {
   const loginUrl = new URL(`/${currentLocale}/login`, base)
   loginUrl.searchParams.set('next', pathname)
   return NextResponse.redirect(loginUrl)
+}
+
+
+// Phase 1c (2026-06-10): transparent Rails→FastAPI token upgrade.
+// When FASTAPI_AUTH_PRIMARY becomes true, Rails JWTs are rejected with
+// 401 + upgrade_required=true. This interceptor silently exchanges them
+// so logged-in users are never kicked out.
+async function tryUpgradeRailsToken(token: string): Promise<string | null> {
+  try {
+    const resp = await fetch(`${BACKEND_URL}/api/v1/auth/exchange`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ rails_token: token }),
+      signal: AbortSignal.timeout(3000),
+    })
+    if (!resp.ok) return null
+    const data = await resp.json().catch(() => null)
+    return data?.access_token ?? null
+  } catch {
+    return null
+  }
+}
+
+// Returns a NextResponse with the new FastAPI JWT set as lia_access_token cookie
+// AND forwarded as Authorization header for the current request.
+async function tryUpgradeAndForward(
+  request: NextRequest,
+  oldToken: string,
+): Promise<NextResponse | null> {
+  const newToken = await tryUpgradeRailsToken(oldToken)
+  if (!newToken) return null
+  const requestHeaders = new Headers(request.headers)
+  requestHeaders.set('Authorization', `Bearer ${newToken}`)
+  const response = NextResponse.next({ request: { headers: requestHeaders } })
+  response.cookies.set('lia_access_token', newToken, {
+    httpOnly: true,
+    secure: COOKIE_SECURE,
+    sameSite: COOKIE_SAMESITE,
+    maxAge: 86400,
+    path: '/',
+  })
+  return response
 }
 
 async function verifyJwt(token: string): Promise<Record<string, unknown> | null> {
@@ -200,6 +249,9 @@ export async function proxy(request: NextRequest) {
       if (accessTokenCookie && accessTokenCookie.value !== '_sso_session_') {
         const payload = await verifyJwt(accessTokenCookie.value)
         if (payload) return applyAuthHeaders(request, accessTokenCookie.value)
+        // verifyJwt failed — may be a Rails JWT; attempt transparent upgrade (Phase 1c)
+        const upgraded = await tryUpgradeAndForward(request, accessTokenCookie.value)
+        if (upgraded) return upgraded
       }
       const workosSessionCookie = request.cookies.get('workos_session')
       if (workosSessionCookie?.value) {
@@ -340,6 +392,14 @@ export async function proxy(request: NextRequest) {
     const token = accessTokenCookie.value
     const payload = await verifyJwt(token)
     if (!payload) {
+      // Attempt transparent Rails→FastAPI upgrade before denying (Phase 1c)
+      const upgraded = await tryUpgradeAndForward(request, token)
+      if (upgraded) {
+        const intlResp = intlMiddleware(request)
+        if (intlResp.status >= 300 && intlResp.status < 400) return intlResp
+        for (const [k, v] of intlResp.headers.entries()) upgraded.headers.set(k, v)
+        return upgraded
+      }
       return denyAccess(request, pathname)
     }
 

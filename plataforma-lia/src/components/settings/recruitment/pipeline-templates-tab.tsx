@@ -1,10 +1,12 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import { useState } from "react"
 import { useTranslations } from "next-intl"
 import { Archive, Copy, Layers, Loader2, Maximize2, Plus, Sparkles, Trash2 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+import { textStyles } from "@/lib/design-tokens"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Chip } from "@/components/ui/chip"
@@ -39,7 +41,7 @@ function ConfirmDialog({ open, title, description, confirmLabel, cancelLabel, de
         </DialogHeader>
         <DialogFooter>
           <Button variant="outline" onClick={onCancel}>{cancelLabel}</Button>
-          <Button variant={destructive ? "destructive" : "default"} onClick={onConfirm}>{confirmLabel}</Button>
+          <Button variant={destructive ? "destructive" : "primary"} onClick={onConfirm}>{confirmLabel}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -72,6 +74,9 @@ export function PipelineTemplatesTab({ onSettingsChange }: { onSettingsChange?: 
   const [busy, setBusy] = useState(false)
   const [confirmArchive, setConfirmArchive] = useState<string | null>(null)
   const [confirmDelete, setConfirmDelete]   = useState<string | null>(null)
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('pipeline-template-confirm-archive', !!confirmArchive)
+  useLiaModalTracking('pipeline-template-confirm-delete', !!confirmDelete)
 
   // Sheet editor
   const [sheetOpen, setSheetOpen]           = useState(false)
@@ -185,7 +190,7 @@ export function PipelineTemplatesTab({ onSettingsChange }: { onSettingsChange?: 
       {/* Cabeçalho */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h2 className="text-base font-semibold text-lia-text-primary">{t("title")}</h2>
+          <h2 className={textStyles.titleLarge}>{t("title")}</h2>
           <p className="text-sm text-lia-text-secondary mt-1 max-w-2xl">{t("subtitle")}</p>
         </div>
 
@@ -198,7 +203,7 @@ export function PipelineTemplatesTab({ onSettingsChange }: { onSettingsChange?: 
                 onChange={(e) => setNewTemplateName(e.target.value)}
                 placeholder="Nome do template..."
                 autoFocus
-                className="text-xs px-2.5 py-1.5 rounded-lg border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 w-44"
+                className="text-xs px-2.5 py-1.5 rounded-md border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 w-44"
                 onKeyDown={(e) => {
                   if (e.key === "Enter") handleCreateNew(newTemplateName)
                   if (e.key === "Escape") { setShowNewForm(false); setNewTemplateName("") }
@@ -245,7 +250,7 @@ export function PipelineTemplatesTab({ onSettingsChange }: { onSettingsChange?: 
           <CardContent className="p-10 text-center space-y-4">
             <Layers className="w-12 h-12 mx-auto opacity-30" />
             <div>
-              <h3 className="text-lg font-medium">{tEmpty("title")}</h3>
+              <h3 className={textStyles.titleLarge}>{tEmpty("title")}</h3>
               <p className="text-sm text-lia-text-secondary mt-1">{tEmpty("description")}</p>
             </div>
             <div className="flex items-center justify-center gap-3">
@@ -296,7 +301,7 @@ export function PipelineTemplatesTab({ onSettingsChange }: { onSettingsChange?: 
                     {/* Info */}
                     <div className="flex-1 min-w-0 space-y-1.5">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="font-medium text-lia-text-primary truncate">{tpl.name}</h3>
+                        <h3 className={cn(textStyles.h4, "truncate")}>{tpl.name}</h3>
                         <Chip variant={tpl.is_archived ? "neutral" : "success"}>
                           {tpl.is_archived ? tStates("archived") : tStates("active")}
                         </Chip>

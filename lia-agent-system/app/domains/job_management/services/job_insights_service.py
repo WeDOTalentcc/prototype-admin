@@ -697,7 +697,7 @@ class JobInsightsService:
                 JobVacancy.company_id == company_id,
                 JobVacancy.created_at >= cutoff_date,
                 JobVacancy.closed_at.isnot(None),
-                JobVacancy.status.in_(["Concluída", "Fechada", "Preenchida", "closed", "filled"])
+                JobVacancy.status.in_(["Concluída", "Cancelada", "Arquivada"])
             ]
             
             if role:
@@ -823,7 +823,7 @@ class JobInsightsService:
             conditions = [
                 JobVacancy.company_id == company_id,
                 JobVacancy.closed_at.isnot(None),
-                JobVacancy.status.in_(["Concluída", "Fechada", "Preenchida", "closed", "filled"])
+                JobVacancy.status.in_(["Concluída", "Cancelada", "Arquivada"])
             ]
             
             if role:

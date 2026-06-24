@@ -43,26 +43,12 @@ _GENERIC_MAILBOX_PREFIXES = {
 
 
 def _derive_name_from_email(email: str | None) -> str | None:
-    """Deriva um nome-candidato do prefixo do email (paulo.moraes@x -> Paulo Moraes).
-
-    Heuristica conservadora: usa so o local-part antes do @, separa por . _ -,
-    descarta tokens numericos e mailboxes genericas (rh@, contato@...). Retorna
-    None quando nao da um nome plausivel -- a LIA entao PERGUNTA em vez de inventar.
-    """
-    if not email or "@" not in email:
-        return None
-    local = email.split("@", 1)[0].strip().lower()
-    parts = [t for t in re.split(r"[._\-]+", local) if t and not t.isdigit()]
-    if (
-        not parts
-        or local in _GENERIC_MAILBOX_PREFIXES
-        or parts[0] in _GENERIC_MAILBOX_PREFIXES
-    ):
-        return None
-    words = [t.capitalize() for t in parts if len(t) >= 2]
-    if not words:
-        return None
-    return " ".join(words)
+    """Delega ao helper canonical (helpers.manager_identity). Antes havia copia
+    local -- unificado no audit 2026-06-05 (uma fonte da verdade)."""
+    from app.domains.job_creation.helpers.manager_identity import (
+        derive_name_from_email,
+    )
+    return derive_name_from_email(email)
 
 
 # Audit 2026-06-03 (#8 departamento tenant-aware): casar o título contra os
@@ -115,28 +101,37 @@ def _tok_sim(a: str, b: str) -> float:
 
 
 def _match_department(title, dept_names, threshold: float = 0.8):
-    """Casa o título contra a lista de departamentos REAIS do cliente. Retorna o
-    nome do depto (original) com melhor match acima do threshold, ou None —
-    nunca inventa um departamento que o cliente não tem (tenant-aware).
-    """
-    if not title or not dept_names:
-        return None
-    title_toks = _dept_tokens(title, drop_seniority=True)
-    if not title_toks:
-        return None
-    best, best_score = None, 0.0
-    for name in dept_names:
-        dtoks = _dept_tokens(name)
-        if not dtoks:
-            continue
-        score = max(
-            (_tok_sim(dt, tt) for dt in dtoks for tt in title_toks),
-            default=0.0,
-        )
-        if score > best_score:
-            best, best_score = name, score
-    return best if best_score >= threshold else None
+    """Delegate to canonical helper (Fase 8 A1)."""
+    from app.domains.job_creation.helpers.department_match import match_department
+    return match_department(title, dept_names, threshold)
 
+
+_AFFIRMATIVE_PATTERNS: list[tuple[str, str]] = [
+    (r"\bpcd\b|pessoa[s]?\s+com\s+defici\u00eancia|defici\u00eancia\s+f\u00edsica|defici\u00eancia\s+visual|defici\u00eancia\s+auditiva", "disability"),
+    (r"\bmulhere[s]?\b|\bfeminino\b|\bfeminina\b|g\u00eanero\s+feminino|exclusiv[ao]\s+para\s+mulher", "gender"),
+    (r"\bnegr[ao]s?\b|\bpretos?\b|afrodescendente[s]?|afro-descendent", "race_ethnicity"),
+    (r"\blgbtqia?\+?\b|\blgbtq\b|transgên|transsexual|\btrans\b|n\u00e3o-bin\u00e1ri|nao[\\s-]binari", "lgbtqia"),
+    (r"\bind\u00edgen[ao]s?\b|indigena[s]?\b|povos\s+origin\u00e1ri", "indigenous"),
+    (r"\brefugiad[ao]s?\b|\bimigrante[s]?\b", "refugee"),
+    (r"\bafirmativ[ao]\b|a\u00e7\u00e3o\s+afirmativa|vaga\s+afirmativa", "other"),
+]
+
+
+def _detect_affirmative_intent(query: str) -> tuple[bool, str | None, str | None]:
+    """Detecta vaga afirmativa no texto do recrutador via regex.
+    Retorna (is_affirmative, criteria_primary, description_hint).
+    Proveniencia declarada -- nunca alucina.
+    """
+    if not query:
+        return False, None, None
+    text = unicodedata.normalize("NFKD", query.lower())
+    # Remove combining chars (acentos) para match uniforme
+    text = "".join(c for c in text if not unicodedata.combining(c))
+    for pattern, criteria in _AFFIRMATIVE_PATTERNS:
+        if re.search(pattern, text):
+            desc = query.strip()[:120] if query else None
+            return True, criteria, desc
+    return False, None, None
 
 def _derive_intake_suggestions(
     *,
@@ -211,6 +206,7 @@ def intake_node(state: JobCreationState) -> JobCreationState:
     parsed_employment_type = state.get("parsed_employment_type")  # P0-A
     parsed_manager_name = state.get("parsed_manager_name")  # FASE 5
     parsed_manager_email = state.get("parsed_manager_email")  # FASE 5
+    parsed_languages = state.get("parsed_languages") or []  # D1
     intake_confidence = 0.0
     intake_source = "none"
     try:
@@ -255,6 +251,7 @@ def intake_node(state: JobCreationState) -> JobCreationState:
         # FASE 5 - gestor + email (schema fields manager_name/manager_email).
         parsed_manager_name = parsed_manager_name or _val("manager_name")
         parsed_manager_email = parsed_manager_email or _val("manager_email")
+        parsed_languages = parsed_languages or _val("languages") or []  # D1
         intake_confidence = extraction.overall_confidence
         _title_field = getattr(extraction, "title", None)
         intake_source = (
@@ -291,6 +288,7 @@ def intake_node(state: JobCreationState) -> JobCreationState:
     # veio, casa o título contra os departamentos REAIS do cliente (DB, guardado
     # por timeout + fail-open). Nunca inventa um depto que o cliente não tem.
     department_inferred_from_title = False
+    _dept_names: list = []  # [FIX P2] inicializado antes do try para dept-suggestion
     if not parsed_department and parsed_title:
         _company_id = str(state.get("workspace_id") or state.get("company_id") or "")
         if _company_id:
@@ -305,22 +303,54 @@ def intake_node(state: JobCreationState) -> JobCreationState:
                         rows = await DepartmentRepository(_db).list_active_for_company(
                             UUID(_company_id)
                         )
-                        return [r.name for r in rows if getattr(r, "name", None)]
+                        # Retorna (name, subsidiary_name, subsidiary_cnpj) para
+                        # propagacao da dimensao de filial ao estado da vaga
+                        # (Fase 2 matching 2026-06-18).
+                        return [
+                            (
+                                r.name,
+                                getattr(r, "subsidiary_name", None),
+                                getattr(r, "subsidiary_cnpj", None),
+                            )
+                            for r in rows if getattr(r, "name", None)
+                        ]
 
-                _dept_names = run_coro_in_threadpool(
+                _dept_data = run_coro_in_threadpool(
                     _load_company_departments, timeout=2.0
                 ) or []
+                _dept_names = [d[0] for d in _dept_data]
+                _dept_subsidiary_map = {d[0]: (d[1], d[2]) for d in _dept_data}
                 _matched_dept = _match_department(parsed_title, _dept_names)
                 if _matched_dept:
                     parsed_department = _matched_dept
                     department_inferred_from_title = True
+                    # Propaga filial/CNPJ do departamento para o estado
+                    _sub_name, _sub_cnpj = _dept_subsidiary_map.get(_matched_dept, (None, None))
+                    if _sub_name or _sub_cnpj:
+                        state = dict(state)
+                        state["parsed_subsidiary"] = _sub_name
+                        state["parsed_subsidiary_cnpj"] = _sub_cnpj
                     logger.info(
                         "[JobCreation:intake] departamento deduzido do titulo "
-                        "%s -> %s (match tenant-aware)", parsed_title, _matched_dept,
+                        "%s -> %s (match tenant-aware, subsidiary=%s)", parsed_title, _matched_dept, _sub_name,
                     )
             except Exception as _dept_exc:
                 logger.warning(
                     "[JobCreation:intake] dept inference fail-open: %s", _dept_exc,
+                )
+
+    # [FIX P2 dept-suggestion] Quando nao ha match, surfacar candidato do titulo
+    # para o wizard oferecer sugestao de criacao ou escolha de dept existente.
+    _department_candidate_from_title: str | None = None
+    _existing_departments_for_state: list = []
+    if not parsed_department and parsed_title:
+        _candidate_dept_names = _dept_names  # set by DB lookup above, or [] if not reached
+        if _candidate_dept_names:
+            _existing_departments_for_state = list(_candidate_dept_names[:10])
+            _title_toks = _dept_tokens(parsed_title, drop_seniority=True)
+            if _title_toks:
+                _department_candidate_from_title = " ".join(
+                    t.capitalize() for t in _title_toks[:3]
                 )
 
     # WT-2022 P0.C: LGPD Art. 20 audit trail para decisao automatizada de
@@ -340,6 +370,11 @@ def intake_node(state: JobCreationState) -> JobCreationState:
 
     # Audit 2026-06-03: transparencia -- quando algo foi deduzido, a LIA avisa
     # explicitamente na mensagem (chega ao chat via stage_data.message).
+    # W1-B (2026-06-12): inicializa flags de vaga afirmativa.
+    is_affirmative_detected = False
+    affirmative_criteria_detected: str | None = None
+    affirmative_description_detected: str | None = None
+
     _base_intake_msg = (
         msg("intake.captured", parsed_title=parsed_title)
         if parsed_title
@@ -361,6 +396,19 @@ def intake_node(state: JobCreationState) -> JobCreationState:
             f"Pela area do titulo, deduzi o departamento **{parsed_department}** -- "
             f"confirme ou ajuste."
         )
+    # W1-B (2026-06-12): deteccao de vaga afirmativa -- antes de montar mensagem.
+    if not state.get("is_affirmative") and query:
+        _aff, _crit, _desc = _detect_affirmative_intent(query)
+        if _aff:
+            is_affirmative_detected = True
+            affirmative_criteria_detected = _crit
+            affirmative_description_detected = _desc
+            _deduction_notes.append(
+                f"Detectei que esta pode ser uma **vaga afirmativa** "
+                f"({'para PCD' if _crit == 'disability' else 'grupo prioritario: ' + (_crit or 'outro')}) "
+                f"-- confirme se e isso ou corrija."
+            )
+
     intake_message = _base_intake_msg
     if _deduction_notes:
         intake_message = _base_intake_msg + " " + " ".join(_deduction_notes)
@@ -376,10 +424,18 @@ def intake_node(state: JobCreationState) -> JobCreationState:
         "parsed_employment_type": parsed_employment_type,
         "parsed_manager_name": parsed_manager_name,
         "parsed_manager_email": parsed_manager_email,
+        "parsed_languages": parsed_languages,
         "intake_confidence": intake_confidence,
         "seniority_inferred_from_title": seniority_inferred_from_title,
         "manager_name_suggested_from_email": manager_name_suggested_from_email,
         "department_inferred_from_title": department_inferred_from_title,
+        "department_candidate_from_title": _department_candidate_from_title,
+        "existing_departments": _existing_departments_for_state,
+        "parsed_subsidiary": state.get("parsed_subsidiary"),
+        "parsed_subsidiary_cnpj": state.get("parsed_subsidiary_cnpj"),
+        "is_affirmative": is_affirmative_detected or state.get("is_affirmative", False),
+        "affirmative_criteria_primary": affirmative_criteria_detected or state.get("affirmative_criteria_primary"),
+        "affirmative_description": affirmative_description_detected or state.get("affirmative_description"),
         "stage_history": (state.get("stage_history") or []) + ["intake"],
         "completeness": calculate_completeness("intake"),
         "requires_approval": False,

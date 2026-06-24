@@ -37,17 +37,11 @@ _CONFIRMATION_WORDS = {
 from app.shared.agents.agent_registry import register_agent
 from app.shared.agents.tenant_aware_agent import TenantAwareAgentMixin
 from app.shared.prompts.prompt_composer import PromptComposer
+from app.shared.hitl.hitl_canonical_actions import HITL_REQUIRED_ACTIONS
 
 @register_agent("pipeline", aliases=['cv_screening'])
 class PipelineReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgentMixin):
     # W4-032 (2026-05-23): bulk pipeline ops + auto-screen rejection requerem HITL.
-    _HITL_ACTION_TYPES = frozenset({
-        "bulk_move_candidates",
-        "bulk_reject_candidates",
-        "auto_advance_stage",
-        "auto_reject_low_score",
-        "pipeline_transition",
-    })
 
     DOMAIN_INSTRUCTIONS = PromptComposer.for_domain(
         agent_type="cv_screening_pipeline",
@@ -112,7 +106,12 @@ class PipelineReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgen
     def _get_tools(self) -> list:
         """Todos os tools do domínio Pipeline (LangGraph usa set completo)."""
         from lia_agents_core.tool_adapter import tool_definition_to_langchain_tool
-        tool_defs = get_pipeline_tools() + self._get_all_enhanced_tools()
+        from app.domains.recruiter_assistant.agents.ui_tool_registry import (
+            get_open_ui_tools,
+            get_table_state_tools,
+        )
+        # Grant UI: open_ui + apply_table_state surface=recrutar (ponte FE ativa).
+        tool_defs = get_pipeline_tools() + get_open_ui_tools() + get_table_state_tools() + self._get_all_enhanced_tools()
         return [tool_definition_to_langchain_tool(td) for td in tool_defs]
 
     def _state_to_output(self, state: dict, input: AgentInput) -> AgentOutput:
@@ -155,7 +154,7 @@ class PipelineReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgen
                             reason=criteria.get("description", "Critérios atendidos"),
                             auto_navigate=False,
                         )
-        except Exception:
+        except Exception:  # ADR-031-R3-EXEMPT: deteccao opcional de navegacao por confirmacao do usuario; falha nao bloqueia resposta
             pass
 
         return AgentOutput(
@@ -172,7 +171,7 @@ class PipelineReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgen
             weights = await self.load_calibration_weights(str(input.company_id or ""), input.context.get("job_id"))
             if weights and weights != self._DEFAULT_WEIGHTS:
                 input.context["calibration_weights"] = weights
-        except Exception:
+        except Exception:  # ADR-031-R3-EXEMPT: carregamento opcional de calibration weights; falha nao bloqueia agente
             pass
         try:
             from app.shared.services.global_insights_service import get_global_insights
@@ -181,14 +180,14 @@ class PipelineReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgen
             if snippet:
                 existing = input.context.get("extra_instructions", "")
                 input.context["extra_instructions"] = f"{existing}\n\n{snippet}" if existing else snippet
-        except Exception:
+        except Exception:  # ADR-031-R3-EXEMPT: enriquecimento opcional de insights globais; falha nao bloqueia agente
             pass
         try:
             from app.domains.analytics.services.recruiter_personalization_service import get_recruiter_prompt_context
             ctx = await get_recruiter_prompt_context(str(input.user_id or ""), str(input.company_id or ""))
             if ctx:
                 input.context["recruiter_context"] = ctx
-        except Exception:
+        except Exception:  # ADR-031-R3-EXEMPT: carregamento opcional de contexto de recrutador; falha nao bloqueia agente
             pass
         return await super()._process_langgraph(input)
 
@@ -198,7 +197,7 @@ class PipelineReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgen
         _hitl_response = await maybe_request_hitl_approval(
             agent_input=input,
             domain=self.domain_name,
-            action_types=self._HITL_ACTION_TYPES,
+            action_types=HITL_REQUIRED_ACTIONS,
             agent_name="pipeline_react_agent",
             description_template=(
                 "Confirmar **{action_type}**. "

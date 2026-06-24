@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import React, { useState } from "react"
 import Link from "next/link"
 import { Bot, Link2, Zap, Calendar, MousePointer, GitBranch, MapPin, Loader2, Copy, Pencil, Activity } from "lucide-react"
@@ -42,6 +43,9 @@ interface AgentDetailsPanelProps {
 }
 
 export function AgentDetailsPanel({ agent, open, onClose, onDeploy, onTest, onActivate }: AgentDetailsPanelProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('agent-details', open)
+
   const t = useTranslations('agents.customAgents')
   const tStatus = useTranslations('agents.status')
   // White-label canonical: persona como fallback do nome do agente no header.
@@ -158,13 +162,13 @@ export function AgentDetailsPanel({ agent, open, onClose, onDeploy, onTest, onAc
                 </div>
 
                 {deploymentsLoading ? (
-                  <div className="flex items-center gap-2 py-3 text-xs text-lia-text-disabled">
+                  <div className="flex items-center gap-2 py-3 text-xs text-lia-text-muted">
                     <Loader2 className="w-3 h-3 animate-spin" /> {t('loadingLinks')}
                   </div>
                 ) : deployments.length === 0 ? (
                   <div className={cn(cardStyles.flat, "p-3 text-center")}>
-                    <MapPin className="w-5 h-5 text-lia-text-disabled mx-auto mb-1" />
-                    <p className="text-xs text-lia-text-disabled">
+                    <MapPin className="w-5 h-5 text-lia-text-muted mx-auto mb-1" />
+                    <p className="text-xs text-lia-text-muted">
                       {t('noLinks')}
                     </p>
                   </div>
@@ -200,17 +204,17 @@ export function AgentDetailsPanel({ agent, open, onClose, onDeploy, onTest, onAc
                   </h4>
                 </div>
                 {activitiesLoading ? (
-                  <div className="flex items-center gap-2 py-3 text-xs text-lia-text-disabled" data-testid="activity-loading">
+                  <div className="flex items-center gap-2 py-3 text-xs text-lia-text-muted" data-testid="activity-loading">
                     <Loader2 className="w-3 h-3 animate-spin" /> {t('loadingActivities')}
                   </div>
                 ) : activitiesError ? (
                   <div className={cn(cardStyles.flat, "p-3 text-center")} data-testid="activity-error">
-                    <p className="text-xs text-lia-text-disabled">{t('errors.errorLoadingActivities')}</p>
+                    <p className="text-xs text-lia-text-muted">{t('errors.errorLoadingActivities')}</p>
                   </div>
                 ) : activities.length === 0 ? (
                   <div className={cn(cardStyles.flat, "p-3 text-center")} data-testid="activity-empty">
-                    <Activity className="w-5 h-5 text-lia-text-disabled mx-auto mb-1" />
-                    <p className="text-xs text-lia-text-disabled">{t('noActivities')}</p>
+                    <Activity className="w-5 h-5 text-lia-text-muted mx-auto mb-1" />
+                    <p className="text-xs text-lia-text-muted">{t('noActivities')}</p>
                   </div>
                 ) : (
                   <div className="space-y-0.5 max-h-[220px] overflow-y-auto" data-testid="activity-list">

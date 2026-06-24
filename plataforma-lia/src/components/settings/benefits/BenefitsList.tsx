@@ -29,14 +29,14 @@ import type {
 
 export const BENEFIT_CATEGORIES: BenefitCategoryDescriptor[] = [
   { id: "health", name: "Saúde & Bem-estar", icon: Stethoscope, color: "text-status-error", bgColor: "bg-status-error/10 dark:bg-status-error/20" },
-  { id: "food", name: "Alimentação", icon: Utensils, color: "text-wedo-orange", bgColor: "bg-wedo-orange/10 dark:bg-wedo-orange/20" },
+  { id: "food", name: "Alimentação", icon: Utensils, color: "text-wedo-orange-text", bgColor: "bg-wedo-orange/10 dark:bg-wedo-orange/20" },
   { id: "transport", name: "Transporte", icon: Car, color: "text-lia-text-primary", bgColor: "bg-lia-bg-tertiary dark:bg-lia-bg-secondary" },
-  { id: "education", name: "Educação & Desenvolvimento", icon: GraduationCap, color: "text-wedo-purple", bgColor: "bg-wedo-purple/10 dark:bg-wedo-purple/20" },
-  { id: "wellness", name: "Bem-estar", icon: Stethoscope, color: "text-wedo-cyan", bgColor: "bg-wedo-cyan/10 dark:bg-wedo-cyan/20" },
+  { id: "education", name: "Educação & Desenvolvimento", icon: GraduationCap, color: "text-wedo-purple-text", bgColor: "bg-wedo-purple/10 dark:bg-wedo-purple/20" },
+  { id: "wellness", name: "Bem-estar", icon: Stethoscope, color: "text-wedo-cyan-text", bgColor: "bg-wedo-cyan/10 dark:bg-wedo-cyan/20" },
   { id: "financial", name: "Financeiro", icon: Wallet, color: "text-status-success", bgColor: "bg-status-success/10 dark:bg-status-success/20" },
   { id: "quality_life", name: "Qualidade de Vida", icon: Home, color: "text-lia-text-secondary", bgColor: "bg-lia-bg-tertiary dark:bg-lia-bg-secondary" },
-  { id: "family", name: "Família", icon: Baby, color: "text-wedo-magenta", bgColor: "bg-wedo-magenta/10 dark:bg-wedo-magenta/20" },
-  { id: "flexibility", name: "Flexibilidade", icon: Clock, color: "text-wedo-purple", bgColor: "bg-wedo-purple/10 dark:bg-wedo-purple/20" },
+  { id: "family", name: "Família", icon: Baby, color: "text-wedo-magenta-text", bgColor: "bg-wedo-magenta/10 dark:bg-wedo-magenta/20" },
+  { id: "flexibility", name: "Flexibilidade", icon: Clock, color: "text-wedo-purple-text", bgColor: "bg-wedo-purple/10 dark:bg-wedo-purple/20" },
   { id: "security", name: "Segurança", icon: Shield, color: "text-lia-text-primary", bgColor: "bg-lia-bg-secondary dark:bg-lia-bg-secondary/50" },
   { id: "other", name: "Outros", icon: Gift, color: "text-lia-text-secondary", bgColor: "bg-lia-bg-tertiary dark:bg-lia-bg-secondary" },
 ]
@@ -141,7 +141,7 @@ export function BenefitsList({
               <CardContent className="p-0">
                 {categoryBenefits.length === 0 ? (
                   <div className="p-3 text-center">
-                    <Gift className="w-4 h-4 mx-auto text-lia-text-disabled mb-2" />
+                    <Gift className="w-4 h-4 mx-auto text-lia-text-muted mb-2" />
                     <p className={textStyles.bodySmall}>
                       {t("noBenefitsInCategory")}
                     </p>

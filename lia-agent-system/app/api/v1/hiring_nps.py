@@ -18,7 +18,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.dependencies import get_current_user
 from app.auth.models import User
 from app.core.database import get_db
-from app.domains.approvals.repositories.hiring_nps_repository import HiringNpsRepository
+from app.repositories.hiring_nps_repository import HiringNpsRepository
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +66,7 @@ def _to_response(nps) -> dict:
 async def _send_nps_email(nps, db: AsyncSession) -> None:
     """Fire-and-forget NPS survey email. Never raises."""
     try:
-        from app.domains.approvals.repositories.hiring_nps_repository import HiringNpsRepository
+        from app.repositories.hiring_nps_repository import HiringNpsRepository
         from app.domains.communication.services.email_service import MailgunEmailService
 
         base_url = os.getenv("NEXT_PUBLIC_APP_URL", "https://ai.wedotalent.cc")

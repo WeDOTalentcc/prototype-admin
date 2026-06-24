@@ -20,7 +20,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.dependencies import get_current_user
 from app.auth.models import User
 from app.core.database import get_db
-from app.domains.approvals.repositories.manager_alignment_repository import (
+from app.repositories.manager_alignment_repository import (
     ManagerAlignmentRepository,
 )
 

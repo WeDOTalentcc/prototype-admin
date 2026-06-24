@@ -197,7 +197,7 @@ def test_request_toggle_idempotency_allows_resubmission_after_resolved():
 def test_approvals_repo_has_find_pending_duplicate_method():
     """ApprovalsRepository must expose find_pending_duplicate(company_id,
     flag_key, requester_id) so the endpoint can check for idempotency."""
-    from app.domains.approvals.repositories.approvals_repository import (
+    from app.repositories.approvals_repository import (
         ApprovalsRepository,
     )
     assert hasattr(ApprovalsRepository, "find_pending_duplicate"), (

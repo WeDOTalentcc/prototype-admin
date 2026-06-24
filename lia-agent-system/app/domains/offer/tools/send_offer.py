@@ -58,12 +58,14 @@ async def run(params: dict[str, Any], context: DomainContext) -> dict[str, Any]:
                     "error": str(gate_exc),
                     "requires_approval": gate_exc.reason == "manager_approval_required",
                     "policy_gate": gate_exc.reason,
-                    "ui_action": ui_action_by_reason.get(gate_exc.reason, "open_offer_review"),
-                    "ui_action_params": {"offer_id": str(offer_id)},
+                    "data": {
+                        "ui_action": ui_action_by_reason.get(gate_exc.reason, "open_offer_review"),
+                        "ui_action_params": {"modal_id": "offer_review", "offer_id": str(offer_id)},
+                    },
                 }
 
             variables = svc.render_offer_template_variables(draft)
-            email_log_id = await _send_via_provider(
+            email_log_id, delivery_ok = await _send_via_provider(
                 company_id=company_id,
                 recipient_email=variables["candidate_email"],
                 candidate_name=variables["candidate_name"],
@@ -73,6 +75,13 @@ async def run(params: dict[str, Any], context: DomainContext) -> dict[str, Any]:
                 db=db,
                 draft=draft,
             )
+            if not delivery_ok:
+                return {
+                    "success": False,
+                    "error": "Falha no envio do email. A proposta foi mantida como rascunho.",
+                    "delivery_failed": True,
+                    "email_log_id": str(email_log_id) if email_log_id else None,
+                }
 
             try:
                 updated = await svc.mark_sent(
@@ -96,8 +105,10 @@ async def run(params: dict[str, Any], context: DomainContext) -> dict[str, Any]:
                     "success": False,
                     "error": str(gate_exc),
                     "requires_approval": True,
-                    "ui_action": "request_offer_approval",
-                    "ui_action_params": {"offer_id": str(offer_id)},
+                    "data": {
+                        "ui_action": "open_modal",
+                        "ui_action_params": {"offer_id": str(offer_id)},
+                    },
                 }
             await db.commit()
 
@@ -108,6 +119,7 @@ async def run(params: dict[str, Any], context: DomainContext) -> dict[str, Any]:
             "email_log_id": str(email_log_id) if email_log_id else None,
             "sent_at": datetime.utcnow().isoformat(),
             "message": f"Proposta enviada para {variables['candidate_name']}",
+            "offer_link": variables.get("offer_link", ""),
         }
     except Exception as exc:
         logger.error("[OFFER-TOOL] send_offer failed: %s", exc, exc_info=True)
@@ -123,7 +135,7 @@ async def _send_via_provider(
     context: DomainContext,
     db,
     draft,
-) -> UUID | None:
+) -> tuple["UUID | None", bool]:
     from sqlalchemy import select
     from lia_models.email_template import EmailTemplate, EmailLog
 
@@ -156,8 +168,9 @@ async def _send_via_provider(
 
     if not recipient_email:
         logger.warning("[OFFER-TOOL] No recipient email for candidate %s", draft.candidate_id)
-        return None
+        return None, False
 
+    delivery_ok = True
     try:
         from app.domains.communication.services.email_providers import get_email_provider
         provider = get_email_provider()
@@ -167,7 +180,8 @@ async def _send_via_provider(
             html=body_html,
         )
     except Exception as exc:
-        logger.warning("[OFFER-TOOL] Email provider failed: %s — logging anyway", exc)
+        logger.warning("[OFFER-TOOL] Email provider failed: %s", exc)
+        delivery_ok = False
 
     # Create audit log entry
     log_entry = EmailLog(
@@ -176,11 +190,11 @@ async def _send_via_provider(
         recipient_email=recipient_email,
         subject=subject,
         body_html=body_html,
-        status="sent",
+        status="sent" if delivery_ok else "failed",
         sent_at=datetime.utcnow(),
         variables_used=variables,
         created_by=context.user_id,
     )
     db.add(log_entry)
     await db.flush()
-    return log_entry.id
+    return log_entry.id, delivery_ok

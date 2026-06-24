@@ -70,7 +70,7 @@ export function TriagemComparativoTab({ vacancyRanking, ranking, candidate }: Tr
                 <div className={`w-6 h-6 rounded-full flex items-center justify-center text-micro font-bold flex-shrink-0 ${
                   entry.rank === 1 ? 'bg-status-warning/10 text-status-warning' :
                   entry.rank === 2 ? 'bg-lia-bg-tertiary text-lia-text-secondary' :
-                  entry.rank === 3 ? 'bg-wedo-orange/10 text-wedo-orange' :
+                  entry.rank === 3 ? 'bg-wedo-orange/10 text-wedo-orange-text' :
                   isCurrent ? 'bg-lia-bg-primary text-lia-text-primary' : 'bg-lia-bg-tertiary text-lia-text-secondary'
                 }`}>
                   {entry.rank}

@@ -38,7 +38,23 @@ from lia_models.recruitment_stages import (
     RecruitmentSubStatus,
 )
 
+from app.api.v1.candidates._shared import REJECTION_STAGES
+from app.shared.compliance.fairness_guard_middleware import check_rejection_reason
+from app.shared.compliance.audit_service import AuditService
+
 logger = logging.getLogger(__name__)
+
+_fsm_validate = None
+
+
+def _get_fsm_validate():
+    """Lazy import to avoid circular dependencies."""
+    global _fsm_validate
+    if _fsm_validate is None:
+        from app.services.state_machines.candidate_fsm import validate_stage_transition
+        _fsm_validate = validate_stage_transition
+    return _fsm_validate
+
 
 _event_dispatcher = None
 
@@ -50,6 +66,14 @@ def get_event_dispatcher():
         from app.shared.services.event_dispatcher import event_dispatcher
         _event_dispatcher = event_dispatcher
     return _event_dispatcher
+
+
+class FairnessBlockedError(ValueError):
+    """Raised when a candidate rejection reason fails the fairness gate."""
+    def __init__(self, message: str, suggestion: str = ""):
+        self.message = message
+        self.suggestion = suggestion
+        super().__init__(message)
 
 
 class TransitionError(Exception):
@@ -168,12 +192,48 @@ class PipelineStageService:
             from_sub_status = vacancy_candidate.status
             
             if not force:
+                # FSM: block transitions from terminal stages (rejected/hired/cancelled/not_selected)
+                _get_fsm_validate()(from_stage, to_stage, force=False)
+
                 is_valid, error_msg = await self._validate_transition(
                     db, company_id, from_stage, to_stage
                 )
                 if not is_valid:
                     raise TransitionError(error_msg)
-            
+
+                # P1-BLOCKING: bloquear transicao se existe DataRequest obrigatorio pendente
+                # na etapa de origem. force=True bypass (usado por agentes com permissao).
+                blocking_req = await self.data_request_service.find_blocking_pending_request(
+                    db=db,
+                    candidate_id=vacancy_candidate.candidate_id,
+                    vacancy_id=vacancy_candidate.vacancy_id,
+                    stage=from_stage,
+                )
+                if blocking_req:
+                    pct = int(blocking_req.get_completion_percentage())
+                    raise TransitionError(
+                        f"Transicao bloqueada: solicitacao de dados obrigatoria pendente "
+                        f"na etapa {from_stage} "
+                        f"(request_id={blocking_req.id}, {pct}% preenchido). "
+                        "O candidato deve preencher os dados solicitados antes de avancar."
+                    )
+
+            # Step R1-A: Fairness gate — rejection reason must pass compliance check (P-GUARD)
+            # Compliance: Lei 9.029/95 (Art. 1°), CLT Art. 373-A
+            _to_stage_lower = (to_stage or "").lower()
+            if any(rej in _to_stage_lower for rej in REJECTION_STAGES):
+                _fairness_reason = reason or to_sub_status or ""
+                if _fairness_reason:
+                    _fg = check_rejection_reason(
+                        reason=_fairness_reason,
+                        company_id=str(company_id),
+                    )
+                    if _fg.is_blocked:
+                        raise FairnessBlockedError(
+                            message=_fg.blocked_result.educational_message if _fg.blocked_result else "Rejection reason failed fairness check",
+                            suggestion=getattr(_fg, "suggestion", ""),
+                        )
+
             to_sub_status_obj = None
             if to_sub_status:
                 sub_statuses = await self._get_stage_sub_statuses(db, str(to_stage_obj.id))
@@ -182,12 +242,43 @@ class PipelineStageService:
             if not to_sub_status_obj:
                 sub_statuses = await self._get_stage_sub_statuses(db, str(to_stage_obj.id))
                 to_sub_status_obj = next((s for s in sub_statuses if s.is_default), None)
-            
+
+            # Step R1-B: Idempotency — if candidate is already in the target stage, return early
+            if vacancy_candidate.stage == to_stage:
+                logger.info(f"[IDEMPOTENT] Candidate already in stage {to_stage}, skipping transition write")
+                return {
+                    "success": True,
+                    "idempotent": True,
+                    "vacancy_candidate_id": vacancy_candidate_id,
+                    "transition": {
+                        "from_stage": from_stage,
+                        "from_sub_status": from_sub_status,
+                        "to_stage": to_stage,
+                        "to_sub_status": None,
+                    },
+                    "history_id": None,
+                    "message": f"Candidate already in stage {to_stage}",
+                }
+
             vacancy_candidate.stage = to_stage
+            # Task #1303: persist the structural stage link so the SLA detector
+            # can join by id instead of fragile name matching.
+            vacancy_candidate.recruitment_stage_id = to_stage_obj.id
             vacancy_candidate.status = to_sub_status or (to_sub_status_obj.name if to_sub_status_obj else "default")
             vacancy_candidate.updated_at = datetime.utcnow()
             if from_stage != to_stage:
                 vacancy_candidate.stage_entered_at = datetime.utcnow()
+
+            # Human reviewer annotation: delegated from endpoint layer via context (R1 Path-B)
+            if context and context.get("human_reviewer_id"):
+                try:
+                    vacancy_candidate.human_reviewer_id = uuid.UUID(str(context["human_reviewer_id"]))
+                    vacancy_candidate.rejected_by_human = True
+                except (ValueError, AttributeError):
+                    logger.warning(
+                        "[pipeline_stage] invalid human_reviewer_id in context: %s",
+                        context.get("human_reviewer_id"),
+                    )
             
             from_stage_obj = next((s for s in stages if s.name == from_stage), None) if from_stage else None
             from_sub_status_obj = None
@@ -262,7 +353,28 @@ class PipelineStageService:
                     history_entry.ats_sync_details = {"error": str(e)}
             
             await db.commit()
-            
+
+            # Step R1-C: Audit log — unified trail for every transition (fail-soft)
+            try:
+                _audit_svc = AuditService()
+                await _audit_svc.log_decision(
+                    company_id=str(company_id),
+                    agent_name=source_agent or "stage_service",
+                    decision_type="stage_transition",
+                    action="transition_candidate",
+                    decision=f"{from_stage} → {to_stage}",
+                    reasoning=[
+                        reason or "Stage transition",
+                        f"triggered_by={triggered_by}",
+                    ],
+                    criteria_used=["stage_fsm", "tenant_check", "fairness_gate"],
+                    candidate_id=str(vacancy_candidate.candidate_id) if hasattr(vacancy_candidate, "candidate_id") else None,
+                    job_vacancy_id=str(vacancy_candidate.vacancy_id) if hasattr(vacancy_candidate, "vacancy_id") else None,
+                    actor_user_id=triggered_by_user_id,
+                )
+            except Exception as _audit_err:
+                logger.warning(f"[AUDIT-SOFT] AuditService.log_decision failed (non-blocking): {_audit_err}")
+
             logger.info(
                 f"✅ Stage transition: {from_stage} → {to_stage} "
                 f"(candidate={vacancy_candidate.candidate_id}, agent={source_agent})"
@@ -781,8 +893,26 @@ class PipelineStageService:
             )
             
             if not trigger_config:
-                logger.debug(f"No data request trigger for stage '{new_stage}'")
-                return None
+                # P2-FASE4: fallback para data_fields.auto_collect na etapa
+                try:
+                    stages = await self._get_company_stages(db, company_id)
+                    stage_obj = next((s for s in stages if s.name == new_stage), None)
+                    raw_fields = (stage_obj.data_fields or []) if stage_obj else []
+                    auto_fields = [f for f in raw_fields if f.get('auto_collect', False)]
+                    if not auto_fields:
+                        logger.debug(f"No data request trigger for stage '{new_stage}'")
+                        return None
+                    trigger_config = {
+                        'source': 'data_fields_auto_collect',
+                        'fields': [f['id'] for f in auto_fields],
+                        'is_blocking': any(f.get('required', False) for f in auto_fields),
+                        'trigger_type': 'stage_entry',
+                        'template_id': None,
+                    }
+                    logger.info(f"P2-FASE4: {len(auto_fields)} auto_collect fields for '{new_stage}'")
+                except Exception as _fa4_err:
+                    logger.warning(f"Fase4 auto_collect fallback failed: {_fa4_err}")
+                    return None
             
             if trigger_config.get("source") == "default_mapping":
                 logger.debug(
@@ -835,10 +965,30 @@ class PipelineStageService:
             )
             
             try:
+                # P2-CANAL: ler canal preferido da empresa (preferred_data_channel)
+                # em vez de hardcodar "email" — mesmo padrão de data_request.py:413
+                _channels = ["email"]
+                try:
+                    from app.domains.hiring_policy.repositories.hiring_policy_repository import (
+                        HiringPolicyRepository,
+                    )
+                    _hp_auto = await HiringPolicyRepository(db).get_by_company(
+                        uuid.UUID(company_id) if isinstance(company_id, str) else company_id
+                    )
+                    _pref_auto = (
+                        (_hp_auto.communication_rules or {}).get("preferred_data_channel")
+                        if _hp_auto and _hp_auto.communication_rules
+                        else None
+                    )
+                    _valid = frozenset({"email", "whatsapp", "voice", "web"})
+                    if _pref_auto and _pref_auto in _valid:
+                        _channels = [_pref_auto]
+                except Exception as _chan_err:
+                    logger.debug("Falha ao carregar canal preferido para auto-trigger: %s", _chan_err)
                 await self.data_request_service.send_notification(
                     db=db,
                     data_request_id=data_request.id,
-                    channels=["email"],
+                    channels=_channels,
                 )
             except Exception as e:
                 logger.warning(f"Failed to send data request notification: {e}")

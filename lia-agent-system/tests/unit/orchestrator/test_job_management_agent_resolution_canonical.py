@@ -36,7 +36,7 @@ def _resolve_class(token: str):
 
 def _ensure_loaded():
     # Dispara os decorators @register_agent (idempotente).
-    from app.api.v1.agent_chat_ws import _ensure_agents_loaded
+    from app.api.v1.chat_shared import _ensure_agents_loaded
     _ensure_agents_loaded()
 
 

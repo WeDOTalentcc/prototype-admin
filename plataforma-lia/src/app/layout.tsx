@@ -36,14 +36,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html suppressHydrationWarning>
+    <html className="light" suppressHydrationWarning>
       <head suppressHydrationWarning>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
       </head>
       <body
-        className={`${inter.variable} ${openSans.variable} ${sourceSerif4.variable} antialiased`}
+        className={`${inter.variable} ${openSans.variable} ${sourceSerif4.variable} antialiased bg-white`}
         suppressHydrationWarning
       >
         <EnvironmentBadge />

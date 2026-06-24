@@ -2,6 +2,7 @@
 Company Users API endpoints — user management, global search settings,
 catalog status, and Smart Wizard greeting.
 """
+from app.middleware.request_id import get_correlation_id
 import logging
 import os
 import uuid
@@ -35,6 +36,7 @@ from app.schemas.company import (
 )
 from app.domains.company.services.company_configuration_service import company_config_service
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 from app.shared.compliance.audit_service import AuditService  # P1-W2-06
 from typing import Annotated
 from fastapi import Path
@@ -73,7 +75,7 @@ async def get_global_search_settings(
         raise
     except Exception as e:
         logger.error(f"Error fetching global search settings: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.put("/global-search-settings", response_model=GlobalSearchSettingsResponse)
@@ -93,7 +95,7 @@ async def update_global_search_settings(
         raise
     except Exception as e:
         logger.error(f"Error updating global search settings: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 # ==========================================
@@ -103,21 +105,36 @@ async def update_global_search_settings(
 @router.get("/users", response_model=list[UserManagementResponse])
 async def list_users(
     company_id: str = Depends(require_company_id),
-    user_repo: UserRepository = Depends(get_user_repo)):
+    user_repo: UserRepository = Depends(get_user_repo),
+    dept_repo: DepartmentRepository = Depends(get_department_repo)):
     # multi-tenancy: company_id JWT-only via Depends(require_company_id)
     """List all users for a company.
 
     Audit Wave 3 (2026-05-21) — P1.A cleanup: removido dead-code branch
     de cross-tenant recovery. require_company_id_strict_match já enforça
     query=JWT antes do handler executar (HTTP 403 retornado pelo gate).
+    B4 fix (2026-06-19): enrich with department_name via dept batch lookup.
     """
     try:
-        return await user_repo.list_for_company(company_id, is_active=None)
+        users = await user_repo.list_for_company(company_id, is_active=None)
+        import uuid as _uuid
+        try:
+            depts = await dept_repo.list_for_company(_uuid.UUID(company_id))
+            dept_map = {str(d.id): d.name for d in depts}
+        except Exception:
+            dept_map = {}
+        result = []
+        for u in users:
+            resp = UserManagementResponse.model_validate(u)
+            if u.department_id:
+                resp.department_name = dept_map.get(str(u.department_id))
+            result.append(resp)
+        return result
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Error listing users: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/users", response_model=UserManagementResponse, status_code=201)
@@ -166,6 +183,7 @@ async def create_user(
             "invitation_token": invitation_token,
             "invitation_sent_at": datetime.utcnow(),
             "permissions": data.permissions or [],
+            "department_id": data.department_id,
         })
 
         invitation_link = f"{FRONTEND_URL}/aceitar-convite?token={invitation_token}"
@@ -177,13 +195,13 @@ async def create_user(
         )
 
         logger.info(f"Created user with invitation: {user.id} for company {company_id}")
-        await AuditService().log_action(trace_id=str(uuid.uuid4()), company_id=company_id, action_type="user_invite", actor=str(getattr(current_user, "id", "system")), target_id=str(user.id), target_type="user")  # P1-W2-06
+        await AuditService().log_action(trace_id=get_correlation_id(), company_id=company_id, action_type="user_invite", actor=str(getattr(current_user, "id", "system")), target_id=str(user.id), target_type="user")  # P1-W2-06
         return user
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Error creating user: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.put("/users/{user_id}", response_model=UserManagementResponse)
@@ -248,9 +266,23 @@ company_id: str = Depends(require_company_id)):
             update_data['permissions'] = user.permissions
         update_data['updated_at'] = datetime.utcnow()
 
+        # A7-BE: PII/grant fields require tenant admin (LGPD Art. 6 III / Art. 5 II).
+        # Single source of truth: users table. Gate mirrors client_users pattern but lives here.
+        _pii_grant_fields = ("can_view_salary", "can_view_sensitive_pii", "pii_field_visibility")
+        if any(f in update_data for f in _pii_grant_fields):
+            _cur_role = getattr(current_user, "role", None) if current_user else None
+            if _cur_role not in (UserRole.admin, UserRole.wedotalent_admin):
+                raise HTTPException(
+                    status_code=403,
+                    detail="Apenas administradores podem alterar visibilidade de PII",
+                )
+            if update_data.get("pii_field_visibility") is not None:
+                from app.api.v1.pii_visibility_defaults import validate_pii_field_override
+                validate_pii_field_override(update_data["pii_field_visibility"])
+
         user = await user_repo.update(user_uuid, update_data, company_id=company_id)
         logger.info(f"Updated user: {user.id} with permissions: {user.permissions}")
-        await AuditService().log_action(trace_id=str(uuid.uuid4()), company_id=company_id, action_type="user_update", actor=str(getattr(current_user, "id", "system")), target_id=str(user.id), target_type="user")  # P1-W2-06
+        await AuditService().log_action(trace_id=get_correlation_id(), company_id=company_id, action_type="user_update", actor=str(getattr(current_user, "id", "system")), target_id=str(user.id), target_type="user")  # P1-W2-06
         return user
     except HTTPException:
         raise
@@ -258,7 +290,7 @@ company_id: str = Depends(require_company_id)):
         raise HTTPException(status_code=400, detail="Invalid user ID format")
     except Exception as e:
         logger.error(f"Error updating user: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.delete("/users/{user_id}", status_code=204, response_model=None)
@@ -285,7 +317,7 @@ company_id: str = Depends(require_company_id)):
         await user_repo.delete(user_uuid, company_id=company_id)
         # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
         logger.info(f"Deleted user: {email}")
-        await AuditService().log_action(trace_id=str(uuid.uuid4()), company_id=company_id, action_type="user_delete", actor=str(getattr(current_user, "id", "system")), target_id=str(user_uuid), target_type="user")  # P1-W2-06
+        await AuditService().log_action(trace_id=get_correlation_id(), company_id=company_id, action_type="user_delete", actor=str(getattr(current_user, "id", "system")), target_id=str(user_uuid), target_type="user")  # P1-W2-06
         return None
     except HTTPException:
         raise
@@ -293,7 +325,7 @@ company_id: str = Depends(require_company_id)):
         raise HTTPException(status_code=400, detail="Invalid user ID format")
     except Exception as e:
         logger.error(f"Error deleting user: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/users/{user_id}/resend-invitation", response_model=None)
@@ -345,7 +377,7 @@ async def resend_invitation(
 
         actor_id = str(getattr(current_user, "id", "system"))
         logger.info(f"Resent invitation to user: {user.id} by actor: {actor_id}")
-        await AuditService().log_action(trace_id=str(uuid.uuid4()), company_id=company_id, action_type="user_invitation_resend", actor=actor_id, target_id=str(user.id), target_type="user")  # P1-W2-05+W2-06
+        await AuditService().log_action(trace_id=get_correlation_id(), company_id=company_id, action_type="user_invitation_resend", actor=actor_id, target_id=str(user.id), target_type="user")  # P1-W2-05+W2-06
         return {"success": True, "message": "Invitation email resent successfully"}
     except HTTPException:
         raise
@@ -353,7 +385,7 @@ async def resend_invitation(
         raise HTTPException(status_code=400, detail="Invalid user ID format")
     except Exception as e:
         logger.error(f"Error resending invitation: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/users/list", response_model=CompanyUsersListResponse)
@@ -376,7 +408,8 @@ company_id: str = Depends(require_company_id)):
         user_responses = []
         for user in users:
             active_jobs_count = jobs_by_email.get(user.email, 0)
-            performance_score = 85 + (hash(str(user.id)) % 15)
+            # P2-5: sem fonte real de performance — nao fabricar valor ficticio
+            performance_score = None
             user_responses.append(CompanyUserResponse(
                 id=str(user.id),
                 name=user.name,
@@ -393,7 +426,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error listing company users: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 # ============================================================================
@@ -418,7 +451,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting catalog status: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/smart-wizard-greeting", response_model=SmartWizardGreetingResponse)
@@ -532,6 +565,6 @@ Qual opção você prefere?"""
         raise
     except Exception as e:
         logger.error(f"Error getting smart wizard greeting: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 reorder_collection_before_item(router)

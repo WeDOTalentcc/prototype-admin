@@ -117,7 +117,6 @@ async def _move_candidate(params: dict[str, Any], context: dict[str, Any]):
         from app.orchestrator.action_handlers._handler_hooks import (
             log_action_audit,
             resolve_candidate_by_name,
-            sync_to_rails,
         )
 
         candidate_id = params.get("candidate_id", "")
@@ -140,6 +139,8 @@ async def _move_candidate(params: dict[str, Any], context: dict[str, Any]):
                 action_type="move_candidate",
             )
 
+        # ADR-001-EXEMPT: action_handler single-candidate move (path D2, pre-service);
+        # TODO R1: migrate to pipeline_stage_service.transition_candidate like _batch_move_candidates.
         async with AsyncSessionLocal() as db:
             result = await db.execute(text("""
                 UPDATE vacancy_candidates
@@ -159,21 +160,6 @@ async def _move_candidate(params: dict[str, Any], context: dict[str, Any]):
             await db.commit()
 
         await log_action_audit("move_stage", company_id, candidate_id=str(candidate_id))
-        await sync_to_rails("candidate_moved", "candidate", str(candidate_id), {"from_stage": from_stage, "to_stage": to_stage})
-
-        return ActionResult(
-            status="executed",
-            message=f"**{candidate_name}** foi movido(a) para a etapa **{to_stage}**.",
-            data={
-                "candidate_id": str(candidate_id),
-                "candidate_name": candidate_name,
-                "from_stage": from_stage,
-                "to_stage": to_stage,
-                "moved_at": datetime.utcnow().isoformat(),
-                "simulated": False,
-            },
-            action_type="move_candidate",
-        )
     except Exception as e:
         logger.warning(f"move_candidate failed: {e}")
         from app.orchestrator.action_executor import ActionResult
@@ -195,7 +181,6 @@ async def _update_candidate_field(params: dict[str, Any], context: dict[str, Any
         from app.orchestrator.action_handlers._handler_hooks import (
             log_action_audit,
             resolve_candidate_by_name,
-            sync_to_rails,
         )
 
         candidate_id = params.get("candidate_id", "")
@@ -315,22 +300,6 @@ async def _update_candidate_field(params: dict[str, Any], context: dict[str, Any
             await db.commit()
 
         await log_action_audit("update_candidate_field", company_id, candidate_id=str(candidate_id))
-        await sync_to_rails("candidate_updated", "candidate", str(candidate_id), {"field": resolved_field, "value": field_value})
-
-        return ActionResult(
-            status="executed",
-            message=f"Campo **{field_name}** de **{candidate_name}** atualizado para **{field_value}**.",
-            data={
-                "candidate_id": str(candidate_id),
-                "candidate_name": candidate_name,
-                "field": resolved_field,
-                "field_label": field_name,
-                "value": field_value,
-                "updated_at": datetime.utcnow().isoformat(),
-                "simulated": False,
-            },
-            action_type="update_candidate_field",
-        )
     except Exception as e:
         logger.warning(f"update_candidate_field failed: {e}")
         from app.orchestrator.action_executor import ActionResult
@@ -354,7 +323,6 @@ async def _start_screening(params: dict[str, Any], context: dict[str, Any]):
         from app.orchestrator.action_handlers._handler_hooks import (
             log_action_audit,
             resolve_candidate_by_name,
-            sync_to_rails,
         )
 
         candidate_ids = params.get("candidate_ids", [])
@@ -452,6 +420,8 @@ async def _start_screening(params: dict[str, Any], context: dict[str, Any]):
                     logger.warning(f"start_screening: candidate {cid_str} not found in pipeline for company/job")
                     continue
 
+                # ADR-001-EXEMPT: start_screening sets stage=Triagem as bootstrap — pre-service.
+                # TODO R1: migrate to pipeline_stage_service.transition_candidate with force=True.
                 update_result = await db.execute(
                     text("""
                         UPDATE vacancy_candidates
@@ -505,34 +475,6 @@ async def _start_screening(params: dict[str, Any], context: dict[str, Any]):
                 job_vacancy_id=str(job_vacancy_id),
                 details={"session_id": s["session_id"]},
             )
-            await sync_to_rails(
-                "screening_started", "candidate", s["candidate_id"],
-                {"job_id": str(job_vacancy_id), "session_token": s["token"]},
-            )
-
-        count = len(sessions_created)
-        if count == 1:
-            name = sessions_created[0]["candidate_name"]
-            msg = f"Triagem iniciada para **{name}**. Uma sessão de triagem WSI foi criada."
-        else:
-            msg = f"Triagem iniciada para **{count} candidatos**. Sessões de triagem WSI foram criadas."
-
-        return ActionResult(
-            status="executed",
-            message=msg,
-            data={
-                "action": "start_screening",
-                "candidates_updated": candidates_updated,
-                "sessions_created": [
-                    {"session_id": s["session_id"], "candidate_id": s["candidate_id"]}
-                    for s in sessions_created
-                ],
-                "job_vacancy_id": str(job_vacancy_id),
-                "started_at": datetime.utcnow().isoformat(),
-                "simulated": False,
-            },
-            action_type="start_screening",
-        )
     except Exception as e:
         logger.warning(f"start_screening failed: {e}")
         from app.orchestrator.action_executor import ActionResult
@@ -688,15 +630,13 @@ async def _analyze_profile(params: dict[str, Any], context: dict[str, Any]):
 async def _batch_move_candidates(params: dict[str, Any], context: dict[str, Any]):
     from app.orchestrator.action_executor import ActionResult
     try:
-        from sqlalchemy import text
-
-        from app.core.database import AsyncSessionLocal
-        from app.orchestrator.action_handlers._handler_hooks import log_action_audit, sync_to_rails
+        from app.orchestrator.action_handlers._handler_hooks import log_action_audit
 
         candidate_ids = params.get("candidate_ids", [])
         to_stage = params.get("to_stage", "")
         from_stage = params.get("from_stage", "")
         job_id = params.get("job_id") or (context or {}).get("job_vacancy_id")
+        company_id = context.get("company_id") if context else None
 
         if not candidate_ids or not to_stage:
             return ActionResult(
@@ -706,38 +646,47 @@ async def _batch_move_candidates(params: dict[str, Any], context: dict[str, Any]
                 action_type="batch_move_candidates",
             )
 
-        company_id = context.get("company_id") if context else None
 
-        async with AsyncSessionLocal() as db:
-            moved = 0
-            for cid in candidate_ids:
-                update_sql = """
-                    UPDATE vacancy_candidates
-                    SET stage = :to_stage, status = 'active', updated_at = NOW()
-                    WHERE (id = CAST(:cid AS uuid) OR candidate_id = CAST(:cid AS uuid))
-                """
-                bind: dict[str, Any] = {"to_stage": to_stage, "cid": str(cid)}
-                if company_id:
-                    update_sql += " AND company_id = :co"
-                    bind["co"] = str(company_id)
-                result = await db.execute(text(update_sql), bind)
-                moved += result.rowcount
-            await db.commit()
-
-        for cid in candidate_ids:
-            await log_action_audit("move_stage", company_id, candidate_id=str(cid))
-            await sync_to_rails("candidate_moved", "candidate", str(cid), {"to_stage": to_stage})
-
-        return ActionResult(
-            status="executed",
-            message=f"**{moved} candidato(s)** movido(s) para a etapa **{to_stage}**.",
-            data={
-                "candidate_ids": candidate_ids, "to_stage": to_stage,
-                "from_stage": from_stage, "moved_count": moved,
-                "moved_at": datetime.utcnow().isoformat(), "simulated": False,
-            },
-            action_type="batch_move_candidates",
+        # P-TENANT fail-closed (SEV2-C3-05): recusar ANTES de abrir sessao de banco.
+        # company_id vem de UniversalContext (JWT via chat.py:254). Se ausente,
+        # query rodaria sem filtro de tenant — nao degradar silenciosamente.
+        if not company_id:
+            return ActionResult(
+                status="error",
+                message="Contexto de empresa nao disponivel para mover candidatos.",
+                error_detail="company_id missing from context — tenant fail-closed (P-TENANT, SEV2-C3-05)",
+                action_type="batch_move_candidates",
+            )
+        # R1: delegate to canonical pipeline_stage_service (removes inline SQL / ADR-001 exempt)
+        # Fairness gate + audit log + idempotency are now handled by the service.
+        from app.domains.recruiter_assistant.services.pipeline_stage_service import (
+            pipeline_stage_service as _stage_svc,
+            FairnessBlockedError as _FairnessBlockedError,
         )
+
+        moved = 0
+        failed = []
+        for cid in candidate_ids:
+            try:
+                await _stage_svc.transition_candidate(
+                    vacancy_candidate_id=str(cid),
+                    to_stage=to_stage,
+                    triggered_by="batch_move_agent",
+                    source_agent="candidate_actions",
+                    reason=f"Batch move: {from_stage} → {to_stage}",
+                    context={"company_id": company_id, "job_vacancy_id": job_id},
+                )
+                moved += 1
+                await log_action_audit("move_stage", company_id, candidate_id=str(cid))
+            except _FairnessBlockedError as _fb:
+                logger.warning(f"[D1-FAIRNESS] Candidate {cid} batch move blocked: {_fb.message}")
+                failed.append({"candidate_id": str(cid), "reason": "fairness_blocked", "message": _fb.message})
+            except PermissionError as _pe:
+                logger.warning(f"[D1-TENANT] Candidate {cid} cross-tenant rejected: {_pe}")
+                failed.append({"candidate_id": str(cid), "reason": "permission_error"})
+            except Exception as _ex:
+                logger.warning(f"[D1-PARTIAL] Candidate {cid} move failed: {_ex}")
+                failed.append({"candidate_id": str(cid), "reason": str(_ex)})
     except Exception as e:
         logger.warning(f"batch_move_candidates failed: {e}")
         from app.orchestrator.action_executor import ActionResult

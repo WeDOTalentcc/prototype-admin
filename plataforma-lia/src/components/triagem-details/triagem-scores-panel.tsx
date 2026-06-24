@@ -17,33 +17,61 @@ interface TriagemScoresPanelProps {
   sessionInfo: WSIResultDetails["session"]
   f11Report: F11ReportData | null
   details: WSIResultDetails
+  /** Quando true, o candidato foi eliminado na fase de elegibilidade — exibe badge N/A e opacidade reduzida */
+  isEligibilityEliminated?: boolean
 }
 
 // Escala WSI 0-10 (Task #512).
 const wsiToPercent = (score: number) => Math.round((score / 10) * 100)
 
-export function TriagemScoresPanel({ scores, sessionInfo, f11Report, details }: TriagemScoresPanelProps) {
+export function TriagemScoresPanel({ scores, sessionInfo, f11Report, details, isEligibilityEliminated }: TriagemScoresPanelProps) {
   return (
-    <div className="p-3 border border-lia-border-subtle bg-lia-bg-secondary rounded-lg">
+    <div
+      className="p-3 border border-lia-border-subtle bg-lia-bg-secondary rounded-lg"
+      style={isEligibilityEliminated ? { opacity: 0.45, pointerEvents: "none" } : undefined}
+    >
       <h3 className="text-xs font-semibold flex items-center gap-2 mb-3 text-lia-text-primary">
         <Brain className="w-4 h-4 text-wedo-cyan" />
         Scores por Dimensão
+        {isEligibilityEliminated && (
+          <span
+            className="ml-auto text-xs px-2 py-0.5 rounded font-medium"
+            style={{
+              background: "var(--lia-bg-tertiary)",
+              color: "var(--lia-text-tertiary)",
+            }}
+          >
+            N/A
+          </span>
+        )}
       </h3>
       <div className="grid grid-cols-3 gap-3">
         <div className="text-center p-3 rounded-lg border border-lia-border-subtle">
-          <p className="text-xl font-semibold text-lia-text-primary">{scores.overall_wsi.toFixed(1)}</p>
-          <p className="text-micro text-lia-text-secondary">Geral ({wsiToPercent(scores.overall_wsi)}%)</p>
-          <Progress value={wsiToPercent(scores.overall_wsi)} className="h-1.5 mt-1.5" />
+          <p className="text-xl font-semibold text-lia-text-primary">
+            {isEligibilityEliminated ? "—" : scores.overall_wsi.toFixed(1)}
+          </p>
+          <p className="text-micro text-lia-text-secondary">
+            Geral {isEligibilityEliminated ? "" : `(${wsiToPercent(scores.overall_wsi)}%)`}
+          </p>
+          <Progress value={isEligibilityEliminated ? 0 : wsiToPercent(scores.overall_wsi)} className="h-1.5 mt-1.5" />
         </div>
         <div className="text-center p-3 rounded-lg border border-lia-border-subtle">
-          <p className="text-xl font-semibold text-lia-text-primary">{scores.technical_wsi.toFixed(1)}</p>
-          <p className="text-micro text-lia-text-secondary">Comp. Técnicas ({wsiToPercent(scores.technical_wsi)}%)</p>
-          <Progress value={wsiToPercent(scores.technical_wsi)} className="h-1.5 mt-1.5" />
+          <p className="text-xl font-semibold text-lia-text-primary">
+            {isEligibilityEliminated ? "—" : scores.technical_wsi.toFixed(1)}
+          </p>
+          <p className="text-micro text-lia-text-secondary">
+            Comp. Técnicas {isEligibilityEliminated ? "" : `(${wsiToPercent(scores.technical_wsi)}%)`}
+          </p>
+          <Progress value={isEligibilityEliminated ? 0 : wsiToPercent(scores.technical_wsi)} className="h-1.5 mt-1.5" />
         </div>
         <div className="text-center p-3 rounded-lg border border-lia-border-subtle">
-          <p className="text-xl font-semibold text-lia-text-primary">{scores.behavioral_wsi.toFixed(1)}</p>
-          <p className="text-micro text-lia-text-secondary">Comp. Comportamentais ({wsiToPercent(scores.behavioral_wsi)}%)</p>
-          <Progress value={wsiToPercent(scores.behavioral_wsi)} className="h-1.5 mt-1.5" />
+          <p className="text-xl font-semibold text-lia-text-primary">
+            {isEligibilityEliminated ? "—" : scores.behavioral_wsi.toFixed(1)}
+          </p>
+          <p className="text-micro text-lia-text-secondary">
+            Comp. Comportamentais {isEligibilityEliminated ? "" : `(${wsiToPercent(scores.behavioral_wsi)}%)`}
+          </p>
+          <Progress value={isEligibilityEliminated ? 0 : wsiToPercent(scores.behavioral_wsi)} className="h-1.5 mt-1.5" />
         </div>
       </div>
       <div className="flex items-center gap-3 mt-3 flex-wrap">
@@ -51,7 +79,7 @@ export function TriagemScoresPanel({ scores, sessionInfo, f11Report, details }: 
           {sessionInfo.screening_type === 'voice' ? <Mic className="w-3 h-3" /> : <MessageSquare className="w-3 h-3" />}
           {sessionInfo.screening_type === 'voice' ? 'Triagem por Voz' : 'Triagem por Texto'}
         </span>
-        {scores.percentile && (
+        {scores.percentile && !isEligibilityEliminated && (
           <span className="text-micro text-lia-text-secondary flex items-center gap-1">
             <TrendingUp className="w-3 h-3" />
             Top {100 - scores.percentile}%
@@ -63,7 +91,7 @@ export function TriagemScoresPanel({ scores, sessionInfo, f11Report, details }: 
           </span>
         )}
       </div>
-      {f11Report?.seniority_weights && (
+      {f11Report?.seniority_weights && !isEligibilityEliminated && (
         <div className="flex items-center gap-1.5 text-xs text-lia-text-secondary bg-lia-bg-secondary border border-lia-border-subtle rounded-lg px-3 py-2 mt-2">
           <BarChart3 className="w-3 h-3 text-lia-text-secondary shrink-0" />
           <span>
@@ -73,7 +101,7 @@ export function TriagemScoresPanel({ scores, sessionInfo, f11Report, details }: 
           </span>
         </div>
       )}
-      {f11Report?.mode && (
+      {f11Report?.mode && !isEligibilityEliminated && (
         <div className="flex items-center gap-2 mt-2">
           <span className="text-micro text-lia-text-secondary">Modo de triagem:</span>
           <span className="text-micro font-medium text-lia-text-secondary flex items-center gap-1">

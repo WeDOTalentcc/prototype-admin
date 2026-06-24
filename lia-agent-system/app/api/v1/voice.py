@@ -12,6 +12,7 @@ from fastapi.responses import JSONResponse
 from app.shared.services.gemini_voice_service import get_voice_service
 from fastapi import Depends
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 
 logger = logging.getLogger(__name__)
 
@@ -121,7 +122,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"❌ Transcription failed: {e}")
-        raise HTTPException(status_code=500, detail=f"Transcription failed: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/voice/analyze", response_model=None)
@@ -178,7 +179,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"❌ Analysis failed: {e}")
-        raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/voice/interview", response_model=None)
@@ -245,4 +246,4 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"❌ Interview analysis failed: {e}")
-        raise HTTPException(status_code=500, detail=f"Interview analysis failed: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")

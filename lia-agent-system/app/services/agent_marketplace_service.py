@@ -16,6 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from lia_models.custom_agent import (
     AgentInstallation,
     AgentMarketplaceListing,
+    AgentType,
     CustomAgent,
     CustomAgentStatus,
     MarketplaceListingStatus,
@@ -26,6 +27,10 @@ from app.domains.agent_studio.repositories.agent_marketplace_repository import (
     AgentInstallationRepository,
     AgentMarketplaceListingRepository,
 )
+
+from app.shared.compliance.fairness_guard import FairnessGuard
+
+_fairness_guard = FairnessGuard()
 
 logger = logging.getLogger(__name__)
 
@@ -99,6 +104,7 @@ class AgentMarketplaceService:
         category: Optional[str] = None,  # Sprint 7A category filter
         talent_pool_id: Optional[str] = None,  # Sprint 7B-3b Part 2 v2
         job_id: Optional[str] = None,  # Sprint 7B-3b Part 2 v2
+        agent_type: Optional[str] = None,  # first_party | custom (None = tenant-scoped default)
         limit: int = 50,
         offset: int = 0,
     ) -> tuple[list[CustomAgent], int]:
@@ -106,7 +112,15 @@ class AgentMarketplaceService:
         # talent_pool JOIN. Canonical CustomAgentRepository does not yet cover
         # the combined filter matrix used by this endpoint (Sprint 7A+7B-3b).
         # Move to repo when an `advanced_search` method is added.
-        conditions = [CustomAgent.company_id == company_id]
+        if agent_type == "first_party":
+            # TENANT-FREE: first_party agents sao globais (company_id=None e
+            # valido por design — ver AgentType docstring). Nao filtrar por
+            # company_id aqui, senao os agentes WeDo globais nunca aparecem.
+            conditions = [CustomAgent.agent_type == AgentType.first_party]
+        else:
+            conditions = [CustomAgent.company_id == company_id]
+            # tenant listing exclui first_party (esses vivem no marketplace)
+            conditions.append(CustomAgent.agent_type != AgentType.first_party)
         if status:
             conditions.append(CustomAgent.status == status)
         if domain:
@@ -218,9 +232,9 @@ class AgentMarketplaceService:
         listings = []
         for listing, agent in rows:
             data = listing.to_dict()
-            data["agent_name"] = agent.name
-            data["agent_role"] = agent.role
-            data["agent_domain"] = agent.domain
+            data["agent_name"] = agent.name if agent else None
+            data["agent_role"] = agent.role if agent else None
+            data["agent_domain"] = agent.domain if agent else None
             listings.append(data)
 
         return listings, total
@@ -232,8 +246,21 @@ class AgentMarketplaceService:
         reviewer_id: str,
         action: str,
         review_notes: Optional[str] = None,
+        reviewer_company_id: Optional[str] = None,
     ) -> Optional[AgentMarketplaceListing]:
         listing_repo = AgentMarketplaceListingRepository(db)
+
+        # P0-4: Anti self-review — reviewer nao pode ser do mesmo tenant que publicou
+        if reviewer_company_id:
+            listing = await listing_repo.get_by_id(listing_id=listing_id)
+            if listing and hasattr(listing, 'publisher_company_id'):
+                if str(listing.publisher_company_id) == str(reviewer_company_id):
+                    raise ValueError(
+                        'Auto-review bloqueado: reviewer nao pode ser do mesmo tenant '
+                        'que publicou o agente. '
+                        'Requer admin WeDOTalent ou admin de tenant diferente.'
+                    )
+
         return await listing_repo.update_review(
             listing_id=listing_id,
             reviewer_id=reviewer_id,
@@ -264,6 +291,17 @@ class AgentMarketplaceService:
         )
         if existing is not None:
             raise ValueError("Agent already installed for this company")
+
+
+        # P0-3: FairnessGuard scan - bloqueia system_prompt discriminatorio (CLT Art. 373-A)
+        if source_agent.system_prompt:
+            _fg_result = _fairness_guard.check(source_agent.system_prompt)
+            if _fg_result.is_blocked:
+                raise ValueError(
+                    "Agente bloqueado por violacao de fairness no system_prompt "
+                    f"(categoria: {_fg_result.category}). "
+                    f"{_fg_result.educational_message}"
+                )
 
         installed_agent = CustomAgent(
             company_id=installer_company_id,
@@ -296,6 +334,11 @@ class AgentMarketplaceService:
         installation = await install_repo.create(installation)
 
         await listing_repo.increment_install_count(listing=listing)
+
+        await listing_repo.activate_module_if_required(
+            installation=installation,
+            listing=listing,
+        )
 
         logger.info(
             "[AgentMarketplace] Installed agent=%s from listing=%s company=%s",
@@ -448,10 +491,10 @@ class AgentMarketplaceService:
         listings = []
         for listing, agent in rows:
             data = listing.to_dict()
-            data["agent_name"] = agent.name
-            data["agent_role"] = agent.role
-            data["agent_domain"] = agent.domain
-            data["system_prompt_preview"] = (agent.system_prompt or "")[:200]
+            data["agent_name"] = agent.name if agent else None
+            data["agent_role"] = agent.role if agent else None
+            data["agent_domain"] = agent.domain if agent else None
+            data["system_prompt_preview"] = (agent.system_prompt or "")[:200] if agent else None
             listings.append(data)
 
         return listings, total

@@ -11,11 +11,12 @@ Provides endpoints for:
 """
 import logging
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.domains.notifications.dependencies import get_notifications_repo
-from app.domains.notifications.repositories.notifications_repository import NotificationsRepository
+from app.repositories.dependencies import get_notifications_repo
+from app.repositories.notifications_repository import NotificationsRepository
 from app.services.notification_service import (
     NotificationChannel,
     NotificationType,
@@ -27,6 +28,7 @@ from app.shared.types import WeDoBaseModel
 from typing import Annotated
 from fastapi import Path
 from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
+from app.core.database import get_db
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/notifications", tags=["notifications"])
@@ -170,7 +172,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting notifications: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.get("/summary", response_model=None)
@@ -192,7 +194,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting notification summary: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.post("", response_model=None)
@@ -227,7 +229,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error creating notification: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.post("/{notification_id}/read", response_model=None)
@@ -250,7 +252,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error marking notification as read: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.post("/read-all", response_model=None)
@@ -273,7 +275,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error marking all as read: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.post("/{notification_id}/dismiss", response_model=None)
@@ -296,7 +298,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error dismissing notification: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.post("/recruiter-action", response_model=None)
@@ -403,7 +405,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error sending recruiter action notification: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.get("/unread-count", response_model=None)
@@ -428,7 +430,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting unread count: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.get("/chat", response_model=None)
@@ -458,7 +460,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting chat notifications: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.post("/chat/{notification_id}/delivered", response_model=None)
@@ -481,7 +483,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error marking chat notification as delivered: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.post("/chat/delivered", response_model=None)
@@ -504,7 +506,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error marking chat notifications as delivered: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.post("/send", response_model=None)
@@ -564,7 +566,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error sending multi-channel notification: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.post("/proactive", response_model=None)
@@ -615,7 +617,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error sending proactive notification: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 class ProactiveAlertCheckRequest(WeDoBaseModel):
@@ -666,34 +668,42 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error triggering proactive check: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.get("/proactive/history", response_model=None)
 async def get_proactive_alert_history(
-    user_id: str = "default_user", 
+    limit: int = Query(default=50, le=200),
+    db: AsyncSession = Depends(get_db),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
-    Get history of proactive alerts sent to a user.
-
-    This shows which alerts were triggered and when to help
-    understand notification patterns.
+    Get history of proactive actions/alerts for this company.
+    B3 — reads from proactive_actions table (persistent, survives restart).
     """
     try:
-        from app.domains.automation.services.proactive_alert_service import proactive_alert_service
+        from lia_models.background_jobs import ProactiveAction
+        from sqlalchemy import select, desc, cast, String as SAString
 
-        history = await proactive_alert_service.get_alert_history(user_id)
-
+        stmt = (
+            select(ProactiveAction)
+            .where(cast(ProactiveAction.company_id, SAString) == str(company_id))
+            .order_by(desc(ProactiveAction.created_at))
+            .limit(limit)
+        )
+        result = await db.execute(stmt)
+        actions = result.scalars().all()
         return {
             "success": True,
-            "data": history
+            "data": [a.to_dict() for a in actions],
+            "count": len(actions),
+            "source": "db",
         }
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error getting alert history: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error getting proactive alert history: {e}")
+        raise
 
 
 @router.put("/proactive/thresholds", response_model=None)
@@ -728,7 +738,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error updating threshold: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.get("/proactive/thresholds", response_model=None)
@@ -756,13 +766,14 @@ async def get_alert_thresholds(company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting thresholds: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.post("/job-created", response_model=None)
 async def send_job_created_notification(
     request: JobCreatedNotificationRequest,
     email_svc: EmailService = Depends(get_email_service),
+    db: AsyncSession = Depends(get_db),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
@@ -962,12 +973,21 @@ Recrutador: {request.recruiter_name or request.recruiter_email}
 
             if "teams" in request.channels:
                 try:
+                    # Resolve per-tenant webhook URL so DB-configured URL drives delivery
+                    # when TEAMS_WEBHOOK_URL env var is absent (T-1337).
+                    _resolved_teams_url: str | None = None
+                    try:
+                        from app.api.v1.integrations import _get_tenant_teams_webhook_url
+                        _resolved_teams_url, _ = await _get_tenant_teams_webhook_url(company_id, db)
+                    except Exception as _url_err:
+                        logger.debug("Could not resolve per-tenant Teams URL: %s", _url_err)
                     await teams_service.send_message(
                         user_email=recipient["email"],
                         title=teams_title,
                         message=workplan_content,
                         action_url=f"https://lia.wedotalent.com/jobs/{request.job_id}",
-                        action_label="Ver Vaga"
+                        action_label="Ver Vaga",
+                        webhook_url=_resolved_teams_url,
                     )
                     notifications_sent[role]["teams"] = True
                     # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
@@ -997,6 +1017,6 @@ Recrutador: {request.recruiter_name or request.recruiter_email}
         raise
     except Exception as e:
         logger.error(f"Error sending job created notification: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 reorder_collection_before_item(router)

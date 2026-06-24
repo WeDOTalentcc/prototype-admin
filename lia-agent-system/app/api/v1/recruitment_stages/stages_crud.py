@@ -1,4 +1,5 @@
 """Recruitment stages CRUD endpoints — multi-tenant."""
+from app.middleware.request_id import get_correlation_id
 import uuid
 import logging
 
@@ -24,6 +25,7 @@ from ._shared import (
     User,
 )
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError, LIAInternalError
 from app.shared.compliance.audit_service import AuditService  # P1-W1-05
 from typing import Annotated
 from fastapi import Path
@@ -67,7 +69,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error listing stages: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/stages", response_model=None)
@@ -98,7 +100,7 @@ company_id: str = Depends(require_company_id)):
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Created stage: {stage.name} for company {effective_company_id}")
         try:
-            await AuditService().log_action(trace_id=str(uuid.uuid4()), company_id=effective_company_id, action_type="pipeline_stage_created", actor=str(getattr(current_user, "id", "system")), target_id=str(new_stage.id), target_type="recruitment_stage", metadata={"stage_name": stage.name, "action_behavior": stage.action_behavior})  # P1-W1-05
+            await AuditService().log_action(trace_id=get_correlation_id(), company_id=effective_company_id, action_type="pipeline_stage_created", actor=str(getattr(current_user, "id", "system")), target_id=str(new_stage.id), target_type="recruitment_stage", metadata={"stage_name": stage.name, "action_behavior": stage.action_behavior})  # P1-W1-05
         except Exception as _ae:
             logger.warning(f"Audit log failed (non-blocking): {_ae}")
         return new_stage.to_dict()
@@ -106,7 +108,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error creating stage: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.put("/stages/{stage_id}", response_model=None)
@@ -135,7 +137,7 @@ company_id: str = Depends(require_company_id)):
         updated = await stage_repo.update(uuid.UUID(stage_id), update_data)
 
         try:
-            await AuditService().log_action(trace_id=str(uuid.uuid4()), company_id=str(getattr(current_user, "company_id", "")), action_type="pipeline_stage_updated", actor=str(getattr(current_user, "id", "system")), target_id=stage_id, target_type="recruitment_stage", metadata={"updates": list(update_data.keys())})  # P1-W1-05
+            await AuditService().log_action(trace_id=get_correlation_id(), company_id=str(getattr(current_user, "company_id", "")), action_type="pipeline_stage_updated", actor=str(getattr(current_user, "id", "system")), target_id=stage_id, target_type="recruitment_stage", metadata={"updates": list(update_data.keys())})  # P1-W1-05
         except Exception as _ae:
             logger.warning(f"Audit log failed (non-blocking): {_ae}")
         return updated.to_dict()
@@ -143,7 +145,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error updating stage: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.delete("/stages/{stage_id}", response_model=None)
@@ -174,7 +176,7 @@ company_id: str = Depends(require_company_id)):
             await stage_repo.soft_delete(uuid.UUID(stage_id))
 
         try:
-            await AuditService().log_action(trace_id=str(uuid.uuid4()), company_id=str(getattr(current_user, "company_id", "")), action_type="pipeline_stage_deleted", actor=str(getattr(current_user, "id", "system")), target_id=stage_id, target_type="recruitment_stage", metadata={"hard_delete": hard_delete})  # P1-W1-05
+            await AuditService().log_action(trace_id=get_correlation_id(), company_id=str(getattr(current_user, "company_id", "")), action_type="pipeline_stage_deleted", actor=str(getattr(current_user, "id", "system")), target_id=stage_id, target_type="recruitment_stage", metadata={"hard_delete": hard_delete})  # P1-W1-05
         except Exception as _ae:
             logger.warning(f"Audit log failed (non-blocking): {_ae}")
         return {"success": True, "deleted": stage_id}
@@ -182,7 +184,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error deleting stage: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.put("/stages/{stage_id}/config", response_model=None)
@@ -222,7 +224,7 @@ company_id: str = Depends(require_company_id)):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/catalog", response_model=None)
@@ -323,7 +325,7 @@ company_id: str = Depends(require_company_id)):
         await stage_repo.update_fields(stage_id, updates)
 
         try:
-            await AuditService().log_action(trace_id=str(uuid.uuid4()), company_id=str(company_id), action_type="pipeline_stage_updated", actor=str(getattr(current_user, "id", "system")), target_id=stage_id, target_type="recruitment_stage", metadata={"inline_edit": True, "updates": list(updates.keys())})  # P1-W1-05
+            await AuditService().log_action(trace_id=get_correlation_id(), company_id=str(company_id), action_type="pipeline_stage_updated", actor=str(getattr(current_user, "id", "system")), target_id=stage_id, target_type="recruitment_stage", metadata={"inline_edit": True, "updates": list(updates.keys())})  # P1-W1-05
         except Exception as _ae:
             logger.warning(f"Audit log failed (non-blocking): {_ae}")
         return {
@@ -335,7 +337,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error inline editing stage: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.delete("/stages/{stage_id}/remove", response_model=None)
@@ -367,7 +369,7 @@ company_id: str = Depends(require_company_id)):
         await stage_repo.hard_delete_by_id_str(stage_id)
 
         try:
-            await AuditService().log_action(trace_id=str(uuid.uuid4()), company_id=str(company_id), action_type="pipeline_stage_deleted", actor=str(getattr(current_user, "id", "system")), target_id=stage_id, target_type="recruitment_stage", metadata={"hard_delete": True, "custom_remove": True})  # P1-W1-05
+            await AuditService().log_action(trace_id=get_correlation_id(), company_id=str(company_id), action_type="pipeline_stage_deleted", actor=str(getattr(current_user, "id", "system")), target_id=stage_id, target_type="recruitment_stage", metadata={"hard_delete": True, "custom_remove": True})  # P1-W1-05
         except Exception as _ae:
             logger.warning(f"Audit log failed (non-blocking): {_ae}")
         return {"success": True, "stage_id": stage_id, "removed": True}
@@ -375,7 +377,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error removing stage: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/stages/reorder", response_model=None)
@@ -404,7 +406,7 @@ company_id: str = Depends(require_company_id)):
         items = [{"stage_id": item.stage_id, "new_order": item.new_order} for item in payload.stages]
         await stage_repo.reorder(items)
         try:
-            await AuditService().log_action(trace_id=str(uuid.uuid4()), company_id=str(company_id), action_type="pipeline_stages_reordered", actor=str(getattr(current_user, "id", "system")), target_type="recruitment_stage", metadata={"reordered_count": len(payload.stages)})  # P1-W1-05
+            await AuditService().log_action(trace_id=get_correlation_id(), company_id=str(company_id), action_type="pipeline_stages_reordered", actor=str(getattr(current_user, "id", "system")), target_type="recruitment_stage", metadata={"reordered_count": len(payload.stages)})  # P1-W1-05
         except Exception as _ae:
             logger.warning(f"Audit log failed (non-blocking): {_ae}")
         return {"success": True, "reordered": len(payload.stages)}
@@ -412,13 +414,13 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error reordering stages: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/stages/infer-behavior", response_model=None)
 async def infer_stage_behavior(
     request: InferBehaviorRequest,
-    method: str = Query(default="auto", regex="^(keyword|llm|auto)$"),
+    method: str = Query(default="auto", pattern="^(keyword|llm|auto)$"),
     current_user: User = Depends(get_current_active_user),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
@@ -434,14 +436,11 @@ company_id: str = Depends(require_company_id)):
             from app.domains.communication.services.infer_behavior_service import infer_behavior_auto
 
 # RAILS-DEPRECATED: This endpoint manages Rails-owned entities (candidates/jobs/applies/users).
-# Direct DB calls will be replaced by RailsAdapter after ats-api-rails handoff.
 # See: app/domains/integrations_hub/services/rails_adapter.py
             result = await infer_behavior_auto(request.stage_name, request.description)
 
         return result
     except Exception as e:
+        # pii-logs ok: stage_name é identificador de etapa do pipeline (não PII de pessoa)
         logger.error(f"Error inferring behavior for stage \"{request.stage_name}\": {e}", exc_info=True)
-        raise HTTPException(
-            status_code=500,
-            detail="Falha ao inferir comportamento do estágio. Tente novamente ou selecione manualmente."
-        )
+        raise LIAInternalError("Falha ao inferir comportamento do estágio. Tente novamente ou selecione manualmente.")

@@ -22,36 +22,36 @@ import pytest
 class TestHiringNpsRepositoryContract:
 
     def test_has_create_method(self):
-        from app.domains.approvals.repositories.hiring_nps_repository import HiringNpsRepository
+        from app.repositories.hiring_nps_repository import HiringNpsRepository
         assert callable(HiringNpsRepository.create)
 
     def test_has_respond_method(self):
-        from app.domains.approvals.repositories.hiring_nps_repository import HiringNpsRepository
+        from app.repositories.hiring_nps_repository import HiringNpsRepository
         assert callable(HiringNpsRepository.respond)
 
     def test_has_get_by_token_method(self):
-        from app.domains.approvals.repositories.hiring_nps_repository import HiringNpsRepository
+        from app.repositories.hiring_nps_repository import HiringNpsRepository
         assert callable(HiringNpsRepository.get_by_token)
 
     def test_has_list_for_job_method(self):
-        from app.domains.approvals.repositories.hiring_nps_repository import HiringNpsRepository
+        from app.repositories.hiring_nps_repository import HiringNpsRepository
         assert callable(HiringNpsRepository.list_for_job)
 
     def test_has_avg_score_for_job_method(self):
-        from app.domains.approvals.repositories.hiring_nps_repository import HiringNpsRepository
+        from app.repositories.hiring_nps_repository import HiringNpsRepository
         assert callable(HiringNpsRepository.avg_score_for_job)
 
     def test_has_count_by_status_method(self):
-        from app.domains.approvals.repositories.hiring_nps_repository import HiringNpsRepository
+        from app.repositories.hiring_nps_repository import HiringNpsRepository
         assert callable(HiringNpsRepository.count_by_status)
 
     def test_require_company_id_raises_on_none(self):
-        from app.domains.approvals.repositories.hiring_nps_repository import HiringNpsRepository
+        from app.repositories.hiring_nps_repository import HiringNpsRepository
         with pytest.raises((ValueError, Exception)):
             HiringNpsRepository._require_company_id(None)
 
     def test_require_company_id_passes_valid(self):
-        from app.domains.approvals.repositories.hiring_nps_repository import HiringNpsRepository
+        from app.repositories.hiring_nps_repository import HiringNpsRepository
         result = HiringNpsRepository._require_company_id("company-xyz")
         assert result == "company-xyz"
 
@@ -108,7 +108,7 @@ class TestHiringNpsRespondContract:
 
     @pytest.mark.asyncio
     async def test_respond_sets_all_fields(self):
-        from app.domains.approvals.repositories.hiring_nps_repository import HiringNpsRepository
+        from app.repositories.hiring_nps_repository import HiringNpsRepository
         from lia_models.hiring_nps import HiringNps
 
         db = AsyncMock()
@@ -127,7 +127,7 @@ class TestHiringNpsRespondContract:
 
     @pytest.mark.asyncio
     async def test_respond_works_without_comment(self):
-        from app.domains.approvals.repositories.hiring_nps_repository import HiringNpsRepository
+        from app.repositories.hiring_nps_repository import HiringNpsRepository
         from lia_models.hiring_nps import HiringNps
 
         db = AsyncMock()
@@ -143,7 +143,7 @@ class TestHiringNpsRespondContract:
     @pytest.mark.asyncio
     async def test_respond_accepts_full_score_range(self):
         """Score 0 and 10 are both valid — boundary test."""
-        from app.domains.approvals.repositories.hiring_nps_repository import HiringNpsRepository
+        from app.repositories.hiring_nps_repository import HiringNpsRepository
         from lia_models.hiring_nps import HiringNps
 
         db = AsyncMock()

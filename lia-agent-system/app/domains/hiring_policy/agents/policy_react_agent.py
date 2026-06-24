@@ -183,7 +183,7 @@ class PolicyReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgentM
                     k: v for k, v in vars(current_policy).items()
                     if not k.startswith("_")
                 } if hasattr(current_policy, "__dict__") else dict(current_policy)
-            except Exception:
+            except Exception:  # ADR-031-R3-EXEMPT: serializacao opcional de policy state para wrapper de compatibilidade; falha nao bloqueia
                 pass
 
         agent_input = AgentInput(

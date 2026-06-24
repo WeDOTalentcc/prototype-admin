@@ -47,6 +47,47 @@ async def calculate_company_data_progress(company, db: AsyncSession) -> tuple[in
     return total, is_complete
 
 
+
+def calculate_contratacao_score(policy) -> int:
+    """Calculate Configuracoes de Contratacao completion from offer_rules JSONB."""
+    if not policy or not policy.offer_rules:
+        return 0
+    rules = policy.offer_rules
+    checked_fields = [
+        rules.get("allowed_start_day_of_month"),
+        rules.get("min_notice_days"),
+        rules.get("negotiation_enabled"),
+        rules.get("salary_flex_pct_max"),
+    ]
+    filled = sum(1 for f in checked_fields if f is not None)
+    return int(filled / len(checked_fields) * 100) if checked_fields else 0
+
+
+def calculate_screening_defaults_score(policy) -> int:
+    """Calculate Configuracoes de Triagem completion from screening_config_defaults JSONB."""
+    if not policy or not policy.screening_config_defaults:
+        return 0
+    config = policy.screening_config_defaults
+    checks = []
+    # settings.min_score
+    settings = config.get("settings", {})
+    checks.append(settings.get("min_score") is not None)
+    # settings.response_timeout_hours
+    checks.append(settings.get("response_timeout_hours") is not None)
+    # channels: at least 1 enabled
+    channels = config.get("channels", {})
+    has_enabled_channel = any(
+        ch.get("enabled") for ch in channels.values() if isinstance(ch, dict)
+    )
+    checks.append(has_enabled_channel)
+    # scheduling.auto_enabled
+    scheduling = config.get("scheduling", {})
+    checks.append(scheduling.get("auto_enabled") is not None)
+
+    filled = sum(1 for c in checks if c)
+    return int(filled / len(checks) * 100) if checks else 0
+
+
 @router.get("/progress", response_model=None)
 async def get_settings_progress(
     company_id: str = Query(default=None, description="Company ID (optional, uses default if not provided)"),
@@ -128,18 +169,25 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         global_search_score = 100 if settings else 80
         global_search_complete = settings is not None
 
+        # Contratacao (offer_rules) + Triagem defaults (screening_config_defaults)
+        policy = await repo.get_hiring_policy(company_uuid) if company_uuid else None
+        contratacao_score = calculate_contratacao_score(policy)
+        screening_defaults_score = calculate_screening_defaults_score(policy)
+
         overall = int(
-            (company_team_score * 0.30) +
+            (company_team_score * 0.25) +
             (recruitment_score * 0.25) +
             (communication_score * 0.20) +
-            (goals_planning_score * 0.15) +
-            (global_search_score * 0.10)
+            (goals_planning_score * 0.10) +
+            (global_search_score * 0.10) +
+            (contratacao_score * 0.05) +
+            (screening_defaults_score * 0.05)
         )
 
         # Canonical sidebar IDs (2026-05-26 — consolidação P1 do audit menu Configurações).
         # Plan: ~/.claude/plans/jolly-roaming-moler.md. Sidebar canonical: 7 hubs.
         # Mapping reusa scores granulares ja calculados para evitar dupla contagem.
-        minha_empresa_score = int((company_data_score + departments_score + benefits_score) / 3)
+        minha_empresa_score = int((company_data_score + departments_score + benefits_score + contratacao_score + screening_defaults_score) / 5)
         usuarios_departamentos_score = int((users_score + approvers_score) / 2)
 
         return {
@@ -153,6 +201,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
                 "global-search": global_search_score,
                 # Canonical sidebar IDs (settings-page-enhanced.tsx getDefaultSections)
                 "minha-empresa": minha_empresa_score,
+                "contratacao": contratacao_score,
+                "screening-defaults": screening_defaults_score,
                 # P1-4 (2026-05-26): hub novo "LIA & Personalização" (instrucoes-lia + learning-loops).
                 # TODO: calcular score real baseado em lia_field_toggles + learning_loops state.
                 "lia-personalizacao": 100,
@@ -189,7 +239,9 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
                     "templates": templates_score,
                     "slas": slas_score,
                     "automations": automations_score,
-                    "global_search": global_search_score
+                    "global_search": global_search_score,
+                    "contratacao": contratacao_score,
+                    "screening_defaults": screening_defaults_score
                 }
             }
         }
@@ -207,6 +259,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
                 "global-search": 80,
                 # Canonical sidebar IDs (fallback degradado em error path)
                 "minha-empresa": 60,
+                "contratacao": 0,
+                "screening-defaults": 0,
                 "lia-personalizacao": 100,
                 "recrutamento-lia": 40,
                 "comunicacao-alertas": 60,

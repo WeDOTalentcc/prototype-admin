@@ -33,6 +33,12 @@ class JobVacancy(Base):
     # NULL = legacy (no scope filter). Plan canonical: ~/.claude/plans/jolly-roaming-moler.md
     department_id = Column(UUID(as_uuid=True), ForeignKey("departments.id", ondelete="SET NULL"), nullable=True, index=True)
     location = Column(String(255), nullable=True)
+
+    # Filial / subsidiaria (Fase 2 matching 2026-06-18) -- migration 293.
+    # Propagado pelo intake.py via Department.subsidiary_cnpj/subsidiary_name.
+    subsidiary = Column(String(255), nullable=True)
+    subsidiary_cnpj = Column(String(18), nullable=True)
+    city = Column(String(255), nullable=True)  # Onda 2B: cidade canonica (dataset global IBGE), separada de location/Endereco
     work_model = Column(String(50), nullable=True)  # presencial, híbrido, remoto
     employment_type = Column(String(50), nullable=True)  # CLT, PJ, Temporary
     seniority_level = Column(String(50), nullable=True)  # Júnior, Pleno, Sênior, Especialista
@@ -90,6 +96,9 @@ class JobVacancy(Base):
     manager_email = Column(String(255), nullable=True)
     recruiter = Column(String(255), nullable=True)
     recruiter_email = Column(String(255), nullable=True)
+    # T10 — Stakeholders/envolvidos adicionais (HRBP, líder de área, comitê, etc.)
+    # Format: [{"name": "Ana Silva", "email": "ana@co.com", "role": "hr_bp"}, ...]
+    stakeholders = Column(JSON, default=list, server_default="[]", nullable=False)
     created_by = Column(String(255), nullable=True)  # User who created via LIA
     
     # NEW: Organizational Structure
@@ -257,6 +266,12 @@ class JobVacancy(Base):
     qualification_override = Column(Boolean, default=False)  # True if recruiter manually overrode
     qualification_classified_at = Column(DateTime, nullable=True)
     
+    # Draft recovery (GAP-05-005) — wizard partial state persistence
+    # draft_data: JSONB snapshot from build_draft_snapshot(); cleared on publish.
+    # last_saved_draft_at: timestamp of last auto-save for UI indicator.
+    draft_data = Column(JSON, nullable=True)
+    last_saved_draft_at = Column(DateTime, nullable=True)
+
     # Timestamps
     created_at = Column(DateTime, default=datetime.utcnow, index=True)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

@@ -1,5 +1,8 @@
 "use client"
 
+import { useJobDraftsList } from "@/hooks/jobs/useJobDraftsList"
+import { useCampaignsList } from "@/hooks/jobs/useCampaignsList"
+
 
 import { CURRENCY_SYMBOL } from "@/lib/pricing"
 import { useState, useEffect, useRef, useMemo } from "react"
@@ -89,9 +92,9 @@ const STATUS_FILTERS = [
   { id: 'Cancelada', label: 'Canceladas', color: 'bg-status-error/15 text-status-error dark:bg-status-error/20 dark:text-status-error' },
 ]
 
-function buildNavigationFilters(backendJobs: Job[]) {
+function buildNavigationFilters(backendJobs: Job[], draftsCount = 0, campanhasCount = 0) {
   return [
-    { id: 'todas', label: 'Todas', description: 'Todas as vagas do sistema', count: backendJobs.length },
+    { id: 'todas', label: 'Todas', description: 'Todas as vagas do sistema', count: backendJobs.filter(j => j.status !== 'Arquivada').length },
     { id: 'ativas', label: 'Ativas', description: 'Vagas abertas e em andamento', count: backendJobs.filter(j => j.status === 'Ativa').length },
     { id: 'urgentes', label: 'Urgentes', description: 'Vagas com alta prioridade de preenchimento', count: backendJobs.filter(j => j.urgencyLevel >= 4).length, highlight: true },
     // Phase 4H — ATS filter (vagas importadas do ATS)
@@ -99,6 +102,9 @@ function buildNavigationFilters(backendJobs: Job[]) {
     { id: 'paralisadas', label: 'Paralisadas', description: 'Vagas temporariamente suspensas', count: backendJobs.filter(j => j.status === 'Paralisada').length },
     { id: 'concluidas', label: 'Concluídas', description: 'Vagas com contratação finalizada', count: backendJobs.filter(j => j.status === 'Concluída').length },
     { id: 'canceladas', label: 'Canceladas', description: 'Vagas canceladas ou arquivadas', count: backendJobs.filter(j => j.status === 'Cancelada').length },
+    { id: 'rascunhos', label: 'Rascunhos', description: 'Vagas em rascunho aguardando revisao', count: draftsCount },
+    { id: 'projetos', label: 'Projetos', description: 'Projetos de recrutamento ativos', count: campanhasCount },
+    { id: 'arquivadas', label: 'Arquivadas', description: 'Vagas arquivadas (ocultas da lista principal)', count: backendJobs.filter(j => j.status === 'Arquivada').length },
   ]
 }
 
@@ -138,7 +144,15 @@ export function useJobsFilters({ backendJobs }: UseJobsFiltersOptions): UseJobsF
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<string>('todas')
   const [selectedDaysFilter, setSelectedDaysFilter] = useState<string>('todas')
-  const [activeFilter, setActiveFilter] = useState<string>('todas')
+  const [activeFilter, setActiveFilter] = useState<string>(() => {
+    // Bug-fix 2026-06-10: race condition navigate+filter.
+    // Quando o agente navega E filtra em sequência, o evento lia:apply_table_state
+    // pode disparar antes do listener ser registrado (página ainda montando).
+    // Solução: o apply_table_state também faz router.push com ?filter=X na URL,
+    // e aqui lemos o valor inicial da URL no momento do mount (client-only).
+    if (typeof window === "undefined") return "todas"
+    return new URLSearchParams(window.location.search).get("filter") || "todas"
+  })
   const [booleanSearch, setBooleanSearch] = useState("")
   const [advancedFilters, setAdvancedFilters] = useState<Record<string, string[]>>({ ...EMPTY_ADVANCED_FILTERS })
   const [savedSearches, setSavedSearches] = useState<SavedSearch[]>([])
@@ -153,6 +167,23 @@ export function useJobsFilters({ backendJobs }: UseJobsFiltersOptions): UseJobsF
   const [showTableFiltersPanel, setShowTableFiltersPanel] = useState(false)
 
   const hasRestoredFilters = useRef(false)
+
+  // Fase 2 (ponte in-page): a LIA filtra/busca a lista de Vagas via chat.
+  // useUIAction despacha lia:apply_table_state {surface:'jobs', patch}; aqui
+  // (onde o estado vive) aplicamos aos setters locais. Sem navegar/mutar dados.
+  useEffect(() => {
+    function handleApplyTableState(e: Event) {
+      const { surface, patch } =
+        (e as CustomEvent<{ surface: string; patch: Record<string, unknown> }>)
+          .detail ?? {}
+      if (surface !== "jobs" || !patch) return
+      if (typeof patch.search === "string") setSearchTerm(patch.search)
+      if (typeof patch.filter === "string") setActiveFilter(patch.filter)
+    }
+    window.addEventListener("lia:apply_table_state", handleApplyTableState)
+    return () =>
+      window.removeEventListener("lia:apply_table_state", handleApplyTableState)
+  }, [])
 
   // Restore persisted filters once loaded
   useEffect(() => {
@@ -206,6 +237,10 @@ export function useJobsFilters({ backendJobs }: UseJobsFiltersOptions): UseJobsF
       else if (activeFilter === 'paralisadas') matchesActiveFilter = job.status === 'Paralisada'
       else if (activeFilter === 'concluidas') matchesActiveFilter = job.status === 'Concluída'
       else if (activeFilter === 'canceladas') matchesActiveFilter = job.status === 'Cancelada'
+      else if (activeFilter === 'arquivadas') matchesActiveFilter = job.status === 'Arquivada'
+
+      // Vagas arquivadas ficam ocultas em todos os outros tabs
+      if (activeFilter !== 'arquivadas' && job.status === 'Arquivada') return false
       if (!matchesActiveFilter) return false
 
       // Status filter
@@ -356,7 +391,9 @@ export function useJobsFilters({ backendJobs }: UseJobsFiltersOptions): UseJobsF
   // -------------------------------------------------------------------------
   // Derived: navigation & stage filters (memoized)
   // -------------------------------------------------------------------------
-  const navigationFilters = useMemo(() => buildNavigationFilters(backendJobs), [backendJobs])
+  const { total: draftsCount } = useJobDraftsList()
+  const { total: campanhasCount } = useCampaignsList()
+  const navigationFilters = useMemo(() => buildNavigationFilters(backendJobs, draftsCount, campanhasCount), [backendJobs, draftsCount, campanhasCount])
   const stageFilters = useMemo(() => buildStageFilters(backendJobs), [backendJobs])
 
   // -------------------------------------------------------------------------

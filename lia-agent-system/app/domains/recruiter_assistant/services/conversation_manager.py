@@ -1459,6 +1459,10 @@ class ConversationManager:
                 )
                 self.db.add(candidate_job)
                 
+                from app.shared.services.stage_id_resolver import resolve_recruitment_stage_id
+                vc_stage_id = await resolve_recruitment_stage_id(
+                    self.db, str(conversation.company_id), stage
+                )
                 vacancy_candidate = VacancyCandidate(
                     vacancy_id=conversation.job_vacancy_id,
                     candidate_id=candidate.id,
@@ -1466,6 +1470,7 @@ class ConversationManager:
                     source="whatsapp_lia",
                     origin="whatsapp",
                     stage=stage,
+                    recruitment_stage_id=vc_stage_id,
                     status=status,
                     added_by="whatsapp_lia",
                     notes="Candidatura realizada via WhatsApp",

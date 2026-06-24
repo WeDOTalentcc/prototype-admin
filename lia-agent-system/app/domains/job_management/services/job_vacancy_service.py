@@ -59,6 +59,34 @@ async def infer_manager_email_if_missing(
     return None
 
 
+async def validate_manager_email(
+    manager_email: str | None,
+    company_id: str,
+    db,
+) -> dict:
+    """
+    Validate manager email against ClientUser table.
+    Soft validation: logs but does NOT block vacancy creation.
+    """
+    if not manager_email:
+        return {"valid": False, "source": "no_email"}
+
+    from uuid import UUID as _UUID
+    from app.repositories.client_user_repository import ClientUserRepository
+    repo = ClientUserRepository(db)
+    user = await repo.get_by_email(manager_email, _UUID(company_id))
+
+    if user and user.status == "active":
+        return {"valid": True, "user_name": user.name, "source": "client_user"}
+
+    if user and user.status != "active":
+        logger.warning("Manager email matches inactive user (status=%s)", user.status)
+        return {"valid": False, "source": "inactive_user"}
+
+    logger.info("Manager email not found in client_users — may be external")
+    return {"valid": False, "source": "not_found"}
+
+
 async def calculate_job_deadlines(
     company_id: str,
     pipeline_template_id: str | None = None,
@@ -467,6 +495,13 @@ class JobVacancyService:
             department=state.department
         )
         
+
+        # === MANAGER VALIDATION (B8 Peça 3) ===
+        mgr_validation = await validate_manager_email(manager_email, company_id, db)
+        if mgr_validation["valid"] and mgr_validation.get("user_name"):
+            if not state.manager_name:
+                state.manager_name = mgr_validation["user_name"]
+
         # Auto-fill recruiter from current user if not provided
         recruiter_name = state.recruiter_name
         recruiter_email = state.recruiter_email

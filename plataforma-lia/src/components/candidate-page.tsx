@@ -10,12 +10,13 @@ import { CandidatePreviewProfileTab } from "@/components/candidate-preview/Candi
 import { CandidateActivitiesTab } from "@/components/candidate-preview/CandidateActivitiesTab"
 import { CandidateFilesTab } from "@/components/candidate-preview/CandidateFilesTab"
 import { CandidateOpinionsTab } from "@/components/candidate-preview/CandidateOpinionsTab"
+import { CandidateConsentTab } from "@/components/candidate-preview/CandidateConsentTab"
 import { CandidatePreviewModals } from "@/components/candidate-preview/CandidatePreviewModals"
 import { useCandidatePreviewCore } from "@/components/candidate-preview/useCandidatePreviewCore"
 import { CandidateEditProvider } from "@/components/candidate-profile/CandidateEditContext"
 import { useCandidateFieldUpdate } from "@/hooks/candidates/use-candidate-field-update"
 import { isFeatureEnabled, FF_CANDIDATE_EDIT } from "@/lib/feature-flags"
-import { UserCheck, Activity, FileText, Brain } from "lucide-react"
+import { UserCheck, Activity, FileText, Brain, ChevronLeft, ChevronRight, ShieldCheck } from "lucide-react"
 
 export type CandidatePageMode = "modal" | "page"
 
@@ -39,6 +40,9 @@ interface CandidatePageProps {
   onSchedule?: (candidate: Record<string, unknown>) => void
   onScheduleInterview?: (candidate: Record<string, unknown>) => void
   onOpenTriagemDetails?: (candidate: Record<string, unknown>) => void
+  onNavigateCandidate?: (direction: "prev" | "next") => void
+  hasPrev?: boolean
+  hasNext?: boolean
 }
 
 type CandidateLite = {
@@ -63,6 +67,7 @@ const TABS = [
   { id: "activities" as const, label: "Atividades", icon: Activity },
   { id: "files" as const, label: "Arquivos", icon: FileText },
   { id: "opinions" as const, label: "Pareceres", icon: Brain },
+  { id: "consent" as const, label: "Consentimento", icon: ShieldCheck },
 ]
 
 export function CandidatePage({
@@ -83,6 +88,9 @@ export function CandidatePage({
   onSchedule,
   onScheduleInterview,
   onOpenTriagemDetails,
+  onNavigateCandidate,
+  hasPrev = false,
+  hasNext = false,
 }: CandidatePageProps) {
   const core = useCandidatePreviewCore(candidate)
   const candidateId = (candidate?.id ?? candidate?.candidateId ?? candidate?.candidate_id) as string | undefined
@@ -101,13 +109,13 @@ export function CandidatePage({
   const liaScore = c.liaAnalysis?.score ?? 0
   const getScoreColor = (score: number) => {
     if (score >= 7.5) return "text-status-success"
-    if (score >= 6) return "text-wedo-orange"
+    if (score >= 6) return "text-wedo-orange-text"
     return "text-status-error"
   }
 
   const containerClass =
     mode === "modal"
-      ? "fixed inset-0 bg-lia-bg-primary dark:bg-lia-bg-primary z-30 overflow-hidden flex flex-col"
+      ? "fixed inset-0 bg-lia-bg-primary dark:bg-lia-bg-primary z-[200] overflow-hidden flex flex-col"
       : "min-h-screen bg-lia-bg-primary dark:bg-lia-bg-primary flex flex-col"
 
   return (
@@ -122,9 +130,6 @@ export function CandidatePage({
         <CandidatePageHeader
           _candidate={c as Parameters<typeof CandidatePageHeader>[0]["_candidate"]}
           liaScore={liaScore}
-          showLiaAnalysisModal={core.showLiaAnalysisModal}
-          setShowLiaAnalysisModal={core.setShowLiaAnalysisModal}
-          handleAnalysisTransport={() => { /* TODO F8: bind to currently-open analysis when Edit pattern lands */ }}
           getScoreColor={getScoreColor}
           onClose={handleClose}
           onSendEmail={onSendEmail}
@@ -136,6 +141,31 @@ export function CandidatePage({
           onSendFeedback={onSendFeedback}
           candidate={candidate}
         />
+
+        {onNavigateCandidate && (
+          <div className="flex items-center gap-1 px-4 py-1.5 border-b border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-primary">
+            <button
+              type="button"
+              onClick={() => onNavigateCandidate("prev")}
+              disabled={!hasPrev}
+              className="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium text-lia-text-secondary hover:text-lia-text-primary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              aria-label="Candidato anterior"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              Anterior
+            </button>
+            <button
+              type="button"
+              onClick={() => onNavigateCandidate("next")}
+              disabled={!hasNext}
+              className="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium text-lia-text-secondary hover:text-lia-text-primary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              aria-label="Próximo candidato"
+            >
+              Próximo
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
+        )}
 
         <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary dark:border-lia-border-subtle px-6">
           <div className="flex">
@@ -219,23 +249,25 @@ export function CandidatePage({
 
             {core.activeTab === "opinions" && (
               <CandidateOpinionsTab
-                opinionsSubTab={core.opinionsSubTab}
-                setOpinionsSubTab={core.setOpinionsSubTab as never}
                 opinionsHistory={core.opinionsHistory}
                 isLoadingHistory={core.isLoadingHistory}
-                savedAnalyses={core.savedAnalyses}
-                isLoadingAnalyses={core.isLoadingAnalyses}
+                isErrorHistory={core.isErrorHistory}
+                onRetryHistory={core.retryOpinionsHistory}
                 expandedOpinionId={core.expandedOpinionId as never}
                 setExpandedOpinionId={core.setExpandedOpinionId as never}
-                expandedAnalysisId={core.expandedAnalysisId}
-                setExpandedAnalysisId={core.setExpandedAnalysisId as never}
-                analysisToDelete={core.analysisToDelete as never}
-                setAnalysisToDelete={core.setAnalysisToDelete as never}
                 copiedItemId={core.copiedItemId}
                 handleCopyOpinion={core.handleCopyOpinion as never}
-                handleCopyAnalysis={core.handleCopyAnalysis}
-                cleanTextForCopy={core.cleanTextForCopy}
               />
+            )}
+
+            {core.activeTab === "consent" && candidateId && (
+              <CandidateConsentTab candidateId={candidateId} />
+            )}
+
+            {core.activeTab === "consent" && !candidateId && (
+              <div className="py-8 text-center text-sm text-lia-text-secondary">
+                ID do candidato não disponível para carregar histórico de consentimento.
+              </div>
             )}
               </div>
               {mode === "page" && (
@@ -272,10 +304,6 @@ export function CandidatePage({
           setShowUpdateOpinionAlert={core.setShowUpdateOpinionAlert}
           lastOpinionDate={core.lastOpinionDate}
           generateNewOpinion={core.generateNewOpinion}
-          analysisToDelete={core.analysisToDelete as never}
-          setAnalysisToDelete={core.setAnalysisToDelete as never}
-          isDeletingAnalysis={core.isDeletingAnalysis}
-          handleDeleteAnalysis={core.handleDeleteAnalysis}
           showInsufficientDataModal={core.showInsufficientDataModal}
           setShowInsufficientDataModal={core.setShowInsufficientDataModal}
           dataRequirements={core.dataRequirements}

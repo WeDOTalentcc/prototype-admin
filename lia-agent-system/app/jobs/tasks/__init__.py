@@ -21,6 +21,7 @@ from app.jobs.tasks.communication import (  # noqa: F401
     send_bulk_email_task,
     send_daily_briefing_task,
     send_weekly_digest_task,
+    process_queued_messages_task,
 )
 from app.jobs.tasks.briefing_dispatch import (  # noqa: F401
     dispatch_daily_briefings,
@@ -107,6 +108,7 @@ __all__ = [
     "send_bulk_email_task",
     "send_daily_briefing_task",
     "send_weekly_digest_task",
+    "process_queued_messages_task",
     # briefing dispatch (frequency-respecting — Wave 3 Camada 3 Item 2)
     "dispatch_daily_briefings",
     "dispatch_weekly_briefings",
@@ -152,3 +154,7 @@ __all__ = [
     "dispatch_agent_deployment_task",
     "scan_agent_deployment_cron_schedules",
 ]
+
+from app.jobs.tasks.expurgo_gravacoes import (  # noqa: F401  # Phase 3b LGPD Art. 16
+    expurgo_gravacoes_audio,
+)

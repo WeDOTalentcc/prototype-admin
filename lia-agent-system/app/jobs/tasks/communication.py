@@ -225,3 +225,47 @@ def send_weekly_digest_task(self) -> dict:
             _emit_dlq_push("digest.send_weekly", exc)
         raise self.retry(exc=exc, countdown=300)
 
+
+
+@celery_app.task(base=TenantAwareTask, name="communication.process_queued_messages", bind=True, max_retries=2)
+def process_queued_messages_task(self) -> dict:
+    """
+    Processa mensagens na fila QUEUED que estavam fora da janela de envio.
+
+    GAP-07-001: esta task NÃO tinha caller no Celery Beat — emails QUEUED
+    ficavam presos indefinidamente. Agora roda a cada 5 min via beat_schedule.
+
+    Respeita sending hours per-tenant (LGPD Art. 7). Fora da janela global,
+    retorna early sem processar. Dentro da janela, re-checa per-tenant.
+    """
+    async def _run() -> dict:
+        from app.core.database import AsyncSessionLocal
+        from app.domains.communication.services.communication_service import (
+            get_communication_service,
+        )
+
+        svc = get_communication_service()
+        async with AsyncSessionLocal() as db:
+            return await svc.process_queued_messages(db=db)
+
+    span = _celery_span("celery.task_start", "communication.process_queued_messages")
+
+    try:
+        result = asyncio.run(_run())
+        _finish_celery_success(span, "communication.process_queued_messages")
+        processed = result.get("processed", 0)
+        if processed > 0:
+            logger.info(
+                "[Celery] communication.process_queued_messages: processed=%d total_queued=%d skipped_tenant=%d",
+                processed,
+                result.get("total_queued", 0),
+                result.get("skipped_tenant_hours", 0),
+            )
+        return result
+    except Exception as exc:
+        _finish_celery_failure(span, "communication.process_queued_messages", exc)
+        logger.error("communication.process_queued_messages falhou (retry %d): %s", self.request.retries, exc)
+        _emit_celery_retry("communication.process_queued_messages", exc, self.request.retries, self.max_retries, 60)
+        if self.request.retries >= self.max_retries:
+            _emit_dlq_push("communication.process_queued_messages", exc)
+        raise self.retry(exc=exc, countdown=60)

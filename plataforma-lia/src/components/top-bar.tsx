@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import { useState, useCallback } from "react"
 import { useAuth } from "@/contexts/auth-context"
 import { useAuthenticatedUserId } from "@/hooks/shared/use-authenticated-user-id"

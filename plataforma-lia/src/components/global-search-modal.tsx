@@ -1,30 +1,17 @@
 "use client"
 
-import { useState, useEffect, useRef } from"react"
-import { Button } from"@/components/ui/button"
-import { Card, CardContent } from"@/components/ui/card"
-import { Chip } from "@/components/ui/chip"
+import { useState, useEffect, useRef, useCallback } from "react"
+import { useRouter } from "next/navigation"
+import { usePathname } from "next/navigation"
+import { useLocale } from "next-intl"
+import { navigationCatalog } from "@/lib/navigation/navigation-commands"
+import { useCommandCatalog } from "@/hooks/lia/use-command-catalog"
+import { cn } from "@/lib/utils"
 import {
-  Search, X, Filter, User, Briefcase, MessageSquare, BarChart3,
-  FileText, Clock, Star, ChevronRight, Zap, Calendar, MapPin,
-  Mail, Phone, BookOpen, Settings, ArrowRight, Brain
-} from"lucide-react"
-
-interface SearchResult {
-  id: string
-  type:"candidate" |"job" |"conversation" |"document" |"automation" |"setting"
-  title: string
-  subtitle: string
-  description: string
-  metadata?: {
-    status?: string
-    date?: string
-    location?: string
-    score?: number
-    priority?:"high" |"medium" |"low"
-  }
-  actions?: Array<{ label: string; action: () => void }>
-}
+  Search, X, User, Briefcase, MessageSquare,
+  Compass, Sparkles, ArrowUpRight, Loader2, Brain,
+  Settings, Zap, FolderOpen,
+} from "lucide-react"
 
 interface GlobalSearchModalProps {
   isOpen: boolean
@@ -32,402 +19,342 @@ interface GlobalSearchModalProps {
   onNavigate?: (page: string, id?: string) => void
 }
 
-const mockResults: SearchResult[] = [
-  {
-    id:"1",
-    type:"candidate",
-    title:"João Silva",
-    subtitle:"Frontend Developer",
-    description:"React, TypeScript, 5+ anos de experiência",
-    metadata: {
-      status:"Entrevista agendada",
-      location:"São Paulo, SP",
-      score: 95
-    }
-  },
-  {
-    id:"2",
-    type:"candidate",
-    title:"Maria Santos",
-    subtitle:"UX Designer",
-    description:"Figma, Design Systems, Portfolio completo",
-    metadata: {
-      status:"Triagem aprovada",
-      location:"Rio de Janeiro, RJ",
-      score: 88
-    }
-  },
-  {
-    id:"3",
-    type:"job",
-    title:"Desenvolvedor Full Stack Sênior",
-    subtitle:"Vaga #FS-2024-001",
-    description:"React, Node.js, TypeScript - Regime CLT",
-    metadata: {
-      status:"Ativa",
-      date:"Publicada há 2 dias"
-    }
-  },
-  {
-    id:"4",
-    type:"conversation",
-    title:"Análise de CVs React",
-    subtitle:"Chat com LIA - Hoje",
-    description:"Discussão sobre candidatos para vaga de Frontend",
-    metadata: {
-      date:"14:30"
-    }
-  },
-  {
-    id:"5",
-    type:"document",
-    title:"Relatório de Diversidade Q3",
-    subtitle:"Indicadores",
-    description:"Métricas de contratação e análise demográfica",
-    metadata: {
-      date:"Semana passada"
-    }
-  },
-  {
-    id:"6",
-    type:"automation",
-    title:"Triagem Automática React",
-    subtitle:"Automação ativa",
-    description:"Filtra candidatos com experiência em React/TypeScript",
-    metadata: {
-      status:"Ativa",
-      priority:"high"
-    }
-  }
-]
+interface SearchHit {
+  id: string
+  type: "candidate" | "job"
+  title: string
+  subtitle: string
+}
 
-const aiSuggestionsByCategory: Record<string, string[]> = {
-  all: ["Candidatos React com 5+ anos","Vagas abertas em São Paulo","Últimas conversas sobre UX Designer","Relatórios de performance mensal","Automações de follow-up ativas","Configurações de notificação"
-  ],
-  candidate: ["Candidatos React sênior","Designers com experiência em Figma","Ativos localizados em São Paulo","Nota LIA acima de 80","Contratados nos últimos 30 dias","Com entrevista agendada","Backend Python ou Node.js","Disponíveis para início imediato"
-  ],
-  job: ["Vagas abertas com urgência","Posições de Tech em São Paulo","Publicadas esta semana","Com mais de 10 candidatos","Próximas do deadline","Sem candidatos ativos","Vagas remotas disponíveis","Posições de liderança"
-  ],
-  conversation: ["Conversas sobre triagem de candidatos","Análises de perfil recentes","Discussões sobre vagas específicas","Relatórios solicitados à LIA","Conversas de hoje","Feedback de entrevistas","Comparações de candidatos","Sugestões de sourcing"
-  ],
-  document: ["Relatórios de diversidade","Performance mensal de recrutamento","Análises de funil por vaga","Templates de email ativos","Métricas de time-to-hire","Relatórios de conversão","Análises de custo por contratação","Benchmarks de mercado"
-  ],
-  automation: ["Triagens automáticas ativas","Follow-ups configurados","Alertas de candidatos ideais","Notificações de deadline","Sync automático com ATS","Relatórios programados","Lembretes de entrevista","Workflows de onboarding"
-  ]
+interface Section {
+  id: string
+  label: string
+  items: Item[]
+}
+
+interface Item {
+  id: string
+  label: string
+  sublabel?: string
+  icon: React.ElementType
+  iconColor?: string
+  onSelect: () => void
+}
+
+const ICON_COLORS: Record<string, string> = {
+  nav:       "text-wedo-cyan-text",
+  action:    "text-wedo-orange-text",
+  candidate: "text-blue-500",
+  job:       "text-emerald-600",
 }
 
 export function GlobalSearchModal({ isOpen, onClose, onNavigate }: GlobalSearchModalProps) {
   const [query, setQuery] = useState("")
-  const [results, setResults] = useState<SearchResult[]>([])
-  const [isLoading, setIsLoading] = useState(false)
-  const [selectedType, setSelectedType] = useState<string>("all")
-  const [showAISuggestions, setShowAISuggestions] = useState(true)
+  const [hits, setHits] = useState<SearchHit[]>([])
+  const [isSearching, setIsSearching] = useState(false)
+  const [activeIdx, setActiveIdx] = useState(0)
+  const router = useRouter()
+  const locale = useLocale()
+  const pathname = usePathname()
   const inputRef = useRef<HTMLInputElement>(null)
+  const listRef = useRef<HTMLDivElement>(null)
+  const { data: actionCatalog } = useCommandCatalog()
+  const [contextualHints, setContextualHints] = useState<Item[]>([])
 
-  const searchTypes = [
-    { id:"all", label:"Todos", icon: Search, count: results.length },
-    { id:"candidate", label:"Candidatos", icon: User, count: results.filter(r => r.type ==="candidate").length },
-    { id:"job", label:"Vagas", icon: Briefcase, count: results.filter(r => r.type ==="job").length },
-    { id:"conversation", label:"Conversas", icon: MessageSquare, count: results.filter(r => r.type ==="conversation").length },
-    { id:"document", label:"Documentos", icon: FileText, count: results.filter(r => r.type ==="document").length },
-    { id:"automation", label:"Automações", icon: Zap, count: results.filter(r => r.type ==="automation").length }
-  ]
+  // ── Nav + action items (static, always shown when no query) ──────────
+  const navItems: Item[] = navigationCatalog(locale).map((n) => ({
+    id: `nav-${n.page}`,
+    label: `Ir para ${n.label}`,
+    icon: Compass,
+    iconColor: ICON_COLORS.nav,
+    onSelect: () => { router.push(n.url); onClose() },
+  }))
 
-  // Simulate search with debounce
+  const actionItems: Item[] = (actionCatalog ?? []).slice(0, 8).map((a) => ({
+    id: `action-${a.intent}`,
+    label: a.label,
+    sublabel: a.requires_confirmation ? "Confirma na tela" : "Via IA",
+    icon: Sparkles,
+    iconColor: ICON_COLORS.action,
+    onSelect: () => {
+      window.dispatchEvent(new CustomEvent("lia:prefill-message", { detail: { message: a.label } }))
+      onClose()
+    },
+  }))
+
+  // ── LIA Contextual Hints (load on open, by page context) ─────────────
   useEffect(() => {
-    if (!query.trim()) {
-      setResults([])
-      setShowAISuggestions(true)
-      return
+    if (!isOpen) return
+    const pageContext = pathname?.split("/").filter(Boolean).slice(1).join("/") ?? ""
+    const abort = new AbortController()
+
+    fetch(
+      `/api/backend-proxy/search/contextual-hints?page_context=${encodeURIComponent(pageContext)}&limit=5`,
+      { signal: abort.signal }
+    )
+      .then(r => (r.ok ? r.json() : null))
+      .then(data => {
+        if (!data?.hints) return
+        setContextualHints(
+          data.hints.map((h: { label: string; target: string; context?: string }) => ({
+            id: `hint-${h.label}`,
+            label: h.label,
+            sublabel: h.context,
+            icon: Brain,
+            iconColor: "text-wedo-cyan",
+            onSelect: () => { router.push(h.target); onClose() },
+          }))
+        )
+      })
+      .catch(() => {}) // timeout ou erro: silencioso
+
+    const timer = setTimeout(() => abort.abort(), 2000)
+    return () => { clearTimeout(timer); abort.abort() }
+  }, [isOpen, pathname, router, onClose])
+
+  // ── Real search ───────────────────────────────────────────────────────
+  useEffect(() => {
+    const q = query.trim()
+    if (!q) { setHits([]); return }
+
+    const abort = new AbortController()
+    setIsSearching(true)
+
+    const run = async () => {
+      try {
+        const [jobsRes, candidatesRes] = await Promise.allSettled([
+          fetch(`/api/backend-proxy/job-vacancies/search?query=${encodeURIComponent(q)}&page=1&page_size=5`, { signal: abort.signal }),
+          fetch(`/api/backend-proxy/candidates/search/local`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ query: q, page: 1, page_size: 5 }),
+            signal: abort.signal,
+          }),
+        ])
+
+        const results: SearchHit[] = []
+
+        if (jobsRes.status === "fulfilled" && jobsRes.value.ok) {
+          const data = await jobsRes.value.json()
+          const jobs = data?.data ?? data?.results ?? data?.items ?? []
+          for (const j of jobs.slice(0, 5)) {
+            results.push({
+              id: `job-${j.id}`,
+              type: "job",
+              title: j.title ?? j.name ?? "Vaga",
+              subtitle: j.status ?? j.department ?? "",
+            })
+          }
+        }
+
+        if (candidatesRes.status === "fulfilled" && candidatesRes.value.ok) {
+          const data = await candidatesRes.value.json()
+          const candidates = data?.data ?? data?.results ?? data?.candidates ?? []
+          for (const c of candidates.slice(0, 5)) {
+            results.push({
+              id: `candidate-${c.id}`,
+              type: "candidate",
+              title: c.name ?? c.full_name ?? "Candidato",
+              subtitle: c.current_position ?? c.email ?? "",
+            })
+          }
+        }
+
+        setHits(results)
+      } catch {
+        // abort ou erro — silencioso
+      } finally {
+        setIsSearching(false)
+      }
     }
 
-    setShowAISuggestions(false)
-    setIsLoading(true)
+    const timer = setTimeout(run, 300)
+    return () => { clearTimeout(timer); abort.abort() }
+  }, [query])
 
-    const searchTimeout = setTimeout(() => {
-      // Simulate API call
-      const filteredResults = mockResults.filter(result => {
-        const matchesQuery =
-          result.title.toLowerCase().includes(query.toLowerCase()) ||
-          result.subtitle.toLowerCase().includes(query.toLowerCase()) ||
-          result.description.toLowerCase().includes(query.toLowerCase())
+  // ── Build sections ────────────────────────────────────────────────────
+  const sections: Section[] = query.trim()
+    ? [
+        hits.filter(h => h.type === "job").length > 0 && {
+          id: "jobs",
+          label: "VAGAS",
+          items: hits.filter(h => h.type === "job").map(h => ({
+            id: h.id,
+            label: h.title,
+            sublabel: h.subtitle,
+            icon: Briefcase,
+            iconColor: ICON_COLORS.job,
+            onSelect: () => { onNavigate?.("Vagas", h.id.replace("job-", "")); onClose() },
+          })),
+        },
+        hits.filter(h => h.type === "candidate").length > 0 && {
+          id: "candidates",
+          label: "CANDIDATOS",
+          items: hits.filter(h => h.type === "candidate").map(h => ({
+            id: h.id,
+            label: h.title,
+            sublabel: h.subtitle,
+            icon: User,
+            iconColor: ICON_COLORS.candidate,
+            onSelect: () => { onNavigate?.("Funil de Talentos", h.id.replace("candidate-", "")); onClose() },
+          })),
+        },
+        navItems.filter(n => n.label.toLowerCase().includes(query.toLowerCase())).length > 0 && {
+          id: "nav-filtered",
+          label: "NAVEGAÇÃO",
+          items: navItems.filter(n => n.label.toLowerCase().includes(query.toLowerCase())).slice(0, 5),
+        },
+        actionItems.filter(a => a.label.toLowerCase().includes(query.toLowerCase())).length > 0 && {
+          id: "actions-filtered",
+          label: "AÇÕES",
+          items: actionItems.filter(a => a.label.toLowerCase().includes(query.toLowerCase())).slice(0, 5),
+        },
+      ].filter(Boolean) as Section[]
+    : [
+        contextualHints.length > 0
+          ? { id: "lia-hints", label: "SUGESTÕES DE IA", items: contextualHints }
+          : null,
+        { id: "nav", label: "NAVEGAÇÃO", items: navItems },
+        actionItems.length > 0 ? { id: "actions", label: "AÇÕES RÁPIDAS", items: actionItems } : null,
+      ].filter(Boolean) as Section[]
 
-        const matchesType = selectedType ==="all" || result.type === selectedType
+  const allItems = sections.flatMap(s => s.items)
 
-        return matchesQuery && matchesType
-      })
+  // ── Keyboard navigation ───────────────────────────────────────────────
+  useEffect(() => { setActiveIdx(0) }, [query, hits])
 
-      setResults(filteredResults)
-      setIsLoading(false)
-    }, 300)
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === "ArrowDown") {
+      e.preventDefault()
+      setActiveIdx(i => Math.min(i + 1, allItems.length - 1))
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault()
+      setActiveIdx(i => Math.max(i - 1, 0))
+    } else if (e.key === "Tab") {
+      e.preventDefault()
+      // Jump to next section
+      let cumIdx = 0
+      for (const s of sections) {
+        if (cumIdx + s.items.length > activeIdx) {
+          const nextSectionStart = cumIdx + s.items.length
+          setActiveIdx(nextSectionStart < allItems.length ? nextSectionStart : 0)
+          break
+        }
+        cumIdx += s.items.length
+      }
+    } else if (e.key === "Enter") {
+      e.preventDefault()
+      allItems[activeIdx]?.onSelect()
+    } else if (e.key === "Escape") {
+      onClose()
+    }
+  }, [allItems, activeIdx, sections, onClose])
 
-    return () => clearTimeout(searchTimeout)
-  }, [query, selectedType])
-
-  // Focus input when modal opens
+  // ── Scroll active item into view ──────────────────────────────────────
   useEffect(() => {
-    if (isOpen && inputRef.current) {
-      inputRef.current.focus()
+    const el = listRef.current?.querySelector(`[data-idx="${activeIdx}"]`)
+    el?.scrollIntoView({ block: "nearest" })
+  }, [activeIdx])
+
+  // ── Focus on open ─────────────────────────────────────────────────────
+  useEffect(() => {
+    if (isOpen) {
+      inputRef.current?.focus()
+      setQuery("")
+      setHits([])
+      setActiveIdx(0)
     }
   }, [isOpen])
 
-  const handleResultClick = (result: SearchResult) => {
-    if (onNavigate) {
-      switch (result.type) {
-        case"candidate":
-          onNavigate("Candidatos", result.id)
-          break
-        case"job":
-          onNavigate("Vagas", result.id)
-          break
-        case"conversation":
-          onNavigate("Chat com LIA", result.id)
-          break
-        case"document":
-          onNavigate("Indicadores", result.id)
-          break
-        case"automation":
-          onNavigate("Configurações", result.id)
-          break
-        default:
-          break
-      }
-    }
-    onClose()
-  }
-
-  const handleSuggestionClick = (suggestion: string) => {
-    setQuery(suggestion)
-  }
-
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case"candidate": return User
-      case"job": return Briefcase
-      case"conversation": return MessageSquare
-      case"document": return FileText
-      case"automation": return Zap
-      case"setting": return Settings
-      default: return Search
-    }
-  }
-
-  const getStatusColor = (status?: string, type?: string) => {
-    if (!status) return"bg-lia-bg-tertiary text-lia-text-primary"
-
-    if (type ==="candidate") {
-      switch (status) {
-        case"Entrevista agendada": return""
-        case"Triagem aprovada": return""
-        case"Processo finalizado": return"bg-lia-bg-tertiary text-lia-text-primary"
-        default: return""
-      }
-    }
-
-    if (type ==="job") {
-      return status ==="Ativa" ?"" :"bg-lia-bg-tertiary text-lia-text-primary"
-    }
-
-    return"bg-lia-bg-tertiary text-lia-text-primary"
-  }
-
   if (!isOpen) return null
 
-  return (
-    <div className="fixed inset-0 bg-lia-overlay z-50 flex items-start justify-center pt-16">
-      <div 
-        className="bg-lia-bg-primary dark:bg-lia-bg-primary rounded-xl w-full max-w-2xl max-h-[70vh] overflow-hidden border border-lia-border-subtle dark:border-lia-border-subtle"
-       
-      >
-        {/* Header */}
-        <div className="p-3 bg-lia-bg-primary dark:bg-lia-bg-primary rounded-t-xl">
-          <div className="flex items-center gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-lia-text-secondary" />
-              <input
-                ref={inputRef}
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Buscar candidatos, vagas, conversas..."
-                className="w-full pl-9 pr-4 py-2.5 text-sm border border-lia-border-subtle dark:border-lia-border-subtle rounded-lg bg-lia-bg-secondary dark:bg-lia-bg-secondary text-lia-text-primary focus:outline-none focus:ring-1 focus:ring-lia-border-default dark:focus:ring-lia-border-medium focus:border-lia-border-default dark:focus:border-lia-border-medium placeholder:text-lia-text-secondary"
-               
-              />
-              {isLoading && (
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                  <div className="w-3.5 h-3.5 border-2 border-lia-border-medium border-t-transparent rounded-full animate-spin motion-reduce:animate-none"></div>
-                </div>
-              )}
-            </div>
-            <Button variant="ghost" size="sm" onClick={onClose} className="h-8 w-8 p-0 text-lia-text-secondary hover:text-lia-text-secondary">
-              <X className="w-4 h-4" />
-            </Button>
-          </div>
+  let globalIdx = 0
 
-          {/* Filter Tabs */}
-          <div className="flex items-center gap-1.5 mt-3 overflow-x-auto">
-            {searchTypes.map((type) => (
-              <button
-                key={type.id}
-                onClick={() => setSelectedType(type.id)}
-                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs whitespace-nowrap transition-colors motion-reduce:transition-none ${
- selectedType === type.id
-                    ? 'bg-lia-btn-primary-bg text-lia-btn-primary-text'
-                    : 'hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover text-lia-text-secondary'
-                }`}
-              >
-                <type.icon className="w-3.5 h-3.5" />
-                {type.label}
-                {type.count > 0 && (
-                  <span className="text-micro px-1 py-0.5 rounded-full bg-lia-interactive-active dark:bg-lia-bg-elevated text-lia-text-secondary">
-                    {type.count}
-                  </span>
-                )}
-              </button>
-            ))}
-          </div>
+  return (
+    <div className="fixed inset-0 bg-lia-overlay z-50 flex items-start justify-center pt-16" onClick={onClose}>
+      <div
+        className="bg-lia-bg-primary rounded-xl w-full max-w-2xl max-h-[70vh] overflow-hidden border border-lia-border-subtle shadow-2xl flex flex-col"
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Input */}
+        <div className="flex items-center gap-3 px-4 py-3.5 border-b border-lia-border-subtle">
+          <Search className="w-4 h-4 text-lia-text-secondary flex-shrink-0" />
+          <input
+            ref={inputRef}
+            type="text"
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Pesquisar ou executar um comando..."
+            className="flex-1 bg-transparent text-sm text-lia-text-primary placeholder:text-lia-text-tertiary outline-none"
+          />
+          {isSearching
+            ? <Loader2 className="w-4 h-4 text-lia-text-secondary animate-spin flex-shrink-0" />
+            : query
+              ? <button onClick={() => setQuery("")} className="text-lia-text-secondary hover:text-lia-text-primary"><X className="w-4 h-4" /></button>
+              : <kbd className="text-[10px] text-lia-text-muted font-mono bg-lia-bg-secondary px-1.5 py-0.5 rounded border border-lia-border-subtle">Esc</kbd>
+          }
         </div>
 
-        {/* Content */}
-        <div className="max-h-[340px] overflow-y-auto bg-lia-bg-secondary dark:bg-lia-bg-primary/50">
-          {/* AI Suggestions */}
-          {showAISuggestions && (
-            <div className="p-3">
-              <div className="flex items-center gap-2 mb-2">
-                <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
-                <span className="text-xs font-medium text-lia-text-primary">
-                  Sugestões da LIA {selectedType !=="all" && `para ${searchTypes.find(t => t.id === selectedType)?.label}`}
-                </span>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-1">
-                {(aiSuggestionsByCategory[selectedType] || aiSuggestionsByCategory.all).map((suggestion, index) => (
-                  <button
-                    key={suggestion}
-                    onClick={() => handleSuggestionClick(suggestion)}
-                    className="flex items-center gap-2 p-2 text-left text-xs text-lia-text-secondary hover:bg-lia-bg-primary dark:hover:bg-lia-btn-primary-hover rounded-lg transition-colors motion-reduce:transition-none border border-transparent hover:border-lia-border-subtle dark:hover:border-lia-border-strong"
-                  >
-                    <ArrowRight className="w-3 h-3 opacity-40" />
-                    {suggestion}
-                  </button>
-                ))}
-              </div>
+        {/* Scrollable list */}
+        <div ref={listRef} className="flex-1 overflow-y-auto">
+          {query.trim() && !isSearching && hits.length === 0 &&
+            sections.filter(s => s.id.includes("filtered")).length === 0 && (
+            <div className="py-12 text-center">
+              <p className="text-sm text-lia-text-secondary">Nenhum resultado para &quot;{query}&quot;</p>
             </div>
           )}
 
-          {/* Search Results */}
-          {results.length > 0 && (
-            <div className="p-4 space-y-2">
-              {results.map((result) => {
-                const IconComponent = getTypeIcon(result.type)
+          {sections.map((section) => (
+            <div key={section.id}>
+              <div className="px-4 pt-4 pb-1">
+                <span className="text-[10px] font-semibold text-lia-text-tertiary tracking-widest">
+                  {section.label}
+                </span>
+              </div>
+              {section.items.map((item) => {
+                const idx = globalIdx++
+                const isActive = idx === activeIdx
+                const Icon = item.icon
                 return (
-                  <Card
-                    key={result.id}
-                    className="hover:transition-shadow cursor-pointer"
-                    onClick={() => handleResultClick(result)}
+                  <button
+                    key={item.id}
+                    data-idx={idx}
+                    onClick={item.onSelect}
+                    onMouseEnter={() => setActiveIdx(idx)}
+                    className={cn(
+                      "w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors",
+                      isActive
+                        ? "bg-lia-bg-secondary border-l-2 border-l-wedo-cyan"
+                        : "border-l-2 border-l-transparent hover:bg-lia-bg-secondary"
+                    )}
                   >
-                    <CardContent className="p-4">
-                      <div className="flex items-start gap-3">
-                        <div className="w-8 h-8 bg-lia-bg-tertiary dark:bg-lia-bg-elevated rounded-lg flex items-center justify-center flex-shrink-0">
-                          <IconComponent className="w-4 h-4 text-lia-text-secondary" />
-                        </div>
-
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <h3 className="font-medium text-lia-text-primary truncate">
-                              {result.title}
-                            </h3>
-                            {result.metadata?.score && (
-                              <Chip density="relaxed" variant="neutral" >
-                                {result.metadata.score}% match
-                              </Chip>
-                            )}
-                          </div>
-
-                          <p className="text-sm text-lia-text-secondary mb-1">
-                            {result.subtitle}
-                          </p>
-
-                          <p className="text-xs text-lia-text-primary mb-2">
-                            {result.description}
-                          </p>
-
-                          <div className="flex items-center gap-2 flex-wrap">
-                            {result.metadata?.status && (
-                              <Chip
-                                variant="neutral" muted
-                                className={`text-xs ${getStatusColor(result.metadata.status, result.type)}`}
-                              >
-                                {result.metadata.status}
-                              </Chip>
-                            )}
-
-                            {result.metadata?.location && (
-                              <div className="flex items-center gap-1 text-xs text-lia-text-primary">
-                                <MapPin className="w-3 h-3" />
-                                {result.metadata.location}
-                              </div>
-                            )}
-
-                            {result.metadata?.date && (
-                              <div className="flex items-center gap-1 text-xs text-lia-text-primary">
-                                <Clock className="w-3 h-3" />
-                                {result.metadata.date}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                        <ChevronRight className="w-4 h-4 text-lia-text-secondary flex-shrink-0" />
-                      </div>
-                    </CardContent>
-                  </Card>
+                    <Icon className={cn("w-4 h-4 flex-shrink-0", item.iconColor ?? "text-lia-text-secondary")} />
+                    <div className="flex-1 min-w-0">
+                      <span className="text-sm text-lia-text-primary truncate block">{item.label}</span>
+                      {item.sublabel && (
+                        <span className="text-xs text-lia-text-tertiary truncate block">{item.sublabel}</span>
+                      )}
+                    </div>
+                    <ArrowUpRight className={cn("w-3.5 h-3.5 flex-shrink-0 transition-opacity", isActive ? "text-lia-text-secondary opacity-100" : "opacity-0")} />
+                  </button>
                 )
               })}
             </div>
-          )}
-
-          {/* No Results */}
-          {query && !isLoading && results.length === 0 && (
-            <div className="p-8 text-center">
-              <Search className="w-12 h-12 text-lia-text-secondary mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-lia-text-primary mb-2">
-                Nenhum resultado encontrado
-              </h3>
-              <p className="text-sm text-lia-text-secondary mb-4">
-                Tente ajustar sua busca ou usar termos diferentes
-              </p>
-              <Button variant="outline" size="sm" onClick={() => setQuery("")}>
-                Limpar busca
-              </Button>
-            </div>
-          )}
-
-          {/* Empty State */}
-          {!query && !showAISuggestions && (
-            <div className="p-8 text-center">
-              <Search className="w-12 h-12 text-lia-text-secondary mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-lia-text-primary mb-2">
-                Busca Global
-              </h3>
-              <p className="text-sm text-lia-text-secondary">
-                Digite para buscar em candidatos, vagas, conversas e muito mais
-              </p>
-            </div>
-          )}
+          ))}
         </div>
 
         {/* Footer */}
-        <div className="px-3 py-2 bg-lia-bg-primary dark:bg-lia-bg-primary rounded-b-xl">
-          <div className="flex items-center justify-between text-xs text-lia-text-secondary">
-            <div className="flex items-center gap-3">
-              <span>↑↓ navegar</span>
-              <span>Enter selecionar</span>
-              <span>Esc fechar</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Brain className="w-3 h-3 text-wedo-cyan" />
-              <span className="text-lia-text-secondary">LIA</span>
-            </div>
+        <div className="px-4 py-2 border-t border-lia-border-subtle bg-lia-bg-primary flex items-center justify-between text-[11px] text-lia-text-tertiary">
+          <div className="flex items-center gap-4">
+            <span><kbd className="font-mono bg-lia-bg-secondary px-1 py-0.5 rounded border border-lia-border-subtle">↵</kbd> selecionar</span>
+            <span><kbd className="font-mono bg-lia-bg-secondary px-1 py-0.5 rounded border border-lia-border-subtle">↑↓</kbd> navegar</span>
+            <span><kbd className="font-mono bg-lia-bg-secondary px-1 py-0.5 rounded border border-lia-border-subtle">Tab</kbd> pular seção</span>
+            <span><kbd className="font-mono bg-lia-bg-secondary px-1 py-0.5 rounded border border-lia-border-subtle">Esc</kbd> fechar</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <Brain className="w-3 h-3 text-wedo-cyan" />
+            <span>IA</span>
           </div>
         </div>
       </div>

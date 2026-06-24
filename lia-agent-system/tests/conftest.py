@@ -1,6 +1,9 @@
 import pytest
 from unittest.mock import AsyncMock, MagicMock
 
+# Re-export mock HTTP fixtures so they are available globally (GAP-08-006)
+from tests.fixtures.mock_http import MockResponse, mock_http_client  # noqa: F401
+
 try:
     from lia_agents_core.react_loop import ReActConfig, ReActLoop, ToolDefinition
     from lia_agents_core.observability import ReActObserver

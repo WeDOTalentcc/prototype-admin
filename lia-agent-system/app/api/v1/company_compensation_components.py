@@ -4,6 +4,7 @@ Espelha company_benefits.py. company_id SEMPRE do JWT (require_company_id_strict
 GET /active retorna o catalogo com flag matches_vaga (compativeis pre-marcados na vaga).
 POST faz dedup case-insensitive (promote-back vaga->catalogo) + audit + history.
 """
+from app.middleware.request_id import get_correlation_id
 import logging
 import uuid as _uuid_module
 from datetime import date, datetime
@@ -19,6 +20,7 @@ from app.domains.company.repositories.compensation_component_repository import (
     CompensationComponentRepository,
 )
 from app.shared.security.require_company_id import require_company_id_strict_match
+from app.shared.errors import LIAError
 from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
@@ -177,7 +179,7 @@ async def _audit(current_user, company_id, target_id, operation, name):
     try:
         from app.shared.compliance.audit_service import AuditService as _AS
         await _AS().log_action(
-            trace_id=str(_uuid_module.uuid4()),
+            trace_id=get_correlation_id(),
             company_id=str(company_id),
             action_type="compensation_components_update",
             actor=getattr(current_user, "email", None) or getattr(current_user, "id", "unknown"),
@@ -225,7 +227,7 @@ async def list_active_components(
         raise
     except Exception as e:
         logger.error(f"Error listing active compensation components: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/", response_model=list[CompensationComponentResponse])
@@ -244,7 +246,7 @@ async def list_components(
         return [_to_response(c) for c in comps]
     except Exception as e:
         logger.error(f"Error listing compensation components: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/", response_model=CompensationComponentResponse)
@@ -274,7 +276,7 @@ async def create_component(
     except Exception as e:
         await db.rollback()
         logger.error(f"Error creating compensation component: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/{component_id}", response_model=CompensationComponentResponse)
@@ -317,7 +319,7 @@ async def update_component(
     except Exception as e:
         await db.rollback()
         logger.error(f"Error updating compensation component: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.delete("/{component_id}", response_model=None)
@@ -342,7 +344,7 @@ async def delete_component(
     except Exception as e:
         await db.rollback()
         logger.error(f"Error deleting compensation component: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/seed-defaults", response_model=None)
@@ -360,4 +362,4 @@ async def seed_defaults(
     except Exception as e:
         await db.rollback()
         logger.error(f"Error seeding compensation defaults: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")

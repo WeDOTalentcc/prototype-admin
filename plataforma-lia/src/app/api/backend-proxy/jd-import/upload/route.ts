@@ -6,16 +6,7 @@ import { getAuthHeadersForForm } from '@/lib/api/auth-headers'
 
 const BACKEND_URL = process.env.BACKEND_URL || "http://127.0.0.1:8001"
 
-// SSOT compartilhado com o backend (Audit M-12 / Task #858).
-// `UPLOAD_JD_MAX_BYTES` é a mesma variável lida em
-// `lia-agent-system/app/shared/upload_limits.py`. Default: 10 MiB.
-function resolveMaxFileSize(): number {
-  const raw = process.env.UPLOAD_JD_MAX_BYTES
-  if (!raw) return 10 * 1024 * 1024
-  const parsed = Number(raw)
-  if (!Number.isFinite(parsed) || parsed <= 0) return 10 * 1024 * 1024
-  return Math.floor(parsed)
-}
+import { resolveMaxFileSize } from '@/constants/upload'
 const MAX_FILE_SIZE = resolveMaxFileSize()
 const MAX_FILE_SIZE_MB = Math.max(1, Math.floor(MAX_FILE_SIZE / (1024 * 1024)))
 

@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 /**
  * TemplateClonePanel — modal de detalhe didático do template (redesign 2026-05-30).
  *
@@ -65,6 +66,9 @@ export function TemplateClonePanel({
   onClose,
   onClone,
 }: TemplateClonePanelProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('template-clone', open)
+
   const t = useTranslations("agents.customAgents")
   const tRich = useTranslations("agents.customAgents.template.rich")
 

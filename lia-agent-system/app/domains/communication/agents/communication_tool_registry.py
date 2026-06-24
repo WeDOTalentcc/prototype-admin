@@ -214,12 +214,29 @@ async def _wrap_schedule_message(**kwargs: Any) -> dict[str, Any]:
         return {"success": False, "message": f"scheduled_at inválido: {e}"}
 
     if channel_normalized == "teams":
-        # Teams is webhook-based; record intent and notify via TeamsService
-        from app.domains.communication.services.teams_service import TeamsService
+        # Teams is webhook-based; record intent and notify via TeamsService.
+        # Resolve per-tenant webhook URL so DB-configured URL drives delivery.
+        from app.domains.communication.services.teams_service import (
+            TeamsService,
+            resolve_tenant_teams_webhook_url,
+        )
 
-        svc_teams = TeamsService()
+        _teams_url: str | None = None
+        if company_id:
+            try:
+                from app.core.database import AsyncSessionLocal as _ASL
+                async with _ASL() as _db:
+                    _teams_url, _ = await resolve_tenant_teams_webhook_url(str(company_id), _db)
+            except Exception as _url_err:
+                import logging as _log
+                _log.getLogger(__name__).debug(
+                    "schedule_message: could not resolve per-tenant Teams URL: %s", _url_err
+                )
+
+        svc_teams = TeamsService(webhook_url=_teams_url)
         await svc_teams.send_message(
-            text=(f"[Agendado para {scheduled_at_str}] " f"Mensagem para candidato {candidate_id}: {message}")
+            text=(f"[Agendado para {scheduled_at_str}] " f"Mensagem para candidato {candidate_id}: {message}"),
+            webhook_url=_teams_url,
         )
         return {
             "success": True,
@@ -816,11 +833,22 @@ def get_communication_tools() -> list[ToolDefinition]:
             "email_address",
             "phone_number"],
             name="get_communication_history",
-            description=(
-                "Recuperar histórico de comunicações de um candidato. "
-                "Parâmetros: candidate_id (int, obrigatório), company_id (str, obrigatório), "
-                "limit (int, padrão 10)."
-            ),
+            description="Recuperar histórico de comunicações de um candidato.",
+            parameters={
+                "type": "object",
+                "properties": {
+                    "candidate_id": {"type": "string", "description": "ID do candidato"},
+                    "limit": {
+                        "type": "integer",
+                        "description": "Numero maximo de mensagens (padrao: 10, max: 50)",
+                    },
+                    "channel": {
+                        "type": "string",
+                        "description": "Filtro por canal: email, whatsapp, all (padrao: all)",
+                    },
+                },
+                "required": ["candidate_id"],
+            },
             output_schema=ToolOutput,
             function=_wrap_get_communication_history,
         ),
@@ -982,3 +1010,43 @@ def get_stage_tools(stage: str) -> list[ToolDefinition]:
 
     stage_tool_names = set(_stage_tools(stage))
     return [t for t in get_communication_tools() if t.name in stage_tool_names]
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Opção C — registro global com namespace de domínio (2026-06-18)
+# ─────────────────────────────────────────────────────────────────────────────
+
+def register_communication_global() -> int:
+    """Registra as tools de comunicação (agente) no tool_registry global.
+
+    'send_email' e 'send_whatsapp' recebem prefixo 'comm_' para evitar
+    conflito com os wrappers globais de communication/tools/communication_tools.py
+    (Opção C — namespace de domínio, 2026-06-18). Tools únicas mantêm o nome.
+    Segue o padrão de register_ui_tools_global() (ui_tool_registry.py).
+    Chamada por app/tools/__init__.py:initialize_tools().
+
+    Renames:
+        send_email     → comm_send_email
+        send_whatsapp  → comm_send_whatsapp
+    """
+    from app.tools.registry import ToolDefinition as _G
+    from app.tools.registry import tool_registry as _reg
+
+    _RENAMES: dict[str, str] = {
+        "send_email": "comm_send_email",
+        "send_whatsapp": "comm_send_whatsapp",
+    }
+
+    n = 0
+    for td in get_communication_tools():
+        _reg.register(
+            _G(
+                name=_RENAMES.get(td.name, td.name),
+                description=td.description,
+                parameters_schema=td.parameters,
+                handler=td.function,
+                allowed_agents=["recruiter_assistant", "orchestrator"],
+            )
+        )
+        n += 1
+    return n

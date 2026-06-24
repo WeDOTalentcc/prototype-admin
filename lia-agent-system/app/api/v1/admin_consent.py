@@ -27,6 +27,7 @@ Refs: T-11 B.1.2 (commit 9d7970c9e), T-21 ADR-LGPD-002, LGPD Art. 7/8/18/33.
 from __future__ import annotations
 
 import logging
+from app.shared.errors import LIAInternalError
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
@@ -189,9 +190,7 @@ async def grant_company_training_consent(
     except Exception as exc:  # pragma: no cover — defensive
         logger.exception("[T-21c] grant_consent unexpected company=%s", company_id)
         await db.rollback()
-        raise HTTPException(
-            status_code=500, detail="Erro ao registrar consent training data"
-        ) from exc
+        raise LIAInternalError("Erro ao registrar consent training data") from exc
 
     # AUDIT-NO-DEMO: company-level consent admin action — SOX 7 anos
     try:
@@ -268,9 +267,7 @@ async def revoke_company_training_consent(
     except Exception as exc:  # pragma: no cover — defensive
         logger.exception("[T-21c] revoke_consent unexpected company=%s", company_id)
         await db.rollback()
-        raise HTTPException(
-            status_code=500, detail="Erro ao revogar consent training data"
-        ) from exc
+        raise LIAInternalError("Erro ao revogar consent training data") from exc
 
     if record is None:
         # Nada para revogar — never opted in

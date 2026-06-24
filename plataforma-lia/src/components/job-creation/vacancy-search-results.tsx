@@ -15,6 +15,7 @@ import {
   Building2
 } from"lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
+import usePersonaName from "@/hooks/company/usePersonaName"
 
 export interface VacancySummary {
   id: string
@@ -163,13 +164,14 @@ export function VacancySearchResults({
   onSelect,
   isLoading = false
 }: VacancySearchResultsProps) {
+  const personaName = usePersonaName()
   if (isLoading) {
     return (
       <div className="flex items-start gap-3 max-w-[85%]">
         <Avatar className="h-8 w-8 flex-shrink-0 border-2 border-lia-border-default">
-          <AvatarImage src="/images/lia-avatar.png" alt="LIA" />
+          <AvatarImage src="/images/lia-avatar.png" alt={personaName} />
           <AvatarFallback className="bg-gradient-to-br from-lia-bg-tertiary dark:from-lia-bg-tertiary to-wedo-cyan-dark text-white text-xs font-medium">
-            LIA
+            {personaName}
           </AvatarFallback>
         </Avatar>
         <div className="rounded-xl rounded-tl-sm bg-lia-bg-primary border border-lia-border-subtle p-4" role="status" aria-live="polite" aria-label="Carregando...">
@@ -186,9 +188,9 @@ export function VacancySearchResults({
     return (
       <div className="flex items-start gap-3 max-w-[85%]">
         <Avatar className="h-8 w-8 flex-shrink-0 border-2 border-lia-border-default">
-          <AvatarImage src="/images/lia-avatar.png" alt="LIA" />
+          <AvatarImage src="/images/lia-avatar.png" alt={personaName} />
           <AvatarFallback className="bg-gradient-to-br from-lia-bg-tertiary dark:from-lia-bg-tertiary to-wedo-cyan-dark text-white text-xs font-medium">
-            LIA
+            {personaName}
           </AvatarFallback>
         </Avatar>
         <div className="rounded-xl rounded-tl-sm bg-lia-bg-primary border border-lia-border-subtle p-4">
@@ -203,9 +205,9 @@ export function VacancySearchResults({
   return (
     <div className="flex items-start gap-3 max-w-[90%]">
       <Avatar className="h-8 w-8 flex-shrink-0 border-2 border-lia-border-default">
-        <AvatarImage src="/images/lia-avatar.png" alt="LIA" />
+        <AvatarImage src="/images/lia-avatar.png" alt={personaName} />
         <AvatarFallback className="bg-gradient-to-br from-lia-bg-tertiary dark:from-lia-bg-tertiary to-wedo-cyan-dark text-white text-xs font-medium">
-          LIA
+            {personaName}
         </AvatarFallback>
       </Avatar>
 

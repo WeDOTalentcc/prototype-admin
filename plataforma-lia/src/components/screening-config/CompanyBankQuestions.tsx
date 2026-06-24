@@ -126,9 +126,9 @@ export function CompanyBankQuestions({ isEditing, selectedQuestions, questionOve
           )}
         </div>
         {isExpanded ? (
-          <ChevronUp className="w-4 h-4 text-lia-text-disabled" />
+          <ChevronUp className="w-4 h-4 text-lia-text-muted" />
         ) : (
-          <ChevronDown className="w-4 h-4 text-lia-text-disabled" />
+          <ChevronDown className="w-4 h-4 text-lia-text-muted" />
         )}
       </button>
 
@@ -152,13 +152,13 @@ export function CompanyBankQuestions({ isEditing, selectedQuestions, questionOve
                         <span className="text-micro uppercase tracking-wider font-semibold text-lia-text-tertiary flex-1 text-left">
                           {catInfo.label}
                         </span>
-                        <span className="text-micro text-lia-text-disabled">
+                        <span className="text-micro text-lia-text-muted">
                           {questions.length}
                         </span>
                         {isCatExpanded ? (
-                          <ChevronUp className="w-3 h-3 text-lia-text-disabled" />
+                          <ChevronUp className="w-3 h-3 text-lia-text-muted" />
                         ) : (
-                          <ChevronDown className="w-3 h-3 text-lia-text-disabled" />
+                          <ChevronDown className="w-3 h-3 text-lia-text-muted" />
                         )}
                       </button>
 
@@ -176,7 +176,7 @@ export function CompanyBankQuestions({ isEditing, selectedQuestions, questionOve
                                   </span>
                                   <CharacterBadge character={q.eliminatory ? 'eliminatoria' : 'classificatoria'} />
                                 </div>
-                                <p className="text-micro text-lia-text-disabled italic mt-0.5">
+                                <p className="text-micro text-lia-text-muted italic mt-0.5">
                                   {q.contextHint}
                                 </p>
                               </div>
@@ -196,7 +196,7 @@ export function CompanyBankQuestions({ isEditing, selectedQuestions, questionOve
                 })}
 
                 {Object.keys(categorizedQuestions).length === 0 && (
-                  <p className="text-xs text-lia-text-disabled text-center py-3">
+                  <p className="text-xs text-lia-text-muted text-center py-3">
                     Todas as perguntas já foram selecionadas.
                   </p>
                 )}
@@ -208,7 +208,7 @@ export function CompanyBankQuestions({ isEditing, selectedQuestions, questionOve
                 </span>
 
                 {selectedCount === 0 ? (
-                  <p className="text-xs text-lia-text-disabled text-center py-4">
+                  <p className="text-xs text-lia-text-muted text-center py-4">
                     Nenhuma pergunta selecionada.
                   </p>
                 ) : (
@@ -266,7 +266,7 @@ export function CompanyBankQuestions({ isEditing, selectedQuestions, questionOve
                             )}
 
                             {contextHint && (
-                              <p className="text-micro text-lia-text-disabled italic">
+                              <p className="text-micro text-lia-text-muted italic">
                                 {contextHint}
                               </p>
                             )}
@@ -281,7 +281,7 @@ export function CompanyBankQuestions({ isEditing, selectedQuestions, questionOve
           ) : (
             <div className="space-y-2">
               {selectedCount === 0 ? (
-                <p className="text-xs text-lia-text-disabled text-center py-3">
+                <p className="text-xs text-lia-text-muted text-center py-3">
                   Nenhuma pergunta selecionada.
                 </p>
               ) : (
@@ -309,7 +309,7 @@ export function CompanyBankQuestions({ isEditing, selectedQuestions, questionOve
                             </p>
                           )}
                           {contextHint && (
-                            <p className="text-micro text-lia-text-disabled italic">
+                            <p className="text-micro text-lia-text-muted italic">
                               {contextHint}
                             </p>
                           )}

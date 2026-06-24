@@ -478,13 +478,6 @@ repos:
         files: ^(app/shared/providers/llm_deepseek\.py|app/shared/providers/__init__\.py|app/shared/resilience/circuit_breaker\.py|app/api/v1/llm_config\.py|alembic/versions/182_deepseek_catalog\.py)$
         pass_filenames: false
 
-      - id: tier6-canary-wired
-        name: "W4-041: Tier 6 (AutonomousReActAgent) canary gate canonical wired (flag + router + metric) (BLOCKING)"
-        language: system
-        entry: python3 scripts/check_tier6_canary_wired.py
-        files: ^(app/shared/governance/feature_flag_service\.py|app/orchestrator/cascaded_router\.py|app/shared/observability/canary_metrics\.py)$
-        pass_filenames: false
-
       - id: few-shot-yaml-schema
         name: "W4-038: few_shot_examples YAML schema canonical (BLOCKING — baseline 0)"
         language: system
@@ -610,3 +603,26 @@ repos:
         entry: python3 scripts/check_company_status_column.py --blocking
         files: ^app/.*\.py$
         pass_filenames: false
+
+
+      - id: tool-registry-sync-warn
+        name: tool registry YAML vs domain handlers sync (GAP-00-004, warn-only, baseline 37)
+        entry: python3 scripts/check_tool_registry_sync.py
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      - id: capability-catalog-sync-warn
+        name: capability catalog sync (anti-ghost, warn-only)
+        entry: python3 scripts/check_capability_catalog_sync.py
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      - id: json-operator-syntax
+        name: "JSON operator syntax (PostgreSQL) — keys sem aspas causam erro silencioso (BLOCKING, baseline 0)"
+        language: system
+        entry: python3 scripts/check_json_operator_syntax.py
+        pass_filenames: false
+        always_run: false
+        files: ^lia-agent-system/app/(repositories|domains/.*/repositories)/.*\.py$

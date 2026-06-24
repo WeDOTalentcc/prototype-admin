@@ -81,7 +81,42 @@ async def build_system_prompt_with_persona(
         )
         persona = None
 
+    # Task #1297 — feedback learning loop: injeta exemplos bons/ruins aprendidos
+    # do feedback real do tenant (👍/👎/correção) em TODOS os caminhos de chat,
+    # não só no wizard. Fail-open: qualquer erro vira bloco vazio e o build segue.
+    # Resolução de fonte única: se um caller já passou learned_examples,
+    # respeitamos o valor dele (pop evita o TypeError de kwarg duplicado no
+    # build); caso contrário, buscamos o bloco aprendido.
+    learned_examples = builder_kwargs.pop("learned_examples", None) or ""
+    if not learned_examples:
+        try:
+            from app.domains.analytics.services.feedback_service import (
+                feedback_service,
+            )
+            learned_examples = await feedback_service.get_learned_examples_block(
+                intent=str(builder_kwargs.get("intent", "") or ""),
+                user_message=str(builder_kwargs.get("user_message", "") or ""),
+                company_id=company_id,
+                db=db,
+            )
+        except Exception as exc:
+            logger.warning(
+                "[persona_aware_prompt] Failed to load learned examples for "
+                "company=%s — proceeding without. err=%s",
+                company_id, exc, exc_info=True,
+            )
+            learned_examples = ""
+
+    # `user_message` é um hint só para matching de padrões; não é kwarg do builder.
+    builder_kwargs.pop("user_message", None)
+
+    # Task #1324: company_id reaches the builder so the claimed creation modes
+    # are tailored to this tenant's permitted actions. ``pop`` first to avoid a
+    # duplicate-kwarg TypeError if a caller already passed it via builder_kwargs.
+    builder_kwargs.pop("company_id", None)
     return SystemPromptBuilder.build(
         ai_persona=persona,
+        company_id=company_id,
+        learned_examples=learned_examples,
         **builder_kwargs,
     )

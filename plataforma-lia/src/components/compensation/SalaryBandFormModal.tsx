@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import React from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
@@ -26,6 +27,9 @@ const numInput = "h-10 w-full rounded-md border border-lia-border-subtle bg-lia-
 const sectionTitle = "text-xs font-semibold uppercase tracking-wide text-lia-text-tertiary"
 
 export function SalaryBandFormModal({ open, onOpenChange, editing, setEditing, isSaving, onSave }: SalaryBandFormModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('salary-band-form', open)
+
   const { departments, loading: deptsLoading } = useDepartmentsList()
 
   if (!editing) return null

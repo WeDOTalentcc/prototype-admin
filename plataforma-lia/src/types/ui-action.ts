@@ -39,6 +39,11 @@ export type GlobalUIAction =
       };
     }
   | {
+      type: "close_modal";
+      // GAP-04-004: optional modal_id for selective closing
+      params: { modal_id?: string };
+    }
+  | {
       type: "open_offer_review";
       params: {
         candidate_id: string;
@@ -61,6 +66,10 @@ export type GlobalUIAction =
       };
     }
   | {
+      type: "close_panel";
+      params: Record<string, never>;
+    }
+  | {
       type: "scroll_to";
       params: {
         element_id: string;
@@ -78,6 +87,92 @@ export type GlobalUIAction =
         subsection?: string;
         field?: string;
       };
+    }
+  | {
+      // P0.2 (2026-06-04) anti-ghost: acoes de candidatos globalizadas.
+      // Vivem na superficie funil-de-talentos; useUIAction navega pra la e
+      // re-emite pro handler page-specific (useLIAQuickActions).
+      type: "open_communication_modal";
+      params?: { candidate_id?: string };
+    }
+  | {
+      type: "open_schedule_modal";
+      params?: Record<string, never>;
+    }
+  | {
+      type: "open_screening_modal";
+      params?: { candidate_id?: string };
+    }
+  | {
+      // Fase 2 slice 1 (ponte in-page): aplica busca/ordenação/filtros à
+      // tabela JÁ ABERTA. useUIAction despacha `lia:apply_table_state`;
+      // LiaTableStateBridge escuta e dirige o store da superfície
+      // (slice 1: candidates → useCandidatesStore). Sem navegação/mutação.
+      type: "apply_table_state";
+      params: {
+        surface: "candidates" | "jobs" | "kanban" | "talent_pool" | "recrutar";
+        patch: {
+          search?: string; // candidates/jobs/kanban
+          sortBy?: string; // candidates
+          sortOrder?: "asc" | "desc"; // candidates
+          quickFilters?: string[]; // candidates (bridge converte para Set)
+          // candidates: troca a aba do Funil (Fase 2 funil tabs) -> setActiveTab
+          tab?:
+            | "search"
+            | "favorites"
+            | "lists"
+            | "history"
+            | "saved-searches"
+            | "agents";
+          filter?: string; // jobs (activeFilter: todas/ativas/urgentes/ats/...)
+          scoreMin?: number; // kanban (0-100)
+          statusFilter?: string[]; // kanban (novo/em_analise/...)
+          originFilter?: string[]; // kanban (web/whatsapp/sourcing/ats)
+          workModelFilter?: string[]; // kanban (remoto/hibrido/presencial)
+          stage?: string | null; // talent_pool: etapa (discovered/contacted/...) | recrutar: nome da etapa do pipeline
+          poolTab?: string; // talent_pool: aba (candidates/sourcing/agents/config)
+        };
+      };
+    }
+  | {
+      // Fase 2 surface close: LIA seleciona candidatos in-page para pre-marcar
+      // bulk actions. useUIAction despacha `lia:select_rows`; LiaTableStateBridge
+      // escuta e dirige useCandidatesStore (set/add/clear).
+      type: "select_rows";
+      params: {
+        surface: "candidates";
+        mode: "set" | "add" | "clear";
+        ids?: string[]; // obrigatorio para mode="set"/"add", omitido para "clear"
+      };
+    }
+  | {
+      // F3 Gap 1: feedback visual apos acao em lote executada via chat.
+      // useUIAction despacha `lia:bulk_execute`; LiaTableStateBridge escuta
+      // e abre BulkResultReport com o resumo de sucesso/falha por item.
+      type: "bulk_execute";
+      params: {
+        action: string; // ex: "reject_candidates" | "move_stage" | "send_communication"
+        title: string; // ex: "3 candidatos rejeitados"
+        results: {
+          id: string;
+          name: string;
+          ok: boolean;
+          reason?: string;
+        }[];
+      };
+    }
+  | {
+      // GAP-01-005 mirror (2026-06-17): BE ui_action_sink emite quando
+      // recruiter_copilot semeia wizard via start_creation_from_source.
+      // FE navega para /recrutar; painel wizard já é aberto pelo frame
+      // panel_update (wizard_stage) enviado ANTES desta diretiva via SSE.
+      type: "start_wizard_seeded";
+      params: {
+        type?: string;
+        template_id?: string;
+        job_id?: string;
+        candidate_id?: string;
+      };
     };
 
 /**
@@ -89,11 +184,20 @@ export type GlobalUIActionType = GlobalUIAction["type"];
 export const GLOBAL_UI_ACTION_TYPES: readonly GlobalUIActionType[] = [
   "navigate_to",
   "open_modal",
+  "close_modal",
   "open_offer_review",
   "wizard_step",
   "open_panel",
+  "close_panel",
   "scroll_to",
   "settings_open_tab",
+  "open_communication_modal",
+  "open_schedule_modal",
+  "open_screening_modal",
+  "apply_table_state",
+  "select_rows",
+  "bulk_execute", // F3 Gap 1: feedback visual de ação em lote via chat
+  "start_wizard_seeded", // GAP-01-005: mirror BE sink — wizard semeado via recruiter_copilot
 ] as const;
 
 export function isGlobalUIActionType(type: string): type is GlobalUIActionType {

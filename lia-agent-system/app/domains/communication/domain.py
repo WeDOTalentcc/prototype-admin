@@ -447,22 +447,43 @@ class CommunicationDomain(ComplianceDomainPrompt):
 
         if not stakeholder_emails and job_id:
             async with AsyncSessionLocal() as session:
+                # T10: first try per-vacancy stakeholders list
                 try:
-                    result = await session.execute(text("""
-                        SELECT DISTINCT u.email, u.id
-                        FROM users u
-                        WHERE u.company_id = :company_id
-                          AND u.role IN ('manager', 'admin', 'hiring_manager')
-                        LIMIT 10
-                    """), {"company_id": context.tenant_id})
-                    stakeholder_rows = [(r[0], r[1]) for r in result.fetchall() if r[0]]
-                    stakeholder_emails = [r[0] for r in stakeholder_rows]
-                except Exception as exc:
-                    logger.error(f"Stakeholder lookup failed: {exc}", exc_info=True)
-                    return DomainResponse.error_response(
-                        error=f"Erro ao buscar stakeholders: {exc}",
-                        domain_id=self.domain_id, action_id="notify_stakeholders",
+                    from app.models.job_vacancy import JobVacancy
+                    from sqlalchemy import select as sa_select
+                    job_result = await session.execute(
+                        sa_select(JobVacancy.stakeholders).where(
+                            JobVacancy.id == str(job_id),
+                            JobVacancy.company_id == context.tenant_id,
+                        )
                     )
+                    vacancy_stakeholders = job_result.scalar_one_or_none()
+                    if vacancy_stakeholders and isinstance(vacancy_stakeholders, list) and len(vacancy_stakeholders) > 0:
+                        stakeholder_rows = [
+                            (s.get("email"), None) for s in vacancy_stakeholders if s.get("email")
+                        ]
+                        stakeholder_emails = [r[0] for r in stakeholder_rows]
+                except Exception as exc:
+                    logger.warning(f"Per-vacancy stakeholder lookup failed, falling back to role-based: {exc}")
+
+                # Fallback: role-based lookup (tenant-wide managers/admins)
+                if not stakeholder_emails:
+                    try:
+                        result = await session.execute(text("""
+                            SELECT DISTINCT u.email, u.id
+                            FROM users u
+                            WHERE u.company_id = :company_id
+                              AND u.role IN ('manager', 'admin', 'hiring_manager')
+                            LIMIT 10
+                        """), {"company_id": context.tenant_id})
+                        stakeholder_rows = [(r[0], r[1]) for r in result.fetchall() if r[0]]
+                        stakeholder_emails = [r[0] for r in stakeholder_rows]
+                    except Exception as exc:
+                        logger.error(f"Stakeholder lookup failed: {exc}", exc_info=True)
+                        return DomainResponse.error_response(
+                            error=f"Erro ao buscar stakeholders: {exc}",
+                            domain_id=self.domain_id, action_id="notify_stakeholders",
+                        )
         else:
             stakeholder_rows = [(e, None) for e in stakeholder_emails]
 

@@ -59,6 +59,7 @@ from app.schemas.company import (
     TechnicalTestTemplateUpdate,
 )
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.errors import LIAError
 
 logger = logging.getLogger(__name__)
 
@@ -89,7 +90,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error listing Big Five questions: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/big-five/questions", response_model=BigFiveQuestionResponse)
@@ -107,7 +108,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error creating Big Five question: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.put("/big-five/questions/{question_id}", response_model=BigFiveQuestionResponse)
@@ -131,7 +132,7 @@ async def update_big_five_question(
         raise
     except Exception as e:
         logger.error(f"Error updating Big Five question: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.delete("/big-five/questions/{question_id}", response_model=None)
@@ -152,7 +153,7 @@ async def delete_big_five_question(
         raise
     except Exception as e:
         logger.error(f"Error deleting Big Five question: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/big-five/role-profiles", response_model=list[BigFiveRoleProfileResponse])
@@ -180,7 +181,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error listing Big Five role profiles: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/big-five/role-profiles", response_model=BigFiveRoleProfileResponse)
@@ -199,7 +200,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error creating Big Five role profile: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.put("/big-five/role-profiles/{profile_id}", response_model=BigFiveRoleProfileResponse)
@@ -221,7 +222,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error updating Big Five role profile: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/technical/questions", response_model=list[TechnicalQuestionResponse])
@@ -254,7 +255,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error listing technical questions: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/technical/questions", response_model=TechnicalQuestionResponse)
@@ -272,7 +273,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error creating technical question: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.put("/technical/questions/{question_id}", response_model=TechnicalQuestionResponse)
@@ -296,7 +297,7 @@ async def update_technical_question(
         raise
     except Exception as e:
         logger.error(f"Error updating technical question: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.delete("/technical/questions/{question_id}", response_model=None)
@@ -317,7 +318,7 @@ async def delete_technical_question(
         raise
     except Exception as e:
         logger.error(f"Error deleting technical question: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/technical/templates", response_model=list[TechnicalTestTemplateResponse])
@@ -346,7 +347,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error listing technical templates: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/technical/templates", response_model=TechnicalTestTemplateResponse)
@@ -365,7 +366,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error creating technical template: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.put("/technical/templates/{template_id}", response_model=TechnicalTestTemplateResponse)
@@ -387,7 +388,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error updating technical template: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.delete("/technical/templates/{template_id}", response_model=None)
@@ -406,6 +407,6 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error deleting technical template: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 

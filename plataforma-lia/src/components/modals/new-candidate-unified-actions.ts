@@ -152,7 +152,7 @@ export function buildManualCandidateData(manualData: ManualData): { data: Record
 
 export function showSuccessToast(shouldEnrich: boolean) {
   if (shouldEnrich) {
-    toast.success("Candidato cadastrado com sucesso!", { description: "LIA irá buscar os dados do LinkedIn em segundo plano. Abrindo perfil..." })
+    toast.success("Candidato cadastrado com sucesso!", { description: "A IA irá buscar os dados do LinkedIn em segundo plano. Abrindo perfil..." })
   } else {
     toast.success("Candidato cadastrado com sucesso!", { description: "Abrindo perfil completo..." })
   }

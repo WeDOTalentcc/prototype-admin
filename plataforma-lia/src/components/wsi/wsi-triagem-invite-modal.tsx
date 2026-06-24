@@ -295,7 +295,7 @@ useEffect(() => {
           toast.error('Falha ao iniciar ligação', { description: callData?.error || callData?.detail || 'Tente novamente em instantes.' })
           return
         }
-        toast.success('Ligação iniciada', { description: `A LIA está discando para ${candidate.name}.` })
+        toast.success('Ligação iniciada', { description: `A IA está discando para ${candidate.name}.` })
         onSend?.({
           channel: 'telefone',
           candidateId: candidate.id,

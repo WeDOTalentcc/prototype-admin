@@ -19,6 +19,7 @@ from app.shared.types import WeDoBaseModel
 from typing import Annotated
 from fastapi import Path
 from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
+from app.shared.errors import LIAError, LIAInternalError
 
 router = APIRouter(prefix="/job-embeddings", tags=["Job Embeddings"])
 logger = logging.getLogger(__name__)
@@ -93,7 +94,7 @@ async def create_embedding(request: CreateEmbeddingRequest, company_id: str = De
         )
         
         if not result.get("success"):
-            raise HTTPException(status_code=500, detail=result.get("error", "Unknown error"))
+            raise LIAInternalError(result.get("error", "Unknown error"))
         
         return result
         
@@ -101,7 +102,7 @@ async def create_embedding(request: CreateEmbeddingRequest, company_id: str = De
         raise
     except Exception as e:
         logger.error(f"Error creating embedding: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/similar", response_model=None)
@@ -135,7 +136,7 @@ async def find_similar_jobs(request: SimilarJobsRequest, company_id: str = Depen
         raise
     except Exception as e:
         logger.error(f"Error finding similar jobs: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/fast-track", response_model=None)
@@ -170,7 +171,7 @@ async def get_fast_track_suggestions(request: FastTrackRequest, company_id: str 
         raise
     except Exception as e:
         logger.error(f"Error getting Fast Track suggestions: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 class FullJobDataRequest(WeDoBaseModel):
@@ -209,7 +210,7 @@ async def get_full_job_data(request: FullJobDataRequest, company_id: str = Depen
         raise
     except Exception as e:
         logger.error(f"Error getting full job data: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/batch-process", response_model=None)
@@ -233,7 +234,7 @@ async def batch_process_embeddings(request: BatchProcessRequest, company_id: str
         raise
     except Exception as e:
         logger.error(f"Error batch processing embeddings: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/stats/{company_id}", response_model=None)
@@ -253,7 +254,7 @@ async def get_embedding_stats(company_id: Annotated[str, Path(pattern=DUAL_ID_PA
         raise
     except Exception as e:
         logger.error(f"Error getting embedding stats: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 class FastTrackUsageRequest(WeDoBaseModel):
@@ -294,7 +295,7 @@ async def record_fast_track_usage(request: FastTrackUsageRequest, company_id: st
         raise
     except Exception as e:
         logger.error(f"Error recording Fast Track usage: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/outcome", response_model=None)
@@ -322,7 +323,7 @@ async def update_job_outcome(request: OutcomeUpdateRequest, company_id: str = De
         raise
     except Exception as e:
         logger.error(f"Error updating job outcome: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/fast-track/insights/{company_id}", response_model=None)
@@ -346,6 +347,6 @@ async def get_fast_track_insights(company_id: Annotated[str, Path(pattern=DUAL_I
         raise
     except Exception as e:
         logger.error(f"Error getting Fast Track insights: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 reorder_collection_before_item(router)

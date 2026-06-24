@@ -7,6 +7,7 @@ import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react"
 import { toast } from "sonner"
 import type { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime"
 import { classifyPercentageScore } from "@/lib/score-utils"
+import { buildSavedSearchPayload } from "@/components/pages/candidates/saved-search-utils"
 import type { SearchFilters } from "@/components/search/advanced-filters-modal"
 import type { CommunicationType } from "@/components/modals/unified-communication-modal"
 import type { ParsedCVResponse } from "@/components/cv"
@@ -19,6 +20,7 @@ import { useCandidatesInteractions } from "./useCandidatesInteractions"
 import { useCandidatesLIAHandlers } from "./useCandidatesLIAHandlers"
 import { mapCandidateToInternal as _mapCandidateToInternal } from "./useCandidatesExecuteSearch"
 import type { Candidate } from "@/components/pages/candidates/types"
+import type { RevealedContacts } from "@/stores/candidates-store"
 import type { ChatMessage, PearchSearchOptions } from "./candidates-core"
 import type { SearchTab } from "./useCandidatesUIState"
 import type { TableFilters } from "@/hooks/candidates/use-candidate-filters"
@@ -89,7 +91,7 @@ export interface UseCandidatesViewCompositionParams {
   hasUnsavedPearchCandidates: boolean
   unsavedPearchCandidates: Candidate[]
   lastSearchQuery: string
-  revealedContacts: Record<string, Record<string, string>>
+  revealedContacts: RevealedContacts
   expandedRows: Set<string>
   setExpandedRows: Dispatch<SetStateAction<Set<string>>>
   isPreviewMaximized: boolean
@@ -104,6 +106,7 @@ export interface UseCandidatesViewCompositionParams {
   setShowSidePreview: (v: boolean) => void
   setSidePreviewCandidate: (v: Candidate | null) => void
   setUnifiedModalCandidate: (v: Candidate | null) => void
+  setUnifiedModalSelectedCandidates: (v: Array<{ id: string; name: string; email?: string; phone?: string; avatar?: string }>) => void
   setUnifiedModalType: (v: CommunicationType) => void
   setUnifiedModalOpen: (v: boolean) => void
   setShowScheduleModal: (v: boolean) => void
@@ -114,6 +117,8 @@ export interface UseCandidatesViewCompositionParams {
   setShowBatchApproval: (v: boolean) => void
   setParsedCVData: (v: ParsedCVResponse | null) => void
   setShowCVPreviewModal: (v: boolean) => void
+  setShowScheduleMessageModal?: (v: boolean) => void
+  setScheduleMessageCandidate?: (c: Candidate | null) => void
   setShowAddCandidateModal: (v: boolean) => void
   onAddRecentItem?: (item: { id: string; type: 'chat' | 'vaga' | 'candidato'; title: string; subtitle?: string; meta?: Record<string, string | undefined> }) => void
   markCandidateAsViewed: (id: string) => void
@@ -219,6 +224,7 @@ export function useCandidatesViewComposition(params: UseCandidatesViewCompositio
 
   const candidatesActions = useCandidatesActions({
     candidates: params.candidates,
+    revealedContacts: params.revealedContacts,
     setCandidates: params.setCandidates,
     activeTab: params.activeTab,
     setActiveTab: (v: string) => params.setActiveTab(v as 'search' | 'history' | 'favorites' | 'lists' | 'saved-searches' | 'agents'),
@@ -272,6 +278,7 @@ export function useCandidatesViewComposition(params: UseCandidatesViewCompositio
     previewWidth: params.previewWidth,
     setPreviewWidth: params.setPreviewWidth,
     setUnifiedModalCandidate: params.setUnifiedModalCandidate,
+    setUnifiedModalSelectedCandidates: params.setUnifiedModalSelectedCandidates,
     setUnifiedModalType: params.setUnifiedModalType,
     setUnifiedModalOpen: params.setUnifiedModalOpen,
     setShowScheduleModal: params.setShowScheduleModal,
@@ -280,6 +287,8 @@ export function useCandidatesViewComposition(params: UseCandidatesViewCompositio
     setShowComparisonModal: params.setShowComparisonModal,
     setShowQuickViewModal: params.setShowQuickViewModal,
     setShowBatchApproval: params.setShowBatchApproval,
+    setShowScheduleMessageModal: params.setShowScheduleMessageModal,
+    setScheduleMessageCandidate: params.setScheduleMessageCandidate,
     setParsedCVData: params.setParsedCVData,
     setShowCVPreviewModal: params.setShowCVPreviewModal,
     onAddRecentItem: params.onAddRecentItem,
@@ -380,9 +389,15 @@ export function useCandidatesViewComposition(params: UseCandidatesViewCompositio
   }
 
   const saveCurrentSearch = () => {
-    sessionStorage.setItem(
-      'current-search-data',
-      JSON.stringify({ name: `${tView('searchNamePrefix')} ${new Date().toLocaleDateString()}`, searchTerm: params.searchTerm, quickFilters: Array.from(params.quickFilters), timestamp: new Date().toISOString() })
+    // P1-7: persiste no produtor canonico (addSavedSearch) que a aba Buscas
+    // Salvas le — antes gravava em sessionStorage('current-search-data') morto.
+    params.talentFunnel.addSavedSearch(
+      buildSavedSearchPayload({
+        searchTerm: params.searchTerm,
+        quickFilters: Array.from(params.quickFilters),
+        dateLabel: new Date().toLocaleDateString(),
+        namePrefix: tView('searchNamePrefix'),
+      })
     )
     params.setActiveTab('saved-searches')
     toast.success(tView('searchSaved'), { description: tView('candidatesFound', { count: filterSort.sortedCandidates.length }) })

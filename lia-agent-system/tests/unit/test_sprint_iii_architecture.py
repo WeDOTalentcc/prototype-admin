@@ -81,7 +81,8 @@ class TestPolicyEngineAlpha1Rules:
     def test_all_rules_have_required_fields(self):
         try:
             from app.domains.policy.services.policy_engine_service import ALPHA1_SECTOR_RULES
-            required_fields = {"autonomy_level", "hitl_threshold", "auto_approve_threshold"}
+            # hitl_threshold e auto_approve_threshold movidos para fairness_policy_rules (Regra 9)
+            required_fields = {"autonomy_level", "fairness_layer3_enabled"}
             for sector, rules in ALPHA1_SECTOR_RULES.items():
                 for field in required_fields:
                     assert field in rules, f"Setor {sector} sem campo {field}"
@@ -97,11 +98,19 @@ class TestPolicyEngineAlpha1Rules:
         from app.domains.policy.services.policy_engine_service import ALPHA1_SECTOR_RULES
         assert ALPHA1_SECTOR_RULES["tech"]["autonomy_level"] == "high"
 
-    def test_saude_strict_thresholds(self):
-        from app.domains.policy.services.policy_engine_service import ALPHA1_SECTOR_RULES
-        saude = ALPHA1_SECTOR_RULES["saude"]
-        assert saude["hitl_threshold"] >= 0.80
-        assert saude["auto_approve_threshold"] >= 0.90
+    def test_saude_strict_thresholds_in_db_seed(self):
+        """Thresholds de saude agora vivem em fairness_policy_rules (Regra 9 do seed)."""
+        from lia_models.fairness_policies import DEFAULT_PLATFORM_GENERAL_RULES
+        sector_rule = next(
+            (r for r in DEFAULT_PLATFORM_GENERAL_RULES
+             if r["rule_type"] == "decision_threshold"
+             and "sectors" in r.get("body_json", {})),
+            None,
+        )
+        assert sector_rule is not None, "Regra 9 (decision_threshold por setor) nao encontrada no seed"
+        saude_cfg = sector_rule["body_json"]["sectors"]["saude"]
+        assert saude_cfg["auto_approve_threshold"] >= 0.90
+        assert saude_cfg["hitl_threshold"] >= 0.80
 
     def test_rpo_high_autonomy(self):
         from app.domains.policy.services.policy_engine_service import ALPHA1_SECTOR_RULES

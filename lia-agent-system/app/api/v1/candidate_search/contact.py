@@ -2,6 +2,8 @@
 Contact reveal (reveal/cost, reveal) and filter suggestions routes.
 """
 
+import asyncio
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -18,6 +20,7 @@ from ._shared import (
 from app.domains.sourcing.services.contact_enrichment_service import ContactEnrichmentService
 from app.domains.candidates.repositories.candidate_filter_repository import CandidateFilterRepository
 from app.shared.types import WeDoBaseModel
+from app.shared.errors import LIAError
 
 router = APIRouter()
 
@@ -48,6 +51,14 @@ async def _track_pearch_reveal(
         )
     except Exception as e:
         _contact_logger.error("[Reveal] Failed to track pearch reveal: %s", e)
+        # Defence-in-depth: if tracking poisoned the session (e.g. RLS rejection),
+        # rollback so the caller's session is not stuck in PendingRollbackError.
+        # Without this, get_db() teardown raises PendingRollbackError → HTTP 500
+        # overrides the actual success/failure response.
+        try:
+            await db.rollback()
+        except Exception:
+            pass
 
 class RevealType(str):
     EMAIL = "email"
@@ -60,6 +71,7 @@ class RevealContactRequest(WeDoBaseModel):
     candidate_name: str = Field(..., description="Nome do candidato para busca")
     reveal_type: str = Field(..., description="Tipo: 'email' ou 'phone'", pattern="^(email|phone)$")
     linkedin_slug: str | None = Field(None, description="LinkedIn slug para busca mais precisa")
+    pearch_profile_id: str | None = Field(None, description="Pearch docid do perfil para rastreamento")
 
 
 class RevealContactResponse(BaseModel):
@@ -172,11 +184,19 @@ company_id: str = Depends(require_company_id)):
             except Exception as lookup_err:
                 _logger.warning("[Reveal] LinkedIn lookup failed: %s", lookup_err)
 
-        # ADR-001: company_id recovery from CreditsUsage via CandidateRepository
-        _company_id = None
+        # ADR-001: company_id recovery — JWT company_id is canonical default.
+        # Pearch docid candidates never have a UUID (cand_uuid=None), so the old
+        # pattern of initializing _company_id=None left tracking with
+        # company_id='unattributed', violating RLS on external_api_consumption
+        # and poisoning the SQLAlchemy session for the whole request.
+        # Fix: seed _company_id from the JWT claim; only override with DB lookup
+        # when a better (per-candidate) value is available.
+        _company_id = company_id  # JWT company_id — fail-closed multi-tenancy
         if cand_uuid:
             try:
-                _company_id = await candidate_repo.get_company_id_from_credits_usage(cand_uuid)
+                _db_company_id = await candidate_repo.get_company_id_from_credits_usage(cand_uuid)
+                if _db_company_id:
+                    _company_id = _db_company_id
             except Exception:
                 pass
 
@@ -252,9 +272,11 @@ company_id: str = Depends(require_company_id)):
         
         _logger.info("[Reveal] Falling back to Pearch for %s", request.candidate_id)
         
-        search_query = request.candidate_name
+        # LinkedIn URL como query é mais preciso que nome+slug (Pearch reconhece URLs)
         if request.linkedin_slug:
-            search_query = f"{request.candidate_name} linkedin:{request.linkedin_slug}"
+            search_query = f"linkedin.com/in/{request.linkedin_slug}"
+        else:
+            search_query = request.candidate_name
         
         show_emails = request.reveal_type == "email"
         show_phone_numbers = request.reveal_type == "phone"
@@ -276,11 +298,12 @@ company_id: str = Depends(require_company_id)):
         
         if not result.search_results:
             await _track_pearch_reveal(db, _company_id, f"reveal_{request.reveal_type}", 0, False, result_status="no_contact")
+            contact_label = "email" if request.reveal_type == "email" else "telefone"
             return RevealContactResponse(
                 success=False,
                 candidate_id=request.candidate_id,
                 reveal_type=request.reveal_type,
-                message=f"Candidato não encontrado ou sem {request.reveal_type} disponível",
+                message=f"Este candidato não possui {contact_label} disponível nas bases consultadas",
                 credits_remaining=result.credits_remaining
             )
         
@@ -351,7 +374,98 @@ company_id: str = Depends(require_company_id)):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Falha ao revelar contato: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
+
+
+# ============================================================================
+# BULK REVEAL ENDPOINT - Reveal de múltiplos candidatos em paralelo
+# ============================================================================
+
+class BulkRevealRequest(WeDoBaseModel):
+    """Request para revelar contatos de múltiplos candidatos em paralelo."""
+    items: list[RevealContactRequest] = Field(
+        ...,
+        min_length=1,
+        max_length=50,
+        description="Lista de candidatos para revelar (máx 50)",
+    )
+
+
+class BulkRevealResponse(BaseModel):
+    """Response com resultados do reveal em bulk."""
+    results: list[RevealContactResponse]
+    revealed_count: int
+    unavailable_count: int
+    timeout_count: int = 0
+
+
+@router.post("/reveal/bulk", response_model=BulkRevealResponse)
+async def reveal_contact_bulk(
+    request: BulkRevealRequest,
+    db: AsyncSession = Depends(get_db),
+    pearch_svc: PearchService = Depends(get_pearch_service),
+    company_id: str = Depends(require_company_id),
+):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime
+    """
+    Revela contatos de múltiplos candidatos em paralelo.
+
+    Usa asyncio.gather com semaphore(3) para limitar concorrência.
+    Timeout de 35s por candidato para evitar travamento do frontend.
+    """
+    semaphore = asyncio.Semaphore(3)
+
+    async def _reveal_one(item: RevealContactRequest) -> RevealContactResponse:
+        async with semaphore:
+            try:
+                from app.core.database import async_session_factory
+                async with async_session_factory() as db_local:
+                    return await asyncio.wait_for(
+                        reveal_contact(
+                            request=item,
+                            db=db_local,
+                            pearch_svc=pearch_svc,
+                            company_id=company_id,
+                        ),
+                        timeout=35.0,
+                    )
+            except asyncio.TimeoutError:
+                _contact_logger.warning(
+                    "[RevealBulk] Timeout for candidate %s after 35s", item.candidate_id
+                )
+                return RevealContactResponse(
+                    success=False,
+                    candidate_id=item.candidate_id,
+                    reveal_type=item.reveal_type,
+                    message="Timeout: contato não disponível no momento. Tente individualmente.",
+                )
+            except Exception as exc:
+                _contact_logger.error(
+                    "[RevealBulk] Error for candidate %s: %s", item.candidate_id, exc, exc_info=True
+                )
+                return RevealContactResponse(
+                    success=False,
+                    candidate_id=item.candidate_id,
+                    reveal_type=item.reveal_type,
+                    message="Não foi possível revelar o contato. Tente individualmente.",
+                )
+
+    results = await asyncio.gather(*[_reveal_one(item) for item in request.items])
+
+    revealed_count = sum(1 for r in results if r.success)
+    unavailable_count = sum(
+        1 for r in results if not r.success and "timeout" not in r.message.lower()
+    )
+    timeout_count = sum(
+        1 for r in results if not r.success and "timeout" in r.message.lower()
+    )
+
+    return BulkRevealResponse(
+        results=list(results),
+        revealed_count=revealed_count,
+        unavailable_count=unavailable_count,
+        timeout_count=timeout_count,
+    )
 
 
 # ============================================================================
@@ -752,4 +866,5 @@ class ArchetypeSearchResultDTO(CandidateSearchResultDTO):
 
 # Sprint F.3 #25 canonical-fix: ArchetypeSearchResponse moved to api/v1/candidate_search/archetypes.py
 from app.api.v1.candidate_search.archetypes import ArchetypeSearchResponse  # noqa: F401  (re-export for backward compat)
+from app.shared.errors import LIAError
 

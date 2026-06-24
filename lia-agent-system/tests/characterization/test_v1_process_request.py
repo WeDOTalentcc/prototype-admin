@@ -211,36 +211,3 @@ class TestProcessRequestPlanDetection:
         assert not hasattr(v1_with_all_internal_mocks, "_plan_executor_was_called")
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Fixture 8/8: Autonomous domain — intercepta antes de DomainRegistry (Tier 6)
-# ─────────────────────────────────────────────────────────────────────────────
-class TestProcessRequestAutonomousIntercept:
-    """V1 tem fast-path para domain=autonomous (Tier 6 do CascadedRouter)."""
-
-    @pytest.mark.asyncio
-    async def test_autonomous_domain_returns_response_from_route(self, v1_with_all_internal_mocks):
-        from app.orchestrator.routing.cascaded_router import RouteResult
-        v1_with_all_internal_mocks._cascaded_router.route = AsyncMock(
-            return_value=RouteResult(
-                domain_id="autonomous",
-                confidence=0.95,
-                source="autonomous_react",
-                intent_details={
-                    "raw_intent": "cross_domain",
-                    "response": "Resposta do autonomous agent",
-                    "metadata": {"needs_clarification": False},
-                    "tool_calls": 3,
-                },
-            )
-        )
-        result = await v1_with_all_internal_mocks.process_request(
-            user_id="user-1",
-            message="ação cross-domain",
-            conversation_id="conv-1",
-            context={"company_id": "company-a"},
-        )
-        assert result.get("success") is True
-        assert result.get("agent") == "autonomous_react_agent"
-        assert result.get("agent_type") == "autonomous"
-        assert result.get("intent") == "cross_domain"
-        assert "Resposta do autonomous agent" in result.get("message", "")

@@ -8,6 +8,12 @@
 @tailwind components;
 @tailwind utilities;
 
+html,
+body {
+  background-color: #ffffff;
+}
+
+
 /* Sprint 7: globals.css split -- see src/app/styles/ for themed files */
 
 
@@ -101,8 +107,8 @@
     --accent-foreground: 215 20% 25%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 98%;
-    --border: 215 12% 92%;
-    --input: 215 12% 92%;
+    --border: 0 0% 78%;
+    --input: 0 0% 69%;
     --ring: 215 25% 15%;
     --radius: 0.75rem;
 

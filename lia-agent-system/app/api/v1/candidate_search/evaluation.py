@@ -203,7 +203,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Batch evaluation failed: {e}")
-        raise HTTPException(status_code=500, detail=f"Batch evaluation failed: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 
 def _normalize_name(name: str) -> str:
@@ -232,5 +232,6 @@ def _generate_fingerprint(name: str, linkedin_url: str | None = None, email: str
 
 from app.auth.dependencies import assert_resource_ownership, get_current_user_or_demo, get_user_company_id
 from app.auth.models import User as ImportUser
+from app.shared.errors import LIAError
 
 

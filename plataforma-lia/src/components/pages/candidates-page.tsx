@@ -32,31 +32,34 @@
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
+import { useState, useEffect } from "react"
 import { FavoritesTab } from "@/components/talent-funnel-tabs/favorites-tab"
 import { HistoryTab } from "@/components/talent-funnel-tabs/history-tab"
 import { SavedSearchesTab } from "@/components/talent-funnel-tabs/saved-searches-tab"
 import { ListsTab } from "@/components/talent-funnel-tabs/lists-tab"
 import TalentPoolsTab from "@/components/pages-candidates/TalentPoolsTab"
 import { CandidateSearchResultsView } from "@/components/pages/candidates/CandidateSearchResultsView"
+import { BulkRevealModal } from "@/components/pages/candidates/BulkRevealModal"
 import type { Candidate } from "@/components/pages/candidates/types"
 import type { CandidatesPageModalsProps } from "@/components/pages/candidates/CandidatesPageModals.types"
 import { liaApi } from "@/services/lia-api"
 import dynamic from "next/dynamic"
 import { CandidateSearchBar } from "@/components/pages/candidates/CandidateSearchBar"
 import { useCandidatesPageCore } from "./candidates/hooks/useCandidatesPageCore"
+import { useNavGuardStore } from "@/stores/nav-guard-store"
 import { CandidatesPageHeader } from "@/components/pages/candidates/CandidatesPageHeader"
 const CandidatesPageModals = dynamic(() => import("@/components/pages/candidates/CandidatesPageModals").then(m => ({ default: m.CandidatesPageModals })), { ssr: false, loading: () => null })
 import { toast } from "sonner"
 import { ErrorBoundarySection } from "@/components/ui/error-boundary-section"
 import { SearchFingerprintProvider } from "@/components/search/SearchFingerprintContext"
 
-import { LoadingModal as CandidatesLoadingModal } from "@/components/ui/loading"
-const CandidatePreview = dynamic(() => import("@/components/candidate-preview").then(m => ({ default: m.CandidatePreview })), { ssr: false, loading: () => <CandidatesLoadingModal /> })
+const CandidatePreview = dynamic(() => import("@/components/candidate-preview").then(m => ({ default: m.CandidatePreview })), { ssr: false, loading: () => null })
 
-export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandidateOpened }: { onAddRecentItem?: (item: { id: string; type: 'vaga' | 'chat' | 'candidato'; title: string; subtitle?: string; meta?: Record<string, string | undefined> }) => void; pendingCandidateOpen?: { candidateId: string; candidateName: string } | null; onCandidateOpened?: () => void } = {}) {
+export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandidateOpened, pendingPoolOpen, onPoolOpened }: { onAddRecentItem?: (item: { id: string; type: 'vaga' | 'chat' | 'candidato' | 'banco'; title: string; subtitle?: string; meta?: Record<string, string | undefined> }) => void; pendingCandidateOpen?: { candidateId: string; candidateName: string } | null; onCandidateOpened?: () => void; pendingPoolOpen?: { poolId: string; poolName: string } | null; onPoolOpened?: () => void } = {}) {
   const {
     searchFingerprint,
     handleReSearchWithFilters,
+    bulkReveal,
     activeSearchFilters, activeSearchTab, activeTab, addToListCandidateIds, addToListCandidateNames, bulkJobVacancies,
     candidateListsForModal, candidates, chatMessages, clearAllFilters, clearAllTableFilters, clearCrossTabFilter,
     columnSearchTerm, columnWidths, confirmContactFilterChange, confirmSourceChange, contactModalAction, contactModalCandidate,
@@ -67,7 +70,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
     handleCandidatePageOpen, handleCloseCandidatePage, handleCloseCandidatePreview, handleConfirmPearchSearch, handleContactCandidate, handleExitWithoutSaving,
     handleExpandToGlobal, handleLIAChatMessage, handleLIAClick, handleLoadMore, handleNavigateToFullProfile, handlePreviewResize,
     handleQuickAction, handleRevealContact, handleSaveAllAndExit, handleSaveToLocalBase, handleScheduleComplete, handleScheduleInterview,
-    handleSendAgendamento, handleSendEmail, handleSendFeedback, handleSendMessage, handleSendTriagem, handleSendWhatsApp,
+    handleSendAgendamento, handleSendEmail, handleSendFeedback, handleOpenScheduleMessageModal, handleSendMessage, handleSendTriagem, handleSendWhatsApp,
     handleStartWSITextScreening, handleTabChangeWithWarning, handleToggleColumnConfig, handleToggleFavorite, handleTogglePin, handleTogglePreviewMaximize,
     handleUnifiedModalClose, handleUnifiedModalSend, handleUpdateFavoriteNote, handleWSIScreeningComplete, hideViewedCandidates, isAddingToList,
     isLIAThinking, isLoading, isSavingToBase, isSearchActive,
@@ -83,20 +86,20 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
     setSelectedCandidatesForBatch, setSelectedListForVacancies, setShareSearchCandidates, setShareSearchTitle, setShowAddCandidateModal, setShowAddListToVacanciesModal,
     setShowAddToListModal, setShowAddToVacancyModal, setShowAdvancedSearch, setShowBatchApproval, setShowCVPreviewModal, setShowColumnConfig,
     setShowComparisonModal, setShowContactFilterModal, setShowContactModal, setShowCreditConfirmation, setShowRevealModal, setShowRubricModal,
-    setShowScheduleModal, setShowSendEmailModal, setShowShareSearchModal, setShowSourceChangeModal, setShowTableFiltersPanel, setShowUnsavedWarningModal,
+    setShowScheduleModal, setShowScheduleMessageModal, setScheduleMessageCandidate, setShowSendEmailModal, setShowShareSearchModal, setShowSourceChangeModal, setShowTableFiltersPanel, setShowUnsavedWarningModal,
     setShowWSIInviteModal, setShowWSITextModal, setShowWSIVoiceModal, setTableColumns, setTableFilters, setWsiCandidateForScreening,
     setWsiInviteCandidate, shareSearchCandidates, shareSearchTitle, showAddCandidateModal, showAddListToVacanciesModal, showAddToListModal,
     showAddToVacancyModal, showAdvancedSearch, showBatchApproval, showCVPreviewModal, showColumnConfig, showComparisonModal,
     showContactFilterModal, showContactModal, showCreditConfirmation, showRevealModal, showRubricModal, showScheduleModal,
-    showSendEmailModal, showShareSearchModal, showSourceChangeModal, showTableFiltersPanel, showUnsavedWarningModal, showWSIInviteModal,
+    showScheduleMessageModal, scheduleMessageCandidate, showSendEmailModal, showShareSearchModal, showSourceChangeModal, showTableFiltersPanel, showUnsavedWarningModal, showWSIInviteModal,
     showWSITextModal, showWSIVoiceModal, sortedCandidates, tableColumns, tableContainerRef, tableFilters,
-    talentFunnel, toggleTableFilter, unifiedModalCandidate, unifiedModalOpen, unifiedModalType,
+    talentFunnel, toggleTableFilter, unifiedModalCandidate, unifiedModalSelectedCandidates, unifiedModalOpen, unifiedModalType,
     unsavedPearchCandidates, user, visibleCandidates, visibleTableColumns, wsiCandidateForScreening, wsiInviteCandidate,
     tabs: tabsRaw,
     archetypeCreationStep, archetypeToDelete, buildFiltersFromTags, crossTabFilter, currentPage, currentSearchSource,
     cvUploadLoading, displayedResultsCount, editQueryValue, isCreatingArchetype, isDroppingCV, isExpandingToGlobal,
     isLoadingMore, isPreviewMaximized, itemsPerPage, lastSearchEntities, lastSearchQuery, lastSuccessfulQuery,
-    liaPromptValue, localResultsCount, newArchetypeData, previewCandidate, previewingUserArchetype, previewSuggestion,
+    liaPromptValue, localResultsCount, pearchResultsCount, newArchetypeData, previewCandidate, previewingUserArchetype, previewSuggestion,
     quickFilters, searchSortBy, searchSource, searchTerm, selectedCandidate,
     setArchetypeCreationStep, setArchetypeToDelete, setCurrentPage, setDisplayedResultsCount, setEditQueryValue,
     setHasSearchResults, setIsCreatingArchetype, setLastSearchEntities, setLastSearchMetadata, setLastSearchMode, setLastSearchQuery,
@@ -108,7 +111,62 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
     showCandidatePage, showCandidatePreview,
     candidatesError, refreshCandidatesList,
     tabs,
+    fairnessError, setFairnessError,
   } = useCandidatesPageCore({ onAddRecentItem, pendingCandidateOpen, onCandidateOpened })
+
+  const [selectedPoolId, setSelectedPoolId] = useState<string | null>(null)
+
+  const handleSelectPool = (poolId: string, poolName: string) => {
+    onAddRecentItem?.({
+      id: poolId,
+      type: 'banco',
+      title: poolName,
+      meta: { poolId, poolName },
+    })
+    setSelectedPoolId(poolId)
+  }
+
+  // "Pending open" pattern (espelha vagas/candidatos): ao clicar no banco em
+  // "Recentes", abrimos o Funil na aba de bancos com o banco selecionado.
+  useEffect(() => {
+    if (pendingPoolOpen) {
+      ;(setActiveTab as (v: string) => void)('talent-pools')
+      setSelectedPoolId(pendingPoolOpen.poolId)
+      onPoolOpened?.()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingPoolOpen])
+
+  // Critérios para o QualificationMatrixCard no painel de preview:
+  // prefere filtros de tabela ativos; senão usa os critérios parseados da busca natural.
+  const previewSearchCriteria: Record<string, unknown> | null = (() => {
+    if (tableFilters.skills.length || tableFilters.seniorityLevels.length || tableFilters.locations.length) {
+      return {
+        required_skills: tableFilters.skills,
+        seniority_levels: tableFilters.seniorityLevels,
+        locations: tableFilters.locations,
+      }
+    }
+    if (
+      lastSearchEntities &&
+      (lastSearchEntities.skills?.length ||
+        lastSearchEntities.location ||
+        lastSearchEntities.seniority ||
+        lastSearchEntities.job_title ||
+        lastSearchEntities.years_experience)
+    ) {
+      const rawYears = lastSearchEntities.years_experience
+      const minYears = rawYears ? parseInt(rawYears, 10) : undefined
+      return {
+        required_skills: lastSearchEntities.skills ?? [],
+        seniority_levels: lastSearchEntities.seniority ? [lastSearchEntities.seniority] : [],
+        locations: lastSearchEntities.location ? [lastSearchEntities.location] : [],
+        ...(lastSearchEntities.job_title ? { titles: [lastSearchEntities.job_title] } : {}),
+        ...(minYears && !isNaN(minYears) ? { min_years_experience: minYears } : {}),
+      }
+    }
+    return null
+  })()
 
   return (
     <SearchFingerprintProvider value={searchFingerprint}>
@@ -125,10 +183,17 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
         onTabChange={handleTabChangeWithWarning}
         onAddCandidate={() => setShowAddCandidateModal(true)}
         onNewSearch={() => {
-          setShowSearchResults(false)
-          setSearchTerm('')
-          setLastSearchQuery('')
-          setActiveTab('search')
+          const clearSearch = () => {
+            setShowSearchResults(false)
+            setSearchTerm('')
+            setLastSearchQuery('')
+            setActiveTab('search')
+          }
+          if ((unsavedPearchCandidates.length > 0 || pearchResultsCount > 0) && showSearchResults) {
+            useNavGuardStore.getState().requestLeave(clearSearch)
+          } else {
+            clearSearch()
+          }
         }}
         onSaveCurrentSearch={saveCurrentSearch}
       />
@@ -162,6 +227,8 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
             onSearchSourceChange={setSearchSource}
             onRequireEmailsChange={(value) => setPearchSearchOptions(prev => ({ ...prev, requireEmails: value }))}
             onRequirePhoneNumbersChange={(value) => setPearchSearchOptions(prev => ({ ...prev, requirePhoneNumbers: value }))}
+            fairnessError={fairnessError}
+            onFairnessErrorDismiss={() => setFairnessError(null)}
           />
         )}
 
@@ -199,6 +266,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
               setShowShareSearchModal(true)
             }}
             onBulkEmail={handleBulkEmail}
+            onBulkReveal={() => bulkReveal.open(candidates.filter(c => selectedCandidatesForBatch.has(c.id)))}
             onBulkWSIScreening={handleBulkWSIScreening}
             onToggleFavoriteBatch={() => {
               selectedCandidatesForBatch.forEach(id => talentFunnel.toggleFavoriteCandidate(id))
@@ -377,9 +445,10 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                   <div className="absolute inset-0 -left-1 -right-1"></div>
                   <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-12 bg-lia-border-default dark:bg-lia-bg-elevated group-hover:bg-lia-border-medium dark:group-hover:bg-lia-bg-secondary rounded-full transition-colors motion-reduce:transition-none"></div>
                 </div>
-                <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle h-[calc(100vh-6rem)] overflow-hidden">
+                <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle h-[calc(100vh-6rem)] overflow-y-auto">
                   <CandidatePreview
                     candidate={previewCandidate as unknown as Record<string, unknown>}
+                    searchCriteria={previewSearchCriteria}
                     isOpen={showCandidatePreview}
                     onClose={handleCloseCandidatePreview}
                     isMaximized={isPreviewMaximized}
@@ -554,7 +623,11 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
         )}
 
         {(activeTab as string) === 'talent-pools' && (
-          <TalentPoolsTab onSelectPool={(id) => {}} />
+          <TalentPoolsTab
+            onSelectPool={handleSelectPool}
+            openPoolId={selectedPoolId}
+            onClosePool={() => setSelectedPoolId(null)}
+          />
         )}
 
         {/* Aba Buscas Salvas */}
@@ -568,9 +641,9 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
               setSearchSource(search.source)
               setActiveTab('search')
               talentFunnel.incrementSavedSearchUsage(search.id)
-              setTimeout(() => {
-                setShowSearchResults(false)
-              }, 100)
+              // P1-7/lacuna: executar de fato a busca salva (antes so escondia
+              // os resultados, nunca rodava executeSearch).
+              executeSearch(search.query, undefined, search.mode, undefined, search.source !== 'local')
             }}
             onAddSearch={(search) => {
               talentFunnel.addSavedSearch(search)
@@ -593,6 +666,15 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
 
       </div>
 
+      <BulkRevealModal
+        isOpen={bulkReveal.showModal}
+        onClose={bulkReveal.close}
+        onConfirm={bulkReveal.confirm}
+        onCancel={bulkReveal.cancel}
+        candidateCount={bulkReveal.candidates.length}
+        isRevealing={bulkReveal.isRevealing}
+      />
+
       {/* Modals - extracted to CandidatesPageModals */}
       <CandidatesPageModals
         selectedCandidateForAction={selectedCandidateForAction}
@@ -609,6 +691,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
         handleScheduleComplete={handleScheduleComplete as unknown as CandidatesPageModalsProps["handleScheduleComplete"]}
         unifiedModalOpen={unifiedModalOpen}
         unifiedModalCandidate={unifiedModalCandidate}
+        unifiedModalSelectedCandidates={unifiedModalSelectedCandidates}
         unifiedModalType={unifiedModalType}
         lastSearchQuery={lastSearchQuery}
         handleUnifiedModalClose={handleUnifiedModalClose}
@@ -658,6 +741,10 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
         setShowSendEmailModal={setShowSendEmailModal}
         emailCandidateSelected={emailCandidateSelected}
         setEmailCandidateSelected={setEmailCandidateSelected}
+        showScheduleMessageModal={showScheduleMessageModal}
+        setShowScheduleMessageModal={setShowScheduleMessageModal}
+        scheduleMessageCandidate={scheduleMessageCandidate}
+        setScheduleMessageCandidate={setScheduleMessageCandidate}
         showRevealModal={showRevealModal}
         setShowRevealModal={setShowRevealModal}
         revealCandidate={revealCandidate}

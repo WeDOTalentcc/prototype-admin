@@ -1,3 +1,4 @@
+__domain_type__ = "agentic"  # ADR-031 §6.1
 # hiring_policy — domínio canônico de configuração de políticas de contratação.
 #
 # Este é o domínio de referência para políticas. O domínio `app.domains.policy`

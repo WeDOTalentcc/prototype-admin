@@ -194,19 +194,19 @@ export function PauseOptionsStep({
           <div className="flex items-center space-x-2">
             <Checkbox id="cancelScreenings" checked={cancelScreenings} onCheckedChange={(c) => onCancelScreeningsChange(c === true)} disabled={hasProposalBlock} className="border-lia-border-default data-[state=checked]:bg-lia-btn-primary-bg data-[state=checked]:border-lia-btn-primary-bg" />
             <Label htmlFor="cancelScreenings" className="text-xs text-lia-text-primary cursor-pointer flex items-center gap-1">
-              <Filter className="w-3 h-3 text-lia-text-disabled" />Desmarcar triagens pendentes ({totalScreenings})
+              <Filter className="w-3 h-3 text-lia-text-muted" />Desmarcar triagens pendentes ({totalScreenings})
             </Label>
           </div>
           <div className="flex items-center space-x-2">
             <Checkbox id="cancelInterviews" checked={cancelInterviews} onCheckedChange={(c) => onCancelInterviewsChange(c === true)} disabled={hasProposalBlock} className="border-lia-border-default data-[state=checked]:bg-lia-btn-primary-bg data-[state=checked]:border-lia-btn-primary-bg" />
             <Label htmlFor="cancelInterviews" className="text-xs text-lia-text-primary cursor-pointer flex items-center gap-1">
-              <Calendar className="w-3 h-3 text-lia-text-disabled" />Desmarcar entrevistas agendadas ({totalInterviews})
+              <Calendar className="w-3 h-3 text-lia-text-muted" />Desmarcar entrevistas agendadas ({totalInterviews})
             </Label>
           </div>
           <div className="flex items-center space-x-2">
             <Checkbox id="cancelTests" checked={cancelTests} onCheckedChange={(c) => onCancelTestsChange(c === true)} disabled={hasProposalBlock} className="border-lia-border-default data-[state=checked]:bg-lia-btn-primary-bg data-[state=checked]:border-lia-btn-primary-bg" />
             <Label htmlFor="cancelTests" className="text-xs text-lia-text-primary cursor-pointer flex items-center gap-1">
-              <FileText className="w-3 h-3 text-lia-text-disabled" />Cancelar testes agendados ({totalTests})
+              <FileText className="w-3 h-3 text-lia-text-muted" />Cancelar testes agendados ({totalTests})
             </Label>
           </div>
         </div>

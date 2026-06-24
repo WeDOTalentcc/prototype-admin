@@ -113,11 +113,7 @@ export interface CompanyData {
     platform_expectations?: string;
     communication_channels?: string[];
     allow_lia_contact?: boolean;
-    additional_notes?: string;
-    responsible_name?: string;
-    responsible_position?: string;
     preferred_contact_time?: string;
-    onboarding_completed_at?: string;
   };
 }
 
@@ -157,6 +153,9 @@ export interface NewApproverForm {
   level: number;
   departmentId: string | null;
   canApproveAboveAmount: number | null;
+  // Sprint 2 (2026-06-21): TIPO A = user from platform; TIPO B = external magic link
+  userId?: string | null;
+  approvalMethod: "platform" | "email_link";
 }
 
 export const DEFAULT_NEW_DEPARTMENT: NewDepartmentForm = {
@@ -335,7 +334,7 @@ export const TECH_STACK_CATEGORIES = [
     key: "cloud",
     label: "Cloud",
     icon: Cloud,
-    color: "bg-wedo-cyan/10 text-wedo-cyan-dark dark:bg-wedo-cyan/20 dark:text-wedo-cyan-dark",
+    color: "bg-wedo-cyan/10 text-wedo-cyan-text dark:bg-wedo-cyan/20 dark:text-wedo-cyan-dark",
     suggestions: [
       "AWS",
       "Azure",
@@ -351,7 +350,7 @@ export const TECH_STACK_CATEGORIES = [
     label: "DevOps",
     icon: Settings,
     color:
-      "bg-wedo-purple/10 text-wedo-purple dark:bg-wedo-purple/20 dark:text-wedo-purple",
+      "bg-wedo-purple/10 text-wedo-purple-text dark:bg-wedo-purple/20 dark:text-wedo-purple",
     suggestions: [
       "Docker",
       "Kubernetes",
@@ -366,7 +365,7 @@ export const TECH_STACK_CATEGORIES = [
     key: "ia_ml",
     label: "IA/ML",
     icon: Brain,
-    color: "bg-wedo-magenta/10 text-wedo-magenta dark:bg-wedo-magenta/20 dark:text-wedo-magenta",
+    color: "bg-wedo-magenta/10 text-wedo-magenta-text dark:bg-wedo-magenta/20 dark:text-wedo-magenta",
     suggestions: [
       "TensorFlow",
       "PyTorch",
@@ -382,7 +381,7 @@ export const TECH_STACK_CATEGORIES = [
     label: "ERPs",
     icon: Briefcase,
     color:
-      "bg-wedo-orange/10 text-wedo-orange dark:bg-wedo-orange/20 dark:text-wedo-orange",
+      "bg-wedo-orange/10 text-wedo-orange-text dark:bg-wedo-orange/20 dark:text-wedo-orange",
     suggestions: [
       "SAP",
       "Oracle",
@@ -397,7 +396,7 @@ export const TECH_STACK_CATEGORIES = [
     key: "design",
     label: "Design",
     icon: Palette,
-    color: "bg-wedo-magenta/10 text-wedo-magenta dark:bg-wedo-magenta/20 dark:text-wedo-magenta",
+    color: "bg-wedo-magenta/10 text-wedo-magenta-text dark:bg-wedo-magenta/20 dark:text-wedo-magenta",
     suggestions: [
       "Figma",
       "Adobe XD",
@@ -413,7 +412,7 @@ export const TECH_STACK_CATEGORIES = [
     label: "Mobile",
     icon: Smartphone,
     color:
-      "bg-wedo-purple/10 text-wedo-purple dark:bg-wedo-purple/20 dark:text-wedo-purple",
+      "bg-wedo-purple/10 text-wedo-purple-text dark:bg-wedo-purple/20 dark:text-wedo-purple",
     suggestions: [
       "React Native",
       "Flutter",

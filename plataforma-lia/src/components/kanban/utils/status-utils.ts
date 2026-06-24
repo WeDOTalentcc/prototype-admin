@@ -60,7 +60,7 @@ export function getScoreColor(score: number | null | undefined): string {
   if (score == null) return 'bg-lia-bg-tertiary'
   if (score >= 80) return 'bg-status-success/15 text-status-success'
   if (score >= 60) return 'bg-status-warning/15 text-status-warning'
-  if (score >= 40) return 'bg-wedo-orange/15 text-wedo-orange'
+  if (score >= 40) return 'bg-wedo-orange/15 text-wedo-orange-text'
   return 'bg-status-error/15 text-status-error'
 }
 

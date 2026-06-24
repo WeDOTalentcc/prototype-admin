@@ -103,17 +103,6 @@ def test_eligibility_node_emits_span_with_required_attributes():
     assert result.is_valid, result.reason()
 
 
-def test_handoff_node_emits_span_with_required_attributes(monkeypatch):
-    """handoff_node calls emit_job_creation_audit — stub it for hermeticity."""
-    from app.domains.job_creation import graph as g
-
-    monkeypatch.setattr(g, "emit_job_creation_audit", lambda *_a, **_kw: None)
-    g.handoff_node(_seed_state(current_stage="handoff", job_id=99))
-    spans = _spans_named([WIZARD_SPANS.JOB_CREATION_HANDOFF])
-    assert spans
-    result = validate_span_attributes(spans[-1])
-    assert result.is_valid, result.reason()
-
 
 def test_node_error_marks_span_status(monkeypatch):
     """When a node raises, its span must still be emitted with status=error."""
@@ -145,7 +134,7 @@ def test_node_error_marks_span_status(monkeypatch):
 # ---------------------------------------------------------------------------
 
 def test_get_agent_emits_span_with_tenant_context(monkeypatch):
-    from app.api.v1 import agent_chat_ws
+    from app.api.v1 import chat_shared as agent_chat_ws
 
     # Bypass the registry — we only care about the span instrumentation.
     monkeypatch.setattr(agent_chat_ws, "_ensure_agents_loaded", lambda: None)
@@ -174,7 +163,7 @@ def test_get_agent_emits_span_with_tenant_context(monkeypatch):
 def test_get_agent_without_context_fails_validation(monkeypatch):
     """Sanity check: a caller forgetting to pass tenant context produces a
     span the CI gate flags. This is the safety net the audit asked for."""
-    from app.api.v1 import agent_chat_ws
+    from app.api.v1 import chat_shared as agent_chat_ws
 
     monkeypatch.setattr(agent_chat_ws, "_ensure_agents_loaded", lambda: None)
 

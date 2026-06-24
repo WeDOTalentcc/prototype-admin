@@ -34,7 +34,8 @@ function getDismissed(): Set<string> {
 function saveDismissed(ids: Set<string>) {
   try {
     sessionStorage.setItem(STORAGE_KEY, JSON.stringify([...ids]))
-  } catch {
+  } catch (error) {
+    console.error("[use-proactive-insights] Error:", error)
     // fail silently
   }
 }

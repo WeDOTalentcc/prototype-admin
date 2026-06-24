@@ -18,6 +18,7 @@ from ._shared import (
 )
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+from app.shared.errors import LIAError
 
 router = APIRouter()
 
@@ -68,7 +69,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error listing automations: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to list automations: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/{client_id}/automations", status_code=201, summary="Create automation", response_model=None)
@@ -102,7 +103,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error creating automation: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to create automation: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.put("/{client_id}/automations/{automation_id}", summary="Update automation", response_model=None)
@@ -138,7 +139,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error updating automation: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to update automation: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.delete("/{client_id}/automations/{automation_id}", summary="Delete automation", response_model=None)
@@ -167,7 +168,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error deleting automation: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to delete automation: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.patch("/{client_id}/automations/{automation_id}/toggle", summary="Toggle automation active state", response_model=None)
@@ -201,4 +202,4 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error toggling automation: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to toggle automation: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")

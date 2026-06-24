@@ -86,7 +86,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
       name: 'Presencial',
       icon: Building,
       description: 'Encontro no escritório',
-      color: 'bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30'
+      color: 'bg-wedo-purple/10 text-wedo-purple-text border-wedo-purple/30'
     }
   ]
 
@@ -252,7 +252,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
           .join('\n')
         const attentionPoints = (liaRecommendations as Record<string, unknown>).attentionPoints as Record<string, unknown> | undefined
         const strengths = (attentionPoints?.strengths as string[]) || []
-        setNotes(`Foco da entrevista (sugerido pela LIA):\n\n${focusAreas}\n\nPontos de atenção:\n${strengths[0] || ''}`)
+        setNotes(`Foco da entrevista (sugerido por IA):\n\n${focusAreas}\n\nPontos de atenção:\n${strengths[0] || ''}`)
         break
       }
     }
@@ -283,7 +283,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
         interview_mode: interviewModeMap[scheduleType] || 'video',
         job_title: candidate.role,
         location: scheduleType === 'presential' ? location : platform,
-        notes: notes || (liaRecommendations ? `Recomendações LIA aplicadas: ${liaFocus}` : undefined)
+        notes: notes || (liaRecommendations ? `Recomendações de IA aplicadas: ${liaFocus}` : undefined)
       })
 
       setCreatedInterviewId(response.id)
@@ -370,7 +370,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
             <div className="flex items-center justify-between mb-3">
               <h4 className={`${textStyles.label} flex items-center gap-2`}>
                 <Brain className="w-4 h-4 text-wedo-cyan" />
-                LIA - Recomendações Inteligentes
+                IA - Recomendações Inteligentes
               </h4>
               <div className="flex items-center gap-2">
                 <select
@@ -396,7 +396,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                   ) : (
                     <>
                       <Brain className="w-4 h-4 text-wedo-cyan" />
-                      Analisar com LIA
+                      Analisar com IA
                     </>
                   )}
                 </button>

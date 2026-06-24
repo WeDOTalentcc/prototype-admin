@@ -249,7 +249,7 @@ export function ChatSuggestionsPanel({
                       className={cn(
                         "p-1 rounded-md flex-shrink-0",
                         card.priority === "high"
-                          ? "bg-wedo-cyan/10 text-wedo-cyan"
+                          ? "bg-wedo-cyan/10 text-wedo-cyan-text"
                           : "bg-lia-bg-tertiary text-lia-text-tertiary",
                       )}
                     >

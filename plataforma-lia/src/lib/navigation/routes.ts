@@ -24,12 +24,15 @@ export const PAGE_PATHS = {
   "Vagas": "/jobs",
   "Recrutar": "/recrutar",
   "Funil de Talentos": "/funil-de-talentos",
-  "Estúdio de Agentes": "/agent-studio",
+  "Agentes": "/agent-studio",
+  "Marketplace": "/agents/marketplace",
   "Configurações": "/configuracoes",
+  "Plano e Cobrança": "/configuracoes/plano-e-cobranca",
   "Biblioteca LIA": "/biblioteca-lia",
   "Bancos de Talentos": "/bancos-de-talentos",
   "Central Comunicação": "/central-comunicacao",
   "Ajuda": "/ajuda",
+  "Projetos": "/projetos",
 } as const
 
 export type PageLabel = keyof typeof PAGE_PATHS
@@ -42,9 +45,10 @@ export type PagePath = (typeof PAGE_PATHS)[PageLabel]
  * remains the single typed enumeration of valid `currentPage` values.
  */
 export const SPA_ONLY_PAGE_LABELS = [
+  "Relatórios",
   "Indicadores",
   "Templates",
-  "Módulos",
+  "Estúdio de Agentes",
 ] as const
 
 export type SpaOnlyPageLabel = (typeof SPA_ONLY_PAGE_LABELS)[number]
@@ -74,4 +78,24 @@ export function pathFromLabel(label: string): PagePath | undefined {
 /** Returns the canonical label for a first-segment path (without locale), or undefined. */
 export function labelFromPath(path: string): PageLabel | undefined {
   return PATH_TO_LABEL[path]
+}
+
+/**
+ * Fase A.2 (2026-06-06): deep-link de navegação in-shell. Mapeia o param
+ * `?view=<label>` para um DashboardPageLabel válido. Usado pela LIA para
+ * navegar às abas SEM rota própria (Indicadores, Templates, Módulos) — o
+ * DashboardApp lê este param no mount + em mudança de searchParams.
+ * Retorna undefined para param ausente/desconhecido (falha-soft).
+ */
+export function pageLabelFromViewParam(
+  raw: string | null | undefined,
+): DashboardPageLabel | undefined {
+  if (!raw) return undefined
+  let decoded = raw
+  try {
+    decoded = decodeURIComponent(raw)
+  } catch {
+    decoded = raw
+  }
+  return isDashboardPageLabel(decoded) ? (decoded as DashboardPageLabel) : undefined
 }

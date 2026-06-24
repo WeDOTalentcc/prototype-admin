@@ -562,7 +562,49 @@ class NotificationService:
             "failed": [],
             "created_at": datetime.utcnow().isoformat()
         }
-        
+
+        # ── Deduplication guard ──────────────────────────────────────────────
+        # Prevents duplicate sends on retry / duplicate events. FAIL-OPEN:
+        # Redis unavailable -> allow send (availability > dedup).
+        try:
+            from lia_messaging.notification_dedup import (
+                build_idempotency_key,
+                is_duplicate,
+                DEFAULT_DEDUP_TTL_SECONDS,
+            )
+            _event_type = (
+                proactive_type.value
+                if isinstance(proactive_type, ProactiveNotificationType)
+                else (
+                    proactive_type
+                    if proactive_type
+                    else (
+                        notification_type.value
+                        if isinstance(notification_type, NotificationType)
+                        else str(notification_type)
+                    )
+                )
+            )
+            _company_id = (data or {}).get("company_id", "")
+            _idem_key = build_idempotency_key(
+                event_type=_event_type,
+                user_id=user_id,
+                company_id=_company_id,
+                title=title,
+                message=message,
+            )
+            if await is_duplicate(_idem_key, DEFAULT_DEDUP_TTL_SECONDS):
+                logger.info(
+                    "[NotifDedup] Skipped duplicate notification user=%s event=%s",
+                    user_id, _event_type,
+                )
+                results["skipped_as_duplicate"] = True
+                results["idempotency_key"] = _idem_key
+                return results
+        except Exception as _dedup_exc:
+            logger.warning("[NotifDedup] Dedup check failed (fail-open): %s", _dedup_exc)
+        # ────────────────────────────────────────────────────────────────────
+
         try:
             for channel in channels:
                 try:
@@ -612,6 +654,16 @@ class NotificationService:
                         logger.info(f"📱 Teams notification sent to user {user_id}")
                     
                     elif channel == NotificationChannel.EMAIL:
+                        # Guard: system:-prefixed user_ids are service accounts with no
+                        # real DB row. The UUID lookup would raise "invalid UUID 'system:...'
+                        # length must be between 32..36" (30 occurrences in logs). Skip email
+                        # for service accounts silently -- they have no inbox.
+                        if isinstance(user_id, str) and user_id.startswith("system:"):
+                            logger.debug(
+                                "Skipping email channel for service-account user_id '%s'",
+                                user_id,
+                            )
+                            continue
                         recipient_email = data.get("recipient_email") if data else None
                         if not recipient_email:
                             from app.core.database import AsyncSessionLocal as DBSession
@@ -766,6 +818,22 @@ class NotificationService:
         """Send notification to Teams channel with adaptive card support."""
         try:
             from app.domains.communication.services.teams_service import teams_service
+
+            # E2 (2026-06-09): resolve webhook PER-TENANT. Antes send_adaptive_card/
+            # send_message eram chamados sem webhook_url -> caíam no global
+            # TEAMS_WEBHOOK_URL -> alerta de uma empresa ia pro canal Teams de
+            # outra (gap multi-tenant). company_id vem em data (propagado no E1).
+            webhook_url = None
+            _company_id = data.get("company_id") if data else None
+            if _company_id:
+                from app.core.database import AsyncSessionLocal
+                from app.domains.communication.services.teams_service import (
+                    resolve_tenant_teams_webhook_url,
+                )
+                async with AsyncSessionLocal() as _wh_db:
+                    webhook_url, _wh_src = await resolve_tenant_teams_webhook_url(
+                        _company_id, _wh_db
+                    )
             
             actions = data.get("actions", []) if data else []
             
@@ -814,12 +882,13 @@ class NotificationService:
                         ]
                     })
                 
-                await teams_service.send_adaptive_card(adaptive_card)
+                await teams_service.send_adaptive_card(adaptive_card, webhook_url=webhook_url)
                 logger.info(f"Teams adaptive card sent for user {user_id}: {title}")
             else:
                 await teams_service.send_message(
                     text=message,
-                    title=title
+                    title=title,
+                    webhook_url=webhook_url
                 )
                 logger.info(f"Teams simple message sent for user {user_id}: {title}")
             

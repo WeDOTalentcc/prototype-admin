@@ -4,15 +4,18 @@ import React from"react"
 import { Button } from"@/components/ui/button"
 import { Card } from"@/components/ui/card"
 import { Chip } from "@/components/ui/chip"
-import { 
-  Search, Plus, MapPin, Users, Edit2, Share2, 
-  BarChart3, Target, CheckCircle, Linkedin, Globe, 
-  Building, UserCheck, AlertCircle, AlertTriangle, 
+import {
+  Search, Plus, MapPin, Users, Edit2, Share2,
+  BarChart3, Target, CheckCircle, Linkedin, Globe,
+  Building, UserCheck, AlertCircle, AlertTriangle,
   X, Bookmark, Trash2, Layers3, Briefcase, Filter, User
 } from"lucide-react"
 import { textStyles } from '@/lib/design-tokens'
-import type { JobFilters as JobFiltersType } from './jobsPageTypes'
+import type { JobFilters as JobFiltersType, Job } from './jobsPageTypes'
 import type { SavedSearch } from '@/stores/job-filters-store'
+import { useDepartmentsList } from '@/hooks/settings/useDepartmentsList'
+import { useCompanyRecruiters } from '@/hooks/company/use-company-recruiters'
+import { useCompanyManagers } from '@/hooks/company/use-company-managers'
 
 export interface JobFiltersProps {
   isOpen: boolean
@@ -26,6 +29,9 @@ export interface JobFiltersProps {
   handleRenameSavedSearch: (id: string, name: string) => void
   handleDeleteSavedSearch: (id: string) => void
   saveSearchAsTemplate: (name: string) => void
+  /** Lista de vagas reais para derivar opções de Localização. Opcional —
+   *  fallback = [] (seção Localização fica vazia mas não quebra). */
+  allJobs?: Job[]
 }
 
 export function JobFiltersPanel({
@@ -39,8 +45,21 @@ export function JobFiltersPanel({
   handleApplySavedSearch,
   handleRenameSavedSearch,
   handleDeleteSavedSearch,
-  saveSearchAsTemplate
+  saveSearchAsTemplate,
+  allJobs,
 }: JobFiltersProps) {
+  // ── Hooks SEMPRE no topo (Rules of Hooks) ──────────────────────────────────
+  const { departments } = useDepartmentsList()
+  const { recruiters } = useCompanyRecruiters()
+  const { managers } = useCompanyManagers()
+
+  // Derivar localizações distintas das vagas reais (RV-019)
+  const locationOptions: string[] = React.useMemo(
+    () => [...new Set((allJobs ?? []).map(j => j.location).filter(Boolean))].sort(),
+    [allJobs],
+  )
+
+  // Early return APÓS todos os hooks
   if (!isOpen) return null
 
   return (
@@ -70,8 +89,8 @@ export function JobFiltersPanel({
                 size="sm"
                 onClick={() => toggleJobFilter('status', 'statuses', 'Ativa')}
                 className={`h-8 text-xs justify-start ${
-                  jobFilters.status?.statuses?.includes('Ativa') 
-                    ? 'bg-lia-bg-tertiary border-lia-btn-primary-bg dark:border-lia-border-subtle text-lia-text-primary font-semibold' 
+                  jobFilters.status?.statuses?.includes('Ativa')
+                    ? 'bg-lia-bg-tertiary border-lia-btn-primary-bg dark:border-lia-border-subtle text-lia-text-primary font-semibold'
                     : ''
                 }`}
               >
@@ -83,8 +102,8 @@ export function JobFiltersPanel({
                 size="sm"
                 onClick={() => toggleJobFilter('status', 'priorities', 'alta')}
                 className={`h-8 text-xs justify-start ${
-                  jobFilters.status?.priorities?.includes('alta') 
-                    ? 'bg-status-error/10 border-status-error/30 text-status-error font-semibold' 
+                  jobFilters.status?.priorities?.includes('alta')
+                    ? 'bg-status-error/10 border-status-error/30 text-status-error font-semibold'
                     : ''
                 }`}
               >
@@ -96,8 +115,8 @@ export function JobFiltersPanel({
                 size="sm"
                 onClick={() => toggleJobFilter('position', 'workModels', 'remoto')}
                 className={`h-8 text-xs justify-start ${
-                  jobFilters.position?.workModels?.includes('remoto') 
-                    ? 'bg-lia-bg-secondary border-lia-btn-primary-bg dark:border-lia-border-subtle text-wedo-cyan-dark font-semibold' 
+                  jobFilters.position?.workModels?.includes('remoto')
+                    ? 'bg-lia-bg-secondary border-lia-btn-primary-bg dark:border-lia-border-subtle text-wedo-cyan-text font-semibold'
                     : ''
                 }`}
               >
@@ -109,8 +128,8 @@ export function JobFiltersPanel({
                 size="sm"
                 onClick={() => toggleJobFilter('funnel', 'emptyPipeline', true)}
                 className={`h-8 text-xs justify-start ${
-                  jobFilters.funnel?.emptyPipeline 
-                    ? 'bg-wedo-orange/10 border-wedo-orange/30 text-wedo-orange font-semibold' 
+                  jobFilters.funnel?.emptyPipeline
+                    ? 'bg-wedo-orange/10 border-wedo-orange/30 text-wedo-orange-text font-semibold'
                     : ''
                 }`}
               >
@@ -155,7 +174,7 @@ export function JobFiltersPanel({
                   variant="neutral"
                   className={`text-xs cursor-pointer hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none ${
                     jobFilters.status?.stages?.includes(stage)
-                      ? 'bg-wedo-purple/10 border-wedo-purple/30 text-wedo-purple font-medium'
+                      ? 'bg-wedo-purple/10 border-wedo-purple/30 text-wedo-purple-text font-medium'
                       : 'bg-lia-bg-primary text-lia-text-primary'
                   }`}
                   onClick={() => toggleJobFilter('status', 'stages', stage)}
@@ -239,93 +258,101 @@ export function JobFiltersPanel({
             </div>
           </div>
 
+          {/* Localização — derivado das vagas reais (RV-019) */}
           <div className="space-y-2">
             <h4 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5">
               <MapPin className="w-3.5 h-3.5" />
               Localização
             </h4>
-            <div className="flex flex-wrap gap-1.5">
-              {['São Paulo, SP', 'Rio de Janeiro, RJ', 'Belo Horizonte, MG', 'Curitiba, PR', 'Porto Alegre, RS', 'Brasília, DF', 'Remoto'].map(loc => (
-                <Chip
-                  key={loc}
-                  variant="neutral"
-                  className={`text-xs cursor-pointer hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none ${
-                    jobFilters.position?.locations?.includes(loc)
-                      ? 'bg-lia-bg-tertiary border-lia-btn-primary-bg dark:border-lia-border-subtle text-lia-text-primary font-medium'
-                      : 'bg-lia-bg-primary text-lia-text-primary'
-                  }`}
-                  onClick={() => toggleJobFilter('position', 'locations', loc)}
-                >
-                  {loc}
-                </Chip>
-              ))}
-            </div>
+            {locationOptions.length > 0 ? (
+              <div className="flex flex-wrap gap-1.5">
+                {locationOptions.map(loc => (
+                  <Chip
+                    key={loc}
+                    variant="neutral"
+                    className={`text-xs cursor-pointer hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none ${
+                      jobFilters.position?.locations?.includes(loc)
+                        ? 'bg-lia-bg-tertiary border-lia-btn-primary-bg dark:border-lia-border-subtle text-lia-text-primary font-medium'
+                        : 'bg-lia-bg-primary text-lia-text-primary'
+                    }`}
+                    onClick={() => toggleJobFilter('position', 'locations', loc)}
+                  >
+                    {loc}
+                  </Chip>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-lia-text-tertiary">Nenhuma localização disponível</p>
+            )}
           </div>
 
+          {/* Sub-tarefa A: Departamento — fonte real via useDepartmentsList */}
           <div className="space-y-2">
             <h4 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5">
               <Briefcase className="w-3.5 h-3.5" />
               Departamento
             </h4>
             <div className="flex flex-wrap gap-1.5">
-              {['Tecnologia', 'Design', 'Produto', 'Marketing', 'Vendas', 'RH', 'Financeiro', 'Operações'].map(dept => (
+              {departments.map(dept => (
                 <Chip
-                  key={dept}
+                  key={dept.id}
                   variant="neutral"
                   className={`text-xs cursor-pointer hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none ${
-                    jobFilters.team?.departments?.includes(dept)
+                    jobFilters.team?.departments?.includes(dept.name)
                       ? 'bg-lia-bg-tertiary border-lia-btn-primary-bg dark:border-lia-border-subtle text-lia-text-primary font-medium'
                       : 'bg-lia-bg-primary text-lia-text-primary'
                   }`}
-                  onClick={() => toggleJobFilter('team', 'departments', dept)}
+                  onClick={() => toggleJobFilter('team', 'departments', dept.name)}
                 >
-                  {dept}
+                  {dept.name}
                 </Chip>
               ))}
             </div>
           </div>
 
+          {/* Sub-tarefa B: Recrutador — fonte real via useCompanyRecruiters */}
           <div className="space-y-2">
             <h4 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5">
               <Users className="w-3.5 h-3.5" />
               Recrutador
             </h4>
             <div className="flex flex-wrap gap-1.5">
-              {['Ana Paula Santos', 'Carlos Eduardo Silva', 'Marina Costa Oliveira', 'Demo Recrutador'].map(recruiter => (
+              {recruiters.map(recruiter => (
                 <Chip
-                  key={recruiter}
+                  key={recruiter.id}
                   variant="neutral"
                   className={`text-xs cursor-pointer hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none ${
-                    jobFilters.team?.recruiters?.includes(recruiter)
+                    jobFilters.team?.recruiters?.includes(recruiter.name)
                       ? 'bg-lia-bg-tertiary border-lia-btn-primary-bg dark:border-lia-border-subtle text-lia-text-primary font-medium'
                       : 'bg-lia-bg-primary text-lia-text-primary'
                   }`}
-                  onClick={() => toggleJobFilter('team', 'recruiters', recruiter)}
+                  onClick={() => toggleJobFilter('team', 'recruiters', recruiter.name)}
                 >
-                  {recruiter}
+                  {recruiter.name}
                 </Chip>
               ))}
             </div>
           </div>
 
+          {/* Sub-tarefa B: Gestor — fonte real via useCompanyManagers */}
           <div className="space-y-2">
             <h4 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5">
               <UserCheck className="w-3.5 h-3.5" />
               Gestor
             </h4>
             <div className="flex flex-wrap gap-1.5">
-              {['Rafael Oliveira', 'Carlos Eduardo Lima', 'João Paulo Silva', 'Fernanda Almeida', 'Patricia Souza', 'Ricardo Mendes', 'Bruno Costa'].map(manager => (
+              {managers.map(manager => (
                 <Chip
-                  key={manager}
+                  key={manager.id}
                   variant="neutral"
                   className={`text-xs cursor-pointer hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none ${
-                    jobFilters.team?.managers?.includes(manager)
+                    jobFilters.team?.managers?.includes(manager.name)
                       ? 'bg-lia-bg-tertiary border-lia-btn-primary-bg dark:border-lia-border-subtle text-lia-text-primary font-medium'
                       : 'bg-lia-bg-primary text-lia-text-primary'
                   }`}
-                  onClick={() => toggleJobFilter('team', 'managers', manager)}
+                  onClick={() => toggleJobFilter('team', 'managers', manager.name)}
                 >
-                  {manager}
+                  {manager.name}
                 </Chip>
               ))}
             </div>
@@ -360,7 +387,7 @@ export function JobFiltersPanel({
                 variant="neutral"
                 className={`text-xs cursor-pointer hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none ${
                   jobFilters.publishing?.unpublished
-                    ? 'bg-wedo-orange/10 border-wedo-orange/30 text-wedo-orange font-medium'
+                    ? 'bg-wedo-orange/10 border-wedo-orange/30 text-wedo-orange-text font-medium'
                     : 'bg-lia-bg-primary text-lia-text-primary'
                 }`}
                 onClick={() => toggleJobFilter('publishing', 'unpublished', !jobFilters.publishing?.unpublished)}
@@ -400,7 +427,7 @@ export function JobFiltersPanel({
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <h4 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5">
-                <Bookmark className="w-3.5 h-3.5" />
+                <Search className="w-3.5 h-3.5" />
                 Buscas Salvas
               </h4>
               {hasActiveFilters() && (
@@ -411,7 +438,7 @@ export function JobFiltersPanel({
                     const name = prompt("Nome da busca:")
                     if (name) saveSearchAsTemplate(name)
                   }}
- className="h-6 text-xs px-2 text-lia-text-secondary hover:text-lia-text-secondary/80"
+                  className="h-6 text-xs px-2 text-lia-text-secondary hover:text-lia-text-secondary/80"
                 >
                   <Plus className="w-3 h-3 mr-1" />
                   Salvar Busca
@@ -485,7 +512,7 @@ export function JobFiltersPanel({
         <div className="flex-shrink-0 p-3 border-t border-lia-border-subtle bg-lia-bg-secondary">
           <div className="flex items-center justify-between">
             <span className={textStyles.bodySmall}>
-              {getActiveJobFiltersCount() > 0 
+              {getActiveJobFiltersCount() > 0
                 ? `${getActiveJobFiltersCount()} filtro${getActiveJobFiltersCount() > 1 ? 's' : ''}`
                 : 'Nenhum filtro'}
             </span>

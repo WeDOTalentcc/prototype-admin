@@ -37,7 +37,7 @@ export function TastingInsightCard({ insights }: TastingInsightCardProps) {
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5 mb-1">
-                <span className="inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[9px] font-semibold bg-wedo-purple/15 text-wedo-purple">
+                <span className="inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[9px] font-semibold bg-wedo-purple/15 text-wedo-purple-text">
                   {insight.badge}
                 </span>
                 <span className="text-[10px] font-medium text-lia-text-secondary">
@@ -47,7 +47,7 @@ export function TastingInsightCard({ insights }: TastingInsightCardProps) {
               <p className="text-[12px] leading-relaxed text-lia-text-primary">
                 {insight.summary.replace(/\*\*/g, "")}
               </p>
-              <p className="mt-1.5 flex items-center gap-1 text-[11px] text-wedo-purple dark:text-wedo-purple font-medium">
+              <p className="mt-1.5 flex items-center gap-1 text-[11px] text-lia-text-secondary dark:text-wedo-purple font-medium">
                 <ArrowRight className="w-3 h-3" />
                 {insight.cta.replace(/\*\*/g, "")}
               </p>

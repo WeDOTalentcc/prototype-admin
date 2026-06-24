@@ -62,7 +62,7 @@ const CANDIDATE_QUERY_EXAMPLES: CandidateQueryExample[] = [
   { id: 'c3', icon: BarChart3, question: 'Analisar pontos fortes e fracos dos candidatos selecionados', category: 'analise' },
   { id: 'c4', icon: Eye, question: 'Resumir experiência dos candidatos com score > 80', category: 'analise' },
   { id: 'c5', icon: UserCheck, question: 'Qual o perfil médio dos candidatos desta busca?', category: 'analise' },
-  { id: 'c31', icon: Star, question: 'Listar candidatos com nota LIA acima de 85', category: 'analise' },
+  { id: 'c31', icon: Star, question: 'Listar candidatos com nota acima de 85', category: 'analise' },
   { id: 'c32', icon: UserCheck, question: 'Qual candidato tem melhor perfil de liderança?', category: 'analise' },
   
   { id: 'c6', icon: Filter, question: 'Mostrar apenas candidatos sênior', category: 'refinamento' },

@@ -77,7 +77,7 @@ function LearningBadge({ label, srText }: LearningBadgeProps) {
     <span
       className={cn(
         "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs",
-        "border-wedo-cyan/40 bg-wedo-cyan/15 text-wedo-cyan",
+        "border-wedo-cyan/40 bg-wedo-cyan/15 text-wedo-cyan-text",
       )}
       title={srText}
       role="status"
@@ -97,7 +97,7 @@ export default function AgentKpisClient({ agentId }: KpiPageProps) {
   const t = useTranslations("agents.studio.kpis")
   const router = useRouter()
   const { persona } = useAiPersona()
-  const personaName = persona?.name ?? "LIA"
+  const personaName = persona?.name ?? "IA"
 
   const [period, setPeriod] = useState<AgentKpiPeriod>("30d")
   const { data, isLoading, error, refetch } = useAgentKpis(agentId, period)
@@ -249,22 +249,22 @@ export default function AgentKpisClient({ agentId }: KpiPageProps) {
               label={t("cards.approved")}
               value={formatNumber(bucket.candidates_approved)}
               subtitle={t("cards.approvedPct", {
-                pct: Math.round(
+                pct: String(Math.round(
                   (bucket.candidates_approved /
                     Math.max(1, bucket.candidates_processed)) *
                     100,
-                ),
+                )),
               })}
             />
             <KpiCard
               label={t("cards.rejected")}
               value={formatNumber(bucket.candidates_rejected)}
               subtitle={t("cards.rejectedPct", {
-                pct: Math.round(
+                pct: String(Math.round(
                   (bucket.candidates_rejected /
                     Math.max(1, bucket.candidates_processed)) *
                     100,
-                ),
+                )),
               })}
             />
           </>
@@ -293,7 +293,7 @@ export default function AgentKpisClient({ agentId }: KpiPageProps) {
         <ToolBreakdownCard
           title={t("tools.title")}
           successRateLabel={(rate: number) =>
-            t("tools.successRate", { rate: Math.round(rate * 100) })
+            t("tools.successRate", { rate: String(Math.round(rate * 100)) })
           }
           data={tool_breakdown}
         />
@@ -304,7 +304,7 @@ export default function AgentKpisClient({ agentId }: KpiPageProps) {
         <button
           type="button"
           onClick={handleConsumptionLink}
-          className="inline-flex items-center gap-1 text-xs font-medium text-wedo-cyan hover:text-wedo-cyan-dark transition-colors"
+          className="inline-flex items-center gap-1 text-xs font-medium text-lia-text-secondary hover:text-wedo-cyan-dark transition-colors"
         >
           {t("viewConsumption")}
           <ArrowRight className="h-3 w-3" />

@@ -5,11 +5,8 @@ Receives events from:
 - ATS platforms (Gupy, Pandapé, Merge)
 - Other external integrations
 """
-import hashlib
-import hmac
 import logging
 import os
-import secrets
 import uuid
 from typing import Any
 
@@ -24,52 +21,20 @@ from app.domains.automation.services.webhook_adapters import (
 
 from app.domains.ats_integration.services.ats_sync_service import ATSSyncService, get_ats_sync_service
 from app.shared.security.require_company_id import require_company_id
+from app.shared.security.webhook_verification import (
+    verify_webhook_signature,
+    require_webhook_signature,
+)
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/external-webhooks", tags=["external-webhooks"])
 
-# P1-W3-02: Bearer token estático para webhooks interview/test/document.
-# Configurar EXTERNAL_WEBHOOK_SECRET_TOKEN com valor opaco ≥ 32 chars.
-# TODO Task #1147: migrar pra verify_webhook_owner canonical com per-tenant HMAC
-# quando os provedores (calendly, testgorilla, etc.) tiverem webhook secrets configuráveis.
-# TODO Task #1148: IP allowlist (cloudflare / provider CIDR) seria a defesa ideal
-# para providers com IP fixo, mas não está implementada — bearer token é o gate atual.
-_EXTERNAL_WEBHOOK_SECRET_TOKEN = os.getenv("EXTERNAL_WEBHOOK_SECRET_TOKEN", "")
-
-
-def _verify_external_webhook_bearer(authorization: str | None, provider: str) -> None:
-    """Verify EXTERNAL_WEBHOOK_SECRET_TOKEN bearer token.
-
-    P1-W3-02: gate obrigatório para interview/test/document webhooks enquanto
-    a migração para verify_webhook_owner canonical (Task #1147) não é concluída.
-    Fail-loud: 401 se token ausente/inválido. Fail-loud: 500 se env var não configurada
-    (impede deploy silencioso sem proteção).
-    """
-    if not _EXTERNAL_WEBHOOK_SECRET_TOKEN:
-        logger.error(
-            "[WEBHOOK] P1-W3-02: EXTERNAL_WEBHOOK_SECRET_TOKEN não configurado — "
-            "provider=%s rejeitado. Configure a env var para habilitar este endpoint.",
-            provider,
-        )
-        raise HTTPException(
-            status_code=503,
-            detail=(
-                "Webhook endpoint temporariamente indisponível: "
-                "EXTERNAL_WEBHOOK_SECRET_TOKEN não configurado no servidor. "
-                "Contate o administrador."
-            ),
-        )
-    token = (authorization or "").removeprefix("Bearer ").strip()
-    if not token or not secrets.compare_digest(token, _EXTERNAL_WEBHOOK_SECRET_TOKEN):
-        logger.warning(
-            "[WEBHOOK] P1-W3-02: bearer token inválido ou ausente — provider=%s 401",
-            provider,
-        )
-        raise HTTPException(
-            status_code=401,
-            detail="Unauthorized: Authorization: Bearer <token> inválido ou ausente",
-        )
+# GAP-08-003 (2026-06-16): bearer token authentication for interview/test/document
+# endpoints has been migrated to canonical HMAC-SHA256 via require_webhook_signature
+# dependency (app.shared.security.webhook_verification). Legacy bearer fallback
+# is handled by the dependency during the migration period.
+# TODO Task #1148: IP allowlist (cloudflare / provider CIDR) for providers with fixed IPs.
 
 
 def is_webhook_adapter_enabled(provider: str) -> bool:
@@ -87,34 +52,6 @@ class ATSWebhookEvent(BaseModel):
     candidate_data: dict[str, Any] | None = None
     metadata: dict[str, Any] | None = None
 
-
-def verify_webhook_signature(payload: bytes, signature: str, secret: str, platform: str = "unknown") -> bool:
-    """
-    Verify webhook signature using HMAC-SHA256.
-    
-    Args:
-        payload: Raw request body bytes
-        signature: Signature from header
-        secret: Webhook secret
-        platform: Platform name for logging
-        
-    Returns:
-        True if signature is valid
-    """
-    if not secret:
-        logger.warning(f"[WEBHOOK] No secret configured for {platform}, rejecting request for security")
-        return False
-    
-    try:
-        expected = hmac.new(
-            secret.encode('utf-8'),
-            payload,
-            hashlib.sha256
-        ).hexdigest()
-        return hmac.compare_digest(expected, signature.replace("sha256=", ""))
-    except Exception as e:
-        logger.error(f"❌ Signature verification error: {e}")
-        return False
 
 
 @router.post("/ats/{platform}", response_model=None)
@@ -443,19 +380,20 @@ async def handle_interview_webhook(
     provider: str,
     request: Request,
     background_tasks: BackgroundTasks,
-    authorization: str | None = Header(None, alias="Authorization"),
+    _sig_verified: None = Depends(require_webhook_signature(
+        "EXTERNAL_WEBHOOK",
+        secret_env_var="EXTERNAL_WEBHOOK_HMAC_SECRET",
+        legacy_bearer_env_var="EXTERNAL_WEBHOOK_SECRET_TOKEN",
+    )),
     company_id: str = Depends(require_company_id),
 ):
     """Receive webhook from interview scheduling tools (calendly, custom).
 
     Onda 4.2e-P0-9 (2026-05-23): adicionado require_company_id.
-    P1-W3-02 (2026-05-24): adicionado bearer token gate via
-    EXTERNAL_WEBHOOK_SECRET_TOKEN. Antes era endpoint com apenas JWT
-    (qualquer usuário autenticado podia spoofar eventos de entrevista).
-    TODO Task #1147: migrar pra verify_webhook_owner canonical (per-tenant HMAC).
+    GAP-08-003 (2026-06-16): migrated to canonical HMAC via
+    require_webhook_signature with legacy bearer fallback (Task #1147).
     TODO Task #1148: IP allowlist para providers com IP fixo (defesa ideal).
     """
-    _verify_external_webhook_bearer(authorization, provider=f"interview/{provider}")
 
     if not is_webhook_adapter_enabled(f"interview_{provider}"):
         return {"status": "disabled", "provider": provider}
@@ -477,19 +415,20 @@ async def handle_test_webhook(
     provider: str,
     request: Request,
     background_tasks: BackgroundTasks,
-    authorization: str | None = Header(None, alias="Authorization"),
+    _sig_verified: None = Depends(require_webhook_signature(
+        "EXTERNAL_WEBHOOK",
+        secret_env_var="EXTERNAL_WEBHOOK_HMAC_SECRET",
+        legacy_bearer_env_var="EXTERNAL_WEBHOOK_SECRET_TOKEN",
+    )),
     company_id: str = Depends(require_company_id),
 ):
     """Receive webhook from assessment/test platforms (testgorilla, codility, custom).
 
     Onda 4.2e-P0-10 (2026-05-23): adicionado require_company_id.
-    P1-W3-02 (2026-05-24): adicionado bearer token gate via
-    EXTERNAL_WEBHOOK_SECRET_TOKEN. Antes era endpoint com apenas JWT
-    (atacante com JWT válido injetava resultados de teste falsos).
-    TODO Task #1147: migrar pra verify_webhook_owner canonical.
+    GAP-08-003 (2026-06-16): migrated to canonical HMAC via
+    require_webhook_signature with legacy bearer fallback (Task #1147).
     TODO Task #1148: IP allowlist para providers com IP fixo.
     """
-    _verify_external_webhook_bearer(authorization, provider=f"test/{provider}")
 
     if not is_webhook_adapter_enabled(f"test_{provider}"):
         return {"status": "disabled", "provider": provider}
@@ -511,19 +450,21 @@ async def handle_document_webhook(
     provider: str,
     request: Request,
     background_tasks: BackgroundTasks,
-    authorization: str | None = Header(None, alias="Authorization"),
+    _sig_verified: None = Depends(require_webhook_signature(
+        "EXTERNAL_WEBHOOK",
+        secret_env_var="EXTERNAL_WEBHOOK_HMAC_SECRET",
+        legacy_bearer_env_var="EXTERNAL_WEBHOOK_SECRET_TOKEN",
+    )),
     company_id: str = Depends(require_company_id),
 ):
     """Receive webhook from document collection services.
 
     Onda 4.2e-P0-11 (2026-05-23): adicionado require_company_id.
-    P1-W3-02 (2026-05-24): adicionado bearer token gate via
-    EXTERNAL_WEBHOOK_SECRET_TOKEN. LGPD Art. 38 (uso indevido de
-    declaracao de documentacao).
-    TODO Task #1147: migrar pra verify_webhook_owner canonical.
+    GAP-08-003 (2026-06-16): migrated to canonical HMAC via
+    require_webhook_signature with legacy bearer fallback (Task #1147).
+    LGPD Art. 38 (uso indevido de declaracao de documentacao).
     TODO Task #1148: IP allowlist para providers com IP fixo.
     """
-    _verify_external_webhook_bearer(authorization, provider=f"document/{provider}")
 
     if not is_webhook_adapter_enabled(f"document_{provider}"):
         return {"status": "disabled", "provider": provider}

@@ -49,7 +49,7 @@ export default function ProactiveChatMessage({
         <button
           onClick={onAccept}
           disabled={processing}
-          className="px-3 py-1 text-xs font-medium rounded-md bg-wedo-cyan/20 text-wedo-cyan hover:bg-wedo-cyan/30 transition-colors motion-reduce:transition-none disabled:opacity-50"
+          className="px-3 py-1 text-xs font-medium rounded-md bg-wedo-cyan/20 text-wedo-cyan-text hover:bg-wedo-cyan/30 transition-colors motion-reduce:transition-none disabled:opacity-50"
          
         >
           {processing ? "Processando..." : actionLabel}

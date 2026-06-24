@@ -11,8 +11,8 @@ from app.auth.dependencies import get_current_user
 from app.auth.models import User
 from app.core.template_channels import ALL_CHANNELS, CHANNEL_DESCRIPTIONS, CHANNEL_LABELS
 from app.domains.communication.services.email_service import EmailService, get_email_service
-from app.domains.email_templates.dependencies import get_email_templates_repo
-from app.domains.email_templates.repositories.email_templates_repository import (
+from app.repositories.dependencies import get_email_templates_repo
+from app.repositories.email_templates_repository import (
     EmailTemplatesRepository,
 )
 from app.domains.job_management.services.template_seeder import clone_templates_for_client as clone_for_client_service
@@ -41,6 +41,11 @@ from app.schemas.email_template import (
     TemplatePreviewByIdResponse,
 )
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.errors import LIAError, LIAInternalError
+from app.shared.template_validation import (
+    extract_template_variables,
+    validate_template_variables,
+)
 from app.shared.compliance.fairness_guard_middleware import check_fairness_async  # P1-W2-04
 from typing import Annotated
 from fastapi import Path
@@ -153,6 +158,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
                     used_in=cast(list[str], t.used_in) if t.used_in else [],
                     priority=cast(str | None, t.priority) if t.priority else "medium",
                     variables=cast(list[str], t.variables) if t.variables else [],
+                    cc_emails=cast(list[str], t.cc_emails) if t.cc_emails else None,
                     is_active=cast(bool, t.is_active),
                     created_by=cast(str | None, t.created_by),
                     created_at=cast(datetime, t.created_at),
@@ -166,7 +172,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error listing email templates: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/categories/list", response_model=None)
@@ -186,7 +192,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error listing email template categories: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/{template_id}", response_model=EmailTemplateResponse)
@@ -218,6 +224,7 @@ company_id: str = Depends(require_company_id)):
             used_in=cast(list[str], template.used_in) if template.used_in else [],
             priority=cast(str | None, template.priority) if template.priority else "medium",
             variables=cast(list[str], template.variables) if template.variables else [],
+            cc_emails=cast(list[str], template.cc_emails) if template.cc_emails else None,
             is_active=cast(bool, template.is_active),
             created_by=cast(str | None, template.created_by),
             created_at=cast(datetime, template.created_at),
@@ -228,7 +235,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting email template: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("", response_model=EmailTemplateResponse, status_code=201)
@@ -263,6 +270,7 @@ company_id: str = Depends(require_company_id)):
             used_in=template_data.used_in,
             priority=template_data.priority,
             variables=variables,
+            cc_emails=template_data.cc_emails or [],
             is_active=True,
             created_by=template_data.created_by,
             created_at=datetime.utcnow(),
@@ -305,6 +313,7 @@ company_id: str = Depends(require_company_id)):
             used_in=cast(list[str], template.used_in) if template.used_in else [],
             priority=cast(str | None, template.priority) if template.priority else "medium",
             variables=cast(list[str], template.variables) if template.variables else [],
+            cc_emails=cast(list[str], template.cc_emails) if template.cc_emails else None,
             is_active=cast(bool, template.is_active),
             created_by=cast(str | None, template.created_by),
             created_at=cast(datetime, template.created_at),
@@ -316,7 +325,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error(f"Error creating email template: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.put("/{template_id}", response_model=EmailTemplateResponse)
@@ -398,6 +407,7 @@ company_id: str = Depends(require_company_id)):
             used_in=cast(list[str], template.used_in) if template.used_in else [],
             priority=cast(str | None, template.priority) if template.priority else "medium",
             variables=cast(list[str], template.variables) if template.variables else [],
+            cc_emails=cast(list[str], template.cc_emails) if template.cc_emails else None,
             is_active=cast(bool, template.is_active),
             created_by=cast(str | None, template.created_by),
             created_at=cast(datetime, template.created_at),
@@ -409,7 +419,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error(f"Error updating email template: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.delete("/{template_id}", response_model=None)
@@ -454,7 +464,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error(f"Error deleting email template: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/preview", response_model=EmailPreviewResponse)
@@ -486,7 +496,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error previewing email: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/{template_id}/preview", response_model=TemplatePreviewByIdResponse)
@@ -535,7 +545,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error previewing template: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/{template_id}/send", response_model=EmailSendResponse)
@@ -589,6 +599,33 @@ company_id: str = Depends(require_company_id)):
                 detail="Recipient email must belong to a known active candidate in the system",
             )
 
+        # GAP-06-008: pre-flight template variable validation — structured 422
+        # before any send attempt (fail before side effect).
+        # Combine subject + body to check all variables in one pass.
+        _template_content = (
+            (str(getattr(template_check, 'subject', '') or '') + ' ' +
+             str(getattr(template_check, 'body_html', '') or '') + ' ' +
+             str(getattr(template_check, 'body_text', '') or ''))
+        )
+        if request.subject_override:
+            _template_content += ' ' + request.subject_override
+        if request.body_override:
+            _template_content += ' ' + request.body_override
+        _provided_vars = dict(request.variables)
+        if request.recipient_name:
+            _provided_vars.setdefault("candidate_name", request.recipient_name)
+        _missing = validate_template_variables(_template_content, _provided_vars)
+        if _missing:
+            _required = sorted(extract_template_variables(_template_content))
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "error": "missing_template_variables",
+                    "missing": _missing,
+                    "required": _required,
+                },
+            )
+
         variables = sanitize_variables(request.variables.copy())
         if request.recipient_name and "candidate_name" not in variables:
             variables["candidate_name"] = sanitize_variable_value(request.recipient_name)
@@ -623,7 +660,7 @@ company_id: str = Depends(require_company_id)):
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         logger.error(f"Error sending email: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/logs/all", response_model=EmailLogListResponse)
@@ -673,7 +710,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error listing email logs: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/seed-defaults", response_model=DefaultTemplatesResponse)
@@ -718,7 +755,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error(f"Error seeding default templates: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/clone-for-client/{client_id}", response_model=None)
@@ -749,7 +786,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error(f"Error cloning templates for client {client_id}: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/seed-system-templates", response_model=None)
@@ -780,7 +817,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error(f"Error seeding system templates: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/generate", response_model=TemplateGenerateResponse)
@@ -890,10 +927,7 @@ Responda APENAS com o JSON, sem texto adicional."""
             generated_data = json.loads(response_text)
         except json.JSONDecodeError as e:
             logger.error(f"Failed to parse AI response as JSON: {response_text}")
-            raise HTTPException(
-                status_code=500,
-                detail=f"Failed to parse AI response: {str(e)}",
-            )
+            raise LIAInternalError("Internal server error")
 
         return TemplateGenerateResponse(
             success=True,
@@ -908,7 +942,7 @@ Responda APENAS com o JSON, sem texto adicional."""
         raise
     except Exception as e:
         logger.error(f"Error generating template with AI: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/adjust", response_model=TemplateAdjustResponse)
@@ -980,10 +1014,7 @@ Responda APENAS com o JSON, sem texto adicional."""
             adjusted_data = json.loads(response_text)
         except json.JSONDecodeError as e:
             logger.error(f"Failed to parse AI response as JSON: {response_text}")
-            raise HTTPException(
-                status_code=500,
-                detail=f"Failed to parse AI response: {str(e)}",
-            )
+            raise LIAInternalError("Internal server error")
 
         subject = adjusted_data.get("subject")
         if subject == "null se não aplicável" or subject == "null":
@@ -1002,6 +1033,6 @@ Responda APENAS com o JSON, sem texto adicional."""
         raise
     except Exception as e:
         logger.error(f"Error adjusting template with AI: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 reorder_collection_before_item(router)

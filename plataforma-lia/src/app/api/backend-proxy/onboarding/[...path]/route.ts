@@ -5,8 +5,8 @@
  *
  * Routes:
  *   POST /api/backend-proxy/onboarding/invite → Rails POST /v1/users/invite
- *   GET  /api/backend-proxy/onboarding/status → Rails GET /v1/onboarding/status
- *   PATCH /api/backend-proxy/onboarding/progress → Rails PATCH /v1/onboarding/progress
+ *   GET  /api/backend-proxy/onboarding/status → FastAPI GET /api/v1/onboarding/status
+ *   PATCH /api/backend-proxy/onboarding/progress → FastAPI PATCH /api/v1/onboarding/progress
  *   POST /api/backend-proxy/onboarding/consent → Rails POST /v1/onboarding/consent
  *   GET  /api/backend-proxy/onboarding/:userId/context → FastAPI GET /api/v1/onboarding/:userId/context
  */
@@ -27,6 +27,12 @@ export async function GET(request: NextRequest, { params: pRaw }: { params: Prom
   const { path: pathSegments } = await pRaw;
   const path = pathSegments?.join("/") || ""
   const headers = buildHeaders(request)
+
+  // FastAPI: status (no user_id — reads JWT sub from auth header)
+  if (path === "status") {
+    const resp = await fetch(`${FASTAPI_URL}/api/v1/onboarding/status`, { headers })
+    return NextResponse.json(await resp.json(), { status: resp.status })
+  }
 
   // FastAPI routes: context, state (have user_id in path)
   if (path.match(/^\d+\/(context|state)$/)) {
@@ -76,6 +82,16 @@ export async function PATCH(request: NextRequest, { params: pRaw }: { params: Pr
   const path = pathSegments?.join("/") || ""
   const headers = buildHeaders(request)
   const body = await request.text()
+
+  // FastAPI: progress update (no user_id — reads JWT sub from auth header)
+  if (path === "progress") {
+    const resp = await fetch(`${FASTAPI_URL}/api/v1/onboarding/progress`, {
+      method: "PATCH",
+      headers,
+      body,
+    })
+    return NextResponse.json(await resp.json(), { status: resp.status })
+  }
 
   if (!RAILS_URL) return railsUnavailable("onboarding")
 

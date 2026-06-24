@@ -30,6 +30,7 @@ from .._shared import (
     validate_multi_tenancy,
 )
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError, LIAInternalError
 
 logger = logging.getLogger(__name__)
 
@@ -277,7 +278,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"❌ [INTERVIEW_SCHEDULED] Error: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Erro ao processar agendamento de entrevista: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/handle-trigger/interview-completed", response_model=InterviewCompletedResponse)
@@ -580,7 +581,4 @@ Responda em JSON:
         raise
     except Exception as e:
         logger.error(f"❌ [INTERVIEW_COMPLETED] Error: {e}", exc_info=True)
-        raise HTTPException(
-            status_code=500,
-            detail=f"Erro ao processar entrevista concluída: {str(e)}"
-        )
+        raise LIAInternalError("Internal server error")

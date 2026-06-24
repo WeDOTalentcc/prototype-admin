@@ -29,7 +29,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from app.domains.data_subject.repositories.data_subject_repository import (
+from app.repositories.data_subject_repository import (
     DataSubjectRepository,
     DsrExecutorFailedError,
 )

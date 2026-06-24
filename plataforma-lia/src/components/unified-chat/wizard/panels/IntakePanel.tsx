@@ -6,7 +6,9 @@ import { cn } from "@/lib/utils"
 import { Chip } from "@/components/ui/chip"
 import { useAuthStore } from "@/stores/auth-store"
 import { useJdSimilar } from "@/hooks/jobs/use-jd-similar"
+import { ComplianceBadge } from "@/components/lia-float/ComplianceBadge"
 import { JdSimilarCard } from "./JdSimilarCard"
+import { WizardSuggestionChips } from "./WizardSuggestionChips"
 
 interface Props {
   data: Record<string, unknown>
@@ -64,12 +66,14 @@ function FichaField({
   value,
   editKey,
   type = "text",
+  inferred,
   onUpdate,
 }: {
   label: string
   value: string
   editKey?: string
   type?: "text" | "email"
+  inferred?: boolean
   onUpdate?: (updates: Record<string, unknown>) => void
 }) {
   const filled = Boolean(value)
@@ -132,20 +136,23 @@ function FichaField({
           title={editable ? "Clique para editar" : undefined}
         >
           {value}
+          {inferred && (
+            <span className="ml-1 text-[10px] text-wedo-cyan-text bg-wedo-cyan/10 px-1.5 py-0.5 rounded-full font-normal">inferido</span>
+          )}
         </Chip>
       ) : editable ? (
         <button
           type="button"
           onClick={begin}
           data-testid={`add-ficha-${editKey}`}
-          className="flex items-center gap-1 text-micro text-lia-text-disabled hover:text-wedo-cyan transition-colors"
+          className="flex items-center gap-1 text-micro text-lia-text-muted hover:text-wedo-cyan transition-colors"
           aria-label={`Adicionar ${label}`}
         >
           <Plus className="w-3 h-3" />
           adicionar
         </button>
       ) : (
-        <span className="flex items-center gap-1 text-micro text-lia-text-disabled">
+        <span className="flex items-center gap-1 text-micro text-lia-text-muted">
           <CircleDashed className="w-3 h-3" />
           pendente
         </span>
@@ -243,7 +250,7 @@ function CompetencyChipGroup({
           ),
         )}
         <span className="inline-flex items-center gap-1 rounded-full border border-dashed border-lia-border-subtle px-1.5">
-          <Plus className="w-3 h-3 text-lia-text-disabled" />
+          <Plus className="w-3 h-3 text-lia-text-muted" />
           <input
             data-testid={`add-${testidPrefix}-input`}
             value={draft}
@@ -307,16 +314,16 @@ export function IntakePanel({ data, onUpdate }: Props) {
   // editKey = nome do campo no schema do backend (right_panel_form). Campos sem
   // editKey ficam display-only (modo de triagem tem affordance própria de chips;
   // salário tem o SalaryPanel dedicado).
-  const blockingFields: { label: string; value: string; editKey?: string; type?: "text" | "email" }[] = [
+  const blockingFields: { label: string; value: string; editKey?: string; type?: "text" | "email"; inferred?: boolean }[] = [
     { label: "Título", value: fieldText(data.parsed_title), editKey: "title" },
-    { label: "Senioridade", value: fieldText(data.parsed_seniority), editKey: "seniority" },
+    { label: "Senioridade", value: fieldText(data.parsed_seniority), editKey: "seniority", inferred: Boolean(data.seniority_inferred_from_title) },
     { label: "Modelo de trabalho", value: fieldText(data.parsed_model), editKey: "work_model" },
   ]
-  const enrichingFields: { label: string; value: string; editKey?: string; type?: "text" | "email" }[] = [
-    { label: "Departamento", value: fieldText(data.parsed_department), editKey: "department" },
+  const enrichingFields: { label: string; value: string; editKey?: string; type?: "text" | "email"; inferred?: boolean }[] = [
+    { label: "Departamento", value: fieldText(data.parsed_department), editKey: "department", inferred: Boolean(data.department_inferred_from_title) },
     { label: "Localização", value: fieldText(data.parsed_location), editKey: "location" },
     { label: "Contrato", value: fieldText(data.parsed_employment_type), editKey: "contract_type" },
-    { label: "Gestor responsável", value: fieldText(data.parsed_manager_name), editKey: "manager_name" },
+    { label: "Gestor responsável", value: fieldText(data.parsed_manager_name), editKey: "manager_name", inferred: Boolean(data.manager_name_suggested_from_email) },
     { label: "Email do gestor", value: fieldText(data.parsed_manager_email), editKey: "manager_email", type: "email" },
     { label: "Salário", value: salaryText(data) },
     { label: "Modo de triagem", value: screeningMode ? (MODE_LABEL[screeningMode] || screeningMode) : "" },
@@ -331,7 +338,7 @@ export function IntakePanel({ data, onUpdate }: Props) {
   return (
     <div className="p-4 space-y-4">
       {/* Source indicator */}
-      <div className="flex items-center justify-between text-xs text-lia-text-disabled">
+      <div className="flex items-center justify-between text-xs text-lia-text-muted">
         <div className="flex items-center gap-2">
           <FileText className="w-3.5 h-3.5" />
           <span>{source === "file" ? "Enviado via arquivo" : "Descrito no chat"}</span>
@@ -381,7 +388,7 @@ export function IntakePanel({ data, onUpdate }: Props) {
         <div data-testid="intake-blocking-zone" className="space-y-1">
           <p className="text-micro font-semibold text-lia-text-secondary uppercase tracking-wider">Falta para avançar</p>
           {blockingFields.map((f) => (
-            <FichaField key={f.label} label={f.label} value={f.value} editKey={f.editKey} type={f.type} onUpdate={onUpdate} />
+            <FichaField key={f.label} label={f.label} value={f.value} editKey={f.editKey} type={f.type} inferred={f.inferred} onUpdate={onUpdate} />
           ))}
         </div>
       )}
@@ -391,8 +398,9 @@ export function IntakePanel({ data, onUpdate }: Props) {
         <div data-testid="intake-enriching-zone" className="space-y-1 pt-1">
           <p className="text-micro font-medium text-lia-text-secondary uppercase tracking-wide">Enriquecer (opcional)</p>
           {enrichingFields.map((f) => (
-            <FichaField key={f.label} label={f.label} value={f.value} editKey={f.editKey} type={f.type} onUpdate={onUpdate} />
+            <FichaField key={f.label} label={f.label} value={f.value} editKey={f.editKey} type={f.type} inferred={f.inferred} onUpdate={onUpdate} />
           ))}
+          <ComplianceBadge className="mt-1" />
         </div>
       )}
 
@@ -428,7 +436,7 @@ export function IntakePanel({ data, onUpdate }: Props) {
           </div>
           <div className="flex flex-wrap gap-1.5">
             {extractedKeywords.map((kw, i) => (
-              <span key={i} className="px-2 py-0.5 text-micro rounded-full bg-wedo-cyan/10 text-wedo-cyan border border-wedo-cyan/20">
+              <span key={i} className="px-2 py-0.5 text-micro rounded-full bg-wedo-cyan/10 text-wedo-cyan-text border border-wedo-cyan/20">
                 {kw}
               </span>
             ))}
@@ -441,9 +449,12 @@ export function IntakePanel({ data, onUpdate }: Props) {
         <JdSimilarCard items={similarJds} loading={jdSimilarLoading} onReuse={handleReuseJd} onCreateFresh={handleCreateFresh} />
       )}
 
+      {/* W3-D: chips de sugestão do histórico da empresa */}
+      <WizardSuggestionChips data={data} onUpdate={onUpdate} />
+
       {/* Processing indicator */}
       {rawInput && (
-        <div className="flex items-center gap-2 text-xs text-lia-text-disabled">
+        <div className="flex items-center gap-2 text-xs text-lia-text-muted">
           <div className="w-3 h-3 border-2 border-wedo-cyan border-t-transparent rounded-full animate-spin" />
           <span>Analisando e enriquecendo JD...</span>
         </div>

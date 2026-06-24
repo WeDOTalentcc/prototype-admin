@@ -24,7 +24,7 @@ const traitDescriptions = {"Abertura": {
     icon:"🎨",
     color:"bg-wedo-purple",
     bgColor:"bg-wedo-purple/10 dark:bg-wedo-purple/20",
-    textColor:"text-wedo-purple dark:text-wedo-purple",
+    textColor:"text-lia-text-secondary dark:text-wedo-purple",
     high: {
       label:"Alto",
       description:"Pessoas criativas, curiosas e abertas a novas experiências. Tendem a ser imaginativas, aventureiras e dispostas a explorar novas ideias.",
@@ -44,7 +44,7 @@ const traitDescriptions = {"Abertura": {
     icon:"✅",
     color:"bg-lia-btn-primary-bg",
     bgColor:"bg-wedo-cyan/10",
-    textColor:"text-wedo-cyan-dark dark:text-wedo-cyan-dark",
+    textColor:"text-lia-text-secondary dark:text-wedo-cyan-dark",
     high: {
       label:"Alto",
       description:"Pessoas organizadas, disciplinadas e orientadas a objetivos. Altamente confiáveis e responsáveis.",
@@ -104,7 +104,7 @@ const traitDescriptions = {"Abertura": {
     icon:"⚡",
     color:"bg-wedo-magenta",
     bgColor:"bg-wedo-magenta/10 dark:bg-wedo-magenta/20",
-    textColor:"text-wedo-magenta dark:text-wedo-magenta",
+    textColor:"text-wedo-magenta-text dark:text-wedo-magenta",
     high: {
       label:"Alto",
       description:"Mais sensível emocionalmente e propenso a estresse. Pode ser mais cauteloso e vigilante.",
@@ -176,7 +176,11 @@ const calculateFitScore = (candidateScores: Record<string, number>, jobProfile?:
   return Math.max(0, Math.round(100 - avgDiff))
 }
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
+
 export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) {
+  // P0-2 (2026-06-18): notify LIA which modal is open
+  useLiaModalTracking('big-five', isOpen)
   const hasData = candidate?.bigFiveScores && Object.keys(candidate.bigFiveScores as Record<string, unknown>).length > 0
   const scores = (hasData ? candidate.bigFiveScores : {}) as Record<string, number>
   const traits = Object.keys(scores)
@@ -266,7 +270,7 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
                     Score B5
                   </span>
                 </div>
-                <div className="text-lg font-semibold text-wedo-purple">
+                <div className="text-lg font-semibold text-lia-text-secondary">
                   {averageScore}
                 </div>
               </div>
@@ -290,10 +294,10 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
               <div className="flex items-center gap-3">
                 <span className="text-xl">{archetype.icon}</span>
                 <div>
-                  <div className="text-base-ui font-medium text-wedo-purple">
+                  <div className="text-base-ui font-medium text-lia-text-secondary">
                     {archetype.name}
                   </div>
-                  <div className="text-xs text-wedo-purple">
+                  <div className="text-xs text-lia-text-muted">
                     {archetype.description}
                   </div>
                 </div>

@@ -13,6 +13,7 @@ import { ScreeningQuestion, TranscriptionSegment } from "@/components/modals/scr
 import { ActivityFilters, type ActivityFilterType, type ActivityViewType, type PeriodFilterType } from "./activities/ActivityFilters"
 import { ActivityTimeline } from "./activities/ActivityTimeline"
 import { useCandidateActivities, type CandidateActivity } from "@/hooks/candidates/use-candidate-activities"
+import { useAiPersona } from "@/hooks/company/use-ai-persona"
 
 // ── Icon + color map derived from activity type ──────────────────────────────
 type IconMeta = { icon: LucideIcon; color: string }
@@ -85,7 +86,7 @@ interface NormalizedActivity {
   details?: Record<string, any>
 }
 
-function normalizeActivity(a: CandidateActivity): NormalizedActivity {
+function normalizeActivity(a: CandidateActivity, personaName: string): NormalizedActivity {
   const { icon, color } = getActivityIconMeta(a.type)
   const rawDate = a.timestamp ?? a.date ?? ""
   const dateObj = rawDate ? new Date(rawDate) : new Date()
@@ -116,7 +117,7 @@ function normalizeActivity(a: CandidateActivity): NormalizedActivity {
     icon,
     iconColor: color,
     title: a.title ?? a.type,
-    author: (a.author as string | undefined) ?? "LIA",
+    author: (a.author as string | undefined) ?? personaName,
     authorRole: a.author_role as string | undefined,
     date: formattedDate,
     timestamp: dateObj,
@@ -170,6 +171,8 @@ export function CandidateActivitiesTab({
   onSetPreviewType,
   onSetShowPreview,
 }: CandidateActivitiesTabProps) {
+  const { persona } = useAiPersona()
+  const personaName = persona?.name ?? "IA"
   const [expandedActivity, setExpandedActivity] = useState<string | null>(null)
   const [activityFilter, setActivityFilter] = useState<ActivityFilterType>("all")
   const [activityView, setActivityView] = useState<ActivityViewType>("timeline")
@@ -178,8 +181,8 @@ export function CandidateActivitiesTab({
   const { activities: rawActivities, isLoading, error } = useCandidateActivities(candidate)
 
   const activities: NormalizedActivity[] = useMemo(
-    () => rawActivities.map(normalizeActivity),
-    [rawActivities],
+    () => rawActivities.map(a => normalizeActivity(a, personaName)),
+    [rawActivities, personaName],
   )
 
   const filterByPeriod = (a: NormalizedActivity) => {

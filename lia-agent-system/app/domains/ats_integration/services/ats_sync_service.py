@@ -31,6 +31,21 @@ from app.domains.ats_integration.services.ats_clients.pandape import PandapeClie
 logger = logging.getLogger(__name__)
 
 
+
+
+class ATSClientNotConfiguredError(Exception):
+    """Raised when trigger_sync is called but no ATS client is configured.
+
+    Distinct from ATSSyncResult.ATS_ERROR (real client failure).
+    Callers that catch this must NOT log ats_synced=True -- the sync was skipped.
+    """
+    def __init__(self, ats_type: str) -> None:
+        super().__init__(
+            f"ATS client not configured for type={ats_type!r}. "
+            "Sync skipped -- configure the integration in Settings."
+        )
+        self.ats_type = ats_type
+
 class ATSSyncTrigger(StrEnum):
     """Events that trigger ATS synchronization."""
     STATUS_CHANGE = "status_change"
@@ -374,6 +389,14 @@ class ATSSyncService:
                 )
                 result = ATSSyncResult.SUCCESS
                 error_message = None
+            except ATSClientNotConfiguredError as e:
+                logger.debug(
+                    "[ats_sync] Sync skipped -- ATS not configured: %s",
+                    e.ats_type,
+                )
+                result = ATSSyncResult.NO_CLIENT
+                error_message = str(e)
+                ats_response = None
             except Exception as e:
                 logger.error(f"❌ ATS sync failed: {e}")
                 result = ATSSyncResult.ATS_ERROR
@@ -429,6 +452,7 @@ class ATSSyncService:
             "fields_skipped": fields_skipped,
             "wedotalent_only": wedotalent_only,
             "message": self._get_result_message(result, fields_synced, wedotalent_only),
+            "skipped": result == ATSSyncResult.NO_CLIENT,
             "timestamp": timestamp.isoformat()
         }
     
@@ -751,8 +775,11 @@ class ATSSyncService:
         client = self.get_client(ats_type)
         
         if client is None:
-            logger.warning(f"⚠️ No {ats_type} client configured - using mock sync")
-            return self._mock_sync(ats_type, action, candidate_id, fields)
+            logger.warning(
+                "[ats_sync] No client configured for ats_type=%s -- raising ATSClientNotConfiguredError",
+                ats_type,
+            )
+            raise ATSClientNotConfiguredError(ats_type)
         
         data = {f["wedotalent_field"]: f["value"] for f in fields}
         

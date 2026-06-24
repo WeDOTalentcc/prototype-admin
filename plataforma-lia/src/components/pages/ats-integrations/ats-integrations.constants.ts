@@ -151,7 +151,7 @@ export const SYNC_LOGS: SyncLog[] = [
 ]
 
 export const LIA_FIELDS: SystemField[] = [
-  { id: 'candidate_id', name: 'ID do Candidato', type: 'string', required: true, description: 'Identificador único na LIA' },
+  { id: 'candidate_id', name: 'ID do Candidato', type: 'string', required: true, description: 'Identificador único' },
   { id: 'nome_completo', name: 'Nome Completo', type: 'string', required: true, description: 'Nome completo do candidato' },
   { id: 'email_principal', name: 'Email Principal', type: 'email', required: true, description: 'Email principal de contato' },
   { id: 'telefone_contato', name: 'Telefone', type: 'phone', required: false, description: 'Telefone principal' },
@@ -162,7 +162,7 @@ export const LIA_FIELDS: SystemField[] = [
   { id: 'data_candidatura', name: 'Data da Candidatura', type: 'date', required: true, description: 'Data de aplicação' },
   { id: 'status_processo', name: 'Status do Processo', type: 'select', required: true, description: 'Situação atual no processo seletivo' },
   { id: 'pretensao_salarial', name: 'Pretensão Salarial', type: 'number', required: false, description: `Expectativa salarial em ${CURRENCY_SYMBOL}` },
-  { id: 'score_lia', name: 'Score LIA', type: 'number', required: false, description: 'Score de compatibilidade calculado pela LIA' }
+  { id: 'score_lia', name: 'Score', type: 'number', required: false, description: 'Score de compatibilidade calculado por IA' }
 ]
 
 export const MAPPING_TEMPLATES: MappingTemplate[] = [

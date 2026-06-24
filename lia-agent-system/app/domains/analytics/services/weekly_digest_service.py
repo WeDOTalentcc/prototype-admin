@@ -15,6 +15,9 @@ from typing import Any
 from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.domains.communication.repositories.digest_schedule_repository import (
+    DigestScheduleRepository,
+)
 from app.shared.pii_masking import get_masked_logger
 
 logger = get_masked_logger(__name__)
@@ -61,24 +64,71 @@ class WeeklyDigestService:
     async def _gather_pipeline_health(
         self, recruiter_id: str, db: AsyncSession
     ) -> dict[str, Any]:
-        try:
-            from app.domains.analytics.services.predictive_analytics_service import (
-                PredictiveAnalyticsService,
-            )
+        """Pipeline health for the RESUMO SEMANAL card.
 
-            svc = PredictiveAnalyticsService()
-            dashboard = await svc.get_analytics_dashboard(recruiter_id, db)
-            summary = dashboard.get("summary", {})
+        Fix 2026-06-08: uses direct DB queries via SQLAlchemy instead of
+        PredictiveAnalyticsService.get_analytics_dashboard(), which (a) had a
+        status split-brain bug ('active' vs 'Ativa') and (b) never computed
+        'total_candidates_analyzed' or 'interviews_scheduled' in its summary
+        dict — so all three KPIs in the card were always 0.
+
+        Sources:
+          - total_active_jobs: JobVacancy.status canonical PT-BR list
+          - candidates_screened_week: VacancyCandidate rows created in last 7d
+          - interviews_scheduled: VacancyCandidate in interview-family stages
+        """
+        # Canonical active statuses (matches job_vacancy_crud_repository.py)
+        _ACTIVE_STATUSES = ["Ativa", "Active", "active", "open", "Open", "Em Andamento"]
+        # Interview-family stage names (both PT-BR and legacy EN)
+        _INTERVIEW_STAGES = {
+            "entrevista", "entrevista_tecnica", "entrevista_rh", "entrevista_gestor",
+            "interview", "technical_interview", "hr_interview", "manager_interview",
+        }
+        try:
+            from lia_models.job_vacancy import JobVacancy
+            from app.models.candidate import VacancyCandidate
+
+            now = datetime.utcnow()
+            week_ago = now - timedelta(days=7)
+
+            # 1. total active jobs — company-wide (recruiter_id used as company pivot below)
+            active_result = await db.execute(
+                select(func.count(JobVacancy.id)).where(
+                    JobVacancy.status.in_(_ACTIVE_STATUSES)
+                )
+            )
+            total_active = active_result.scalar() or 0
+
+            # 2. candidates screened this week (new VacancyCandidate rows)
+            screened_result = await db.execute(
+                select(func.count(VacancyCandidate.id)).where(
+                    VacancyCandidate.created_at >= week_ago
+                )
+            )
+            screened_week = screened_result.scalar() or 0
+
+            # 3. candidates currently in interview stages
+            interviews_result = await db.execute(
+                select(func.count(VacancyCandidate.id)).where(
+                    VacancyCandidate.stage_name.in_(_INTERVIEW_STAGES)
+                )
+            )
+            interviews = interviews_result.scalar() or 0
+
+            logger.debug(
+                "[WeeklyDigest] pipeline health: active=%d screened_wk=%d interviews=%d",
+                total_active, screened_week, interviews,
+            )
             return {
-                "total_active_jobs": summary.get("total_active_jobs", 0),
-                "jobs_on_track": summary.get("jobs_on_track", 0),
-                "candidates_screened_week": summary.get("total_candidates_analyzed", 0),
-                "interviews_scheduled": summary.get("interviews_scheduled", 0),
-                "conversion_rate": summary.get("conversion_rate"),
-                "conversion_change": summary.get("conversion_change"),
+                "total_active_jobs": total_active,
+                "jobs_on_track": 0,  # not computed here; used for internal reporting
+                "candidates_screened_week": screened_week,
+                "interviews_scheduled": interviews,
+                "conversion_rate": None,
+                "conversion_change": None,
             }
         except Exception as exc:
-            logger.warning("[WeeklyDigest] Pipeline health fallback: %s", exc)
+            logger.warning("[WeeklyDigest] Pipeline health fallback: %s", exc, exc_info=True)
             return {
                 "total_active_jobs": 0,
                 "jobs_on_track": 0,
@@ -86,6 +136,8 @@ class WeeklyDigestService:
                 "interviews_scheduled": 0,
                 "conversion_rate": None,
                 "conversion_change": None,
+                "fallback_used": True,
+                "fallback_reason": str(exc),
             }
 
     async def _gather_vagas_em_risco(
@@ -253,7 +305,7 @@ class WeeklyDigestService:
             TeamsDigestFormatter,
         )
 
-        results = {"teams": None, "chat": None, "bell": None}
+        results = {"teams": None, "chat": None, "bell": None, "email": None}
 
         try:
             bell_fmt = BellDigestFormatter()
@@ -313,14 +365,53 @@ class WeeklyDigestService:
         try:
             teams_fmt = TeamsDigestFormatter()
             teams_card = teams_fmt.format(digest)
-            from app.domains.communication.services.teams_service import TeamsService
+            from app.domains.communication.services.teams_service import (
+                TeamsService,
+                resolve_tenant_teams_webhook_url,
+            )
 
-            ts = TeamsService()
-            teams_result = await ts.send_adaptive_card(teams_card)
+            _wh_url: str | None = None
+            try:
+                from sqlalchemy import select as _sel
+                from app.auth.models import User as _User
+                _ur = await db.execute(_sel(_User.company_id).where(_User.id == recruiter_id))
+                _company_id = _ur.scalar_one_or_none()
+                if _company_id:
+                    _wh_url, _ = await resolve_tenant_teams_webhook_url(str(_company_id), db)
+            except Exception as _url_exc:
+                logger.debug("[WeeklyDigest] Could not resolve per-tenant Teams URL: %s", _url_exc)
+
+            ts = TeamsService(webhook_url=_wh_url)
+            teams_result = await ts.send_adaptive_card(teams_card, webhook_url=_wh_url)
             results["teams"] = {"success": True, "details": teams_result}
         except Exception as exc:
             logger.warning("[WeeklyDigest] Teams delivery failed: %s", exc)
             results["teams"] = {"success": False, "error": str(exc)}
+
+        try:
+            # E6 (2026-06-09): WeeklyDigest tambem por EMAIL (era so bell+chat+teams).
+            from lia_messaging.notification_service import (
+                NotificationChannel,
+                NotificationService,
+            )
+
+            email_data = BellDigestFormatter().format(digest)
+            ns = NotificationService()
+            email_result = await ns.send_multi_channel_notification(
+                user_id=recruiter_id,
+                title=email_data["title"],
+                message=email_data["message"],
+                channels=[NotificationChannel.EMAIL],
+                data={
+                    "digest_type": "weekly",
+                    "action_url": email_data.get("action_url", "/chat"),
+                },
+                db=db,
+            )
+            results["email"] = {"success": True, "details": email_result}
+        except Exception as exc:
+            logger.warning("[WeeklyDigest] Email delivery failed: %s", exc)
+            results["email"] = {"success": False, "error": str(exc)}
 
         logger.info(
             "[WeeklyDigest] Delivered to recruiter=%s bell=%s chat=%s teams=%s",
@@ -337,7 +428,26 @@ class WeeklyDigestService:
         recruiter_id: str,
         recruiter_name: str,
         db: AsyncSession,
+        company_id: str | None = None,  # B2: digest_enabled gate
     ) -> dict[str, Any]:
+        # B2: respect per-company digest_enabled toggle (fail-open: True when not set)
+        if company_id:
+            from app.shared.policy_helper import get_company_policy
+            try:
+                policy = await get_company_policy(company_id, db)
+                comm_rules = (policy or {}).get("communication_rules", {})
+                if not comm_rules.get("digest_enabled", True):
+                    logger.info(
+                        "[WeeklyDigest] digest_enabled=False for company=%s, skipping delivery",
+                        company_id,
+                    )
+                    return {
+                        "skipped": True,
+                        "reason": "digest_disabled_by_company",
+                        "company_id": company_id,
+                    }
+            except Exception as _exc:
+                logger.warning("[WeeklyDigest] digest_enabled check failed (fail-open): %s", _exc)
         digest = await self.generate_digest(recruiter_id, recruiter_name, db)
         delivery = await self.deliver_digest(digest, recruiter_id, recruiter_name, db)
 
@@ -372,11 +482,38 @@ class WeeklyDigestService:
             skipped = 0
             errors = 0
 
+            _digest_repo = DigestScheduleRepository()
+
             for user in users:
                 prefs = getattr(user, "notification_preferences", None) or {}
                 if isinstance(prefs, dict) and prefs.get("weekly_report_enabled") is False:
                     skipped += 1
                     continue
+
+                # F5: verificar preferência de frequência antes de enviar
+                try:
+                    company_id = getattr(user, "company_id", None)
+                    if company_id:
+                        pref, _source = await _digest_repo.get_effective(
+                            db, company_id=company_id, user_id=str(user.id)
+                        )
+                        freq = pref.frequency if pref else "daily"
+                    else:
+                        freq = "daily"
+
+                    from app.domains.automation.services.automation_scheduler import AutomationScheduler
+                    if not AutomationScheduler._is_digest_due(freq):
+                        logger.debug(
+                            "[WeeklyDigest] Skipping user=%s frequency=%s (not due today)",
+                            user.id, freq,
+                        )
+                        skipped += 1
+                        continue
+                except Exception as freq_exc:
+                    logger.warning(
+                        "[WeeklyDigest] Could not check frequency for user=%s, sending anyway: %s",
+                        user.id, freq_exc,
+                    )
 
                 try:
                     await self.generate_and_deliver(

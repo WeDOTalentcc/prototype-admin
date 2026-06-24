@@ -37,6 +37,12 @@ from lia_models.job_vacancy import JobVacancy
 from lia_models.job_vacancy_audit import JobVacancyAuditLog
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+from app.domains.job_management.repositories.job_vacancy_crud_repository import (
+    JobVacancyCrudRepository,
+)
+from app.domains.job_management.repositories.job_vacancy_crud_repository import (
+    JobVacancyCrudRepository,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -448,3 +454,23 @@ company_id: str = Depends(require_company_id)) -> JobDetailResponse:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     await db.commit()
     return await get_job_detail(job_id, user=user, db=db)
+
+@router.post("/job/{job_id}/reactivate")
+async def reactivate_job_vacancy(
+    job_id: str,
+    db: AsyncSession = Depends(get_db),
+    company_id: str = Depends(require_company_id),
+):
+    """Reactivate a closed vacancy back to Ativa status."""
+    vacancy = await JobVacancyCrudRepository(db).get_vacancy_by_id_and_company(job_id, company_id)
+    if not vacancy:
+        raise HTTPException(status_code=404, detail="Vacancy not found")
+    if vacancy.status not in ("Concluída", "Cancelada", "Arquivada", "Pausada"):
+        raise HTTPException(
+            status_code=422,
+            detail=f"Cannot reactivate vacancy in status '{vacancy.status}'",
+        )
+    vacancy.status = "Ativa"
+    await db.commit()
+    await db.refresh(vacancy)
+    return {"success": True, "job_id": job_id, "new_status": "Ativa"}

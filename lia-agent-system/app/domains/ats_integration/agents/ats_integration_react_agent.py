@@ -31,18 +31,12 @@ logger = logging.getLogger(__name__)
 from app.shared.agents.agent_registry import register_agent
 from app.shared.agents.tenant_aware_agent import TenantAwareAgentMixin
 from app.shared.prompts.prompt_composer import PromptComposer
+from app.shared.hitl.hitl_canonical_actions import HITL_REQUIRED_ACTIONS
 
 @register_agent("ats_integration", aliases=['ats'])
 class ATSIntegrationReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgentMixin):
     # W4-032 (2026-05-23): ações com side-effect EXTERNO (write para Workday/
     # Greenhouse/etc) requerem aprovação humana inline via HITL.
-    _HITL_ACTION_TYPES = frozenset({
-        "sync_to_ats",
-        "webhook_trigger",
-        "ats_create_application",
-        "ats_update_application",
-        "ats_reject_application",
-    })
 
     DOMAIN_INSTRUCTIONS = PromptComposer.for_domain(
         agent_type="ats_integration",
@@ -222,7 +216,7 @@ class ATSIntegrationReActAgent(TenantAwareAgentMixin, LangGraphReActBase, Enhanc
         hitl_response = await maybe_request_hitl_approval(
             agent_input=input,
             domain=self.domain_name,
-            action_types=self._HITL_ACTION_TYPES,
+            action_types=HITL_REQUIRED_ACTIONS,
             agent_name="ats_integration_react_agent",
             description_template=(
                 "Confirmar **{action_type}** no ATS externo. Write irreversível em sistema de terceiros."

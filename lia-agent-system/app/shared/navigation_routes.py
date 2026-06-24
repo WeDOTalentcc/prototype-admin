@@ -59,6 +59,7 @@ VALID_ROUTES: frozenset[str] = frozenset({
     "/triagem/preview/email-reminder",
     "/triagem/preview/welcome",
     "/triagem/preview/whatsapp",
+    "/recrutar",
     "/trust",
 })
 

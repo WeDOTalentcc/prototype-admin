@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
+import { getAuthHeaders } from '@/lib/api/auth-headers'
 import { validateBody } from '@/lib/api/validate'
 import { z } from 'zod'
 
@@ -7,7 +8,7 @@ const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8001'
 
 function getHeaders(request: NextRequest) {
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
+    ...(getAuthHeaders(request) as Record<string, string>),
   }
   
   const companyId = request.headers.get('X-Company-ID')

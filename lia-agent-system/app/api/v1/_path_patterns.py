@@ -37,6 +37,11 @@ DUAL_ID_PATH_PATTERN = (
     r"[0-9a-fA-F]{4}-[0-9a-fA-F]{12}|\d+)$"
 )
 
+# Identificador de SESSÃO para endpoints de chat/SSE. String OPACA, NÃO é UUID:
+# o FE gera ids como "lia-<timestamp>-<rand>". Aceita UUID, bigint E o formato
+# lia-*. Bounded (1-128) + charset seguro (sem '/', '.', evita path traversal).
+SESSION_ID_PATH_PATTERN = r"^[A-Za-z0-9_:-]{1,128}$"
+
 def reorder_collection_before_item(router) -> None:
     """In-place reorder ``router.routes`` so every collection-scoped
     APIRoute (no ``{`` in its path) comes before any item-scoped
@@ -70,3 +75,11 @@ __all__ = [
     "DUAL_ID_PATH_PATTERN",
     "reorder_collection_before_item",
 ]
+
+# Candidato com id LOCAL (UUID/bigint) OU id externo de sourcing
+# (ex.: pearch slug "paul-criswell-7583691"). Para rotas que aceitam
+# candidatos GLOBAIS nao-persistidos (ex.: experience-highlights), onde
+# DUAL_ID_PATH_PATTERN rejeitaria o slug com 422. A precedencia sobre rotas
+# estaticas irmas (/generate, /batch-generate) e garantida por
+# reorder_collection_before_item, NAO por este pattern.
+CANDIDATE_OR_SOURCING_ID_PATTERN = r"^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"

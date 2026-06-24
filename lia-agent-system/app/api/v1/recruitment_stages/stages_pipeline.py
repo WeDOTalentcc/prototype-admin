@@ -6,7 +6,7 @@ Pipeline management endpoints:
 - Job pipeline GET/PUT
 - Pipeline inheritance status, copy-from-company, mark-customized
 """
-import uuid
+import uuid as _uuid
 import logging
 from datetime import datetime
 
@@ -37,6 +37,8 @@ from ._shared import (
     User,
 )
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
+from app.shared.types import WeDoBaseModel
 from typing import Annotated
 from fastapi import Path
 from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
@@ -101,7 +103,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error initializing stages: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/sync-canonical-sub-statuses", response_model=None)
@@ -155,7 +157,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error("[sync_canonical] error: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 
@@ -230,7 +232,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as exc:
         logger.error("[apply_template_sub_statuses] error: %s", exc, exc_info=True)
-        raise HTTPException(status_code=500, detail="Erro ao aplicar sub-statuses do template")
+        raise LIAError(message="Erro ao aplicar sub-statuses do template")
 
 
 @router.get("/company-pipeline", response_model=None)
@@ -247,7 +249,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting company pipeline: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.put("/company-pipeline", response_model=None)
@@ -333,7 +335,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error updating company pipeline: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/jobs/{job_id}/pipeline", response_model=None)
@@ -348,7 +350,22 @@ company_id: str = Depends(require_company_id)):
 
         effective_company_id = get_user_company_id(current_user)
 
-        job = await stage_repo.db.get(JobVacancy, uuid.UUID(job_id))
+        try:
+            _job_uuid = uuid.UUID(job_id)
+        except (ValueError, AttributeError):
+            # Non-UUID fallback — look up via job_vacancies.job_id column
+            from sqlalchemy import select as _sa_select, and_ as _sa_and_
+            from app.models.job_vacancy import JobVacancy as _JV
+            _res = await stage_repo.db.execute(
+                _sa_select(_JV).where(
+                    _sa_and_(_JV.job_id == str(job_id), _JV.company_id == effective_company_id)
+                )
+            )
+            _fallback = _res.scalar_one_or_none()
+            if not _fallback:
+                raise HTTPException(status_code=404, detail="Job not found")
+            _job_uuid = _fallback.id
+        job = await stage_repo.db.get(JobVacancy, _job_uuid)
         if not job:
             raise HTTPException(status_code=404, detail="Job not found")
         if str(job.company_id) != effective_company_id:
@@ -395,7 +412,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting job pipeline: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.put("/jobs/{job_id}/pipeline", response_model=None)
@@ -411,7 +428,21 @@ company_id: str = Depends(require_company_id)):
 
         effective_company_id = get_user_company_id(current_user)
 
-        job = await stage_repo.db.get(JobVacancy, uuid.UUID(job_id))
+        try:
+            _job_uuid2 = uuid.UUID(job_id)
+        except (ValueError, AttributeError):
+            from sqlalchemy import select as _sa_select2, and_ as _sa_and2_
+            from app.models.job_vacancy import JobVacancy as _JV2
+            _res2 = await stage_repo.db.execute(
+                _sa_select2(_JV2).where(
+                    _sa_and2_(_JV2.job_id == str(job_id), _JV2.company_id == effective_company_id)
+                )
+            )
+            _fb2 = _res2.scalar_one_or_none()
+            if not _fb2:
+                raise HTTPException(status_code=404, detail="Job not found")
+            _job_uuid2 = _fb2.id
+        job = await stage_repo.db.get(JobVacancy, _job_uuid2)
         if not job:
             raise HTTPException(status_code=404, detail="Job not found")
         if str(job.company_id) != effective_company_id:
@@ -464,7 +495,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error updating job pipeline: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/pipeline/job/{job_id}/inheritance-status", response_model=None)
@@ -486,8 +517,12 @@ company_id: str = Depends(require_company_id)):
 
         effective_company_id = get_user_company_id(current_user)
 
+        try:
+            _job_uuid = _uuid.UUID(str(job_id))
+        except (ValueError, AttributeError):
+            raise HTTPException(status_code=404, detail="Job not found")
         result = await stage_repo.db.execute(
-            sa_select(JobVacancy).where(JobVacancy.id == job_id)
+            sa_select(JobVacancy).where(JobVacancy.id == _job_uuid)
         )
         job = result.scalars().first()
         if not job:
@@ -506,7 +541,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error checking pipeline inheritance: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/pipeline/job/{job_id}/copy-from-company", response_model=None)
@@ -522,8 +557,12 @@ company_id: str = Depends(require_company_id)):
 
         from app.models.job_vacancy import JobVacancy
 
+        try:
+            _job_uuid = _uuid.UUID(str(job_id))
+        except (ValueError, AttributeError):
+            raise HTTPException(status_code=404, detail="Job not found")
         job_result = await stage_repo.db.execute(
-            sa_select(JobVacancy).where(JobVacancy.id == job_id)
+            sa_select(JobVacancy).where(JobVacancy.id == _job_uuid)
         )
         job = job_result.scalars().first()
         if not job:
@@ -553,9 +592,13 @@ company_id: str = Depends(require_company_id)):
                 "default_channel": getattr(stage, 'default_channel', 'email') or "email",
             })
 
+        try:
+            _job_uuid = _uuid.UUID(str(job_id))
+        except (ValueError, AttributeError):
+            raise HTTPException(status_code=404, detail="Job not found")
         stmt = (
             sa_update(JobVacancy)
-            .where(JobVacancy.id == job_id)
+            .where(JobVacancy.id == _job_uuid)
             .values(
                 pipeline_config=pipeline_config,
                 is_pipeline_customized=False,
@@ -576,7 +619,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error copying company pipeline to job: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/pipeline/job/{job_id}/mark-customized", response_model=None)
@@ -603,10 +646,14 @@ company_id: str = Depends(require_company_id)):
 
         from app.models.job_vacancy import JobVacancy
 
+        try:
+            _job_uuid = _uuid.UUID(str(job_id))
+        except (ValueError, AttributeError):
+            raise HTTPException(status_code=404, detail="Job not found")
         stmt = (
             sa_update(JobVacancy)
             .where(
-                JobVacancy.id == job_id,
+                JobVacancy.id == _job_uuid,
                 JobVacancy.company_id == company_id,
             )
             .values(
@@ -626,4 +673,48 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error marking pipeline as customized: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
+
+
+# ── data_fields ───────────────────────────────────────────────────────────────
+
+
+class StageDataFieldItem(WeDoBaseModel):
+    """Campo de coleta de dados para um estágio do pipeline."""
+    id: str
+    displayName: str
+    category: str  # basic | document | financial | admissional
+    required: bool = False
+    auto_collect: bool = False
+
+
+class UpdateStageDataFieldsRequest(WeDoBaseModel):
+    data_fields: list[StageDataFieldItem]
+
+
+@router.patch("/stages/{stage_id}/data-fields", response_model=None)
+async def update_stage_data_fields(
+    stage_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
+    payload: UpdateStageDataFieldsRequest,
+    stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
+    company_id: str = Depends(require_company_id),
+):
+    """Atualiza campos de coleta (data_fields) de um estágio do pipeline da empresa.
+
+    Multi-tenancy: verifica que o estágio pertence à company do JWT (assert_resource_ownership).
+    Retorna o stage atualizado completo (to_dict).
+    """
+    stage = await stage_repo.get_by_id_str(stage_id)
+    if stage is None:
+        raise HTTPException(status_code=404, detail="Stage não encontrado")
+    assert_resource_ownership(stage.company_id, company_id)
+
+    updated = await stage_repo.update_fields_uuid(
+        stage.id,
+        {"data_fields": [df.model_dump() for df in payload.data_fields]},
+    )
+    if not updated:
+        raise LIAError(message="Falha ao atualizar data_fields")
+
+    refreshed = await stage_repo.get_by_id(stage.id)
+    return {"success": True, "stage": refreshed.to_dict() if refreshed else None}

@@ -96,14 +96,14 @@ function ProfileLinkedInCard({ candidate }: { candidate: Record<string, unknown>
           )}
           {followersCount !== undefined && followersCount !== null && (
             <div className="flex items-center gap-1">
-              <Users className="w-3 h-3 text-lia-text-disabled" />
+              <Users className="w-3 h-3 text-lia-text-muted" />
               <span className={`${textStyles.bodySmall} font-medium`}>{(followersCount as number).toLocaleString('pt-BR')}</span>
               <span className={textStyles.caption}>seguidores</span>
             </div>
           )}
           {connectionsCount !== undefined && connectionsCount !== null && (
             <div className="flex items-center gap-1">
-              <UserPlus className="w-3 h-3 text-lia-text-disabled" />
+              <UserPlus className="w-3 h-3 text-lia-text-muted" />
               <span className={`${textStyles.bodySmall} font-medium`}>{(connectionsCount as number) >= 500 ? '500+' : String(connectionsCount)}</span>
               <span className={textStyles.caption}>conexões</span>
             </div>
@@ -217,7 +217,7 @@ function ProfileWorkExperienceCard({ candidate }: { candidate: Record<string, un
                         </span>
                       ))}
                       {technologiesList.length > 6 && (
-                        <span className="text-micro text-lia-text-disabled">+{technologiesList.length - 6}</span>
+                        <span className="text-micro text-lia-text-muted">+{technologiesList.length - 6}</span>
                       )}
                     </div>
                   )}

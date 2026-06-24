@@ -23,7 +23,7 @@ const BAND_COLORS: Record<string, string> = {
   excelente: 'bg-status-success/10 text-status-success border-status-success/30',
   bom: 'bg-status-success/10 text-status-success border-status-success/30',
   adequado: 'bg-status-warning/10 text-status-warning border-status-warning/30',
-  insuficiente: 'bg-wedo-orange/10 text-wedo-orange border-wedo-orange/30',
+  insuficiente: 'bg-wedo-orange/10 text-wedo-orange-text border-wedo-orange/30',
   critico: 'bg-status-error/10 text-status-error border-status-error/30',
 }
 
@@ -137,6 +137,10 @@ export const JDEvaluationHeader = React.memo(function JDEvaluationHeader({
                 </span>
               )}
             </div>
+            <p className="text-micro text-lia-text-tertiary leading-relaxed">
+              Mede os campos estruturados (responsabilidades, competências e
+              critérios D1–D9), não o texto livre da descrição enriquecida (IA).
+            </p>
             {evaluation.lia_suggestion && (
               <div className={cn(
                 "text-micro px-2.5 py-2 rounded-md border leading-relaxed",

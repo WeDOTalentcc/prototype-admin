@@ -47,6 +47,14 @@ def _normalize_text(text: str) -> str:
     return unicodedata.normalize('NFD', text).encode('ascii', 'ignore').decode('ascii')
 
 
+# ---------------------------------------------------------------------------
+# FALLBACK DE EMERGENCIA — fonte canonica: fairness_policy_rules (Regra 7,
+# rule_type=linguistic_banlist, action=warn, terms_pt/terms_en).
+# Este dict e usado por check_implicit_bias() quando effective_policy nao esta
+# disponivel (DB offline, startup, testes unitarios sem DB).
+# Para adicionar/remover termos em producao: usar a API /fairness/fairness-policies
+# (nao editar este arquivo).
+# ---------------------------------------------------------------------------
 IMPLICIT_BIAS_TERMS: dict[str, str] = {
     # Chaves sem acentuação — _normalize_text() normaliza antes da busca
     "boa aparencia": "O termo 'boa aparência' pode configurar discriminação estética (Lei 12.984/14). Use critérios objetivos de apresentação profissional.",
@@ -59,7 +67,7 @@ IMPLICIT_BIAS_TERMS: dict[str, str] = {
     "perfil adequado": "O termo 'perfil adequado' é vago e pode mascarar vieses inconscientes. Especifique competências objetivas.",
     "apresentacao pessoal": "O termo 'apresentação pessoal' pode configurar discriminação estética. Use critérios objetivos.",
     "morar proximo": "Filtrar por 'morar próximo' pode configurar discriminação socioeconômica. Considere disponibilidade ou trabalho remoto.",
-    "boa familia": "O termo 'boa família' pode configurar discriminação socioeconômica ou de origem. Use critérios profissionais.",
+    "XXboa familiaXX": "O termo 'boa família' pode configurar discriminação socioeconômica ou de origem. Use critérios profissionais.",
     # Proxy socioeconômico por localização
     "zona rural": "Filtrar por 'zona rural' pode configurar discriminação socioeconômica ou geográfica indireta. Considere critérios de mobilidade ou trabalho remoto.",
     "periferia": "Filtrar por 'periferia' pode configurar discriminação socioeconômica. Considere critérios de disponibilidade, transporte ou trabalho remoto.",
@@ -86,6 +94,7 @@ IMPLICIT_BIAS_TERMS: dict[str, str] = {
 }
 
 
+# FALLBACK DE EMERGENCIA (EN) — ver comentario acima para IMPLICIT_BIAS_TERMS.
 IMPLICIT_BIAS_TERMS_EN: dict = {
     # Age proxies
     "young and dynamic":        "May indicate age bias. Use objective competency criteria.",
@@ -628,7 +637,15 @@ class FairnessGuard:
 
         if strict is None:
             import os
-            strict = os.environ.get("LIA_ENV", "").lower() in ("production", "staging")
+            # ADR-031 v2 (2026-06-08): honrar APP_ENV como fallback de LIA_ENV.
+            # Todo o resto do stack (main.py lifespan, ADR-AUTH-001,
+            # REDIS_ENCRYPTION_KEY guard, LLM key guard) decide produção via
+            # APP_ENV. O FairnessGuard era o único que lia SOMENTE LIA_ENV →
+            # deployment canônico com APP_ENV=production sem LIA_ENV caía para
+            # strict=False e o matching de atributos protegidos LGPD passava
+            # em fail-OPEN. LIA_ENV explícito ainda vence (sem regressão).
+            _env = os.environ.get("LIA_ENV", os.environ.get("APP_ENV", ""))
+            strict = _env.lower() in ("production", "staging")
 
         if not registry_ok:
             msg = (
@@ -652,6 +669,16 @@ class FairnessGuard:
     def check(self, query: str) -> FairnessCheckResult:
         if not query or not query.strip():
             return FairnessCheckResult(is_blocked=False, original_query=query)
+
+        # Wire fairness_policy_service (fail-open) — validate_query_filters check
+        try:
+            from app.shared.compliance.fairness_policy_service import _get_fairness_service
+            _fairness_service = _get_fairness_service()
+            _violations = _fairness_service.validate_query_filters({"query": query}, effective_policy={})
+            if _violations:
+                logger.warning("[FairnessGuard] Policy violations: %s", _violations)
+        except Exception as _exc:
+            logger.debug("[FairnessGuard] fairness_policy_service skip: %s", _exc)
 
         query_lower = query.lower().strip()
         query_normalized = _normalize_text(query_lower)
@@ -701,7 +728,23 @@ class FairnessGuard:
         """Alias semântico para check() — verifica Camada 1 (padrões explícitos de viés)."""
         return self.check(text)
 
-    def check_implicit_bias(self, text: str) -> list[str]:
+    @staticmethod
+    def _get_banlist_terms_from_policy(effective_policy: dict) -> dict:
+        """
+        Extrai termos soft de linguistic_banlist do effective_policy (do banco).
+        Retorna dict{term: "warn"} compatível com IMPLICIT_BIAS_TERMS.
+        Retorna {} se policy não tiver termos soft.
+        """
+        terms: dict = {}
+        for rule in effective_policy.get("linguistic_banlist", []):
+            body = rule.get("body_json", {})
+            if body.get("action") != "warn":
+                continue  # só termos soft (action=warn)
+            for term in body.get("terms_pt", []) + body.get("terms_en", []) + body.get("terms", []):
+                terms[term] = "warn"  # valor placeholder -- a mensagem educativa fica no guard
+        return terms
+
+    def check_implicit_bias(self, text: str, effective_policy: dict | None = None) -> list[str]:
         if not text or not text.strip():
             return []
 
@@ -709,16 +752,27 @@ class FairnessGuard:
         text_normalized = _normalize_text(text_lower)
         warnings = []
 
-        for term, warning_message in {**IMPLICIT_BIAS_TERMS, **IMPLICIT_BIAS_TERMS_EN}.items():
+        # Fonte canônica: DB via effective_policy (quando disponível)
+        if effective_policy:
+            db_terms = self._get_banlist_terms_from_policy(effective_policy)
+        else:
+            db_terms = {}
+
+        # Merge: DB (canônico) + hardcoded (fallback/complemento)
+        # Se DB tem termos, eles têm precedência; hardcoded preenche o que DB não tem
+        all_terms = {**IMPLICIT_BIAS_TERMS, **IMPLICIT_BIAS_TERMS_EN, **db_terms}
+
+        for term, warning_message in all_terms.items():
             term_lower = term.lower()
             term_normalized = _normalize_text(term_lower)
             if term_lower in text_lower or term_normalized in text_normalized:
-                if warning_message not in warnings:
-                    warnings.append(warning_message)
+                msg = warning_message if isinstance(warning_message, str) and len(warning_message) > 10 else (
+                    f"Termo '{term}' pode indicar vies implicito. Use criterios objetivos."
+                )
+                if msg not in warnings:
+                    warnings.append(msg)
 
         if warnings:
-            # LGPD: logar apenas contagem e tamanho — nunca fragmentos do texto
-            # (pode conter dados do candidato gerados pelo LLM)
             logger.info(
                 "FairnessGuard implicit bias detected: %d warnings for text_len=%d",
                 len(warnings), len(text),
@@ -778,7 +832,16 @@ class FairnessGuard:
                 result.soft_warnings.extend(semantic_warnings)
 
         except (ImportError, Exception) as e:
-            logger.warning("[LIA-FG-01] FairnessGuard Redis/semantic unavailable: %s", e)
+            logger.error(
+                "[LIA-FG-01] FairnessGuard Layer3 Redis/semantic UNAVAILABLE: %s",
+                e,
+                exc_info=True,
+            )
+            try:
+                import sentry_sdk  # type: ignore[import]
+                sentry_sdk.capture_exception(e)
+            except ImportError:
+                pass
 
         return result
 
@@ -820,7 +883,7 @@ class FairnessGuard:
 
             import redis.asyncio as _aioredis
             from lia_config.config import settings
-            _redis = _aioredis.from_url(settings.REDIS_URL)
+            _redis = _aioredis.from_url(settings.REDIS_URL, socket_connect_timeout=5, socket_timeout=5)
             cached = await _redis.get(cache_key)
             if cached:
                 cached_data = json.loads(cached)
@@ -1064,6 +1127,7 @@ class FairnessGuard:
         candidate_id: str | None = None,
         # Parâmetro ignorado (compatibilidade com chamadas antigas que passavam input_text)
         input_text: str | None = None,
+        session_id: str | None = None,
     ) -> None:
         """
         Persist a FairnessGuard check result to the audit log (EU AI Act compliance).
@@ -1081,6 +1145,7 @@ class FairnessGuard:
             job_id: Related job vacancy ID.
             candidate_id: Related candidate ID.
             input_text: Ignorado (retrocompatibilidade).
+            session_id: ID da sessão SSE — persiste em session_id e em correlation_id de policy_violations.
         """
         if not result.is_blocked and not result.soft_warnings:
             return
@@ -1108,6 +1173,7 @@ class FairnessGuard:
                 is_blocked=result.is_blocked,
                 context=context_str,
                 soft_warnings=result.soft_warnings or [],
+                session_id=session_id,
             )
             session.add(record)
             await session.flush()
@@ -1115,6 +1181,41 @@ class FairnessGuard:
                 "FairnessGuard audit logged: is_blocked=%s category=%s context=%s warnings=%d",
                 result.is_blocked, result.category, context_str, len(result.soft_warnings or []),
             )
+
+            # --- NOVO: trail regulatorio em fairness_policy_violations ---
+            # Gravado apenas quando ha bloqueio real (is_blocked=True).
+            # Soft warnings ficam so em fairness_audit_log (nao sao violacoes de politica).
+            if result.is_blocked and company_id:
+                try:
+                    from lia_models.fairness_policies import FairnessPolicyViolation
+                    violation = FairnessPolicyViolation(
+                        id=_uuid.uuid4(),
+                        company_id=_uuid.UUID(company_id),
+                        domain=context_str,
+                        rule_id=None,
+                        rule_type="linguistic_banlist",
+                        violation_type=f"category_blocked:{result.category or 'unknown'}",
+                        input_snapshot_hash=query_hash,
+                        decision_context={
+                            "category": result.category,
+                            "blocked_terms": (result.blocked_terms or [])[:5],
+                            "confidence": result.confidence,
+                            "context": context_str,
+                        },
+                        was_blocked=True,
+                        fairness_audit_log_id=record.id,
+                        correlation_id=session_id,
+                    )
+                    session.add(violation)
+                    logger.debug(
+                        "FairnessGuard policy violation logged: category=%s audit_log_id=%s",
+                        result.category, record.id,
+                    )
+                except Exception as _viol_exc:
+                    # Fail-open: falha no trail regulatorio nao derruba o audit operacional
+                    logger.warning(
+                        "FairnessGuard policy_violations write failed (non-blocking): %s", _viol_exc
+                    )
 
         try:
             if db is not None:

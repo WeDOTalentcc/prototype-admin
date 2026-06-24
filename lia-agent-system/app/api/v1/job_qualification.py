@@ -21,7 +21,6 @@ from fastapi import Path
 from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 # RAILS-DEPRECATED: This endpoint manages Rails-owned entities (candidates/jobs/applies/users).
-# Direct DB calls will be replaced by RailsAdapter after ats-api-rails handoff.
 # See: app/domains/integrations_hub/services/rails_adapter.py
 
 logger = logging.getLogger(__name__)

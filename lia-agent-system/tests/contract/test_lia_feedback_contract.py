@@ -35,6 +35,8 @@ _EXPECTED_PATHS: set[str] = {
     "/feedback/regenerate",
     "/feedback/metrics",
     "/feedback/by-conversation/{session_id}",
+    # Task #1299 — implicit feedback signal (correction_delta / abandonment).
+    "/feedback/implicit",
 }
 """
 Canonical paths registered by `feedback_router`.

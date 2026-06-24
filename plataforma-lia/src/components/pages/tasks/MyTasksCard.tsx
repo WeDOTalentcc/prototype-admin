@@ -191,7 +191,7 @@ export function MyTasksCard({
 
               {tasksOnly.length === 0 && (
                 <div className="text-center py-8">
-                  <CheckCircle2 className="w-12 h-12 mx-auto text-lia-text-disabled mb-3" />
+                  <CheckCircle2 className="w-12 h-12 mx-auto text-lia-text-muted mb-3" />
                   <p className="text-sm font-medium text-lia-text-primary mb-1">Nenhuma tarefa pendente</p>
                   <p className="text-xs text-lia-text-secondary">Todas as tarefas foram concluídas</p>
                 </div>
@@ -224,12 +224,12 @@ export function MyTasksCard({
 
             {interviewsLoading ? (
               <div className="py-12 text-center" role="status" aria-live="polite" aria-label="Carregando...">
-                <Loader2 className="w-6 h-6 text-lia-text-disabled mx-auto mb-2 animate-spin motion-reduce:animate-none" />
+                <Loader2 className="w-6 h-6 text-lia-text-muted mx-auto mb-2 animate-spin motion-reduce:animate-none" />
                 <p className="text-xs text-lia-text-tertiary">Carregando entrevistas...</p>
               </div>
             ) : interviewsError ? (
               <div className="py-12 text-center">
-                <Calendar className="w-10 h-10 text-lia-text-disabled mx-auto mb-2" />
+                <Calendar className="w-10 h-10 text-lia-text-muted mx-auto mb-2" />
                 <p className="text-xs font-semibold text-lia-text-secondary mb-1">Erro ao carregar</p>
                 <p className="text-xs text-lia-text-tertiary mb-2">{interviewsError}</p>
                 <Button size="sm" variant="outline" onClick={fetchInterviews} className="h-7 px-3 text-xs gap-1.5">
@@ -238,7 +238,7 @@ export function MyTasksCard({
               </div>
             ) : todayInterviews.length === 0 ? (
               <div className="py-12 text-center">
-                <Calendar className="w-10 h-10 text-lia-text-disabled mx-auto mb-2" />
+                <Calendar className="w-10 h-10 text-lia-text-muted mx-auto mb-2" />
                 <p className="text-xs font-semibold text-lia-text-secondary mb-1">Nenhuma entrevista agendada</p>
                 <p className="text-xs text-lia-text-tertiary">Sua agenda está livre.</p>
               </div>
@@ -247,7 +247,7 @@ export function MyTasksCard({
                 {morningInterviews.length > 0 && (
                   <div className="flex items-center gap-2 pt-1 pb-0.5 px-1">
                     <Sun className="w-3.5 h-3.5 text-status-warning" />
-                    <span className="text-xs font-[Inter,sans-serif] font-medium text-lia-text-disabled uppercase tracking-wider">Manhã</span>
+                    <span className="text-xs font-[Inter,sans-serif] font-medium text-lia-text-tertiary uppercase tracking-wider">Manhã</span>
                     <div className="flex-1 border-t border-lia-border-subtle dark:border-lia-border-subtle" />
                   </div>
                 )}
@@ -255,7 +255,7 @@ export function MyTasksCard({
                 {afternoonInterviews.length > 0 && (
                   <div className="flex items-center gap-2 pt-2 pb-0.5 px-1">
                     <Sunset className="w-3.5 h-3.5 text-wedo-orange" />
-                    <span className="text-xs font-[Inter,sans-serif] font-medium text-lia-text-disabled uppercase tracking-wider">Tarde</span>
+                    <span className="text-xs font-[Inter,sans-serif] font-medium text-lia-text-tertiary uppercase tracking-wider">Tarde</span>
                     <div className="flex-1 border-t border-lia-border-subtle dark:border-lia-border-subtle" />
                   </div>
                 )}
@@ -269,8 +269,8 @@ export function MyTasksCard({
                   return Object.entries(groupedByDate).map(([dateLabel, interviews]) => (
                     <React.Fragment key={dateLabel}>
                       <div className="flex items-center gap-2 pt-3 pb-0.5 px-1">
-                        <Calendar className="w-3.5 h-3.5 text-lia-text-disabled" />
-                        <span className="text-xs font-[Inter,sans-serif] font-medium text-lia-text-disabled uppercase tracking-wider">{dateLabel}</span>
+                        <Calendar className="w-3.5 h-3.5 text-lia-text-muted" />
+                        <span className="text-xs font-[Inter,sans-serif] font-medium text-lia-text-tertiary uppercase tracking-wider">{dateLabel}</span>
                         <div className="flex-1 border-t border-lia-border-subtle dark:border-lia-border-subtle" />
                       </div>
                       {interviews.map((interview) => renderInterviewCard(interview, 'active'))}
@@ -284,12 +284,12 @@ export function MyTasksCard({
           <TabsContent value="historico" className="mt-0">
             {interviewsLoading ? (
               <div className="py-12 text-center" role="status" aria-live="polite" aria-label="Carregando...">
-                <Loader2 className="w-6 h-6 text-lia-text-disabled mx-auto mb-2 animate-spin motion-reduce:animate-none" />
+                <Loader2 className="w-6 h-6 text-lia-text-muted mx-auto mb-2 animate-spin motion-reduce:animate-none" />
                 <p className="text-xs text-lia-text-tertiary">Carregando histórico...</p>
               </div>
             ) : interviewsError ? (
               <div className="py-12 text-center">
-                <Calendar className="w-10 h-10 text-lia-text-disabled mx-auto mb-2" />
+                <Calendar className="w-10 h-10 text-lia-text-muted mx-auto mb-2" />
                 <p className="text-xs font-semibold text-lia-text-secondary mb-1">Erro ao carregar histórico</p>
                 <p className="text-xs text-lia-text-tertiary mb-2">{interviewsError}</p>
                 <Button size="sm" variant="outline" onClick={fetchInterviews} className="h-7 px-3 text-xs gap-1.5">
@@ -298,7 +298,7 @@ export function MyTasksCard({
               </div>
             ) : pastInterviews.length === 0 ? (
               <div className="py-12 text-center">
-                <Clock className="w-10 h-10 text-lia-text-disabled mx-auto mb-2" />
+                <Clock className="w-10 h-10 text-lia-text-muted mx-auto mb-2" />
                 <p className="text-xs font-semibold text-lia-text-secondary mb-1">Nenhum histórico</p>
                 <p className="text-xs text-lia-text-tertiary">Suas entrevistas passadas aparecerão aqui.</p>
               </div>

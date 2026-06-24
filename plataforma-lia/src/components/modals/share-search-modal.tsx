@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import { useState, useEffect, useMemo } from"react"
 import { Button } from"@/components/ui/button"
 import { Input } from"@/components/ui/input"
@@ -43,6 +44,7 @@ import {
 import { cn } from"@/lib/utils"
 import { textStyles, cardStyles } from '@/lib/design-tokens'
 import { useCommunicationTemplates, type CommunicationTemplate } from '@/hooks/chat/use-communication-templates'
+import { useAuth } from '@/contexts/auth-context'
 import { toast } from"sonner"
 
 interface Recipient {
@@ -85,6 +87,10 @@ export function ShareSearchModal({
   sourceListId,
   onSuccess
 }: ShareSearchModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('share-search', open)
+
+  const { user } = useAuth()
 const [currentShareType, setCurrentShareType] = useState<'search' | 'list'>(shareType)
   const [recipients, setRecipients] = useState<Recipient[]>([])
   const [newEmail, setNewEmail] = useState('')
@@ -155,6 +161,18 @@ const [currentShareType, setCurrentShareType] = useState<'search' | 'list'>(shar
     if (!emailRegex.test(email)) {
       toast.error("Email inválido", { description:"Por favor, insira um email válido." })
       return
+    }
+
+    // G6-Domain: só permite destinatários do mesmo domínio da organização
+    const orgDomain = user?.email?.split('@')[1]?.toLowerCase()
+    if (orgDomain) {
+      const recipientDomain = email.split('@')[1]?.toLowerCase()
+      if (recipientDomain !== orgDomain) {
+        toast.error("Domínio não permitido", {
+          description: `Só é possível compartilhar com emails @${orgDomain}.`,
+        })
+        return
+      }
     }
 
     if (recipients.some(r => r.email.toLowerCase() === email.toLowerCase())) {
@@ -427,7 +445,7 @@ const [currentShareType, setCurrentShareType] = useState<'search' | 'list'>(shar
                           key={recipient.id} 
                           className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-lia-bg-secondary border border-lia-border-subtle"
                         >
-                          <Mail className="w-3 h-3 text-lia-text-disabled flex-shrink-0" />
+                          <Mail className="w-3 h-3 text-lia-text-muted flex-shrink-0" />
                           <span className="text-xs text-lia-text-secondary truncate flex-1">
                             {recipient.email}
                           </span>
@@ -660,7 +678,7 @@ const [currentShareType, setCurrentShareType] = useState<'search' | 'list'>(shar
                   </div>
 
                   <div className="border-t border-lia-border-subtle px-5 py-3">
-                    <p className="text-micro text-lia-text-disabled text-center">
+                    <p className="text-micro text-lia-text-muted text-center">
                       Powered by WeDoTalent · Política de Privacidade
                     </p>
                   </div>

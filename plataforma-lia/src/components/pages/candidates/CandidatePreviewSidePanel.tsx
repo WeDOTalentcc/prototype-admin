@@ -33,6 +33,7 @@ export interface CandidatePreviewSidePanelProps {
   onSendAgendamento: (candidate: Candidate) => void
   onSendFeedback: (candidate: Candidate) => void
   setPreviewCandidate: (candidate: Candidate) => void
+  searchCriteria?: Record<string, unknown> | null
 }
 
 export function CandidatePreviewSidePanel({
@@ -58,6 +59,7 @@ export function CandidatePreviewSidePanel({
   onSendAgendamento,
   onSendFeedback,
   setPreviewCandidate,
+  searchCriteria,
 }: CandidatePreviewSidePanelProps) {
   const t = useTranslations('candidates.preview')
   if (!showCandidatePreview || !previewCandidate) return null
@@ -75,6 +77,7 @@ export function CandidatePreviewSidePanel({
       <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle h-[calc(100vh-6rem)] overflow-hidden">
         <CandidatePreview
           candidate={previewCandidate as any}
+          searchCriteria={searchCriteria}
           isOpen={showCandidatePreview}
           onClose={onCloseCandidatePreview}
           isMaximized={isPreviewMaximized}

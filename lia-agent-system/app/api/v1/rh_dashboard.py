@@ -37,19 +37,8 @@ _company_gate: str = Depends(require_company_id)):
         "[RH Dashboard] lgpd-requests company_id=%s status=%s page=%s",
         company_id, status, page,
     )
-    try:
-        from app.shared.rails_client import rails_get
-        params: dict = {"page": page, "page_size": page_size}
-        if status:
-            params["status"] = status
-        result = await rails_get(
-            f"/v1/companies/{company_id}/candidate-portal/lgpd-requests",
-            params=params,
-        )
-        return APIResponse.ok(data=result)
-    except Exception as exc:
-        logger.warning("[RH Dashboard] Rails proxy failed — returning empty: %s", exc)
-        return APIResponse.ok(data={"items": [], "total": 0, "pending_count": 0})
+    # Rails eliminated (RAILS_API_URL absent) — LGPD requests managed via FastAPI when migrated
+    return APIResponse.ok(data={"items": [], "total": 0, "pending_count": 0})
 
 
 @router.patch(
@@ -68,13 +57,5 @@ _company_gate: str = Depends(require_company_id)):
         "[RH Dashboard] mark-responded request_id=%s company_id=%s",
         request_id, company_id,
     )
-    try:
-        from app.shared.rails_client import rails_patch
-        result = await rails_patch(
-            f"/v1/companies/{company_id}/candidate-portal/lgpd-requests/{request_id}/respond",
-            data={},
-        )
-        return APIResponse.ok(data=result)
-    except Exception as exc:
-        logger.error("[RH Dashboard] mark-responded failed: %s", exc, exc_info=True)
-        return APIResponse.error(message=f"Erro ao atualizar pedido: {exc}")
+    # Rails eliminated (RAILS_API_URL absent) — endpoint returns 503 until FastAPI migration
+    return APIResponse.error(message="Rails endpoints eliminados. Migração FastAPI pendente.", status_code=503)

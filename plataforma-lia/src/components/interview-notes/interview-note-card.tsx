@@ -30,6 +30,7 @@ import { ScoreCardWSI } from"./score-card-wsi"
 import { TeamsAnalysisPanel } from"./teams-analysis-panel"
 import { InterviewNote, InterviewNoteQuestion, QuestionBlock, WSIScore, InterviewAnalysisStatus } from"@/types/interview-notes"
 import { cn } from"@/lib/utils"
+import { useAiPersona } from "@/hooks/company/use-ai-persona"
 
 interface InterviewNoteCardProps {
   interviewNote: InterviewNote
@@ -170,6 +171,8 @@ export function InterviewNoteCard({
   onEscalate,
   isLoading = false,
 }: InterviewNoteCardProps) {
+  const { persona } = useAiPersona()
+  const personaName = persona?.name ?? "IA"
   const [note, setNote] = useState<InterviewNote>(interviewNote)
   const [isTranscriptionOpen, setIsTranscriptionOpen] = useState(false)
   const [isGeneratingParecer, setIsGeneratingParecer] = useState(false)
@@ -423,7 +426,7 @@ export function InterviewNoteCard({
             <div className="bg-lia-bg-secondary border border-lia-border-subtle rounded-xl p-6 text-center">
               <Bot className="h-8 w-8 text-lia-text-secondary mx-auto mb-2" />
               <p className="text-sm text-lia-text-secondary">
-                Clique em &quot;Gerar Parecer com LIA&quot; para obter uma
+                Clique em {`"Gerar Parecer com ${personaName}"`} para obter uma
                 análise automática da entrevista.
               </p>
             </div>
@@ -448,7 +451,7 @@ export function InterviewNoteCard({
             className="gap-2"
           >
             <Bot className="h-4 w-4" />
-            {isGeneratingParecer ?"Gerando..." :"Gerar Parecer com LIA"}
+            {isGeneratingParecer ?"Gerando..." :`Gerar Parecer com ${personaName}`}
           </Button>
 
           <Button

@@ -26,6 +26,7 @@ import { isClearChatCommand } from '@/lib/chat-commands'
 import { cleanAgentResponse, parseChatMarkdown, escapeHtml } from '@/lib/chat-format'
 import { MessageFeedback } from '@/components/chat/message-feedback'
 import type { InterpretChatMessage as ChatMessage, TaskItem, LearnedSuggestion } from '@/hooks/shared/use-interpret-context'
+import type { HitlPendingState } from '@/hooks/shared/use-transition-chat'
 import { sanitizeHtml } from "@/lib/sanitize"
 import { ThinkingDots } from "@/components/ui/thinking-dots"
 import { ContextBadge } from "@/components/lia-float/ContextBadge"
@@ -33,6 +34,7 @@ import { HITLConfirmCard } from "@/components/lia-float/HITLConfirmCard"
 import { PlanProgressCard, type ExecutionPlanData } from "@/components/chat/plan-progress-card"
 import { ChatBubbleBase } from "@/components/chat/chat-bubble-base"
 import { useLiaFloat, useLiaChatContext } from "@/contexts/lia-float-context"
+import usePersonaName from "@/hooks/company/usePersonaName"
 
 interface TransitionChatPanelProps {
   messages: ChatMessage[]
@@ -46,6 +48,8 @@ interface TransitionChatPanelProps {
   placeholder?: string
   extractedPreferences?: Record<string, unknown> | null
   sessionId?: string
+  localHitlPending?: HitlPendingState | null
+  onLocalSendApproval?: (approved: boolean) => void
 }
 
 const BEHAVIOR_DESCRIPTIONS: Record<string, string> = {
@@ -93,12 +97,18 @@ function TasksChecklist({ tasks }: { tasks: TaskItem[] }) {
 
 function OutOfScopeIndicator() {
   return (
-    <div className="mt-2 pt-2 border-t border-status-warning/30/50">
-      <div className="flex items-center gap-1.5">
-        <ExternalLink className="w-3 h-3 text-status-warning flex-shrink-0" />
-        <span className="text-micro font-medium text-status-warning" >
-          Fora do escopo desta conversa
-        </span>
+    <div className="mt-2 pt-2 border-t border-status-warning/30">
+      <div className="flex items-start gap-1.5">
+        <ExternalLink className="w-3 h-3 text-status-warning flex-shrink-0 mt-0.5" aria-hidden="true" />
+        <div className="flex flex-col gap-0.5">
+          <span className="text-micro font-medium text-status-warning">
+            Isso foge desta transição
+          </span>
+          <span className="text-micro text-lia-text-tertiary">
+            Aqui eu cuido de concluir esta etapa do candidato. Para outras ações
+            (e-mail a outros candidatos, criar vaga, relatórios), use o chat lateral da IA.
+          </span>
+        </div>
       </div>
     </div>
   )
@@ -188,12 +198,17 @@ export function TransitionChatPanel({
   placeholder,
   extractedPreferences,
   sessionId,
+  localHitlPending,
+  onLocalSendApproval,
 }: TransitionChatPanelProps) {
   const [inputValue, setInputValue] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const personaName = usePersonaName()
   const { contextPage } = useLiaFloat()
-  const { chatHitlPending, sendApproval } = useLiaChatContext()
+  const { chatHitlPending, sendApproval: globalSendApproval } = useLiaChatContext()
+  const activeHitlPending = localHitlPending !== undefined ? localHitlPending : chatHitlPending
+  const activeSendApproval = onLocalSendApproval ?? globalSendApproval
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -235,7 +250,7 @@ export function TransitionChatPanel({
                 <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
               </div>
               <span className="text-base-ui font-bold text-lia-text-primary" >
-                LIA
+                {personaName}
               </span>
               {contextPage && contextPage !== "Conversar" && (
                 <ContextBadge contextPage={contextPage} />
@@ -296,9 +311,15 @@ export function TransitionChatPanel({
           className="flex-1 overflow-y-auto px-4 py-3 space-y-3 min-h-[240px]"
         >
           {messages.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-center py-8 opacity-60">
-              <p className="text-xs text-lia-text-tertiary">
-                Envie uma mensagem para começar
+            <div className="flex flex-col items-center justify-center h-full text-center py-8 px-4">
+              <div className="w-9 h-9 rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-secondary flex items-center justify-center mb-2">
+                <Lightbulb className="w-4 h-4 text-wedo-cyan" aria-hidden="true" />
+              </div>
+              <p className="text-xs font-medium text-lia-text-secondary mb-1 max-w-[260px]">
+                {BEHAVIOR_DESCRIPTIONS[actionBehavior] || "Posso ajudar a concluir esta transição."}
+              </p>
+              <p className="text-micro text-lia-text-tertiary max-w-[260px]">
+                Foco nesta etapa do candidato. Para outras ações, use o chat lateral da IA.
               </p>
             </div>
           ) : (
@@ -347,7 +368,7 @@ export function TransitionChatPanel({
                   <div className="flex-1 flex flex-col gap-1">
                     <div className="flex items-center gap-1.5 px-1">
                       <span className="text-xs font-bold text-lia-text-primary" >
-                        LIA
+                        {personaName}
                       </span>
                       <ConfidenceBadge confidence={meta?.confidence} layer={meta?.layer} />
                     </div>
@@ -406,13 +427,13 @@ export function TransitionChatPanel({
               )
             })
           )}
-          {chatHitlPending && (
+          {activeHitlPending && (
             <div className="mt-3 px-1">
               <HITLConfirmCard
-                action={chatHitlPending.action}
-                description={chatHitlPending.description}
-                onConfirm={(_autoConfirm: boolean) => sendApproval(true)}
-                onCancel={() => sendApproval(false)}
+                action={activeHitlPending!.action}
+                description={activeHitlPending!.description}
+                onConfirm={(_autoConfirm: boolean) => activeSendApproval(true)}
+                onCancel={() => activeSendApproval(false)}
               />
             </div>
           )}
@@ -424,7 +445,7 @@ export function TransitionChatPanel({
               <div className="flex-1">
                 <div className="flex items-center gap-1.5 mb-1 px-1">
                   <span className="text-xs font-bold text-lia-text-primary" >
-                    LIA
+                    {personaName}
                   </span>
                 </div>
                 <div className="bg-lia-bg-primary border border-lia-border-subtle rounded-[14px] rounded-bl-[4px] p-3 inline-block">
@@ -476,7 +497,7 @@ export function TransitionChatPanel({
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder={placeholder || 'Envie mensagem para a LIA...'}
+              placeholder={placeholder || 'Envie mensagem para a IA...'}
               className="flex-1 text-base-ui bg-transparent focus:outline-none min-w-0 text-lia-text-primary placeholder:text-lia-text-tertiary"
              
               disabled={isLoading}

@@ -92,7 +92,7 @@ export function LiaSuggestionCards({
     <div className={`space-y-2 ${className}`}>
       <div className="flex items-center justify-between mb-3">
         <h4 className="text-xs font-medium text-lia-text-secondary uppercase tracking-wider">
-          Sugestões da LIA
+          Sugestões de IA
         </h4>
         {onRefresh && (
           <Button

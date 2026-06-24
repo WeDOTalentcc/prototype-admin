@@ -14,7 +14,8 @@ from datetime import datetime, timedelta
 from typing import Any
 
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy import and_, case, func, select
+from sqlalchemy import and_, case, cast, func, select
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user
@@ -84,9 +85,14 @@ company_id: str = Depends(require_company_id)) -> dict[str, Any]:
         }
 
         # --- 2. Per-domain breakdown ---
+        # NOTE: `context` is a plain JSON column (not JSONB), so `.astext` is not
+        # available directly (raises "object has no attribute 'astext'"). Cast to
+        # JSONB first, and build the expression ONCE so SELECT and GROUP BY share
+        # the exact same SQL (avoids Postgres GROUP BY mismatch errors).
+        domain_expr = cast(CalibrationEvent.context, JSONB)["domain"].astext
         domain_q = await db.execute(
             select(
-                CalibrationEvent.context["domain"].astext.label("domain"),
+                domain_expr.label("domain"),
                 func.count(CalibrationEvent.id).label("total"),
                 func.sum(case(
                     (CalibrationEvent.feedback_type == FeedbackType.EXPLICIT_AGREE, 1), else_=0
@@ -102,7 +108,7 @@ company_id: str = Depends(require_company_id)) -> dict[str, Any]:
                     CalibrationEvent.created_at >= since,
                 )
             )
-            .group_by(CalibrationEvent.context["domain"].astext)
+            .group_by(domain_expr)
         )
 
         domains = []

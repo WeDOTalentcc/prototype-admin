@@ -39,6 +39,7 @@ Session persistence:
 """
 
 
+from app.shared.llm_models import CANONICAL_GEMINI_FLASH_MODEL
 import json
 import logging
 from dataclasses import dataclass, field
@@ -1681,7 +1682,7 @@ class VoiceCoreOrchestrator:
 
             response = self._llm_service.generate_native_gemini_sync(
                 contents=conversation_history,
-                model="gemini-2.5-flash",
+                model=CANONICAL_GEMINI_FLASH_MODEL,
                 config=types.GenerateContentConfig(
                     system_instruction=system_prompt,
                     temperature=0.7,
@@ -2044,6 +2045,63 @@ class VoiceCoreOrchestrator:
             )
 
         masked_segments = self._mask_transcript_segments(session.transcript_segments)
+
+        # Voz Fase 0.5: gate WSI block on a registered WSI plugin (plugin_name
+        # == 'wsi_screening'). Sem plugin WSI (ex.: VoiceCoreOrchestrator de
+        # coleta de dados) NAO rodamos o pipeline WSI no transcript errado nem
+        # lancamos RuntimeError 'both strategies failed' — roteamos pelo fan-out
+        # canonico on_session_finalized e finalizamos limpo.
+        has_wsi_plugin = any(
+            getattr(p, "plugin_name", None) == "wsi_screening"
+            for p in (self._plugins or [])
+        )
+        if not has_wsi_plugin:
+            plugin_result = await self._on_session_finalized(
+                session, db, session.transcript_segments
+            )
+            session.status = "completed"
+            await self.persist_session_state(session, db)
+            await self._store_session(session)
+            await self._log_finalize_screening_audit(
+                session=session,
+                wsi_score=None,
+                duration_seconds=duration_seconds,
+                wsi_available=False,
+                wsi_strategy="skip",
+            )
+            await self._record_voice_billing(
+                session=session,
+                duration_seconds=duration_seconds,
+                db=db,
+            )
+            try:
+                await publish_platform_event(
+                    PlatformEvent(
+                        event_type="candidate_screened",
+                        company_id=str(session.company_id),
+                        payload={
+                            "candidate_id": str(session.candidate_id),
+                            "session_id": str(session.session_id),
+                            "wsi_strategy": "skip",
+                            "completed_at": datetime.utcnow().isoformat(),
+                        },
+                        source_api="lia-agent-system",
+                    )
+                )
+            except Exception as emit_err:
+                logger.warning(
+                    "[VOICE CORE] publish_platform_event candidate_screened failed: %s",
+                    emit_err,
+                )
+            return {
+                "session_id": session_id,
+                "status": "completed",
+                "duration_seconds": duration_seconds,
+                "transcript_length": len(full_transcript),
+                "plugin_result": plugin_result,
+                "wsi_strategy": "skip",
+                "provider": "twilio_voice_gemini",
+            }
 
         # F-17 P1 canonical WSI completion strategy: PRIMARY / FALLBACK / SKIP.
         # Single rastreamento de qual estrategia foi usada (telemetria + audit).

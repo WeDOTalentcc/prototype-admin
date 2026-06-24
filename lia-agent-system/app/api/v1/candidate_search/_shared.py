@@ -226,6 +226,36 @@ class LanguageDTO(BaseModel):
     level: str | None = None
 
 
+def apply_feedback_boost(
+    candidates: list,
+    feedback_map: dict[str, str],
+    boost_points: float,
+) -> None:
+    """P1-3: ajusta o Match score (in-place) com base no feedback like/dislike.
+
+    like => +boost_points, dislike => -boost_points, clamp 0-100. Anexa
+    proveniencia honesta ao match_summary (REGRA 4). Ignora candidatos sem
+    score ou sem feedback. feedback_map DEVE vir escopado por company_id.
+    """
+    if not feedback_map:
+        return
+    for c in candidates:
+        cid = getattr(c, "id", None)
+        fb = feedback_map.get(cid) if cid else None
+        if not fb or getattr(c, "score", None) is None:
+            continue
+        if fb == "like":
+            c.score = min(100.0, c.score + boost_points)
+            sign = "+"
+        elif fb == "dislike":
+            c.score = max(0.0, c.score - boost_points)
+            sign = "-"
+        else:
+            continue
+        suffix = " (ajustado por feedback do recrutador: %s%g)" % (sign, boost_points)
+        c.match_summary = (getattr(c, "match_summary", None) or "") + suffix
+
+
 class CandidateSearchResultDTO(BaseModel):
     """Resultado individual para o frontend."""
     id: str

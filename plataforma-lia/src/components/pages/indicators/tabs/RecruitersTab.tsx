@@ -123,8 +123,8 @@ export function RecruitersTab({
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-wedo-purple font-medium">NPS Médio</p>
-                <p className="text-2xl font-semibold text-wedo-purple">{teamMetrics.avgNPS}%</p>
+                <p className="text-sm text-lia-text-secondary font-medium">NPS Médio</p>
+                <p className="text-2xl font-semibold text-lia-text-primary">{teamMetrics.avgNPS}%</p>
               </div>
               <Trophy className="w-8 h-8 text-wedo-purple" />
             </div>
@@ -139,8 +139,8 @@ export function RecruitersTab({
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-wedo-orange font-medium">Tempo de Preenchimento Médio</p>
-                <p className="text-2xl font-semibold text-wedo-orange">{teamMetrics.avgTimeToFill}d</p>
+                <p className="text-sm text-wedo-orange-text font-medium">Tempo de Preenchimento Médio</p>
+                <p className="text-2xl font-semibold text-wedo-orange-text">{teamMetrics.avgTimeToFill}d</p>
               </div>
               <Clock className="w-8 h-8 text-wedo-orange" />
             </div>

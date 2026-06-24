@@ -8,7 +8,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { Globe, Home, Loader2, Mail, Phone, Search, Zap } from "lucide-react"
+import { AlertTriangle, Globe, Home, Loader2, Mail, Phone, Search, Zap } from "lucide-react"
 import type { SearchSource } from "./smartSearchConstants"
 
 interface SearchScopeControlsProps {
@@ -53,7 +53,7 @@ export function SearchScopeControls({
                 searchSource === 'local' 
                   ? "bg-wedo-green/15 ring-1 ring-wedo-green" 
                   : "hover:bg-lia-bg-tertiary"
-              , searchSource === 'local' ? "text-wedo-green" : "text-lia-text-tertiary"
+              , searchSource === 'local' ? "text-wedo-green-text" : "text-lia-text-tertiary"
               )}
             >
               <Home className="w-4 h-4" />
@@ -61,7 +61,7 @@ export function SearchScopeControls({
           </TooltipTrigger>
           <TooltipContent side="bottom" className="!animate-none !duration-0">
             <p className="text-xs font-medium">Seu banco de talentos</p>
-            <p className="text-xs text-lia-text-disabled">Gratuito • Local</p>
+            <p className="text-xs text-lia-text-muted">Gratuito • Local</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
@@ -78,7 +78,7 @@ export function SearchScopeControls({
                   searchSource === 'hybrid' 
                     ? "bg-wedo-orange/15 ring-1 ring-wedo-orange" 
                     : "hover:bg-lia-bg-tertiary"
-                , searchSource === 'hybrid' ? "text-wedo-orange" : "text-lia-text-tertiary"
+                , searchSource === 'hybrid' ? "text-wedo-orange-text" : "text-lia-text-tertiary"
                 )}
               >
                 <Zap className="w-4 h-4" />
@@ -86,7 +86,7 @@ export function SearchScopeControls({
             </TooltipTrigger>
             <TooltipContent side="bottom" className="!animate-none !duration-0">
               <p className="text-xs font-medium">Expanda sua busca</p>
-              <p className="text-xs text-lia-text-disabled" aria-live="polite" aria-atomic="true">Local + Global • 1 cred + $0.01 Apify/cand</p>
+              <p className="text-xs text-lia-text-muted" aria-live="polite" aria-atomic="true">Local + Global • 1 cred + $0.01 Apify/cand</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -112,7 +112,7 @@ export function SearchScopeControls({
             </TooltipTrigger>
             <TooltipContent side="bottom" className="!animate-none !duration-0">
               <p className="text-xs font-medium">Alcance global</p>
-              <p className="text-xs text-lia-text-disabled" aria-live="polite" aria-atomic="true">800M+ candidatos • 1 cred + $0.01 Apify/cand</p>
+              <p className="text-xs text-lia-text-muted" aria-live="polite" aria-atomic="true">800M+ candidatos • 1 cred + $0.01 Apify/cand</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -132,7 +132,7 @@ export function SearchScopeControls({
                     requireEmails 
                       ? "bg-wedo-green/15 ring-1 ring-wedo-green" 
                       : "hover:bg-lia-bg-tertiary"
-                  , requireEmails ? "text-wedo-green" : "text-lia-text-tertiary"
+                  , requireEmails ? "text-wedo-green-text" : "text-lia-text-tertiary"
                   )}
                 >
                   <Mail className="w-3.5 h-3.5" />
@@ -140,7 +140,7 @@ export function SearchScopeControls({
               </TooltipTrigger>
               <TooltipContent side="bottom" className="!animate-none !duration-0">
                 <p className="text-xs font-medium">Apenas com Email</p>
-                <p className="text-xs text-lia-text-disabled">{requireEmails ? 'Ativo ($0.01/cand)' : 'Clique para ativar ($0.01/cand)'}</p>
+                <p className="text-xs text-lia-text-muted">{requireEmails ? 'Ativo ($0.01/cand)' : 'Clique para ativar ($0.01/cand)'}</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -156,7 +156,7 @@ export function SearchScopeControls({
                     requirePhoneNumbers 
                       ? "bg-wedo-green/15 ring-1 ring-wedo-green" 
                       : "hover:bg-lia-bg-tertiary"
-                  , requirePhoneNumbers ? "text-wedo-green" : "text-lia-text-tertiary"
+                  , requirePhoneNumbers ? "text-wedo-green-text" : "text-lia-text-tertiary"
                   )}
                 >
                   <Phone className="w-3.5 h-3.5" />
@@ -164,10 +164,16 @@ export function SearchScopeControls({
               </TooltipTrigger>
               <TooltipContent side="bottom" className="!animate-none !duration-0">
                 <p className="text-xs font-medium">Apenas com Telefone</p>
-                <p className="text-xs text-lia-text-disabled">{requirePhoneNumbers ? 'Ativo ($0.01/cand)' : 'Clique para ativar ($0.01/cand)'}</p>
+                <p className="text-xs text-lia-text-muted">{requirePhoneNumbers ? 'Ativo ($0.01/cand)' : 'Clique para ativar ($0.01/cand)'}</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
+          {!requireEmails && (
+            <div className="flex items-center gap-1 px-2 py-1 bg-status-warning/10 border border-status-warning/30 rounded-md ml-1">
+              <AlertTriangle className="w-3 h-3 text-status-warning flex-shrink-0" />
+              <span className="text-[10px] text-status-warning whitespace-nowrap">Sem email: sem contato</span>
+            </div>
+          )}
         </>
       )}
       

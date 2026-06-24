@@ -17,6 +17,20 @@ import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { CandidatesPageHeader } from '../CandidatesPageHeader'
 
+vi.mock("next-intl", () => ({
+  useTranslations: () => (key: string) => {
+    const MAP: Record<string, string> = {
+      "header.title": "Funil de Talentos",
+      "header.newCandidate": "Novo Candidato",
+      "header.newSearch": "Nova Busca",
+      "header.saveSearch": "Salvar Busca",
+      "header.saveSearchTitle": "Salvar esta busca para reutilizar",
+    }
+    return MAP[key] ?? key
+  },
+}))
+
+
 const defaultTabs = [
   { id: 'search', label: 'Busca' },
   { id: 'favorites', label: 'Favoritos' },

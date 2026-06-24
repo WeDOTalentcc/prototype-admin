@@ -309,14 +309,14 @@ export function WSITutorialModal({ open, onClose }: WSITutorialModalProps) {
             </div>
             <div className="space-y-3">
               <div className="p-3 bg-lia-bg-primary rounded-xl border border-wedo-orange/30">
-                <p className="text-micro font-medium text-wedo-orange mb-1">Smart Saturation</p>
+                <p className="text-micro font-medium text-wedo-orange-text mb-1">Smart Saturation</p>
                 <p className="text-xs text-lia-text-primary leading-relaxed">
                   Quando a vaga atinge <strong>20 candidatos aprovados</strong>, a triagem automática é pausada.
                   O sistema sugere ações: agendar entrevistas em lote, revisar candidatos ou desbloquear pipeline.
                 </p>
               </div>
               <div className="p-3 bg-lia-bg-primary rounded-xl border border-wedo-orange/30">
-                <p className="text-micro font-medium text-wedo-orange mb-1">Dynamic Cutoff (Top 25%)</p>
+                <p className="text-micro font-medium text-wedo-orange-text mb-1">Dynamic Cutoff (Top 25%)</p>
                 <p className="text-xs text-lia-text-primary leading-relaxed">
                   Após <strong>30-50 triagens</strong>, o sistema aplica corte dinâmico selecionando automaticamente
                   os <strong>top 25%</strong> candidatos por percentil histórico, garantindo qualidade mesmo em alto volume.
@@ -324,11 +324,11 @@ export function WSITutorialModal({ open, onClose }: WSITutorialModalProps) {
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div className="p-2 bg-lia-bg-primary rounded-xl border border-wedo-orange/30 text-center">
-                  <div className="text-sm font-semibold text-wedo-orange">20</div>
+                  <div className="text-sm font-semibold text-wedo-orange-text">20</div>
                   <p className="text-micro text-lia-text-secondary">Limite saturação</p>
                 </div>
                 <div className="p-2 bg-lia-bg-primary rounded-xl border border-wedo-orange/30 text-center">
-                  <div className="text-sm font-semibold text-wedo-orange">30-50</div>
+                  <div className="text-sm font-semibold text-wedo-orange-text">30-50</div>
                   <p className="text-micro text-lia-text-secondary">Triagens p/ cutoff</p>
                 </div>
               </div>
@@ -342,7 +342,7 @@ export function WSITutorialModal({ open, onClose }: WSITutorialModalProps) {
               <div>
                 <p className="text-micro font-medium text-lia-text-secondary mb-1">Calibração Automática</p>
                 <p className="text-micro text-lia-text-secondary leading-relaxed">
-                  Após atingir volume suficiente, a LIA recalibra automaticamente os cortes por percentil histórico,
+                  Após atingir volume suficiente, a IA recalibra automaticamente os cortes por percentil histórico,
                   mantendo a qualidade das contratações.
                 </p>
               </div>

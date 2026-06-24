@@ -32,19 +32,13 @@ logger = logging.getLogger(__name__)
 from app.shared.agents.agent_registry import register_agent
 from app.shared.agents.tenant_aware_agent import TenantAwareAgentMixin
 from app.shared.prompts.prompt_composer import PromptComposer
+from app.shared.hitl.hitl_canonical_actions import HITL_REQUIRED_ACTIONS
 
 
 @register_agent("company_settings")
 class CompanySettingsReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgentMixin):
     # W4-032 (2026-05-23): toggles, policies, fairness configs requerem HITL.
     # Even RBAC-gated, segunda camada de aprovação reduz risco.
-    _HITL_ACTION_TYPES = frozenset({
-        "update_company_policy",
-        "toggle_lia_field",
-        "update_culture_profile",
-        "update_hiring_policy",
-        "delete_company_data",
-    })
 
     DOMAIN_INSTRUCTIONS = PromptComposer.for_domain(
         agent_type="company_settings",
@@ -193,7 +187,7 @@ class CompanySettingsReActAgent(TenantAwareAgentMixin, LangGraphReActBase, Enhan
             weights = await self.load_calibration_weights(str(input.company_id or ""), input.context.get("job_id"))
             if weights and weights != self._DEFAULT_WEIGHTS:
                 input.context["calibration_weights"] = weights
-        except Exception:
+        except Exception:  # ADR-031-R3-EXEMPT: carregamento opcional de calibration weights; falha nao bloqueia agente
             pass
         try:
             from app.shared.services.global_insights_service import get_global_insights
@@ -202,14 +196,14 @@ class CompanySettingsReActAgent(TenantAwareAgentMixin, LangGraphReActBase, Enhan
             if snippet:
                 existing = input.context.get("extra_instructions", "")
                 input.context["extra_instructions"] = f"{existing}\n\n{snippet}" if existing else snippet
-        except Exception:
+        except Exception:  # ADR-031-R3-EXEMPT: enriquecimento opcional de insights globais; falha nao bloqueia agente
             pass
         try:
             from app.domains.analytics.services.recruiter_personalization_service import get_recruiter_prompt_context
             ctx = await get_recruiter_prompt_context(str(input.user_id or ""), str(input.company_id or ""))
             if ctx:
                 input.context["recruiter_context"] = ctx
-        except Exception:
+        except Exception:  # ADR-031-R3-EXEMPT: carregamento opcional de contexto de recrutador; falha nao bloqueia agente
             pass
         return await super()._process_langgraph(input)
 
@@ -219,7 +213,7 @@ class CompanySettingsReActAgent(TenantAwareAgentMixin, LangGraphReActBase, Enhan
         _hitl_response = await maybe_request_hitl_approval(
             agent_input=input,
             domain=self.domain_name,
-            action_types=self._HITL_ACTION_TYPES,
+            action_types=HITL_REQUIRED_ACTIONS,
             agent_name="company_react_agent",
             description_template=(
                 "Confirmar **{action_type}** nas configurações da empresa. "

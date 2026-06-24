@@ -4,7 +4,7 @@ import React from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import {
-  Loader2, Send, Info, CheckCircle2, Circle, Save, Edit,
+  Loader2, Send, Info, CheckCircle2, Circle, Save, Edit, Plus, X, UserPlus,
 } from "lucide-react"
 import { textStyles } from "@/lib/design-tokens"
 import { ScreeningConfigContent, SCREENING_SECTIONS } from "@/components/screening-config"
@@ -61,7 +61,7 @@ export function JobEditTab({
     addStage,
     removeStage,
     updateStage,
-    moveStage,
+    reorderStages,
     LIA_ASSISTED_STAGES,
     LIA_ASSISTED_STAGE_NAMES,
     vacancyId,
@@ -132,7 +132,7 @@ export function JobEditTab({
                       onClick={() => setActiveSection(section.id)}
                       className={`w-full flex items-center gap-3 px-3 py-3 rounded-md text-left transition-colors font-open-sans text-xs leading-[1.125rem] font-medium ${
                         activeSection === section.id
-                          ? "bg-lia-bg-secondary border border-lia-btn-primary-bg text-wedo-cyan-dark"
+                          ? "bg-lia-bg-secondary border border-lia-btn-primary-bg text-wedo-cyan-text"
                           : "hover:bg-lia-interactive-hover text-lia-text-primary border border-transparent"
                       }`}
                     >
@@ -144,7 +144,7 @@ export function JobEditTab({
                       {isDone ? (
                         <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0 text-status-success" />
                       ) : (
-                        <Circle className="w-3.5 h-3.5 flex-shrink-0 text-lia-text-disabled" />
+                        <Circle className="w-3.5 h-3.5 flex-shrink-0 text-lia-text-muted" />
                       )}
                     </button>
                   )
@@ -167,7 +167,7 @@ export function JobEditTab({
                       onClick={() => setActiveSection(section.id)}
                       className={`w-full flex items-center gap-3 px-3 py-3 rounded-md text-left transition-colors font-open-sans text-xs leading-[1.125rem] font-medium ${
                         activeSection === section.id
-                          ? "bg-lia-bg-secondary border border-lia-btn-primary-bg text-wedo-cyan-dark"
+                          ? "bg-lia-bg-secondary border border-lia-btn-primary-bg text-wedo-cyan-text"
                           : "hover:bg-lia-interactive-hover text-lia-text-primary border border-transparent"
                       }`}
                     >
@@ -179,7 +179,7 @@ export function JobEditTab({
                       {isDone ? (
                         <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0 text-status-success" />
                       ) : (
-                        <Circle className="w-3.5 h-3.5 flex-shrink-0 text-lia-text-disabled" />
+                        <Circle className="w-3.5 h-3.5 flex-shrink-0 text-lia-text-muted" />
                       )}
                     </button>
                   )
@@ -272,6 +272,105 @@ export function JobEditTab({
                       </CardContent>
                     </Card>
                   </div>
+                  {/* T10: Stakeholders / Envolvidos adicionais */}
+                  <div>
+                    <h3 className={groupHeaderClass}>Envolvidos Adicionais</h3>
+                    <p className="text-sm text-lia-text-muted mb-3">
+                      Pessoas adicionais envolvidas no processo seletivo (HRBP, lider de area, comite, entrevistadores).
+                    </p>
+                    {((jobEditForm.stakeholders as Array<{name: string; email: string; role: string}>) || []).map((s, idx) => (
+                      <Card key={idx} className="border border-lia-border-subtle mb-2">
+                        <CardContent className="p-3">
+                          <div className="flex items-start gap-3">
+                            <div className="grid grid-cols-3 gap-3 flex-1">
+                              <div>
+                                <label className={labelClass}>Nome</label>
+                                <input
+                                  type="text"
+                                  className={inputClass(!isEditing)}
+                                  value={s.name || ""}
+                                  onChange={(e) => {
+                                    const updated = [...((jobEditForm.stakeholders as Array<{name: string; email: string; role: string}>) || [])];
+                                    updated[idx] = { ...updated[idx], name: e.target.value };
+                                    updateField("stakeholders", updated);
+                                  }}
+                                  disabled={!isEditing}
+                                  placeholder="Nome completo"
+                                />
+                              </div>
+                              <div>
+                                <label className={labelClass}>Email</label>
+                                <input
+                                  type="email"
+                                  className={inputClass(!isEditing)}
+                                  value={s.email || ""}
+                                  onChange={(e) => {
+                                    const updated = [...((jobEditForm.stakeholders as Array<{name: string; email: string; role: string}>) || [])];
+                                    updated[idx] = { ...updated[idx], email: e.target.value };
+                                    updateField("stakeholders", updated);
+                                  }}
+                                  disabled={!isEditing}
+                                  placeholder="email@empresa.com"
+                                />
+                              </div>
+                              <div>
+                                <label className={labelClass}>Papel</label>
+                                <select
+                                  className={inputClass(!isEditing)}
+                                  value={s.role || "other"}
+                                  onChange={(e) => {
+                                    const updated = [...((jobEditForm.stakeholders as Array<{name: string; email: string; role: string}>) || [])];
+                                    updated[idx] = { ...updated[idx], role: e.target.value };
+                                    updateField("stakeholders", updated);
+                                  }}
+                                  disabled={!isEditing}
+                                >
+                                  <option value="ta_lead">Lider de Recrutamento</option>
+                                  <option value="hr_bp">HRBP</option>
+                                  <option value="area_manager">Gestor da Area</option>
+                                  <option value="area_director">Diretor da Area</option>
+                                  <option value="technical_interviewer">Entrevistador Tecnico</option>
+                                  <option value="committee_member">Membro do Comite</option>
+                                  <option value="other">Outro</option>
+                                  {/* legados — mantidos para backward compat */}
+                                  <option value="dept_head" style={{display:"none"}}>Lider de Area</option>
+                                  <option value="interviewer" style={{display:"none"}}>Entrevistador</option>
+                                </select>
+                              </div>
+                            </div>
+                            {isEditing && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const updated = [...((jobEditForm.stakeholders as Array<{name: string; email: string; role: string}>) || [])];
+                                  updated.splice(idx, 1);
+                                  updateField("stakeholders", updated);
+                                }}
+                                className="mt-6 p-1 text-lia-text-muted hover:text-red-500 transition-colors"
+                                title="Remover envolvido"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                    {isEditing && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const current = (jobEditForm.stakeholders as Array<{name: string; email: string; role: string}>) || [];
+                          updateField("stakeholders", [...current, { name: "", email: "", role: "other" }]);
+                        }}
+                        className="mt-2"
+                      >
+                        <UserPlus className="w-4 h-4 mr-1" />
+                        Adicionar envolvido
+                      </Button>
+                    )}
+                  </div>
                 </div>
               )}
 
@@ -286,7 +385,7 @@ export function JobEditTab({
                   addStage={addStage}
                   removeStage={removeStage}
                   updateStage={updateStage}
-                  moveStage={moveStage}
+                  reorderStages={reorderStages}
                   vacancyId={vacancyId}
                   templates={templates}
                   isLoadingTemplates={isLoadingTemplates}

@@ -45,7 +45,10 @@ class UpdateCustomAgentRequest(WeDoBaseModel):
 
 class CustomAgentResponse(BaseModel):
     id: str
-    company_id: str
+    # first_party (Agentes WeDo) sao globais: company_id=None por design
+    # (ver AgentType docstring). Optional evita ValidationError -> HTTP 500
+    # na secao Marketplace que lista agent_type=first_party.
+    company_id: Optional[str] = None
     created_by: str
     name: str
     role: str

@@ -405,7 +405,7 @@ const [jobs, setJobs] = useState<JobDisplay[]>([])
           </div>
 
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-disabled" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-muted" />
             <Input
               ref={searchInputRef}
               placeholder="Buscar vaga..."

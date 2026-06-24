@@ -131,7 +131,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"CV search failed: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"CV search failed: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 
 # ============================================================================
@@ -263,7 +263,7 @@ async def analyze_search_results(request: AnalyzeSearchRequest, company_id: str 
         raise
     except Exception as e:
         logger.error(f"Search analysis failed: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 
 class EnhancePromptRequest(WeDoBaseModel):
@@ -364,7 +364,11 @@ CATEGORIAS VÁLIDAS: experience, industry, work_model, location, seniority, skil
 
 Responda APENAS com o JSON, sem texto adicional."""
 
-        response = await llm_service.generate(prompt, provider="gemini")
+        from app.shared.tenant_llm_context import get_tenant_llm_config as _get_tc
+        _tc = await _get_tc(company_id)
+        _provider = _tc.get("primary_provider", "gemini") if _tc else "gemini"
+        llm_service._current_tenant = company_id
+        response = await llm_service.generate(prompt, provider=_provider)
         
         import json
         try:
@@ -415,6 +419,7 @@ from app.api.v1.candidate_search.calibration import VacancyGoalRequest  # noqa: 
 
 # Sprint F.3 #25 canonical-fix: VacancyGoalResponse moved to api/v1/candidate_search/calibration.py
 from app.api.v1.candidate_search.calibration import VacancyGoalResponse  # noqa: F401  (re-export for backward compat)
+from app.shared.errors import LIAError
 
 
 

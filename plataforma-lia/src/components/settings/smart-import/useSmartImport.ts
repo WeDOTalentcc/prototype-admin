@@ -64,7 +64,6 @@ export function useSmartImport({
       setState('uploading')
       setErrorMessage(null)
       try {
-        await new Promise(resolve => setTimeout(resolve, 500))
         setState('analyzing')
         const formData = new FormData()
         formData.append('file', selectedFile)

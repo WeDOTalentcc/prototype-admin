@@ -156,7 +156,7 @@ className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-md rounded-2xl shadow-2
 
 | Atributo | Interface interna | Tela de entrada |
 |----------|-------------------|-----------------|
-| Border radius card | `rounded-md` | `rounded-2xl` |
+| Border radius card | `rounded-xl` | `rounded-2xl` |
 | Sombra | `shadow-sm` | `shadow-2xl` |
 | Gradientes em card | **PROIBIDO** | Permitido no background |
 | Glassmorphism | **PROIBIDO** | `bg-white/90 backdrop-blur-md` |
@@ -220,15 +220,15 @@ Registrar: arquivos tocados, quantidade de botões/inputs/cards/badges, violaç�
 
 ### 2.3 CARDS & CONTAINERS
 
-**Card:** `bg-white border border-gray-200 rounded-md shadow-sm dark:bg-gray-800 dark:border-gray-700`
+**Card:** `bg-white border border-gray-200 rounded-xl shadow-sm dark:bg-gray-800 dark:border-gray-700`
 
 **Card interativo:** + `transition-all duration-150 hover:shadow-md hover:-translate-y-0.5 cursor-pointer`
 
-**Card glassmorphism:** `bg-white/70 backdrop-blur-lg border border-gray-200/50 rounded-md shadow-sm dark:bg-gray-800/70`
+**Card glassmorphism:** `bg-white/70 backdrop-blur-lg border border-gray-200/50 rounded-xl shadow-sm dark:bg-gray-800/70`
 
 **Estrutura:** Header `px-6 py-4 border-b border-gray-200` | Body `p-6` | Footer `px-6 py-4 bg-gray-50 border-t border-gray-200`
 
-**Regras:** Cards `rounded-md` (8px). Shadow máximo `shadow-md`. NUNCA `shadow-xl`, bordas grossas ou gradientes.
+**Regras:** Cards `rounded-xl` (12px). Shadow máximo `shadow-md`. NUNCA `shadow-xl`, bordas grossas ou gradientes.
 
 **Helper:** `getCardClasses('default')`
 
@@ -256,7 +256,7 @@ Registrar: arquivos tocados, quantidade de botões/inputs/cards/badges, violaç�
 
 **Overlay:** `fixed inset-0 bg-gray-900/50 dark:bg-gray-950/70 z-50`
 
-**Container:** `bg-white rounded-md shadow-xl dark:bg-gray-800`
+**Container:** `bg-white rounded-xl shadow-xl dark:bg-gray-800`
 
 | Tamanho | Classe | Uso |
 |---------|--------|-----|
@@ -578,17 +578,30 @@ Os seguintes componentes existem no DS v4.2.1 mas são usados com menor frequên
 | xl | 1280px | `xl:` |
 | 2xl | 1536px | `2xl:` |
 
-### Border Radius (DS v4.2.1 Oficial)
+### Border Radius (Fundação DS — fonte-da-verdade = código)
 
-| Classe | Pixels | Uso |
-|--------|--------|-----|
-| `rounded-sm` | 4px | Elementos inline: `<code>`, `<kbd>`, skeletons |
-| `rounded-md` | 8px | **PADRÃO (68% do uso):** botões, inputs, cards, modais, dropdowns, dialogs |
-| `rounded-lg` | 12px | Cards expandidos, containers médios, painéis secundários |
-| `rounded-xl` / `rounded-2xl` | 16-20px | Interfaces imersivas: chat expandido, login, modais de chat, lock buttons |
-| `rounded-full` | 9999px | Badges, avatars, tags, pills, skills |
+| Classe | Uso |
+|--------|-----|
+| `rounded-sm` | Elementos inline: `<code>`, `<kbd>`, skeletons |
+| `rounded-md` | **Ação/controle:** botões, inputs, selects, textareas, dropdowns, callouts |
+| `rounded-xl` (12px) | **Containers:** cards, modais, dialogs |
+| `rounded-2xl` | Interfaces imersivas: chat expandido, login |
+| `rounded-full` | Chips, badges, pills, avatars, skills |
 
-> **REGRA v4.2.1:** 98% do uso concentra-se em `rounded-md` + `rounded-full`. `rounded-md` é o padrão universal para todos os elementos de ação e container. `rounded-2xl` reservado para interfaces imersivas (chat, login). `rounded-sm` e `rounded-lg` em botões são PROIBIDOS.
+> **REGRA (Fundação DS):** cards/modais = `rounded-xl`; botões/inputs/selects = `rounded-md`; chips/badges/pílulas = `rounded-full`. **NUNCA** sobrescrever o raio em `<Button>` (as variantes `sm`/`lg` já resolvem `rounded-md`). `rounded-sm`/`rounded-lg` em botões/inputs são PROIBIDOS. Espelha `tailwind.config.ts` (borderRadius) e a seção *Design System — Fundação* do `replit.md`.
+
+### Componentes Canônicos (Fundação DS)
+
+Antes de montar UI à mão (com cores cruas e raios ad-hoc), use o componente canônico em `plataforma-lia/src/components/ui/`. Eles já carregam raio, tokens e acessibilidade corretos:
+
+| Necessidade | Componente | Notas |
+|---|---|---|
+| Campo de formulário (label + controle + hint + erro) | `FormField` (`ui/form-field.tsx`) | Envolve `Input`/`Textarea`/`Select`; injeta `htmlFor`/`id`/`aria-invalid`/`aria-describedby`. Controle já é `rounded-md`. |
+| Pílula de status | `StatusPill` (`ui/status-pill.tsx`) | `rounded-full` + tokens `status-*` (`success`/`error`/`warning`/`info`/`neutral`). Use `withDot` ou `icon` (daltonismo: ícone+cor+texto). |
+| Bloco de alerta/aviso | `Callout` (`ui/callout.tsx`) | `rounded-md` + tokens `status-*`/`wedo-cyan` com ícone semântico. Substitui blocos `bg-amber-50`/`bg-blue-50`/`bg-red-50`. |
+| KPI/número | `Metric` (`ui/metric.tsx`) ou `textStyles.kpi*`/`textStyles.metric*` | Fonte de dados **Inter** (`font-data`) + `tabular-nums`. NUNCA `font-sans` em números. |
+
+> **Anti-padrão a corrigir:** chips/callouts/badges com cores cruas do Tailwind (`bg-emerald-50 text-emerald-700`, `bg-amber-100`, `bg-blue-50`, `bg-red-200`…) → trocar por `StatusPill`/`Callout` (tokens `status-*`). KPIs em `font-sans` → trocar por `<Metric />`/`textStyles.metric*`.
 
 ### Sombras
 
@@ -711,7 +724,7 @@ Antes de capturar tela para conversão Figma:
 
 - [ ] Botões: primary preto, cyan apenas em ícones LIA
 - [ ] Inputs: labels com htmlFor, focus ring grayscale
-- [ ] Cards: rounded-md, shadow-sm, sem gradientes
+- [ ] Cards: rounded-xl, shadow-sm, sem gradientes
 - [ ] Tabelas: Inter para números, tabular-nums, header uppercase
 - [ ] Badges: rounded-full (pill), ícone+cor+texto
 - [ ] Tipografia: Open Sans 85% (UI geral), Inter 10% (dados numéricos), JetBrains Mono 5% (código)

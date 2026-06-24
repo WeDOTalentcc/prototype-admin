@@ -29,10 +29,10 @@ export function WeeklyDigestTeamsCard({
         <div className="p-5">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-9 h-9 rounded-full bg-[#6264A7] flex items-center justify-center text-white text-sm font-semibold">
-              LIA
+              IA
             </div>
             <div>
-              <p className="text-sm font-semibold text-lia-text-primary">LIA — Assistente de Recrutamento</p>
+              <p className="text-sm font-semibold text-lia-text-primary">IA — Assistente de Recrutamento</p>
               <p className="text-xs text-lia-text-tertiary">Resumo Semanal · {digest.date}</p>
             </div>
           </div>
@@ -180,14 +180,14 @@ export function WeeklyDigestTeamsCard({
               className="w-full bg-[#6264A7] hover:bg-[#4f5190] text-white text-sm font-medium py-2.5 px-4 rounded transition-colors"
               onClick={onViewInChat}
             >
-              Ver detalhes completos no Chat LIA
+              Ver detalhes no Chat
             </button>
           )}
         </div>
 
         <div className="px-5 py-3 bg-lia-bg-secondary border-t border-lia-border-subtle">
           <p className="text-xs text-lia-text-tertiary text-center">
-            Enviado automaticamente pela LIA · Para desativar, acesse Configurações → Notificações
+            Enviado automaticamente pela IA · Para desativar, acesse Configurações → Notificações
           </p>
         </div>
       </div>

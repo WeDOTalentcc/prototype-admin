@@ -9,7 +9,7 @@ import type { UserData } from './user-management-types'
 import { apiFetch } from '@/lib/api/api-fetch'
 import { notifyChatOfSettingsUpdate } from '@/lib/api/settings-notify'
 
-function mapRoleToApi(role?: string): string {
+export function mapRoleToApi(role?: string): string {
   if (!role) return 'viewer'
   const lower = role.toLowerCase()
   if (lower === 'admin' || lower.includes('admin')) return 'admin'
@@ -76,7 +76,7 @@ export function useUserManagement() {
         phone: '',
         whatsapp: '',
         role: u.role === 'admin' ? t('users.roleAdmin') : u.role === 'recruiter' ? t('users.roleRecruiter') : u.role === 'manager' ? t('users.roleManager') : t('users.roleViewer'),
-        department: 'Talent Acquisition',
+        department: (u.department_name as string) || '',
         position: u.role,
         status: u.status === 'active' || !u.status ? 'active' : u.status === 'inactive' ? 'inactive' : 'pending',
         permissions: Array.isArray(u.permissions) && (u.permissions as unknown[]).length > 0 ? u.permissions as string[] : [],
@@ -86,7 +86,9 @@ export function useUserManagement() {
         isManager: u.role === 'admin',
         createdAt: u.created_at,
         updatedAt: u.updated_at,
-        isScimManaged: u.is_scim_managed || false
+        isScimManaged: u.is_scim_managed || false,
+        // A6-FE-1/A6-FE-2 (2026-06-06): per-user PII field visibility override
+        pii_field_visibility: u.pii_field_visibility || undefined,
       }))
       setUsers(mappedUsers as UserData[])
     } catch {
@@ -157,6 +159,7 @@ export function useUserManagement() {
             email: formData.email,
             name: formData.name,
             role: mapRoleToApi(formData.role),
+            department_id: formData.department_id || null,
             permissions: formData.permissions || []
           })
         })
@@ -181,7 +184,10 @@ export function useUserManagement() {
             name: formData.name,
             role: mapRoleToApi(formData.role),
             status: formData.status === 'active' ? 'active' : 'inactive',
-            permissions: formData.permissions || []
+            department_id: formData.department_id || null,
+            permissions: formData.permissions || [],
+            // A6-FE-2 (2026-06-06): per-user PII field visibility override
+            pii_field_visibility: formData.pii_field_visibility ?? null,
           })
         })
         if (!response.ok) throw new Error('Failed to update user')

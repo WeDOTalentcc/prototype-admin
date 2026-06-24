@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Mail, Phone, AlertTriangle, CreditCard, Loader2, Check, X } from "lucide-react"
+import { Mail, Phone, CreditCard, Loader2, Check, X, Info } from "lucide-react"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -82,9 +82,12 @@ export function RevealCreditsModal({
                 </div>
               </div>
 
-              <div className="flex items-start gap-2 text-xs text-lia-text-tertiary">
-                <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
-                <span>Esta ação consumirá créditos da sua conta.</span>
+              <div className="flex items-start gap-2 p-3 rounded-md bg-lia-bg-tertiary dark:bg-lia-bg-secondary border border-lia-border-subtle">
+                <Info className="w-4 h-4 mt-0.5 flex-shrink-0 text-wedo-cyan" aria-hidden="true" />
+                <p className="text-xs text-lia-text-secondary leading-relaxed">
+                  Se o contato não estiver disponível nas bases consultadas,{" "}
+                  <strong className="text-lia-text-primary font-medium">não há cobrança de créditos.</strong>
+                </p>
               </div>
             </div>
           </AlertDialogDescription>

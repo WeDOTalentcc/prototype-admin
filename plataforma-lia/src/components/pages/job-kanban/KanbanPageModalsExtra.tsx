@@ -3,23 +3,24 @@
 import React from "react"
 import dynamic from "next/dynamic"
 import { Copy } from "lucide-react"
-import { LoadingModal } from "@/components/ui/loading"
 import { toast } from "sonner"
 import { useTranslations } from "next-intl"
 import type { KanbanPageCoreState } from "./hooks/useKanbanPageCore"
 import { useCompanyId } from "@/hooks/company/useCompanyId"
+import type { CloseVacancyPayload } from "@/components/modals/close-vacancy-modal"
 
-const GeneralScoreModal = dynamic(() => import("@/components/modals/general-score-modal").then(m => ({ default: m.GeneralScoreModal })), { ssr: false, loading: () => <LoadingModal /> })
-const TechnicalTestModal = dynamic(() => import("@/components/modals/technical-test-modal").then(m => ({ default: m.TechnicalTestModal })), { ssr: false, loading: () => <LoadingModal /> })
-const EnglishTestModal = dynamic(() => import("@/components/modals/english-test-modal").then(m => ({ default: m.EnglishTestModal })), { ssr: false, loading: () => <LoadingModal /> })
-const CandidateCompareModal = dynamic(() => import("@/components/modals/candidate-compare-modal").then(m => ({ default: m.CandidateCompareModal })), { ssr: false, loading: () => <LoadingModal /> })
-const UniversalTransitionModal = dynamic(() => import("@/components/kanban").then(m => ({ default: m.UniversalTransitionModal })), { ssr: false, loading: () => <LoadingModal /> })
-const DataRequestModal = dynamic(() => import("@/components/modals/data-request-modal").then(m => ({ default: m.DataRequestModal })), { ssr: false, loading: () => <LoadingModal /> })
-const CloseVacancyModal = dynamic(() => import("@/components/modals/close-vacancy-modal").then(m => ({ default: m.CloseVacancyModal })), { ssr: false, loading: () => <LoadingModal /> })
-const JobStatusModal = dynamic(() => import("@/components/modals/job-status-modal").then(m => ({ default: m.JobStatusModal })), { ssr: false, loading: () => <LoadingModal /> })
-const ShareSearchModal = dynamic(() => import("@/components/modals/share-search-modal").then(m => ({ default: m.ShareSearchModal })), { ssr: false, loading: () => <LoadingModal /> })
-const BulkActionModal = dynamic(() => import("@/components/modals/bulk-action-modal").then(m => ({ default: m.BulkActionModal })), { ssr: false, loading: () => <LoadingModal /> })
+const GeneralScoreModal = dynamic(() => import("@/components/modals/general-score-modal").then(m => ({ default: m.GeneralScoreModal })), { ssr: false, loading: () => null })
+const TechnicalTestModal = dynamic(() => import("@/components/modals/technical-test-modal").then(m => ({ default: m.TechnicalTestModal })), { ssr: false, loading: () => null })
+const EnglishTestModal = dynamic(() => import("@/components/modals/english-test-modal").then(m => ({ default: m.EnglishTestModal })), { ssr: false, loading: () => null })
+const CandidateCompareModal = dynamic(() => import("@/components/modals/candidate-compare-modal").then(m => ({ default: m.CandidateCompareModal })), { ssr: false, loading: () => null })
+const UniversalTransitionModal = dynamic(() => import("@/components/kanban").then(m => ({ default: m.UniversalTransitionModal })), { ssr: false, loading: () => null })
+const DataRequestModal = dynamic(() => import("@/components/modals/data-request-modal").then(m => ({ default: m.DataRequestModal })), { ssr: false, loading: () => null })
+const CloseVacancyModal = dynamic(() => import("@/components/modals/close-vacancy-modal").then(m => ({ default: m.CloseVacancyModal })), { ssr: false, loading: () => null })
+const JobStatusModal = dynamic(() => import("@/components/modals/job-status-modal").then(m => ({ default: m.JobStatusModal })), { ssr: false, loading: () => null })
+const ShareSearchModal = dynamic(() => import("@/components/modals/share-search-modal").then(m => ({ default: m.ShareSearchModal })), { ssr: false, loading: () => null })
+const BulkActionModal = dynamic(() => import("@/components/modals/bulk-action-modal").then(m => ({ default: m.BulkActionModal })), { ssr: false, loading: () => null })
 const OfferReviewModal = dynamic(() => import("@/components/offer-review-modal/OfferReviewModal").then(m => ({ default: m.OfferReviewModal })), { ssr: false })
+const ScheduleMessageModalGlobal = dynamic(() => import("@/components/communication").then(m => ({ default: m.ScheduleMessageModalGlobal })), { ssr: false, loading: () => null })
 
 export function KanbanPageModalsExtra(state: KanbanPageCoreState) {
   const t = useTranslations('kanban')
@@ -225,10 +226,34 @@ export function KanbanPageModalsExtra(state: KanbanPageCoreState) {
             }}
             hiredCandidate={hiredCandidate}
             otherCandidates={otherCandidates}
-            onConfirm={async () => {
-              setJobEditForm((prev: Record<string, unknown>) => ({ ...prev, status: 'Encerrada' }))
-              toast.success(t('jobClosedSuccess'))
-              setShowCloseVacancyModal(false)
+            onConfirm={async (data: CloseVacancyPayload) => {
+              const vacancyId = String(currentJob.backendId || currentJob.jobId || currentJob.id)
+              try {
+                const response = await fetch(`/api/backend-proxy/job-vacancies/${vacancyId}/close`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    hired_candidate_id: data.hired_candidate_id || data.hired_candidate_ids?.[0] || null,
+                    close_reason: data.close_reason || 'filled',
+                    hired_notification: data.hired_notification,
+                    other_notifications: data.other_notifications,
+                  })
+                })
+
+                if (!response.ok) {
+                  const errorData = await response.json().catch(() => ({}))
+                  toast.error('Erro ao fechar vaga', {
+                    description: (errorData as Record<string, string>).detail || (errorData as Record<string, string>).error || 'Não foi possível fechar a vaga. Tente novamente.'
+                  })
+                  return
+                }
+
+                setJobEditForm((prev: Record<string, unknown>) => ({ ...prev, status: 'Encerrada' }))
+                toast.success(t('jobClosedSuccess'))
+                setShowCloseVacancyModal(false)
+              } catch {
+                toast.error('Erro de conexão', { description: 'Não foi possível conectar ao servidor.' })
+              }
             }}
           />
         )
@@ -297,6 +322,8 @@ export function KanbanPageModalsExtra(state: KanbanPageCoreState) {
       />
       {/* PR-B: OfferReviewModal — controlado pelo useOfferDraftStore, sem props */}
       <OfferReviewModal />
+      {/* GAP-07-007: ScheduleMessageModalGlobal — controlado pelo useScheduleMessageStore, sem props */}
+      <ScheduleMessageModalGlobal />
     </>
   )
 }

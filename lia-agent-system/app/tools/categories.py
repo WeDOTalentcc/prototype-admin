@@ -27,6 +27,8 @@ class ToolCategory:
     TALENT_INTEL = "TALENT INTEL"
     ENTREVISTAS_IA = "ENTREVISTAS (IA)"
     TRIAGEM_WSI = "TRIAGEM WSI"
+    DELEGACAO = "DELEGAÇÃO / ESPECIALISTAS"
+    INTERFACE = "INTERFACE / NAVEGAÇÃO"
     OTHER = "OTHER"
 
 
@@ -38,11 +40,13 @@ CATEGORY_TAGLINES: dict[str, str] = {
     ToolCategory.CANDIDATOS: "buscar, comparar, analisar CV vs vaga; mover entre etapas (incluindo bulk); aprovar / reprovar / favoritar / ocultar; criar e triar",
     ToolCategory.COMUNICACAO: "enviar email individual ou em massa, WhatsApp, feedback; criar sequências de nurture",
     ToolCategory.AGENDAMENTO: "agendar entrevistas",
+    ToolCategory.DELEGACAO: ("quando o pedido for de um DOMINIO ESPECIALIZADO, DELEGUE ao agente do dominio (NUNCA recuse dizendo que nao tem acesso): politicas de contratacao->delegate_to_policy; configurar empresa/beneficios/cultura->delegate_to_company_settings; integracao ATS->delegate_to_ats_integration; sourcing/canais externos->delegate_to_sourcing; analytics/predicoes->delegate_to_analytics; pipeline/kanban->delegate_to_pipeline; banco de talentos->delegate_to_talent_pool; comunicacao->delegate_to_communication; gestao de vagas->delegate_to_job_management"),
     ToolCategory.EMPRESA_CONFIG: "verificar completude do perfil, sugerir política de recrutamento, importar benefícios, salvar política de contratação",
     ToolCategory.ANALYTICS: "gerar relatório, exportar candidatos / vagas; métricas de pipeline, recrutador, qualidade, velocidade, custo; predições ML, forecast de contratação; alertas inteligentes; diversidade",
     ToolCategory.TALENT_INTEL: "bancos de talentos, skills adjacency, skill gaps, reengajamento",
     ToolCategory.ENTREVISTAS_IA: "analisar gravação, detectar viés, gerar parecer, comparar performance",
     ToolCategory.TRIAGEM_WSI: "voice screening completo",
+    ToolCategory.INTERFACE: "abrir modais/telas (open_ui) e filtrar/ordenar/buscar tabelas abertas (apply_table_state) — controlar a interface da plataforma pelo chat",
     ToolCategory.OTHER: "ferramentas auxiliares",
 }
 
@@ -51,6 +55,16 @@ CATEGORY_TAGLINES: dict[str, str] = {
 # Used by ToolRegistry.apply_category_mapping() to populate
 # ToolDefinition.category at registration time.
 TOOL_TO_CATEGORY: dict[str, str] = {
+    # ---- INTERFACE / NAVEGAÇÃO (UI tools) ----
+    # open_ui: abre modal/painel ou navega (capability_map-gated + HITL).
+    # apply_table_state: filtra/ordena/busca a tabela JA ABERTA (ponte in-page).
+    # Registrados no global p/ o supervisor (agentic_loop Phase 1.5); o federado
+    # usa via federacao; domain agents via grant explicito no _get_tools.
+    "open_ui": ToolCategory.INTERFACE,
+    "apply_table_state": ToolCategory.INTERFACE,
+    # P1-5 (2026-06-18): complemento read-only de apply_table_state
+    "read_table_state": ToolCategory.INTERFACE,
+    "select_rows": ToolCategory.INTERFACE,  # Fase 2 surface close
     # ---- VAGAS ----
     "create_job": ToolCategory.VAGAS,
     "publish_job": ToolCategory.VAGAS,
@@ -101,6 +115,10 @@ TOOL_TO_CATEGORY: dict[str, str] = {
     "suggest_recruiting_policy": ToolCategory.EMPRESA_CONFIG,
     "import_benefits_from_data": ToolCategory.EMPRESA_CONFIG,
     "save_hiring_policy": ToolCategory.EMPRESA_CONFIG,
+    # Boy Scout (2026-06-09): debito pre-existente — estavam em OTHER (sensor J).
+    "save_company_field": ToolCategory.EMPRESA_CONFIG,
+    "save_company_section": ToolCategory.EMPRESA_CONFIG,
+    "analyze_company_website": ToolCategory.EMPRESA_CONFIG,
 
     # ---- ANALYTICS / RELATÓRIOS ----
     "generate_report": ToolCategory.ANALYTICS,
@@ -181,6 +199,17 @@ TOOL_TO_CATEGORY: dict[str, str] = {
     "get_company_config": ToolCategory.EMPRESA_CONFIG,
     "capture_wizard_feedback": ToolCategory.EMPRESA_CONFIG,
     "get_pending_actions": ToolCategory.EMPRESA_CONFIG,
+
+    # DELEGACAO / ESPECIALISTAS (supervisor A2 handoffs)
+    "delegate_to_pipeline": ToolCategory.DELEGACAO,
+    "delegate_to_talent_pool": ToolCategory.DELEGACAO,
+    "delegate_to_sourcing": ToolCategory.DELEGACAO,
+    "delegate_to_communication": ToolCategory.DELEGACAO,
+    "delegate_to_analytics": ToolCategory.DELEGACAO,
+    "delegate_to_company_settings": ToolCategory.DELEGACAO,
+    "delegate_to_policy": ToolCategory.DELEGACAO,
+    "delegate_to_ats_integration": ToolCategory.DELEGACAO,
+    "delegate_to_job_management": ToolCategory.DELEGACAO,
 }
 
 
@@ -193,6 +222,8 @@ def category_for_tool(tool_name: str) -> str:
 DISPLAY_ORDER: list[str] = [
     ToolCategory.VAGAS,
     ToolCategory.CANDIDATOS,
+    ToolCategory.INTERFACE,
+    ToolCategory.DELEGACAO,
     ToolCategory.COMUNICACAO,
     ToolCategory.AGENDAMENTO,
     ToolCategory.EMPRESA_CONFIG,

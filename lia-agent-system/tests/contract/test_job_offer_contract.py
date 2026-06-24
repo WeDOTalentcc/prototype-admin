@@ -21,37 +21,37 @@ import pytest
 class TestJobOfferRepositoryContract:
 
     def test_has_create_method(self):
-        from app.domains.approvals.repositories.job_offer_repository import JobOfferRepository
+        from app.repositories.job_offer_repository import JobOfferRepository
         assert callable(JobOfferRepository.create)
 
     def test_has_send_method(self):
-        from app.domains.approvals.repositories.job_offer_repository import JobOfferRepository
+        from app.repositories.job_offer_repository import JobOfferRepository
         assert callable(JobOfferRepository.send)
 
     def test_has_record_response_method(self):
-        from app.domains.approvals.repositories.job_offer_repository import JobOfferRepository
+        from app.repositories.job_offer_repository import JobOfferRepository
         assert callable(JobOfferRepository.record_response)
 
     def test_has_withdraw_method(self):
-        from app.domains.approvals.repositories.job_offer_repository import JobOfferRepository
+        from app.repositories.job_offer_repository import JobOfferRepository
         assert callable(JobOfferRepository.withdraw)
 
     def test_has_count_by_status_method(self):
-        from app.domains.approvals.repositories.job_offer_repository import JobOfferRepository
+        from app.repositories.job_offer_repository import JobOfferRepository
         assert callable(JobOfferRepository.count_by_status)
 
     def test_require_company_id_raises_on_none(self):
-        from app.domains.approvals.repositories.job_offer_repository import JobOfferRepository
+        from app.repositories.job_offer_repository import JobOfferRepository
         with pytest.raises((ValueError, Exception)):
             JobOfferRepository._require_company_id(None)
 
     def test_require_company_id_raises_on_empty_string(self):
-        from app.domains.approvals.repositories.job_offer_repository import JobOfferRepository
+        from app.repositories.job_offer_repository import JobOfferRepository
         with pytest.raises((ValueError, Exception)):
             JobOfferRepository._require_company_id("")
 
     def test_require_company_id_passes_valid(self):
-        from app.domains.approvals.repositories.job_offer_repository import JobOfferRepository
+        from app.repositories.job_offer_repository import JobOfferRepository
         result = JobOfferRepository._require_company_id("company-abc")
         assert result == "company-abc"
 
@@ -108,7 +108,7 @@ class TestJobOfferLifecycleContract:
 
     @pytest.mark.asyncio
     async def test_send_sets_sent_status_and_timestamp(self):
-        from app.domains.approvals.repositories.job_offer_repository import JobOfferRepository
+        from app.repositories.job_offer_repository import JobOfferRepository
         from lia_models.job_offer import JobOffer
 
         db = AsyncMock()
@@ -125,7 +125,7 @@ class TestJobOfferLifecycleContract:
 
     @pytest.mark.asyncio
     async def test_record_response_accepted_sets_correct_state(self):
-        from app.domains.approvals.repositories.job_offer_repository import JobOfferRepository
+        from app.repositories.job_offer_repository import JobOfferRepository
         from lia_models.job_offer import JobOffer
 
         db = AsyncMock()
@@ -144,7 +144,7 @@ class TestJobOfferLifecycleContract:
 
     @pytest.mark.asyncio
     async def test_withdraw_sets_withdrawn_status(self):
-        from app.domains.approvals.repositories.job_offer_repository import JobOfferRepository
+        from app.repositories.job_offer_repository import JobOfferRepository
         from lia_models.job_offer import JobOffer
 
         db = AsyncMock()

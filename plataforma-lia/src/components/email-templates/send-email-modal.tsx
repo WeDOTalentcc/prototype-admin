@@ -28,7 +28,11 @@ interface SendEmailModalProps {
   onSuccess?: () => void
 }
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
+
 export function SendEmailModal({ isOpen, onClose, candidate, onSuccess }: SendEmailModalProps) {
+  // P0-2 (2026-06-18): notify LIA which modal is open
+  useLiaModalTracking('send-email', isOpen)
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>("")
   const [recipientEmail, setRecipientEmail] = useState("")
   const [recipientName, setRecipientName] = useState("")
@@ -297,7 +301,7 @@ export function SendEmailModal({ isOpen, onClose, candidate, onSuccess }: SendEm
                     <div className="flex items-start gap-1.5 p-2 rounded-xl bg-wedo-orange/10 border border-wedo-orange/20">
                       <AlertCircle className="w-3.5 h-3.5 text-wedo-orange flex-shrink-0 mt-0.5" />
                       <div>
-                        <p className="text-xs font-medium text-wedo-orange">
+                        <p className="text-xs font-medium text-wedo-orange-text">
                           Email não disponível
                         </p>
                         <p className="text-xs text-lia-text-secondary">

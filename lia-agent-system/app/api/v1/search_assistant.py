@@ -488,6 +488,209 @@ AUTOCOMPLETE_TEMPLATES = [
         {"text": "Java Backend Sênior", "category": "cargo", "icon": "code"},
         {"text": "JavaScript/TypeScript", "category": "skill", "icon": "file-code"},
     ]},
+    {"pattern": "analista", "suggestions": [
+        {"text": "Analista Financeiro Pleno", "category": "cargo", "icon": "bar-chart"},
+        {"text": "Analista de RH Sênior", "category": "cargo", "icon": "users"},
+        {"text": "Analista de Marketing Digital", "category": "cargo", "icon": "trending-up"},
+        {"text": "Analista de BI (Power BI)", "category": "cargo", "icon": "pie-chart"},
+        {"text": "Analista Contábil", "category": "cargo", "icon": "file-text"},
+    ]},
+    {"pattern": "financeiro", "suggestions": [
+        {"text": "Controller Financeiro", "category": "cargo", "icon": "dollar-sign"},
+        {"text": "Gerente Financeiro", "category": "cargo", "icon": "briefcase"},
+        {"text": "Analista Financeiro Sênior", "category": "cargo", "icon": "bar-chart"},
+        {"text": "Tesoureiro", "category": "cargo", "icon": "credit-card"},
+    ]},
+    {"pattern": "contab", "suggestions": [
+        {"text": "Contador CRC", "category": "cargo", "icon": "file-text"},
+        {"text": "Controller", "category": "cargo", "icon": "dollar-sign"},
+        {"text": "Fiscal Tributário", "category": "cargo", "icon": "clipboard"},
+        {"text": "IFRS / CPC", "category": "habilidade", "icon": "book"},
+    ]},
+    {"pattern": "rh", "suggestions": [
+        {"text": "HRBP (HR Business Partner)", "category": "cargo", "icon": "users"},
+        {"text": "Especialista em Recrutamento", "category": "cargo", "icon": "user-check"},
+        {"text": "Analista de Remuneração", "category": "cargo", "icon": "dollar-sign"},
+        {"text": "DHO - Desenvolvimento Humano", "category": "cargo", "icon": "heart"},
+    ]},
+    {"pattern": "marketing", "suggestions": [
+        {"text": "Growth Marketing Sênior", "category": "cargo", "icon": "trending-up"},
+        {"text": "Marketing de Performance (ROI)", "category": "cargo", "icon": "target"},
+        {"text": "SEO / SEM Especialista", "category": "cargo", "icon": "search"},
+        {"text": "Marketing Digital B2B", "category": "cargo", "icon": "briefcase"},
+    ]},
+    {"pattern": "vendas", "suggestions": [
+        {"text": "Account Executive (AE)", "category": "cargo", "icon": "target"},
+        {"text": "SDR / BDR (Prospecção)", "category": "cargo", "icon": "phone"},
+        {"text": "Gerente de Vendas B2B", "category": "cargo", "icon": "briefcase"},
+        {"text": "Key Account Manager", "category": "cargo", "icon": "star"},
+    ]},
+    {"pattern": "commercial", "suggestions": [
+        {"text": "Diretor Comercial", "category": "cargo", "icon": "briefcase"},
+        {"text": "Gerente Comercial Sênior", "category": "cargo", "icon": "target"},
+        {"text": "Account Manager Enterprise", "category": "cargo", "icon": "users"},
+    ]},
+    {"pattern": "logistica", "suggestions": [
+        {"text": "Analista de Supply Chain", "category": "cargo", "icon": "truck"},
+        {"text": "Coordenador de Logística", "category": "cargo", "icon": "map-pin"},
+        {"text": "Especialista em Compras", "category": "cargo", "icon": "shopping-cart"},
+        {"text": "Analista de Estoque / WMS", "category": "cargo", "icon": "package"},
+    ]},
+    {"pattern": "supply", "suggestions": [
+        {"text": "Analista de Supply Chain Sênior", "category": "cargo", "icon": "truck"},
+        {"text": "Supply Chain + S&OP", "category": "stack", "icon": "bar-chart"},
+        {"text": "Compras Estratégicas", "category": "cargo", "icon": "shopping-cart"},
+    ]},
+    {"pattern": "juridico", "suggestions": [
+        {"text": "Advogado Trabalhista", "category": "cargo", "icon": "book"},
+        {"text": "Advogado Tributário", "category": "cargo", "icon": "file-text"},
+        {"text": "Compliance Officer", "category": "cargo", "icon": "shield"},
+        {"text": "DPO (Proteção de Dados / LGPD)", "category": "cargo", "icon": "lock"},
+    ]},
+    {"pattern": "gerente", "suggestions": [
+        {"text": "Gerente de Projetos (PMP)", "category": "cargo", "icon": "clipboard"},
+        {"text": "Gerente de Produto / Product Manager", "category": "cargo", "icon": "target"},
+        {"text": "Gerente Comercial", "category": "cargo", "icon": "briefcase"},
+        {"text": "Gerente de RH / Pessoas", "category": "cargo", "icon": "users"},
+    ]},
+    {"pattern": "diretor", "suggestions": [
+        {"text": "Diretor Financeiro (CFO)", "category": "cargo", "icon": "dollar-sign"},
+        {"text": "Diretor Comercial", "category": "cargo", "icon": "target"},
+        {"text": "Diretor de RH / Pessoas (CHRO)", "category": "cargo", "icon": "users"},
+        {"text": "Diretor de Tecnologia (CTO)", "category": "cargo", "icon": "cpu"},
+    ]},
+    {"pattern": "saude", "suggestions": [
+        {"text": "Médico Especialista", "category": "cargo", "icon": "heart"},
+        {"text": "Enfermeiro(a) UTI", "category": "cargo", "icon": "activity"},
+        {"text": "Analista de Saúde Corporativa", "category": "cargo", "icon": "clipboard"},
+    ]},
+    # ── Tech gaps ────────────────────────────────────────────────────────────
+    {"pattern": "node", "suggestions": [
+        {"text": "Node.js com Express", "category": "stack", "icon": "zap"},
+        {"text": "Node.js com NestJS", "category": "stack", "icon": "layers"},
+        {"text": "Node.js + TypeScript Sênior", "category": "stack", "icon": "code"},
+        {"text": "Node.js + GraphQL", "category": "stack", "icon": "git-branch"},
+    ]},
+    {"pattern": "angular", "suggestions": [
+        {"text": "Angular + TypeScript", "category": "stack", "icon": "code"},
+        {"text": "Angular + RxJS Sênior", "category": "stack", "icon": "zap"},
+        {"text": "Angular 17+ (Standalone Components)", "category": "stack", "icon": "layers"},
+    ]},
+    {"pattern": "vue", "suggestions": [
+        {"text": "Vue.js 3 + Composition API", "category": "stack", "icon": "code"},
+        {"text": "Vue.js + Nuxt.js", "category": "stack", "icon": "layers"},
+        {"text": "Vue.js + TypeScript", "category": "stack", "icon": "code"},
+    ]},
+    {"pattern": "azure", "suggestions": [
+        {"text": "Azure Cloud (AZ-900/AZ-204)", "category": "habilidade", "icon": "cloud"},
+        {"text": "Azure DevOps (CI/CD)", "category": "stack", "icon": "git-merge"},
+        {"text": ".NET com Azure", "category": "stack", "icon": "layers"},
+        {"text": "Azure + Kubernetes (AKS)", "category": "stack", "icon": "box"},
+    ]},
+    {"pattern": "devops", "suggestions": [
+        {"text": "DevOps Engineer (CI/CD)", "category": "cargo", "icon": "git-merge"},
+        {"text": "SRE (Site Reliability Engineer)", "category": "cargo", "icon": "activity"},
+        {"text": "DevSecOps", "category": "cargo", "icon": "shield"},
+        {"text": "Platform Engineer (IaC)", "category": "cargo", "icon": "settings"},
+    ]},
+    {"pattern": "mobile", "suggestions": [
+        {"text": "iOS Developer (Swift/SwiftUI)", "category": "cargo", "icon": "smartphone"},
+        {"text": "Android Developer (Kotlin)", "category": "cargo", "icon": "smartphone"},
+        {"text": "Flutter Developer", "category": "cargo", "icon": "layers"},
+        {"text": "React Native Developer", "category": "cargo", "icon": "smartphone"},
+    ]},
+    {"pattern": "flutter", "suggestions": [
+        {"text": "Flutter Developer Sênior", "category": "cargo", "icon": "smartphone"},
+        {"text": "Flutter + Dart", "category": "stack", "icon": "code"},
+        {"text": "Flutter + Firebase", "category": "stack", "icon": "layers"},
+    ]},
+    {"pattern": "qa", "suggestions": [
+        {"text": "QA Engineer (Automação)", "category": "cargo", "icon": "check-circle"},
+        {"text": "Analista de Testes (Cypress/Selenium)", "category": "cargo", "icon": "check-square"},
+        {"text": "SDET (Dev em Teste)", "category": "cargo", "icon": "code"},
+        {"text": "QA Manual + Automação", "category": "cargo", "icon": "clipboard"},
+    ]},
+    {"pattern": "qualidade", "suggestions": [
+        {"text": "QA Engineer (Automação)", "category": "cargo", "icon": "check-circle"},
+        {"text": "Analista de Qualidade de Software", "category": "cargo", "icon": "check-square"},
+        {"text": "Quality Assurance Sênior", "category": "cargo", "icon": "award"},
+    ]},
+    {"pattern": "seguranca", "suggestions": [
+        {"text": "Analista de Segurança da Informação", "category": "cargo", "icon": "shield"},
+        {"text": "Pentest / Red Team", "category": "cargo", "icon": "alert-triangle"},
+        {"text": "Analista SOC / Blue Team", "category": "cargo", "icon": "eye"},
+        {"text": "DPO (Proteção de Dados / LGPD)", "category": "cargo", "icon": "lock"},
+    ]},
+    {"pattern": ".net", "suggestions": [
+        {"text": ".NET Developer (C#)", "category": "cargo", "icon": "code"},
+        {"text": ".NET com Azure", "category": "stack", "icon": "cloud"},
+        {"text": ".NET Sênior (Microserviços)", "category": "cargo", "icon": "layers"},
+        {"text": "C# Backend Sênior", "category": "cargo", "icon": "code"},
+    ]},
+    {"pattern": "scrum", "suggestions": [
+        {"text": "Scrum Master (CSM)", "category": "cargo", "icon": "repeat"},
+        {"text": "Agile Coach", "category": "cargo", "icon": "users"},
+        {"text": "RTE (Release Train Engineer — SAFe)", "category": "cargo", "icon": "activity"},
+    ]},
+    # ── Seniority normalization (aliases sem acento) ──────────────────────
+    {"pattern": "junior", "suggestions": [
+        {"text": "Desenvolvedor Júnior (0-2 anos)", "category": "experiencia", "icon": "user"},
+        {"text": "Analista Júnior", "category": "experiencia", "icon": "user"},
+        {"text": "Estágio → Júnior (recém-formado)", "category": "experiencia", "icon": "graduation-cap"},
+    ]},
+    {"pattern": "pleno", "suggestions": [
+        {"text": "Desenvolvedor Pleno (2-5 anos)", "category": "experiencia", "icon": "user-check"},
+        {"text": "Analista Pleno", "category": "experiencia", "icon": "user-check"},
+        {"text": "Pleno com potencial de Sênior", "category": "experiencia", "icon": "trending-up"},
+    ]},
+    {"pattern": "nivel", "suggestions": [
+        {"text": "Júnior (0-2 anos)", "category": "experiencia", "icon": "user"},
+        {"text": "Pleno (2-5 anos)", "category": "experiencia", "icon": "user-check"},
+        {"text": "Sênior (5+ anos)", "category": "experiencia", "icon": "award"},
+        {"text": "Tech Lead / Especialista", "category": "experiencia", "icon": "star"},
+    ]},
+    # ── Gestão / Ops (aliases com acentuação diferente) ──────────────────
+    {"pattern": "gestao", "suggestions": [
+        {"text": "Gestor de Projetos (PMP)", "category": "cargo", "icon": "clipboard"},
+        {"text": "Gestão de Pessoas / HRBP", "category": "cargo", "icon": "users"},
+        {"text": "Head de Produto (Product Manager)", "category": "cargo", "icon": "target"},
+        {"text": "Gestão de Operações", "category": "cargo", "icon": "settings"},
+    ]},
+    {"pattern": "operacoes", "suggestions": [
+        {"text": "Analista de Operações Sênior", "category": "cargo", "icon": "settings"},
+        {"text": "Gerente de Operações", "category": "cargo", "icon": "briefcase"},
+        {"text": "COO / Head de Operações", "category": "cargo", "icon": "activity"},
+    ]},
+    {"pattern": "pmo", "suggestions": [
+        {"text": "Analista de PMO Sênior", "category": "cargo", "icon": "clipboard"},
+        {"text": "Gestor de PMO", "category": "cargo", "icon": "briefcase"},
+        {"text": "PMO + Agile/Scrum", "category": "cargo", "icon": "repeat"},
+    ]},
+    # ── Não-tech adicionais ───────────────────────────────────────────────
+    {"pattern": "fiscal", "suggestions": [
+        {"text": "Analista Fiscal (ICMS/ISS/PIS/COFINS)", "category": "cargo", "icon": "file-text"},
+        {"text": "Especialista Tributário", "category": "cargo", "icon": "dollar-sign"},
+        {"text": "Auditor Fiscal", "category": "cargo", "icon": "search"},
+        {"text": "Contador / Fiscal (CRC)", "category": "cargo", "icon": "clipboard"},
+    ]},
+    {"pattern": "atendimento", "suggestions": [
+        {"text": "Customer Success Manager (CSM)", "category": "cargo", "icon": "heart"},
+        {"text": "CX Analyst / Customer Experience", "category": "cargo", "icon": "smile"},
+        {"text": "Analista de Atendimento ao Cliente", "category": "cargo", "icon": "phone"},
+        {"text": "Supervisor de Atendimento", "category": "cargo", "icon": "users"},
+    ]},
+    {"pattern": "engenheiro", "suggestions": [
+        {"text": "Engenheiro de Produção", "category": "cargo", "icon": "settings"},
+        {"text": "Engenheiro Civil", "category": "cargo", "icon": "building"},
+        {"text": "Engenheiro Mecânico", "category": "cargo", "icon": "tool"},
+        {"text": "Engenheiro Eletricista", "category": "cargo", "icon": "zap"},
+    ]},
+    {"pattern": "assistente", "suggestions": [
+        {"text": "Assistente Administrativo", "category": "cargo", "icon": "clipboard"},
+        {"text": "Assistente Comercial / Vendas", "category": "cargo", "icon": "briefcase"},
+        {"text": "Assistente de RH", "category": "cargo", "icon": "users"},
+        {"text": "Assistente Financeiro", "category": "cargo", "icon": "dollar-sign"},
+    ]},
 ]
 
 

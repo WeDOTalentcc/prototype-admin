@@ -224,7 +224,7 @@ export function useJobCompare(jobs: JobCompareItem[]) {
     doc.setFont("helvetica", "bold")
     doc.setFontSize(18)
     doc.setTextColor(17, 24, 39)
-    doc.text("Comparativo de Vagas - WedoTalent", 14, 20)
+    doc.text("Comparativo de Vagas - WeDOTalent", 14, 20)
 
     doc.setFont("helvetica", "normal")
     doc.setFontSize(10)
@@ -255,7 +255,7 @@ export function useJobCompare(jobs: JobCompareItem[]) {
       doc.setFont("helvetica", "bold")
       doc.setFontSize(12)
       doc.setTextColor(17, 24, 39)
-      doc.text("Análise LIA", 14, yPos)
+      doc.text("Análise de Compatibilidade", 14, yPos)
       yPos += 8
 
       doc.setFont("helvetica", "normal")
@@ -358,7 +358,7 @@ export function useJobCompare(jobs: JobCompareItem[]) {
 
     doc.setFontSize(8)
     doc.setTextColor(156, 163, 175)
-    doc.text("WedoTalent - Plataforma LIA | Relatório gerado automaticamente", 14, 200)
+    doc.text("WeDOTalent | Relatório gerado automaticamente", 14, 200)
 
     return doc.output("blob")
   }
@@ -406,7 +406,7 @@ export function useJobCompare(jobs: JobCompareItem[]) {
       const file = new File([pdfBlob], fileName, { type: "application/pdf" })
 
       const shareData = {
-        title: "Comparativo de Vagas - WedoTalent",
+        title: "Comparativo de Vagas - WeDOTalent",
         text: `Comparativo de ${jobs.length} vagas`,
         files: [file],
       }

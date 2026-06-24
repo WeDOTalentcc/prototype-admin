@@ -1,3 +1,4 @@
+from app.middleware.request_id import get_correlation_id
 from typing import Literal
 """
 Company Benefits API endpoints.
@@ -333,7 +334,7 @@ gated_company_id: str = Depends(require_company_id_strict_match("query.company_i
         raise
     except Exception as e:
         logger.error(f"Error listing company benefits: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.post("/upload-extract", response_model=None)
@@ -462,6 +463,7 @@ gated_company_id: str = Depends(require_company_id_strict_match("query.company_i
             )
             return _to_response(existing)
         new_benefit = await repo.create(effective_company_id, payload)
+        # pii-logs ok: new_benefit.name é nome de benefício (config metadata, não PII de pessoa)
         logger.info(f"Created company benefit: {new_benefit.name} for company: {effective_company_id}")
 
         await _append_history(
@@ -476,7 +478,7 @@ gated_company_id: str = Depends(require_company_id_strict_match("query.company_i
         try:
             from app.shared.compliance.audit_service import AuditService as _AS
             await _AS().log_action(
-                trace_id=str(_uuid_module.uuid4()),
+                trace_id=get_correlation_id(),
                 company_id=str(effective_company_id),
                 action_type="company_benefits_update",
                 actor=getattr(current_user, "email", None) or getattr(current_user, "id", "unknown"),
@@ -499,7 +501,7 @@ gated_company_id: str = Depends(require_company_id_strict_match("query.company_i
     except Exception as e:
         await db.rollback()
         logger.error(f"Error creating company benefit: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.get("/active", response_model=list[CompanyBenefitResponse])
@@ -542,7 +544,7 @@ gated_company_id: str = Depends(require_company_id_strict_match("query.company_i
         raise
     except Exception as e:
         logger.error(f"Error listing active company benefits: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.get("/highlighted", response_model=list[CompanyBenefitResponse])
@@ -563,7 +565,7 @@ gated_company_id: str = Depends(require_company_id_strict_match("query.company_i
         raise
     except Exception as e:
         logger.error(f"Error listing highlighted company benefits: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.get("/summary", response_model=None)
@@ -620,7 +622,7 @@ gated_company_id: str = Depends(require_company_id_strict_match("query.company_i
         raise
     except Exception as e:
         logger.error(f"Error getting company benefits summary: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.get("/{benefit_id}/history", response_model=list[BenefitHistoryEntry])
@@ -658,7 +660,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error("Error fetching benefit history benefit_id=%s: %s", benefit_id, e)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.get("/{benefit_id}", response_model=CompanyBenefitResponse)
@@ -678,7 +680,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting company benefit: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.put("/{benefit_id}", response_model=CompanyBenefitResponse)
@@ -705,6 +707,7 @@ company_id: str = Depends(require_company_id)):
             ]
 
         benefit = await repo.update(benefit, update_payload)
+        # pii-logs ok: benefit.name é nome de benefício (config metadata, não PII de pessoa)
         logger.info(f"Updated company benefit: {benefit.name}")
 
         await _append_history(
@@ -719,7 +722,7 @@ company_id: str = Depends(require_company_id)):
         try:
             from app.shared.compliance.audit_service import AuditService as _AS
             await _AS().log_action(
-                trace_id=str(_uuid_module.uuid4()),
+                trace_id=get_correlation_id(),
                 company_id=str(company_id),
                 action_type="company_benefits_update",
                 actor=getattr(current_user, "email", None) or getattr(current_user, "id", "unknown"),
@@ -742,7 +745,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await db.rollback()
         logger.error(f"Error updating company benefit: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.delete("/{benefit_id}", response_model=None)
@@ -777,7 +780,7 @@ company_id: str = Depends(require_company_id)):
         try:
             from app.shared.compliance.audit_service import AuditService as _AS
             await _AS().log_action(
-                trace_id=str(_uuid_module.uuid4()),
+                trace_id=get_correlation_id(),
                 company_id=str(company_id),
                 action_type="company_benefits_update",
                 actor=getattr(current_user, "email", None) or getattr(current_user, "id", "unknown"),
@@ -799,7 +802,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await db.rollback()
         logger.error(f"Error deleting company benefit: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.post("/seed-defaults", response_model=None)
@@ -822,7 +825,7 @@ gated_company_id: str = Depends(require_company_id_strict_match("query.company_i
     except Exception as e:
         await db.rollback()
         logger.error(f"Error seeding default benefits: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.get("/categories/list", response_model=None)

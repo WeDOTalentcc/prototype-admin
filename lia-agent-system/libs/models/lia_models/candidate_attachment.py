@@ -53,6 +53,7 @@ class CandidateAttachment(Base):
     file_url = Column(String(1000), nullable=False)
     file_size = Column(Integer, nullable=True)
     mime_type = Column(String(100), nullable=True)
+    file_hash = Column(String(64), nullable=True)  # SHA-256 hex digest for file-level dedup (GAP-05-006)
     
     upload_source = Column(String(50), nullable=False, index=True)
     
@@ -76,6 +77,7 @@ class CandidateAttachment(Base):
         Index('idx_attach_candidate_type', 'candidate_id', 'file_type'),
         Index('idx_attach_company_created', 'company_id', 'created_at'),
         Index('idx_attach_related_entity', 'related_entity_type', 'related_entity_id'),
+        Index("idx_attach_file_hash_company", "file_hash", "company_id"),
     {"extend_existing": True}, )
     
     def __repr__(self):

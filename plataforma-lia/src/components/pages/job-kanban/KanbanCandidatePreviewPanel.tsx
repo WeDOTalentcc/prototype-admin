@@ -1,9 +1,13 @@
 "use client"
 
-import React from "react"
+import React, { useState, useRef, useCallback, useEffect } from "react"
 
 const CandidatePreviewDynamic = React.lazy(() =>
   import("@/components/candidate-preview").then(m => ({ default: m.CandidatePreview })))
+
+const PANEL_MIN_WIDTH = 360
+const PANEL_MAX_WIDTH = 700
+const PANEL_DEFAULT_WIDTH = 480
 
 interface KanbanCandidatePreviewPanelProps {
   isPreviewOpen: boolean
@@ -50,19 +54,55 @@ export function KanbanCandidatePreviewPanel({
   candidatesData,
   jobVacancyId,
 }: KanbanCandidatePreviewPanelProps) {
+  const [panelWidth, setPanelWidth] = useState(PANEL_DEFAULT_WIDTH)
+  const isDragging = useRef(false)
+  const dragStartX = useRef(0)
+  const dragStartWidth = useRef(0)
+
+  const onMouseDown = useCallback((e: React.MouseEvent) => {
+    isDragging.current = true
+    dragStartX.current = e.clientX
+    dragStartWidth.current = panelWidth
+    document.body.style.cursor = 'col-resize'
+    e.preventDefault()
+  }, [panelWidth])
+
+  useEffect(() => {
+    const onMouseMove = (e: MouseEvent) => {
+      if (!isDragging.current) return
+      const delta = dragStartX.current - e.clientX
+      const newWidth = Math.min(PANEL_MAX_WIDTH, Math.max(PANEL_MIN_WIDTH, dragStartWidth.current + delta))
+      setPanelWidth(newWidth)
+    }
+    const onMouseUp = () => {
+      if (!isDragging.current) return
+      isDragging.current = false
+      document.body.style.cursor = ''
+    }
+    document.addEventListener('mousemove', onMouseMove)
+    document.addEventListener('mouseup', onMouseUp)
+    return () => {
+      document.removeEventListener('mousemove', onMouseMove)
+      document.removeEventListener('mouseup', onMouseUp)
+    }
+  }, [])
+
   if (!isPreviewOpen || !previewCandidate) return null
 
-  const currentColumn = Object.keys(candidatesData).find(col =>
-    candidatesData[col].some((c) => c.id === previewCandidate?.id)
-  )
-  const columnCandidates = currentColumn ? candidatesData[currentColumn] : []
-  const currentIndex = currentColumn
-    ? candidatesData[currentColumn].findIndex((c) => c.id === previewCandidate?.id)
-    : 0
-
   return (
-  <div className={`flex-shrink-0 transition-colors motion-reduce:transition-none duration-300 ${isPreviewMaximized ? 'w-[600px]' : 'w-panel-lg'}`} data-testid="kanban-candidate-preview-panel">
-    <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle h-[calc(100vh-6rem)] overflow-hidden">
+  <div
+    className="flex-shrink-0 h-full flex"
+    style={{ width: isPreviewMaximized ? 700 : panelWidth }}
+    data-testid="kanban-candidate-preview-panel"
+  >
+    <div
+      className="w-1.5 flex-shrink-0 cursor-col-resize group flex items-center justify-center hover:bg-lia-border-medium/40 transition-colors motion-reduce:transition-none rounded-l-md"
+      onMouseDown={onMouseDown}
+      title="Arraste para redimensionar"
+    >
+      <div className="w-0.5 h-8 rounded-full bg-lia-border-medium group-hover:bg-lia-text-disabled transition-colors motion-reduce:transition-none" />
+    </div>
+    <div className="flex-1 bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle h-full overflow-hidden">
     <React.Suspense fallback={null}>
       <CandidatePreviewDynamic
         candidate={previewCandidate}

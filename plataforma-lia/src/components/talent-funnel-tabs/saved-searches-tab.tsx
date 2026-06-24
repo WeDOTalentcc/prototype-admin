@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import { useState } from"react"
 import { formatRelativeTime } from"@/lib/format-utils"
 import { Button } from"@/components/ui/button"
@@ -105,6 +106,9 @@ export function SavedSearchesTab({
   const [searchFilter, setSearchFilter] = useState('')
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('saved-search-create', showCreateModal)
+  useLiaModalTracking('saved-search-edit', showEditModal)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [selectedSearch, setSelectedSearch] = useState<SavedSearch | null>(null)
   const [newSearchName, setNewSearchName] = useState('')
@@ -413,7 +417,7 @@ export function SavedSearchesTab({
 
       {filteredSearches.length === 0 && savedSearches.length > 0 && (
         <div className="flex flex-col items-center justify-center py-10 text-center">
-          <AlertCircle className="w-8 h-8 text-lia-text-disabled mb-2" />
+          <AlertCircle className="w-8 h-8 text-lia-text-muted mb-2" />
           <p className="text-xs text-lia-text-tertiary">
             Nenhuma busca encontrada para"{searchFilter}"
           </p>

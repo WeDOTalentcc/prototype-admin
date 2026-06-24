@@ -27,9 +27,6 @@ Compliance: agents MUST extend LangGraphReActBase (enforced at decoration
 time via TypeError). Escape hatch: LIA_ALLOW_NON_COMPLIANT_AGENTS=1 (emergency
 only — mirrors LIA_ALLOW_NON_COMPLIANT_DOMAINS in DomainRegistry).
 
-Note on AutonomousReActAgent: NOT registered here. It is invoked by
-CascadedRouter Tier 6 as a cross-domain fallback, not via direct dispatch.
-See app/domains/autonomous/__init__.py for the design rationale.
 """
 from __future__ import annotations
 

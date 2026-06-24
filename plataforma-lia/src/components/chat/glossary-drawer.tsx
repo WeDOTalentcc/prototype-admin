@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 /**
  * Side drawer that shows the full canonical glossary entry for a term
  * (Task #760). Recruiters reach it by *clicking* a highlighted term in a
@@ -63,6 +64,9 @@ export function buildGlossaryDeepLink(term: string): string {
 }
 
 export function GlossaryDrawer({ term, onClose }: GlossaryDrawerProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('glossary-drawer', !!term)
+
   const [state, setState] = useState<DrawerState | null>(null)
   const [copied, setCopied] = useState(false)
 
@@ -170,7 +174,7 @@ export function GlossaryDrawer({ term, onClose }: GlossaryDrawerProps) {
             target="_blank"
             rel="noreferrer"
             data-testid="glossary-drawer-docs-link"
-            className="inline-flex items-center gap-1 text-sm text-wedo-cyan hover:underline"
+            className="inline-flex items-center gap-1 text-sm text-lia-text-muted hover:underline"
           >
             <ExternalLink className="h-3.5 w-3.5" />
             Abrir entrada completa em docs/GLOSSARY.md

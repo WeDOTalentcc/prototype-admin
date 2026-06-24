@@ -50,7 +50,7 @@ def _resolve_company_id_from_context() -> str:
         return ""
 
 
-def tool_handler(domain: str, *, require_company: bool = True, module: Optional[str] = None):
+def tool_handler(domain: str, *, require_company: bool = True, module: Optional[str] = None, requires_confirmation: bool = False):
     """Decorator that wraps a tool function with tenant check + module gating + error handling.
 
     The decorated function should:
@@ -101,6 +101,33 @@ def tool_handler(domain: str, *, require_company: bool = True, module: Optional[
 
             if require_company and not kwargs.get("company_id"):
                 return dict(_TENANT_REQUIRED_RESPONSE)
+
+            # ── HITL gate (AUD-4, 2026-06-06): acao sensivel exige aprovacao ──
+            # Pre-flight: BLOQUEIA o side-effect se a tool e marcada
+            # requires_confirmation E nao ha aprovacao server-side (ContextVar
+            # setada pelo transporte quando o USUARIO confirma — nunca pela LLM).
+            # Chokepoint compartilhado -> cobre federado E supervisor. Sem
+            # aprovacao -> retorna needs_confirmation, a mutacao NAO roda.
+            if requires_confirmation:
+                from app.shared.hitl.hitl_approval_context import (
+                    hitl_gate_enabled,
+                    is_hitl_approved,
+                )
+                if hitl_gate_enabled() and not is_hitl_approved():
+                    logger.info(
+                        "[%s] HITL gate: %s requer confirmacao do usuario (bloqueado, sem aprovacao)",
+                        domain, func.__name__,
+                    )
+                    return {
+                        "success": False,
+                        "needs_confirmation": True,
+                        "requires_user_input": True,
+                        "message": (
+                            "Esta acao precisa da sua confirmacao antes de ser "
+                            "executada. Confirme para prosseguir."
+                        ),
+                        "hitl": {"tool": func.__name__, "domain": domain},
+                    }
 
             access_result = None
 
@@ -172,6 +199,7 @@ def tool_handler(domain: str, *, require_company: bool = True, module: Optional[
                 return {"success": False, "data": {}, "message": str(exc)}
 
         wrapper._module_gated = module
+        wrapper._tool_handler_wrapped = True
         return wrapper
 
     return decorator

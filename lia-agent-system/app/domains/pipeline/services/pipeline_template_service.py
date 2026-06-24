@@ -176,6 +176,7 @@ class PipelineTemplateService:
             company_id=company_id,
             actor=created_by,
             template=template,
+            in_session=True,
         )
         _inc_mutation(company_id, "created")
         return template
@@ -199,6 +200,7 @@ class PipelineTemplateService:
             actor=updated_by,
             template=template,
             extra_reasoning=[f"fields_updated: {sorted(data.keys())}"],
+            in_session=True,
         )
         _inc_mutation(company_id, "updated")
         return template
@@ -218,6 +220,7 @@ class PipelineTemplateService:
             company_id=company_id,
             actor=updated_by,
             template=template,
+            in_session=True,
         )
         _inc_mutation(company_id, "archived")
         return template
@@ -239,6 +242,7 @@ class PipelineTemplateService:
             actor=created_by,
             template=cloned,
             extra_reasoning=[f"cloned_from_id: {original.id}", f"cloned_from_name: {original.name}"],
+            in_session=True,
         )
         _inc_mutation(company_id, "cloned")
         return cloned
@@ -300,6 +304,7 @@ class PipelineTemplateService:
                 f"source: {source}",
                 f"stages_applied: {len(new_stages)}",
             ],
+            in_session=True,
         )
 
         _inc_apply(company_id, source)
@@ -325,6 +330,7 @@ class PipelineTemplateService:
         template: PipelineTemplate,
         job_vacancy_id: str | None = None,
         extra_reasoning: list[str] | None = None,
+        in_session: bool = False,
     ) -> None:
         reasoning = [
             f"action: {action}",
@@ -333,6 +339,36 @@ class PipelineTemplateService:
         ]
         if extra_reasoning:
             reasoning.extend(extra_reasoning)
+
+        if in_session:
+            # ── ATOMIC PATH (save + audit em uma só transação) ───────────
+            # Grava o audit row na MESMA sessão da mutação (self.db) via
+            # log_decision_in_session — o commit único do get_tenant_db
+            # (route layer) persiste template + audit atomicamente, SEM abrir
+            # uma segunda conexão por save. Mesmo padrão de company_settings
+            # (audit_company_change._emit_in_session).
+            #
+            # A sessão já está tenant-bound (get_tenant_db -> set_tenant_context),
+            # então a RLS WITH CHECK em audit_logs passa sem _bind_tenant aqui.
+            #
+            # Fail-CLOSED atômico: se o flush do audit falhar, a exceção
+            # propaga e o get_tenant_db faz rollback do template junto — não
+            # há save sem trail (alinhado a Inegociável #6 / company_settings).
+            await audit_service.log_decision_in_session(
+                self.db,
+                company_id=company_id,
+                agent_name="pipeline_template_service",
+                decision_type=DecisionType.COMPANY_SETTINGS_CHANGE.value,
+                action=action,
+                decision=f"{action}: {template.name}",
+                reasoning=reasoning,
+                criteria_used=["template_id", "company_id"],
+                job_vacancy_id=job_vacancy_id,
+                actor_user_id=actor,
+                human_review_required=False,
+            )
+            return
+
         try:
             await audit_service.log_decision(
                 company_id=company_id,

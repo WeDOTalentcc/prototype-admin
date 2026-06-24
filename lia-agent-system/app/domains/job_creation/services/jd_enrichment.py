@@ -180,8 +180,11 @@ def _build_enrichment_prompt(
         )
 
     _company_block = (
-        "\n\nCONTEXTO DA EMPRESA (use para a secao \"about_company\" e para ancorar o "
-        "tom do JD; NUNCA invente dados que nao estejam aqui):\n" + company_context + "\n"
+        "\n\nCONTEXTO DA EMPRESA (use APENAS para a secao \"about_company\" e o TOM do JD."
+        " ATENCAO: o tech_stack listado aqui e o stack da EMPRESA, NAO as habilidades"
+        " exigidas PELO CARGO. Para skills_obrigatorias e skills_desejaveis, use o TITULO"
+        " e SENIORIDADE do cargo; ignore o tech_stack da empresa para inferir skills."
+        "\n" + company_context + "\n"
         if company_context else ""
     )
     return f"""Voce e um especialista em recrutamento. Analise o JD (Job Description) abaixo e produza uma versao enriquecida e estruturada.
@@ -207,7 +210,7 @@ Responda APENAS com JSON valido no formato:
   "titulo_padronizado": "titulo normalizado",
   "senioridade_confirmada": "junior|pleno|senior|lead|diretor",
   "about_role": "descricao resumida do papel (2-3 frases)",
-  "about_company": "2-3 frases sobre a empresa, baseado SOMENTE no CONTEXTO DA EMPRESA fornecido; string vazia se nenhum contexto foi dado",
+  "about_company": "2-3 frases sobre a empresa, baseado SOMENTE no CONTEXTO DA EMPRESA fornecido acima. Se NENHUM contexto de empresa foi fornecido, retorne string vazia '' — NUNCA use placeholders como {{company_name}}, [Nome da Empresa], {{empresa}} ou similares",
   "responsabilidades": ["resp1", "resp2", ...],
   "skills_obrigatorias": [
     {{"skill": "nome", "contexto": "como e usado no cargo"}}
@@ -341,6 +344,7 @@ def _resolve_quality_thresholds(
     screening_mode: str | None,
     confirmed_technical: list | None,
     confirmed_behavioral: list | None,
+    seniority: str | None = None,
 ) -> tuple[int, int]:
     """Thresholds mode-aware para o quality_score (Fase 4).
 
@@ -353,8 +357,12 @@ def _resolve_quality_thresholds(
     if not has_confirmed:
         return MIN_TECHNICAL_SKILLS, MIN_BEHAVIORAL_COMPETENCIES
     if screening_mode in SCREENING_MODE_CONFIG:
-        cfg = SCREENING_MODE_CONFIG[screening_mode]
-        return cfg["technical_competencies"], cfg["behavioral_competencies"]
+        # Per-senioridade (YAML canonical) -- audit 2026-06-05 #3.
+        from app.domains.job_creation.helpers.wsi_distribution import (
+            block_distribution,
+        )
+        dist = block_distribution(screening_mode, seniority or "pleno")
+        return dist["technical"], dist["behavioral"]
     return (
         max(1, len(confirmed_technical or [])),
         max(1, len(confirmed_behavioral or [])),
@@ -409,7 +417,7 @@ class JdEnrichmentService:
             tuple of (enriched_jd, quality_score, warnings)
         """
         _min_tech, _min_behav = _resolve_quality_thresholds(
-            screening_mode, confirmed_technical, confirmed_behavioral,
+            screening_mode, confirmed_technical, confirmed_behavioral, seniority,
         )
 
         # --- GOV 1: Pre-LLM fairness check on raw JD ---
@@ -490,6 +498,11 @@ class JdEnrichmentService:
             enriched, min_technical=_min_tech, min_behavioral=_min_behav,
         )
         enriched.wsi_quality_score = quality_score
+        # Audit C9/#15 (2026-06-05): NAO sobrescrever — preserva markers de
+        # falha (fallback de parse / circuit breaker) que sinalizam que o
+        # enrich nao foi confiavel. Merge-dedup mantendo a ordem.
+        _prior_warnings = list(enriched.wsi_quality_warnings or [])
+        warnings = list(dict.fromkeys([*_prior_warnings, *warnings]))
         enriched.wsi_quality_warnings = warnings
 
         logger.info(

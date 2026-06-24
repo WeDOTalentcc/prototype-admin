@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Brain, Users, FileText, Binary, Target, MapPin, Briefcase, Clock, Building2, Code } from "lucide-react"
 import { useGlobalSearchSettings } from "@/hooks/search/useGlobalSearchSettings"
 import { useSemanticSearch } from "@/hooks/search/useSemanticSearch"
@@ -55,7 +55,8 @@ export function useSearchState(props: SmartSearchInputProps) {
     requireEmails = false,
     onRequireEmailsChange,
     requirePhoneNumbers = false,
-    onRequirePhoneNumbersChange
+    onRequirePhoneNumbersChange,
+    initialJdContent,
   } = props
 
   const { settings: globalSettings, loading: globalSettingsLoading } = useGlobalSearchSettings()
@@ -66,6 +67,10 @@ export function useSearchState(props: SmartSearchInputProps) {
   const [isParsingEntities, setIsParsingEntities] = useState(false)
   const [booleanError, setBooleanError] = useState<string | null>(null)
   const [jdContent, setJdContent] = useState("")
+  useEffect(() => {
+    if (initialJdContent && !jdContent) setJdContent(initialJdContent)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialJdContent])
   const [searchAnalysis, setSearchAnalysis] = useState<SearchAnalysis | null>(null)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [showAssistantTip, setShowAssistantTip] = useState(true)

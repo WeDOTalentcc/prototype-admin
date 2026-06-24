@@ -25,7 +25,7 @@ import uuid
 from collections.abc import Callable
 from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from app.shared.observability.tracing import trace_span
 from app.shared.chat_types import StructuredDataAdapter
@@ -171,6 +171,15 @@ class ChatResponse(BaseModel):
     agent_used: str = "main_orchestrator"
     agents_consulted: list[str] = Field(default_factory=list)
     intent_detected: str = "general"
+
+    @field_validator("intent_detected", mode="before")
+    @classmethod
+    def _coerce_intent_detected(cls, v: object) -> str:
+        # OrchestratorIntentResult é str-like (__str__ -> intent_id) mas a
+        # validação string_type do Pydantic rejeita o objeto. Coage pra string.
+        # Fix canonical 2026-06-03: single point, protege todos os call sites
+        # (ex.: from_action_result com intent=pending.intent objeto).
+        return str(v) if v is not None else "general"
     confidence: float = 1.0
     structured_data: dict[str, Any] | None = None
     suggested_prompts: list[str] = Field(default_factory=list)
@@ -185,6 +194,10 @@ class ChatResponse(BaseModel):
     needs_params: bool = False
     pending_action_id: str | None = None
     fairness_warnings: list[str] = Field(default_factory=list)
+    response_blocks: list[dict[str, Any]] | None = None
+    # HITL bird (AUD-4 §4.2): hitl_pending do sub-agente ReAct do supervisor
+    # (via rrp/hitl sink -> dr.metadata). O drain SSE minta + emite approval_required.
+    hitl_pending: dict[str, Any] | None = None
     from_cache: bool = False
     # CLAUDE.md REGRA 4 (anti-silent-fallback) canonical fields.
     # When success=False, these populate to expose the real error to
@@ -213,6 +226,8 @@ class ChatResponse(BaseModel):
             conversation_id=conv_id,
             ui_action=result.get("ui_action"),
             ui_action_params=result.get("ui_action_params"),
+            response_blocks=(result.get("response_blocks") or _structured.get("response_blocks")),
+            hitl_pending=result.get("hitl_pending"),
         )
 
     @classmethod
@@ -231,6 +246,7 @@ class ChatResponse(BaseModel):
             intent_detected=intent,
             confidence=1.0,
             structured_data=action_result.data,
+            response_blocks=((action_result.data or {}).get("response_blocks")),
             suggested_prompts=suggested_prompts or [],
             conversation_id=conv_id,
             action_executed=action_result.status == "executed",
@@ -245,6 +261,99 @@ class ChatResponse(BaseModel):
 # ---------------------------------------------------------------------------
 # MainOrchestrator
 # ---------------------------------------------------------------------------
+
+# -- Phase 1 -> Agentic fall-through (2026-06-04, harness GUIDE computacional) --
+# Acoes onde, se o Phase 1 ActionExecutor nao tem o param obrigatorio, e melhor
+# DEFERIR ao agentic loop (Phase 1.5) -- o LLM extrai o criterio do NL e chama a
+# tool -- em vez de devolver needs_params e PERGUNTAR. Restrito a allowlist para
+# nao afetar acoes que legitimamente exigem param (ex: agendar entrevista).
+PREFER_AGENTIC_ON_MISSING_PARAMS: frozenset = frozenset({"search_candidates"})
+
+
+# Fase 2 (2026-06-09): ui_actions emitidas por tool que o FE consome direto
+# (useUIAction). Constante nomeada = sensor testavel. apply_table_state = ponte
+# in-page (filtra/ordena a tabela aberta). open_modal/navigate_to = open_ui.
+# P-SSOT: import from single canonical source -- do not redefine here.
+# ALL_ACTIONABLE_UI_ACTION_TYPES includes the 3 page-specific strings
+# (suggest_pipeline_template, move_candidate, switch_search_mode) that previously
+# passed gate1 but were silently dropped here. They reach FE via ChatResponse.ui_action
+# and are dispatched via lia:unhandled_ui_action to page-specific handlers.
+from app.shared.ui_action_canonical import ALL_ACTIONABLE_UI_ACTION_TYPES as _FE_TOOL_UI_ACTIONS  # noqa: E501
+
+
+def _defer_needs_params_to_agentic(action_response) -> bool:
+    """True quando o Phase 1 retornou needs_params para uma acao 'prefer-agentic'
+    -> deve cair pro agentic loop em vez de perguntar o param. Canonical-fix:
+    ponto unico de decisao, puro e testavel."""
+    return bool(getattr(action_response, "needs_params", False)) and (
+        getattr(action_response, "action_type", None)
+        in PREFER_AGENTIC_ON_MISSING_PARAMS
+    )
+
+
+
+# Frases que indicam criar vaga A PARTIR DE uma fonte (template/vaga existente).
+# Conservador de proposito: so DEFERE o bootstrap do wizard vazio quando ha
+# sinal CLARO de "a partir de fonte" — caso contrario, "criar vaga"/"nova vaga"
+# segue bootstrapando exatamente como hoje (sem regressao). GUIDE feedforward
+# computacional (CLAUDE.md harness): impede o wizard vazio de engolir o turno
+# em que o recruiter_copilot deveria identificar a fonte (Phase 1.5).
+_CREATE_FROM_SOURCE_PATTERNS: tuple[str, ...] = (
+    "a partir de",
+    "a partir da",
+    "usar modelo",
+    "usar um modelo",
+    "usar template",
+    "usar um template",
+    "usando modelo",
+    "usando um modelo",
+    "usando template",
+    "usando um template",
+    "usar arquetipo",
+    "usar um arquetipo",
+    "usando arquetipo",
+    "usando um arquetipo",
+    "usar arquétipo",
+    "usar um arquétipo",
+    "usando arquétipo",
+    "usando um arquétipo",
+    "arquetipo",
+    "arquétipo",
+    "vaga existente",
+    "vaga ja existente",
+    "vaga já existente",
+    "baseada na vaga",
+    "baseada no modelo",
+    "baseada no template",
+    "baseado na vaga",
+    "baseado no modelo",
+    "igual a vaga",
+    "igual à vaga",
+    "como a vaga",
+    "clonar vaga",
+    "clonar a vaga",
+    "duplicar vaga",
+    "duplicar a vaga",
+)
+
+
+def _is_create_from_source(message: str) -> bool:
+    """True quando a mensagem pede criar vaga A PARTIR DE uma fonte existente.
+
+    GUIDE (feedforward, computacional). Quando True, ``_try_wizard_canonical``
+    NAO bootstrapa o wizard vazio no turno 1 — deixa cair para a Phase 1.5
+    (agentic loop), onde o ``recruiter_copilot`` chama ``list_job_creation_sources``
+    + ``start_creation_from_source`` para identificar a fonte. Quando False,
+    "criar vaga"/"nova vaga" seguem bootstrapando como hoje (sem regressao).
+
+    Conservador: exige um padrao CLARO de "a partir de fonte"; nao basta a
+    intencao de criar.
+    """
+    if not message:
+        return False
+    _m = message.lower()
+    return any(p in _m for p in _CREATE_FROM_SOURCE_PATTERNS)
+
 
 class MainOrchestrator:
     """
@@ -372,6 +481,19 @@ class MainOrchestrator:
                         ).inc()
                 except Exception:
                     pass
+                # GAP-00-001: log_check() para audit trail do bloqueio
+                try:
+                    import asyncio as _fg_asyncio_orch
+                    _fg_asyncio_orch.get_event_loop().create_task(
+                        self._fairness_guard.log_check(
+                            result=_fairness_result,
+                            context="main_orchestrator",
+                            company_id=str(ctx.company_id) if ctx.company_id else None,
+                            recruiter_id=str(ctx.user_id) if ctx.user_id else None,
+                        )
+                    )
+                except Exception:
+                    pass
                 return ChatResponse(
                     success=False,
                     content=_fairness_result.educational_message or (
@@ -443,6 +565,38 @@ class MainOrchestrator:
                 except Exception as _aic_exc:
                     logger.debug("[MainOrchestrator] ai_credit_gate skipped (fail-safe): %s", _aic_exc)
 
+            # GAP-00-001: daily token budget check (defense-in-depth) ─────
+            # agent_chat_sse.py checks before calling orchestrator;
+            # this catches any other caller that skips the entry-point check.
+            try:
+                from app.domains.credits.services.token_budget_service import (
+                    check_budget as _chk_bgt_orch,
+                    get_plan_for_company as _get_plan_orch,
+                )
+                _bgt_plan_orch = await _get_plan_orch(str(ctx.company_id))
+                _bgt_ok_orch, _bgt_used_orch, _bgt_lim_orch = await _chk_bgt_orch(
+                    str(ctx.company_id), _bgt_plan_orch
+                )
+                if not _bgt_ok_orch:
+                    logger.warning(
+                        "[MainOrchestrator] Daily token budget exhausted: company=%s used=%d limit=%d",
+                        ctx.company_id, _bgt_used_orch, _bgt_lim_orch,
+                    )
+                    return ChatResponse(
+                        success=False,
+                        content=(
+                            f"Limite diario de uso de IA atingido "
+                            f"({_bgt_used_orch:,}/{_bgt_lim_orch:,} tokens). "
+                            "O budget sera renovado a meia-noite UTC."
+                        ),
+                        agent_used="token_budget_gate",
+                        confidence=1.0,
+                        intent_detected="blocked_budget_exhausted",
+                        conversation_id=conv_id,
+                    )
+            except Exception as _bgt_orch_exc:
+                logger.debug("[MainOrchestrator] token_budget_gate skipped (fail-safe): %s", _bgt_orch_exc)
+
             # ── P1-W4-11: PolicyGate soft-enforcement ─────────────────────
             # Soft gate: valida intent contra policies do tenant. Log violations,
             # nunca bloqueia fluxo (hard gate em sprint futuro quando policies
@@ -476,6 +630,42 @@ class MainOrchestrator:
                         # quando policies estiverem validadas em produção.
                 except Exception as _pg_err:
                     logger.debug("[PolicyGate] P1-W4-11 evaluate error (non-blocking): %s", _pg_err)
+
+            # GAP-00-001: LGPD consent gate (defense-in-depth) ────────────
+            # get_active_candidate() reads a ContextVar set by the calling
+            # layer (agent_chat_sse entity resolver). For calls from chat.py
+            # without entity resolution, this is a no-op (None candidate).
+            try:
+                from app.shared.entity_resolver import get_active_candidate as _get_cand_orch
+                _orch_cand_id = _get_cand_orch()
+                if _orch_cand_id and ctx.company_id:
+                    from app.core.database import AsyncSessionLocal as _ConsentASL_orch
+                    from app.domains.lgpd.services.consent_checker_service import ConsentCheckerService as _CSvc_orch
+                    async with _ConsentASL_orch() as _cons_db_orch:
+                        _cons_result_orch = await _CSvc_orch(_cons_db_orch).check_candidate_consent(
+                            candidate_id=_orch_cand_id,
+                            company_id=str(ctx.company_id),
+                            purpose="ai_screening",
+                        )
+                    if not _cons_result_orch.allowed and not _cons_result_orch.soft_warning:
+                        logger.warning(
+                            "[MainOrchestrator] LGPD consent revogado: company=%s candidate=%s",
+                            ctx.company_id, _orch_cand_id,
+                        )
+                        return ChatResponse(
+                            success=False,
+                            content=(
+                                "Nao posso processar informacoes deste candidato por IA porque o "
+                                "consentimento LGPD foi revogado. Solicite novo consentimento via "
+                                "Gestao de Consentimentos."
+                            ),
+                            agent_used="lgpd_consent_gate",
+                            confidence=1.0,
+                            intent_detected="blocked_consent_revoked",
+                            conversation_id=conv_id,
+                        )
+            except Exception as _cons_orch_exc:
+                logger.debug("[MainOrchestrator] consent gate (fail-safe): %s", _cons_orch_exc)
 
             # Enriquecer contexto com informações do tenant
             # R4 (Task T-F): idempotente + paridade com agent_chat_sse.py.
@@ -554,6 +744,8 @@ class MainOrchestrator:
                     conv, conv_id = await self._setup_conversation_memory(ctx, conv_id, db, {})
                 except Exception as e:
                     logger.warning("[LIA-M01] Memory setup failed (non-blocking): %s", e)
+
+
 
             # ── Phase 0.5: Rail A capability gate (PR-J) ──────────────────
             # Computational guide: check capability_map BEFORE pending action or LLM.
@@ -688,15 +880,24 @@ class MainOrchestrator:
             # ── Phase 1: ActionExecutor ────────────────────────────────────
             action_response = await self._try_action_executor(ctx, conv_id)
             if action_response is not None:
-                # LIA-M02: Persist Phase 1 response to conversation memory
-                if conv and not ctx.skip_memory_persist:
-                    try:
-                        await self._persist_response(ctx, conv_id, conv, {"response": action_response.content}, db)
-                    except Exception as e:
-                        logger.warning("[LIA-M02] Phase 1 memory persist failed: %s", e)
-                if _soft_warnings and not action_response.fairness_warnings:
-                    action_response.fairness_warnings = _soft_warnings
-                return action_response
+                if _defer_needs_params_to_agentic(action_response):
+                    # #3 (2026-06-04): em vez de PERGUNTAR o criterio, deixa o
+                    # agentic loop (Phase 1.5) extrair do NL e chamar a tool.
+                    logger.info(
+                        "[Phase1->Agentic] needs_params para '%s' -- deferindo ao "
+                        "agentic loop (extrai do NL) em vez de pedir param. user=%s",
+                        action_response.action_type, getattr(ctx, "user_id", None),
+                    )
+                else:
+                    # LIA-M02: Persist Phase 1 response to conversation memory
+                    if conv and not ctx.skip_memory_persist:
+                        try:
+                            await self._persist_response(ctx, conv_id, conv, {"response": action_response.content}, db)
+                        except Exception as e:
+                            logger.warning("[LIA-M02] Phase 1 memory persist failed: %s", e)
+                    if _soft_warnings and not action_response.fairness_warnings:
+                        action_response.fairness_warnings = _soft_warnings
+                    return action_response
 
             # ── Phase 1.4: Wizard Canonical Executor (Task #1055) ──────────
             # Canonical REST/SSE delegation to WizardSessionService — espelha
@@ -739,9 +940,240 @@ class MainOrchestrator:
                     from app.shared.execution.plan_executor import PlanExecutor
                     from app.shared.execution.plan_templates import PlanTemplateRegistry
 
+                    # -- /planejar Slash Command ----------------------------------------
+                    import re as _re_plan
+                    _msg = (ctx.message or "").strip()
+                    _PLANEJAR_RE = _re_plan.compile(
+                        r"^/planejar\b\s*(.*)",
+                        _re_plan.IGNORECASE,
+                    )
+                    _planejar_match = _PLANEJAR_RE.match(_msg)
+                    if _planejar_match:
+                        _task_desc = _planejar_match.group(1).strip()
+                        if not _task_desc:
+                            _no_desc = ChatResponse(
+                                success=True,
+                                content=(
+                                    "Use `/planejar` seguido da tarefa. Exemplo:\n\n"
+                                    "- `/planejar contratar 5 devs backend ate julho`\n"
+                                    "- `/planejar agendar entrevistas com os 3 melhores e enviar feedback pros reprovados`\n"
+                                    "- `/planejar expandir sourcing da vaga de PM e mover aprovados`\n\n"
+                                    "Ou diga **que planos tem?** para ver os templates prontos."
+                                ),
+                                intent_detected="planejar_usage",
+                                conversation_id=conv_id,
+                                action_executed=False,
+                            )
+                            if _soft_warnings:
+                                _no_desc.fairness_warnings = _soft_warnings
+                            return _no_desc
+
+                        from app.domains.automation.agents.automation_react_agent import AutomationReActAgent
+                        _auto_agent = AutomationReActAgent()
+                        _decomp = await _auto_agent.decompose_task(
+                            task_description=_task_desc,
+                            company_id=str(getattr(ctx, "company_id", None) or ""),
+                            user_id=str(getattr(ctx, "user_id", "system") or "system"),
+                            persist=True,
+                        )
+                        _subtasks = _decomp.get("subtasks", [])
+                        _plan_id = _decomp.get("plan_id", "")
+
+                        _lines_out = ["**Plano criado** — " + str(len(_subtasks)) + " subtarefa(s):\n"]
+                        for _si, _st in enumerate(_subtasks, 1):
+                            _dep_str = ""
+                            if _st.get("depends_on"):
+                                _dep_str = " (depende de: " + ", ".join(_st["depends_on"]) + ")"
+                            _lines_out.append(
+                                str(_si) + ". **" + _st.get("title", _st.get("task_id", "Tarefa " + str(_si))) + "**"
+                                " — " + _st.get("description", "") + _dep_str
+                            )
+                        if _plan_id:
+                            _lines_out.append("\nPlan ID: `" + _plan_id + "`")
+                        _lines_out.append("\nDiga **executar plano** para iniciar ou **ajustar plano** para refinar.")
+
+                        _planejar_resp = ChatResponse(
+                            success=True,
+                            content="\n".join(_lines_out),
+                            intent_detected="planejar_decompose",
+                            conversation_id=conv_id,
+                            action_executed=True,
+                            structured_data=_decomp,
+                        )
+                        if _soft_warnings:
+                            _planejar_resp.fairness_warnings = _soft_warnings
+                        return _planejar_resp
+
+                    # -- Auto-detect: 3+ action verbs => route to PlanDetector ---
+                    _VERB_RE = _re_plan.compile(
+                        r"\b(?:buscar|encontrar|pesquisar|agendar|enviar|mover|avancar"
+                        r"|rejeitar|publicar|fechar|aprovar|gerar|analisar|comparar"
+                        r"|importar|notificar|expandir|contratar)\b",
+                        _re_plan.IGNORECASE,
+                    )
+                    _verb_matches = _VERB_RE.findall(_msg)
+                    if len(_verb_matches) >= 3:
+                        logger.info(
+                            "[LIA-P&E] Auto-detect: %d action verbs in message -> PlanDetector",
+                            len(_verb_matches),
+                        )
+
+                    # -- /planejar Slash Command ----------------------------------------
+                    _msg = (ctx.message or "").strip()
+                    _PLANEJAR_RE = _re_plan.compile(
+                        r"^/planejar\b\s*(.*)",
+                        _re_plan.IGNORECASE,
+                    )
+                    _planejar_match = _PLANEJAR_RE.match(_msg)
+                    if _planejar_match:
+                        _task_desc = _planejar_match.group(1).strip()
+                        if not _task_desc:
+                            _no_desc = ChatResponse(
+                                success=True,
+                                content=(
+                                    "Use `/planejar` seguido da tarefa. Exemplo:\n\n"
+                                    "- `/planejar contratar 5 devs backend ate julho`\n"
+                                    "- `/planejar agendar entrevistas com os 3 melhores e enviar feedback pros reprovados`\n"
+                                    "- `/planejar expandir sourcing da vaga de PM e mover aprovados`\n\n"
+                                    "Ou diga **que planos tem?** para ver os templates prontos."
+                                ),
+                                intent_detected="planejar_usage",
+                                conversation_id=conv_id,
+                                action_executed=False,
+                            )
+                            if _soft_warnings:
+                                _no_desc.fairness_warnings = _soft_warnings
+                            return _no_desc
+
+                        from app.domains.automation.agents.automation_react_agent import AutomationReActAgent
+                        _auto_agent = AutomationReActAgent()
+                        _decomp = await _auto_agent.decompose_task(
+                            task_description=_task_desc,
+                            company_id=str(getattr(ctx, "company_id", None) or ""),
+                            user_id=str(getattr(ctx, "user_id", "system") or "system"),
+                            persist=True,
+                        )
+                        _subtasks = _decomp.get("subtasks", [])
+                        _plan_id = _decomp.get("plan_id", "")
+
+                        _lines_out = ["**Plano criado** — " + str(len(_subtasks)) + " subtarefa(s):\n"]
+                        for _si, _st in enumerate(_subtasks, 1):
+                            _dep_str = ""
+                            if _st.get("depends_on"):
+                                _dep_str = " (depende de: " + ", ".join(_st["depends_on"]) + ")"
+                            _lines_out.append(
+                                str(_si) + ". **" + _st.get("title", _st.get("task_id", "Tarefa " + str(_si))) + "**"
+                                " — " + _st.get("description", "") + _dep_str
+                            )
+                        if _plan_id:
+                            _lines_out.append("\nPlan ID: `" + _plan_id + "`")
+                        _lines_out.append("\nDiga **executar plano** para iniciar ou **ajustar plano** para refinar.")
+
+                        _planejar_resp = ChatResponse(
+                            success=True,
+                            content="\n".join(_lines_out),
+                            intent_detected="planejar_decompose",
+                            conversation_id=conv_id,
+                            action_executed=True,
+                            structured_data=_decomp,
+                        )
+                        if _soft_warnings:
+                            _planejar_resp.fairness_warnings = _soft_warnings
+                        return _planejar_resp
+
+                    # -- Auto-detect: 3+ action verbs => route to PlanDetector ---
+                    _VERB_RE = _re_plan.compile(
+                        r"\b(?:buscar|encontrar|pesquisar|agendar|enviar|mover|avancar"
+                        r"|rejeitar|publicar|fechar|aprovar|gerar|analisar|comparar"
+                        r"|importar|notificar|expandir|contratar)\b",
+                        _re_plan.IGNORECASE,
+                    )
+                    _verb_matches = _VERB_RE.findall(_msg)
+                    if len(_verb_matches) >= 3:
+                        logger.info(
+                            "[LIA-P&E] Auto-detect: %d action verbs in message -> PlanDetector",
+                            len(_verb_matches),
+                        )
+
+                    # -- /planejar Slash Command ----------------------------------------
+                    _msg = (ctx.message or "").strip()
+                    _PLANEJAR_RE = _re_plan.compile(
+                        r"^/planejar\b\s*(.*)",
+                        _re_plan.IGNORECASE,
+                    )
+                    _planejar_match = _PLANEJAR_RE.match(_msg)
+                    if _planejar_match:
+                        _task_desc = _planejar_match.group(1).strip()
+                        if not _task_desc:
+                            _no_desc = ChatResponse(
+                                success=True,
+                                content=(
+                                    "Use `/planejar` seguido da tarefa. Exemplo:\n\n"
+                                    "- `/planejar contratar 5 devs backend ate julho`\n"
+                                    "- `/planejar agendar entrevistas com os 3 melhores e enviar feedback pros reprovados`\n"
+                                    "- `/planejar expandir sourcing da vaga de PM e mover aprovados`\n\n"
+                                    "Ou diga **que planos tem?** para ver os templates prontos."
+                                ),
+                                intent_detected="planejar_usage",
+                                conversation_id=conv_id,
+                                action_executed=False,
+                            )
+                            if _soft_warnings:
+                                _no_desc.fairness_warnings = _soft_warnings
+                            return _no_desc
+
+                        from app.domains.automation.agents.automation_react_agent import AutomationReActAgent
+                        _auto_agent = AutomationReActAgent()
+                        _decomp = await _auto_agent.decompose_task(
+                            task_description=_task_desc,
+                            company_id=str(getattr(ctx, "company_id", None) or ""),
+                            user_id=str(getattr(ctx, "user_id", "system") or "system"),
+                            persist=True,
+                        )
+                        _subtasks = _decomp.get("subtasks", [])
+                        _plan_id = _decomp.get("plan_id", "")
+
+                        _lines_out = ["**Plano criado** — " + str(len(_subtasks)) + " subtarefa(s):\n"]
+                        for _si, _st in enumerate(_subtasks, 1):
+                            _dep_str = ""
+                            if _st.get("depends_on"):
+                                _dep_str = " (depende de: " + ", ".join(_st["depends_on"]) + ")"
+                            _lines_out.append(
+                                str(_si) + ". **" + _st.get("title", _st.get("task_id", "Tarefa " + str(_si))) + "**"
+                                " — " + _st.get("description", "") + _dep_str
+                            )
+                        if _plan_id:
+                            _lines_out.append("\nPlan ID: `" + _plan_id + "`")
+                        _lines_out.append("\nDiga **executar plano** para iniciar ou **ajustar plano** para refinar.")
+
+                        _planejar_resp = ChatResponse(
+                            success=True,
+                            content="\n".join(_lines_out),
+                            intent_detected="planejar_decompose",
+                            conversation_id=conv_id,
+                            action_executed=True,
+                            structured_data=_decomp,
+                        )
+                        if _soft_warnings:
+                            _planejar_resp.fairness_warnings = _soft_warnings
+                        return _planejar_resp
+
+                    # -- Auto-detect: 3+ action verbs => route to PlanDetector ---
+                    _VERB_RE = _re_plan.compile(
+                        r"\b(?:buscar|encontrar|pesquisar|agendar|enviar|mover|avancar"
+                        r"|rejeitar|publicar|fechar|aprovar|gerar|analisar|comparar"
+                        r"|importar|notificar|expandir|contratar)\b",
+                        _re_plan.IGNORECASE,
+                    )
+                    _verb_matches = _VERB_RE.findall(_msg)
+                    if len(_verb_matches) >= 3:
+                        logger.info(
+                            "[LIA-P&E] Auto-detect: %d action verbs in message -> PlanDetector",
+                            len(_verb_matches),
+                        )
+
                     # ── Template Discovery ────────────────────────────────
                     # Respond to "que planos tem?" / "listar templates" / etc.
-                    import re as _re_plan
                     _DISCOVERY_RE = _re_plan.compile(
                         r"(que\s+planos|quais\s+planos|listar?\s+planos|listar?\s+templates?|"
                         r"que\s+automações|o\s+que\s+você\s+pode\s+automatizar|"
@@ -955,6 +1387,11 @@ class MainOrchestrator:
                             _phase15_system_prompt = SystemPromptBuilder.build(
                                 ai_persona=None,
                                 agent_type="orchestrator",
+                                company_id=(
+                                    str(_loop_company_id)
+                                    if _loop_company_id
+                                    else None
+                                ),
                                 tenant_context_snippet=_phase15_tenant_snippet,
                                 user_name=getattr(ctx, "user_name", "") or "",
                                 user_role=getattr(ctx, "user_role", "") or "",
@@ -977,6 +1414,17 @@ class MainOrchestrator:
                             _sp_exc,
                             exc_info=True,
                         )
+
+                    # Fase B P0.1 (2026-06-04): injeta o contexto da tela
+                    # (view_context) no system prompt -> supervisor abre ciente
+                    # do que o recrutador ve agora (page_type + counts + filtros).
+                    try:
+                        from app.orchestrator.context.view_context import format_view_context
+                        _vc_snip = format_view_context(getattr(ctx, "view_context", None))
+                        if _vc_snip:
+                            _phase15_system_prompt = (_phase15_system_prompt or "") + "\n\n" + _vc_snip
+                    except Exception:
+                        pass
 
                     # Bug obs #1 fix (2026-05-24): PREPEND greeting/ambiguous rule
                     # ANTES do persona+tools list. LLM perde focus em prompts
@@ -1076,6 +1524,8 @@ class MainOrchestrator:
                         "---\n\n"
                     )
                     _phase15_system_prompt = _greeting_priority + _phase15_system_prompt
+
+
 
                     # Sprint 12.5-TF (2026-05-24): clarification instruction.
                     # Encourage LIA to ASK when query is ambiguous instead of
@@ -1238,6 +1688,29 @@ class MainOrchestrator:
                         except Exception:
                             pass
 
+                    # Supervisor tool scoping (paridade com agente federado):
+                    # deriva scope via page_type do view_context que o SSE ja popula.
+                    # Fail-open: scope indefinido ou GLOBAL -> tools_override=None
+                    # -> agentic_loop usa todos os tools (comportamento anterior).
+                    _tools_override: list[str] | None = None
+                    try:
+                        from app.tools.scope_config import (
+                            scope_for_context,
+                            get_tools_for_scope,
+                            PromptScope,
+                        )
+                        _vc = getattr(ctx, "view_context", None) or {}
+                        _pt = _vc.get("page_type") if isinstance(_vc, dict) else None
+                        _scope = scope_for_context(_pt, None)
+                        if _scope != PromptScope.GLOBAL:
+                            _scoped = get_tools_for_scope(_scope)
+                            if _scoped:
+                                _tools_override = list(_scoped)
+                    except Exception as _scope_exc:
+                        logger.debug(
+                            "[MainOrchestrator] tool scope (fail-open): %s", _scope_exc
+                        )
+
                     _agentic_result = await agentic_loop.run(
                         user_message=ctx.message,
                         system_prompt=_phase15_system_prompt,
@@ -1246,7 +1719,35 @@ class MainOrchestrator:
                         user_id=getattr(ctx, "user_id", None),
                         session_id=conv_id,
                         provider=_agentic_provider,
+                        tools_override=_tools_override,
                     )
+
+                    # Step C (2026-06-04): consome a diretiva surfaçada por um
+                    # tool result. ADITIVO — só dispara quando um tool retornou
+                    # ``ui_action == "start_wizard_seeded"`` (ex.:
+                    # start_creation_from_source). Em turno de chat NORMAL o
+                    # campo é None e nada muda. O recrutador entra direto no
+                    # wizard semeado a partir do template, em vez do texto cru.
+                    _directive = (_agentic_result or {}).get("tool_directive")
+                    if (
+                        _directive
+                        and _directive.get("ui_action") == "start_wizard_seeded"
+                        and _directive.get("seed_source")
+                    ):
+                        logger.info(
+                            "[MainOrchestrator] tool directive start_wizard_seeded "
+                            "consumida (session=%s seed=%s) — desviando para o "
+                            "wizard semeado.",
+                            conv_id, _directive.get("seed_source"),
+                        )
+                        _seeded_resp = await self._start_seeded_wizard(
+                            ctx, conv_id, conv, db,
+                            seed_source=_directive["seed_source"],
+                        )
+                        if _soft_warnings and not _seeded_resp.fairness_warnings:
+                            _seeded_resp.fairness_warnings = _soft_warnings
+                        _enrich_suggested_prompts(_seeded_resp, ctx)
+                        return _seeded_resp
 
                     if _agentic_result and _agentic_result.get("response"):
                         logger.info(
@@ -1267,22 +1768,74 @@ class MainOrchestrator:
                                     conv_id, exc, exc_info=True,
                                 )
 
+                        # Fase B (2026-06-06): propaga a diretiva open_modal
+                        # surfaçada por open_ui → ui_action/ui_action_params
+                        # na resposta (FE LIAGlobalModals escuta lia:open_modal).
+                        # Aditivo: None em turno normal.
+                        _modal_ui_action = None
+                        _modal_ui_params = None
+                        if _directive and _directive.get("ui_action") in _FE_TOOL_UI_ACTIONS:
+                            _modal_ui_action = _directive.get("ui_action")
+                            _modal_ui_params = _directive.get("ui_action_params")
+                        elif _directive and _directive.get("ui_action"):
+                            # P-FAILLOUD: a non-None directive arrived at gate 2 with an unknown ui_action.
+                            # This should be impossible after gate 1 is wired to the same canonical source.
+                            # If this fires, it means a code path bypassed gate 1 or the canonical is out of sync.
+                            logger.warning(
+                                "gate2: ui_action %r passed gate1 but is not in _FE_TOOL_UI_ACTIONS -- "
+                                "invariant violation, check app/shared/ui_action_canonical.py",
+                                _directive.get("ui_action"),
+                            )
                         _resp = ChatResponse(
                             success=True,
                             content=_agentic_result["response"],
                             intent_detected="agentic_tool_call",
                             conversation_id=conv_id,
                             action_executed=bool(_agentic_result.get("tool_calls_made")),
+                            ui_action=_modal_ui_action,
+                            ui_action_params=_modal_ui_params,
                             structured_data={
                                 "tool_calls": _agentic_result.get("tool_calls_made", []),
                                 "iterations": _agentic_result.get("iterations", 0),
                             },
+                            response_blocks=_agentic_result.get("response_blocks"),
+                            hitl_pending=_agentic_result.get("hitl_pending"),  # F5 supervisor HITL drain (2026-06-09)
                         )
                         if _soft_warnings:
                             _resp.fairness_warnings = _soft_warnings
                         # Sprint 14.4: enrich suggested_prompts when empty + page known
                         _enrich_suggested_prompts(_resp, ctx)
                         return _resp
+
+                    # Canonical (2026-06-04): transient provider overload
+                    # (HTTP 529). Don't blame the user's phrasing for a
+                    # provider outage — return an honest, overload-specific
+                    # message instead of the generic V1 fallback. (REGRA-4.)
+                    if (
+                        _agentic_result
+                        and _agentic_result.get("failure_reason")
+                        == "provider_overloaded"
+                    ):
+                        logger.warning(
+                            "[MainOrchestrator] Agentic loop provider-overloaded "
+                            "after retries — honest fail (user=%s company=%s).",
+                            getattr(ctx, "user_id", None), ctx.company_id,
+                        )
+                        return ChatResponse(
+                            success=False,
+                            content=(
+                                "Os servidores de IA estão sobrecarregados neste "
+                                "instante. Pode tentar de novo em alguns segundos? "
+                                "Sua pergunta está ok — é só uma instabilidade "
+                                "temporária do provedor."
+                            ),
+                            agent_used="agentic_loop",
+                            confidence=0.0,
+                            intent_detected="provider_overloaded",
+                            conversation_id=conv_id,
+                            error_code="PROVIDER_OVERLOADED",
+                            error_category="transient",
+                        )
                 except Exception as exc:
                     logger.debug("[LIA-A04] Agentic loop skipped: %s", exc)
 
@@ -2229,7 +2782,18 @@ class MainOrchestrator:
             # "criar a vaga", not "criar vaga") which would otherwise leak into
             # Phase 1.3 Plan & Execute. Job creation must ALWAYS land in the wizard.
             _creation = detect_job_creation(message_text)
-            if any(p in _msg_lower for p in self._WIZARD_START_PATTERNS) or (
+            # GUIDE (2026-06-04): se a intencao e criar A PARTIR DE uma fonte
+            # (template/vaga existente), NAO bootstrapa o wizard vazio — deixa
+            # cair pra Phase 1.5 (recruiter_copilot identifica a fonte via
+            # list_job_creation_sources + start_creation_from_source). "criar
+            # vaga"/"nova vaga" simples seguem bootstrapando como hoje.
+            if _is_create_from_source(message_text):
+                logger.info(
+                    "[MainOrchestrator] create-from-source detectado — defere "
+                    "bootstrap do wizard vazio para Phase 1.5 (session=%s).",
+                    session_id,
+                )
+            elif any(p in _msg_lower for p in self._WIZARD_START_PATTERNS) or (
                 _creation is not None and _creation.is_creation
             ):
                 is_wizard_turn = True
@@ -2260,21 +2824,73 @@ class MainOrchestrator:
             return None
 
         # ── Delegação canônica para WizardSessionService ──
+        # Delegação canônica ÚNICA via _start_seeded_wizard — reusa o mesmo
+        # helper que a diretiva ``start_wizard_seeded`` consome (Step B dedup,
+        # 2026-06-04). Sem seed_source para o caminho bootstrap/continuação.
+        return await self._start_seeded_wizard(ctx, conv_id, conv, db, seed_source=None)
+
+    async def _start_seeded_wizard(
+        self,
+        ctx: UniversalContext,
+        conv_id: str,
+        conv: Any,
+        db: Any,
+        seed_source: "dict | None" = None,
+    ) -> ChatResponse:
+        """Canonical: delega ao ``WizardSessionService`` e empacota a resposta.
+
+        ÚNICA implementação da delegação wizard + construção de resposta usada
+        por DOIS caminhos (single source of truth — CLAUDE.md canonical-fix):
+
+          1. ``_try_wizard_canonical`` (bootstrap turno-1 / continuação pin) —
+             chama com ``seed_source=None``.
+          2. Diretiva ``start_wizard_seeded`` surfaçada por um tool result no
+             agentic loop (``start_creation_from_source``) — chama com
+             ``seed_source={"type":"template","id":...}`` para SEMEAR uma
+             sessão FRESH a partir do arquétipo. ``process_message`` lê
+             ``context["seed_source"]`` no bootstrap da sessão.
+
+        Multi-tenancy: ``company_id`` do ``ctx`` (JWT), NUNCA do payload.
+        """
+        from app.domains.job_creation.services.wizard_session_service import (
+            WizardSessionService,
+        )
+        from app.orchestrator.routing.post_wizard_continuation import (
+            build_offer_message,
+            mark_offered,
+        )
+        from app.shared.sessions import derive_thread_id
+
+        message_text = (ctx.message or "").strip()
+        company_id = str(ctx.company_id) if ctx.company_id else None
+        session_id = conv_id or str(uuid.uuid4())
+
         # Task #1080: thread_id derivado pelo helper canônico puro
         # (app.shared.sessions.derive_thread_id), única fonte de verdade
         # cross-transport (WS / SSE / REST orchestrator).
-        from app.shared.sessions import derive_thread_id
         thread_id = derive_thread_id(company_id, session_id)
 
         # context dict espelha o que agent_chat_ws.py monta — mantém paridade
         # com o caminho WS para que ``_build_state`` funcione idêntico.
         wiz_context: dict[str, Any] = dict(ctx.extra or {})
         wiz_context.setdefault("user_id", ctx.user_id)
+        wiz_context.setdefault("user_name", ctx.user_name or None)
+        wiz_context.setdefault("user_email", ctx.user_email or None)
         wiz_context.setdefault("company_id", company_id)
         wiz_context.setdefault("session_id", session_id)
         if getattr(ctx, "tenant_context_snippet", ""):
             wiz_context.setdefault(
                 "tenant_context_snippet", ctx.tenant_context_snippet
+            )
+        # Diretiva create-from-source (2026-06-04): injeta seed_source para o
+        # produtor canônico (WizardSessionService.seed_initial_state) semear o
+        # state FRESH a partir do template. Sobrescreve sempre — é a intenção
+        # explícita do recrutador para este turno.
+        if seed_source:
+            wiz_context["seed_source"] = seed_source
+            logger.info(
+                "[MainOrchestrator] seeded-wizard start: session=%s seed=%s",
+                session_id, seed_source,
             )
 
         recruiter_msg, ws_stage_payload, _tokens = await WizardSessionService.process_message(
@@ -2343,10 +2959,11 @@ class MainOrchestrator:
 
         logger.info(
             "[MainOrchestrator] Wizard canonical executor: session=%s thread=%s "
-            "stage=%s payload=%s",
+            "stage=%s payload=%s seeded=%s",
             session_id, thread_id,
             (ws_stage_payload or {}).get("stage", "?"),
             "yes" if ws_stage_payload else "no",
+            "yes" if seed_source else "no",
         )
 
         return ChatResponse(

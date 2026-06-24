@@ -27,14 +27,12 @@ from app.core.database import get_db
 from app.shared.tenant_guard import get_verified_company_id
 from typing import TYPE_CHECKING
 
-from app.domains.integrations_hub.services.rails_adapter import RailsAdapter
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 
 if TYPE_CHECKING:
     from app.shared.services.bias_audit_service import BiasAuditReport
 
-# UC-P0-13: route all bias audit calls through rails_adapter
-_bias_adapter = RailsAdapter()
 
 
 logger = logging.getLogger(__name__)
@@ -114,15 +112,14 @@ _company_gate: str = Depends(require_company_id)) -> BiasAuditReportResponse:
     alert_level: "ok" | "warning" (ratio < 0.80)
     """
     try:
-        report = await _bias_adapter.get_adverse_impact_by_job(
-            db, job_id, company_id=UUID(company_id)
-        )
+        from app.shared.services.bias_audit_service import bias_audit_service as _svc
+        report = await _svc.get_adverse_impact_by_job(db, job_id, company_id=UUID(company_id))
         return _to_response(report)
     except HTTPException:
         raise
     except Exception as exc:
         logger.error("bias_audit/job/%s erro: %s", job_id, exc)
-        raise HTTPException(status_code=500, detail="Erro ao calcular auditoria de viés")
+        raise LIAError(message="Erro ao calcular auditoria de viés")
 
 
 @router.get("/job/{job_id}/history", response_model=None)
@@ -140,9 +137,8 @@ _company_gate: str = Depends(require_company_id)):
     Isolamento multi-tenant via X-Company-ID header.
     """
     try:
-        snapshots = await _bias_adapter.get_bias_audit_snapshot_history(
-            db, UUID(company_id), job_id, limit
-        )
+        from app.shared.services.bias_audit_service import bias_audit_service as _svc
+        snapshots = await _svc.get_snapshot_history(db, UUID(company_id), job_id, limit)
         return {
             "job_id": job_id,
             "history": [s.to_dict() for s in snapshots],
@@ -152,6 +148,6 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as exc:
         logger.error("bias_audit/job/%s/history erro: %s", job_id, exc)
-        raise HTTPException(status_code=500, detail="Erro ao buscar histórico de auditoria")
+        raise LIAError(message="Erro ao buscar histórico de auditoria")
 
 reorder_collection_before_item(router)

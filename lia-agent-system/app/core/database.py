@@ -9,6 +9,7 @@ libs/config (lia_config.database). Migration helpers remain here.
 """
 import logging
 from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
 
 import sqlalchemy as sa
 
@@ -19,6 +20,8 @@ from lia_config.database import (  # noqa: F401
     async_session_factory,
     engine,
     get_db,
+    SyncSessionLocal,
+    sync_engine,
 )
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -611,9 +614,8 @@ async def add_workos_columns():
                 logger.warning(f"Could not add users column {column_name}: {e}")
         
         try:
-            await conn.execute(text(
-                "CREATE INDEX IF NOT EXISTS idx_users_workos_id ON users(workos_id)"
-            ))
+            # idx_users_workos_id removido: duplicata de users_workos_id_key (unique constraint).
+            # Limpeza em alembic 251_drop_duplicate_indexes.
             await conn.execute(text(
                 "CREATE INDEX IF NOT EXISTS idx_users_workos_directory ON users(workos_directory_id)"
             ))
@@ -695,9 +697,8 @@ async def create_workos_groups_tables():
             logger.warning(f"Could not create workos_group_role_mappings table: {e}")
         
         try:
-            await conn.execute(text(
-                "CREATE INDEX IF NOT EXISTS idx_workos_groups_workos_id ON workos_groups(workos_id)"
-            ))
+            # idx_workos_groups_workos_id removido: duplicata de workos_groups_workos_id_key (unique constraint).
+            # Limpeza em alembic 251_drop_duplicate_indexes.
             await conn.execute(text(
                 "CREATE INDEX IF NOT EXISTS idx_workos_groups_directory ON workos_groups(directory_id)"
             ))
@@ -748,9 +749,8 @@ async def create_company_workos_config_table():
             logger.warning(f"Could not create company_workos_config table: {e}")
         
         try:
-            await conn.execute(text(
-                "CREATE INDEX IF NOT EXISTS idx_company_workos_config_company ON company_workos_config(company_id)"
-            ))
+            # idx_company_workos_config_company removido: duplicata de ix_company_workos_config_company_id (unique).
+            # Limpeza em alembic 251_drop_duplicate_indexes.
             await conn.execute(text(
                 "CREATE INDEX IF NOT EXISTS idx_company_workos_config_directory ON company_workos_config(workos_directory_id)"
             ))
@@ -943,9 +943,8 @@ async def create_feedback_learning_tables():
             await conn.execute(text(
                 "CREATE INDEX IF NOT EXISTS idx_job_outcomes_company ON job_outcomes(company_id)"
             ))
-            await conn.execute(text(
-                "CREATE INDEX IF NOT EXISTS idx_job_outcomes_job ON job_outcomes(job_id)"
-            ))
+            # idx_job_outcomes_job removido: duplicata de idx_job_outcomes_job_unique (unique em job_id).
+            # Limpeza em alembic 251_drop_duplicate_indexes.
             await conn.execute(text(
                 "CREATE INDEX IF NOT EXISTS idx_job_outcomes_outcome ON job_outcomes(outcome)"
             ))
@@ -1309,6 +1308,12 @@ async def ensure_job_templates_indexes():
 async def ensure_lia_app_role():
     """Ensure the non-login RLS role ``lia_app`` exists with its grants (idempotent).
 
+    Retry loop: PostgreSQL ``GRANT`` statements on system catalog rows can raise
+    ``tuple concurrently updated`` when two startup processes race (e.g. uvicorn
+    --reload quickly restarting a crashed worker). Three attempts with backoff
+    handle this transiently; on persistent failure we log a warning and continue
+    because the role is likely already fully configured from a prior successful run.
+
     Every tenant-scoped request runs under ``SET ROLE lia_app`` (see
     ``get_tenant_db``). That role is a *cluster-level* object, not a schema
     object: it is created by migrations 068/237 but is NOT carried over by
@@ -1324,58 +1329,85 @@ async def ensure_lia_app_role():
     already exists (e.g. development). Requires the connecting user to have
     CREATEROLE (``neondb_owner`` in prod, ``postgres`` in dev both qualify).
     """
-    async with engine.begin() as conn:
-        # Race-safe across simultaneously-starting instances: if two replicas
-        # both pass the existence check, the loser would otherwise abort with
-        # duplicate_object — swallow it so every replica boots cleanly.
-        await conn.execute(text(
-            """
-            DO $$
-            BEGIN
-                CREATE ROLE lia_app NOLOGIN NOSUPERUSER;
-            EXCEPTION
-                WHEN duplicate_object THEN NULL;
-            END $$;
-            """
-        ))
-        await conn.execute(text("GRANT USAGE ON SCHEMA public TO lia_app"))
-        await conn.execute(text(
-            "GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO lia_app"
-        ))
-        await conn.execute(text(
-            "GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO lia_app"
-        ))
-        await conn.execute(text(
-            """
-            DO $$
-            BEGIN
-                IF EXISTS (SELECT 1 FROM pg_proc WHERE proname = 'app_current_company_id') THEN
-                    EXECUTE 'GRANT EXECUTE ON FUNCTION app_current_company_id() TO lia_app';
-                END IF;
-            END $$;
-            """
-        ))
-        await conn.execute(text(
-            "ALTER DEFAULT PRIVILEGES IN SCHEMA public "
-            "GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO lia_app"
-        ))
-        await conn.execute(text(
-            "ALTER DEFAULT PRIVILEGES IN SCHEMA public "
-            "GRANT USAGE, SELECT ON SEQUENCES TO lia_app"
-        ))
-        # The connecting application user must be a member of lia_app so it can
-        # ``SET ROLE lia_app`` at request time.
-        await conn.execute(text(
-            """
-            DO $$
-            DECLARE
-                app_user TEXT := current_user;
-            BEGIN
-                EXECUTE format('GRANT lia_app TO %I', app_user);
-            END $$;
-            """
-        ))
-    logger.info("RLS role lia_app verified/created successfully")
+    import asyncio
+
+    _MAX_ATTEMPTS = 3
+    for attempt in range(_MAX_ATTEMPTS):
+        try:
+            async with engine.begin() as conn:
+                # Race-safe: if two replicas both reach CREATE ROLE simultaneously,
+                # the loser aborts with duplicate_object — caught by the DO block.
+                await conn.execute(text(
+                    """
+                    DO $$
+                    BEGIN
+                        CREATE ROLE lia_app NOLOGIN NOSUPERUSER;
+                    EXCEPTION
+                        WHEN duplicate_object THEN NULL;
+                    END $$;
+                    """
+                ))
+                await conn.execute(text("GRANT USAGE ON SCHEMA public TO lia_app"))
+                await conn.execute(text(
+                    "GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO lia_app"
+                ))
+                await conn.execute(text(
+                    "GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO lia_app"
+                ))
+                await conn.execute(text(
+                    """
+                    DO $$
+                    BEGIN
+                        IF EXISTS (SELECT 1 FROM pg_proc WHERE proname = 'app_current_company_id') THEN
+                            EXECUTE 'GRANT EXECUTE ON FUNCTION app_current_company_id() TO lia_app';
+                        END IF;
+                    END $$;
+                    """
+                ))
+                await conn.execute(text(
+                    "ALTER DEFAULT PRIVILEGES IN SCHEMA public "
+                    "GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO lia_app"
+                ))
+                await conn.execute(text(
+                    "ALTER DEFAULT PRIVILEGES IN SCHEMA public "
+                    "GRANT USAGE, SELECT ON SEQUENCES TO lia_app"
+                ))
+                # The connecting application user must be a member of lia_app so it
+                # can ``SET ROLE lia_app`` at request time.
+                await conn.execute(text(
+                    """
+                    DO $$
+                    DECLARE
+                        app_user TEXT := current_user;
+                    BEGIN
+                        EXECUTE format('GRANT lia_app TO %I', app_user);
+                    END $$;
+                    """
+                ))
+            logger.info("RLS role lia_app verified/created successfully")
+            return  # success — exit retry loop
+        except Exception as exc:
+            err_str = str(exc)
+            is_concurrent = "tuple concurrently updated" in err_str
+            if is_concurrent and attempt < _MAX_ATTEMPTS - 1:
+                wait_s = 0.4 * (attempt + 1)
+                logger.warning(
+                    "ensure_lia_app_role: concurrent catalog update on attempt "
+                    "%d/%d — retrying in %.1fs",
+                    attempt + 1, _MAX_ATTEMPTS, wait_s,
+                )
+                await asyncio.sleep(wait_s)
+                continue
+            # Exhausted retries or non-transient error.  Log and proceed: if the
+            # role already exists with full grants (the common case on a live DB),
+            # continuing is correct.  If it genuinely doesn't exist, the first
+            # tenant-scoped request will raise and be caught there.
+            logger.warning(
+                "ensure_lia_app_role: could not assert lia_app grants "
+                "(attempt %d/%d, transient=%s): %s — startup continues.",
+                attempt + 1, _MAX_ATTEMPTS, is_concurrent, exc,
+            )
+            return
 
 
 async def init_db():
@@ -1505,9 +1537,8 @@ async def create_company_hiring_policies_table():
             logger.warning(f"Could not create company_hiring_policies table: {e}")
 
         try:
-            await conn.execute(text(
-                "CREATE UNIQUE INDEX IF NOT EXISTS idx_chp_company_id ON company_hiring_policies(company_id)"
-            ))
+            # idx_chp_company_id removido: duplicata de ix_company_hiring_policies_company_id (unique do modelo).
+            # Limpeza em alembic 251_drop_duplicate_indexes.
             logger.debug("Ensured company_hiring_policies indexes exist")
         except Exception as e:
             logger.warning(f"Could not create company_hiring_policies indexes: {e}")
@@ -1523,3 +1554,26 @@ async def add_wsi_session_version_columns():
             await conn.execute(text("CREATE INDEX IF NOT EXISTS idx_wsi_sessions_qsv ON wsi_sessions(job_vacancy_id, question_set_version)"))
         except Exception as e:
             logger.warning(f"Could not add wsi_sessions version columns: {e}")
+
+
+@asynccontextmanager
+async def tenant_session(company_id: str) -> "AsyncGenerator":
+    """Sessao async com contexto RLS (app.company_id) JA setado.
+
+    USE em tools/jobs/loops que rodam FORA de um request HTTP (onde o middleware
+    nao roda). Sem isso, RLS — habilitado e FORCED em ~241 tabelas — ve
+    app_current_company_id()=NULL e BLOQUEIA todas as linhas (retorna 0) mesmo
+    com dados no banco. Foi a root cause do "chat nao ve vagas/candidatos"
+    (agentic loop LIA-A04, 2026-06-03).
+
+    Padrao canonical (espelha get_tenant_db, mas parametrizado por company_id):
+        async with tenant_session(company_id) as db:
+            rows = (await db.execute(select(Model))).scalars().all()
+
+    Se company_id vier vazio, abre sessao sem setar contexto (RLS continua
+    bloqueando — fail-closed, nunca vaza cross-tenant).
+    """
+    async with AsyncSessionLocal() as session:
+        if company_id:
+            await set_tenant_context(session, str(company_id))
+        yield session

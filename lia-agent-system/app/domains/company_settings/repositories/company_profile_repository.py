@@ -86,7 +86,7 @@ class CompanyProfileRepository:
         self._require_company_id(company_id)
         result = await self.db.execute(
             text(
-                "SELECT id, COALESCE(additional_data->workforce_plan, null::jsonb) AS prev_plan "
+                "SELECT id, COALESCE(additional_data->'workforce_plan', null::jsonb) AS prev_plan "
                 "FROM company_culture_profiles WHERE company_id = :company_id LIMIT 1"
             ),
             {"company_id": company_id},
@@ -129,7 +129,7 @@ class CompanyProfileRepository:
                     UPDATE company_culture_profiles
                     SET additional_data = jsonb_set(
                         COALESCE(additional_data, {}::jsonb),
-                        {workforce_plan},
+                        '{workforce_plan}',
                         :plan_data::jsonb
                     ),
                     updated_at = NOW()
@@ -144,7 +144,7 @@ class CompanyProfileRepository:
                     (company_id, additional_data, created_at, updated_at)
                     VALUES (
                         :company_id,
-                        jsonb_build_object(workforce_plan, :plan_data::jsonb),
+                        jsonb_build_object('workforce_plan', :plan_data::jsonb),
                         NOW(), NOW()
                     )
                 """),

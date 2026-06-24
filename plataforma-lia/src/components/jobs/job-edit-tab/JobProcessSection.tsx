@@ -3,12 +3,26 @@
 import React, { useState } from"react"
 import { Card, CardContent } from"@/components/ui/card"
 import {
-  Brain, ChevronUp, ChevronDown, Clock, Layers, Lock, Loader2, Plus, Settings, Target, Trash2,
+  Brain, Layers, Lock, Loader2, Plus, Settings, Target,
 } from"lucide-react"
-import { inputClass, groupHeaderClass, getCategoryBadge } from"./job-edit-tab.constants"
+import {
+  DndContext, closestCenter, KeyboardSensor, PointerSensor,
+  useSensor, useSensors, type DragEndEvent,
+} from"@dnd-kit/core"
+import {
+  SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy,
+} from"@dnd-kit/sortable"
+import { groupHeaderClass } from"./job-edit-tab.constants"
 import type { PipelineTemplateFull } from"@/hooks/pipeline/use-pipeline-templates"
+import type { SubStatusOption, StageDataField } from"@/components/settings/recruitment-journey.types"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from"@/components/ui/select"
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from"@/components/ui/alert-dialog"
+import { JobProcessStageCard } from"./JobProcessStageCard"
 
-interface Stage {
+export interface Stage {
   name?: string
   stageName: string
   stageCategory?: string
@@ -19,6 +33,10 @@ interface Stage {
   liaAssisted?: boolean
   slaDays?: number
   defaultSlaDays?: number
+  subStatuses?: SubStatusOption[]
+  dataFields?: StageDataField[]
+  _inheritedSubStatuses?: SubStatusOption[]
+  _subStatusesOverridden?: boolean
 }
 
 interface JobProcessSectionProps {
@@ -31,7 +49,7 @@ interface JobProcessSectionProps {
   addStage: () => void
   removeStage: (index: number) => void
   updateStage: (index: number, field: string, value: unknown) => void
-  moveStage: (index: number, direction:"up" |"down") => void
+  reorderStages: (fromIndex: number, toIndex: number) => void
   // Fase 5 Unify: template selector
   vacancyId?: string
   templates?: PipelineTemplateFull[]
@@ -53,7 +71,7 @@ export function JobProcessSection({
   addStage,
   removeStage,
   updateStage,
-  moveStage,
+  reorderStages,
   vacancyId,
   templates,
   isLoadingTemplates,
@@ -64,6 +82,26 @@ export function JobProcessSection({
 }: JobProcessSectionProps) {
   const [showSaveForm, setShowSaveForm] = useState(false)
   const [saveTemplateName, setSaveTemplateName] = useState('')
+  // Confirmação obrigatória: aplicar template substitui as etapas atuais (destrutivo)
+  const [pendingTemplateId, setPendingTemplateId] = useState<string | null>(null)
+  const pendingTemplate = templates?.find(t => t.id === pendingTemplateId) ?? null
+
+  // dnd-kit: reordenação por arrastar (padrão canônico, igual à Jornada da empresa)
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  )
+  // ids estáveis por etapa (mesma estratégia do `key` existente)
+  const stageIds = stages.map((s, i) => s.name || `stage-${i}`)
+  const handleDragEnd = (event: DragEndEvent) => {
+    if (!isEditing) return
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+    const oldIndex = stageIds.indexOf(String(active.id))
+    const newIndex = stageIds.indexOf(String(over.id))
+    if (oldIndex === -1 || newIndex === -1) return
+    reorderStages(oldIndex, newIndex)
+  }
 
   return (
     <div className="space-y-5">
@@ -73,34 +111,37 @@ export function JobProcessSection({
             <div className="flex items-center gap-1"><Lock className="w-3 h-3" /><span><strong>Sistema:</strong> Fixas</span></div>
             <div className="flex items-center gap-1"><Target className="w-3 h-3" /><span><strong>Padrão:</strong> Nome editável</span></div>
             <div className="flex items-center gap-1"><Settings className="w-3 h-3" /><span><strong>Custom:</strong> Editável</span></div>
-            <div className="flex items-center gap-1 ml-auto"><Brain className="w-3 h-3 text-wedo-cyan" /><span className="text-wedo-cyan"><strong>LIA</strong> auxilia</span></div>
+            <div className="flex items-center gap-1 ml-auto"><Brain className="w-3 h-3 text-wedo-cyan-text" /><span className="text-wedo-cyan-text"><strong>IA</strong> auxilia</span></div>
           </div>
         </div>
         <div className="flex items-center justify-between">
           <h3 className={groupHeaderClass}>Etapas do Processo</h3>
-          {vacancyId && onApplyTemplate && templates && templates.length > 0 && (
+          {isEditing && vacancyId && onApplyTemplate && templates && templates.length > 0 && (
             <div className="flex items-center gap-2">
               {isApplyingTemplate && <Loader2 className="w-3 h-3 animate-spin text-lia-text-tertiary" />}
-              <select
-                onChange={e => { if (e.target.value) onApplyTemplate(e.target.value) }}
+              <Select
                 disabled={isApplyingTemplate}
-                defaultValue=""
-                className="text-xs py-1 px-2 rounded-lg border border-lia-border-subtle bg-lia-bg-primary text-lia-text-secondary hover:border-lia-border-medium disabled:opacity-50 focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20"
-                aria-label="Selecionar template de pipeline"
+                value=""
+                onValueChange={value => { if (value) setPendingTemplateId(value) }}
               >
-                <option value="" disabled>
-                  <Layers className="inline w-3 h-3 mr-1" />
-                  Aplicar template...
-                </option>
-                {templates.map(t => (
-                  <option key={t.id} value={t.id}>
-                    {t.name} ({t.stages.length} etapas)
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger
+                  className="h-8 w-auto gap-1.5 text-xs px-2 py-1 text-lia-text-secondary"
+                  aria-label="Selecionar template de pipeline"
+                >
+                  <Layers className="w-3 h-3 text-lia-text-tertiary" />
+                  <SelectValue placeholder="Aplicar template..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {templates.map(t => (
+                    <SelectItem key={t.id} value={t.id} className="text-xs">
+                      {t.name} ({t.stages.length} etapas)
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           )}
-          {vacancyId && onSaveAsTemplate && (
+          {isEditing && vacancyId && onSaveAsTemplate && (
             showSaveForm ? (
               <>
                 <input
@@ -156,140 +197,25 @@ export function JobProcessSection({
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-2">
-            {stages.map((stage, index) => {
-              const badge = getCategoryBadge(stage.stageCategory)
-              const BadgeIcon = badge.icon
-              const isSystem = stage.stageCategory ==="system"
-              const canEditName = stage.isEditable !== false && !isSystem
-              const canRemove = stage.isRemovable !== false && stage.stageCategory ==="custom"
-              const canReorder = stage.isReorderable !== false && !isSystem
-              const stageIsActive = stage.isActive !== false
-              const isLiaAssisted =
-                stage.liaAssisted ||
-                LIA_ASSISTED_STAGES.includes(stage.name ||"") ||
-                LIA_ASSISTED_STAGE_NAMES.includes(stage.stageName ||"")
-              const currentSla = stage.slaDays ?? stage.defaultSlaDays ?? 3
-              const defaultSla = stage.defaultSlaDays ?? 3
-              const slaModified = currentSla !== defaultSla
-              return (
-                <Card
-                  key={stage.name || index}
-                  className={`border transition-colors ${!stageIsActive ?"opacity-40" :""} ${
-                    isSystem
-                      ?"border-lia-border-subtle bg-lia-bg-secondary/50/30"
-                      :"border-lia-border-subtle hover:border-lia-border-default"
-                  }`}
-                >
-                  <CardContent className="p-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-lia-btn-primary-bg flex items-center justify-center text-xs font-bold text-white shrink-0">
-                        {index + 1}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          {isEditing && canEditName ? (
-                            <input
-                              type="text"
-                              className={`${inputClass(!isEditing)} flex-1`}
-                              value={stage.stageName}
-                              onChange={(e) => updateStage(index,"stageName", e.target.value)}
-                              placeholder="Nome da etapa"
-                            />
-                          ) : (
-                            <span
-                              className={`text-base-ui font-semibold ${
-                                isSystem ?"text-lia-text-secondary" :"text-lia-text-primary"
-                              }`}
-                            >
-                              {stage.stageName ||"Sem nome"}
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2 mt-1.5">
-                          <span
-                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-micro font-medium ${badge.color}`}
-                          >
-                            <BadgeIcon className="w-2.5 h-2.5" />
-                            {badge.label}
-                          </span>
-                          {isLiaAssisted && (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-micro font-medium text-wedo-cyan bg-wedo-cyan/10">
-                              <Brain className="w-2.5 h-2.5 text-wedo-cyan" />LIA auxilia
-                            </span>
-                          )}
-                          <div className="flex items-center gap-1 ml-auto">
-                            <Clock className="w-3 h-3 text-lia-text-tertiary" />
-                            {isEditing ? (
-                              <div className="flex items-center gap-1">
-                                <input
-                                  type="number"
-                                  min={1}
-                                  max={90}
-                                  className="w-12 text-micro text-center px-1 py-0.5 border border-lia-border-subtle rounded-full bg-lia-bg-primary text-lia-text-primary"
-                                  value={currentSla}
-                                  onChange={(e) => updateStage(index,"slaDays", parseInt(e.target.value) || 1)}
-                                />
-                                <span className="text-micro text-lia-text-tertiary">dias</span>
-                                {slaModified && (
-                                  <span className="text-micro text-status-warning">
-                                    (padrão: {defaultSla}d)
-                                  </span>
-                                )}
-                              </div>
-                            ) : (
-                              <span
-                                className={`text-micro ${
-                                  slaModified
-                                    ?"text-status-warning font-medium"
-                                    :"text-lia-text-tertiary"
-                                }`}
-                              >
-                                {currentSla} {currentSla === 1 ?"dia" :"dias"}
-                                {slaModified && ` (padrão: ${defaultSla}d)`}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-0.5 shrink-0">
-                        {isEditing && canReorder && (
-                          <>
-                            <button
-                              type="button"
-                              onClick={() => moveStage(index,"up")}
-                              disabled={index === 0}
-                              className="p-1 rounded-md hover:bg-lia-interactive-hover text-lia-text-tertiary hover:text-lia-text-secondary disabled:opacity-30"
-                            >
-                              <ChevronUp className="w-3.5 h-3.5" />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => moveStage(index,"down")}
-                              disabled={index === stages.length - 1}
-                              className="p-1 rounded-md hover:bg-lia-interactive-hover text-lia-text-tertiary hover:text-lia-text-secondary disabled:opacity-30"
-                            >
-                              <ChevronDown className="w-3.5 h-3.5" />
-                            </button>
-                          </>
-                        )}
-                        {isEditing && isSystem && <Lock className="w-3.5 h-3.5 text-lia-text-disabled" />}
-                        {isEditing && canRemove && (
-                          <button
-                            type="button"
-                            onClick={() => removeStage(index)}
-                            className="p-1 rounded-md hover:bg-status-error/10 dark:hover:bg-status-error/10/30 text-lia-text-tertiary hover:text-status-error"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )
-            })}
-          </div>
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <SortableContext items={stageIds} strategy={verticalListSortingStrategy}>
+              <div className="space-y-2">
+                {stages.map((stage, index) => (
+                  <JobProcessStageCard
+                    key={stageIds[index]}
+                    sortableId={stageIds[index]}
+                    stage={stage}
+                    index={index}
+                    isEditing={isEditing}
+                    LIA_ASSISTED_STAGES={LIA_ASSISTED_STAGES}
+                    LIA_ASSISTED_STAGE_NAMES={LIA_ASSISTED_STAGE_NAMES}
+                    updateStage={updateStage}
+                    removeStage={removeStage}
+                  />
+                ))}
+              </div>
+            </SortableContext>
+          </DndContext>
         )}
         {isEditing && (
           <button
@@ -301,6 +227,33 @@ export function JobProcessSection({
           </button>
         )}
       </div>
+
+      <AlertDialog
+        open={pendingTemplateId !== null}
+        onOpenChange={open => { if (!open) setPendingTemplateId(null) }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Aplicar template de pipeline?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Isto substitui as {stages.length} {stages.length === 1 ?"etapa atual" :"etapas atuais"} desta vaga
+              {pendingTemplate ? ` pelas etapas do template "${pendingTemplate.name}"` :" pelas etapas do template selecionado"}.
+              Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setPendingTemplateId(null)}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (pendingTemplateId && onApplyTemplate) onApplyTemplate(pendingTemplateId)
+                setPendingTemplateId(null)
+              }}
+            >
+              Aplicar template
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

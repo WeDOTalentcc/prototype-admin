@@ -151,7 +151,7 @@ export function PipelineStagesCarousel({
                       >
                         {stage.count}
                       </span>
-                      <span className="text-micro font-medium text-lia-text-disabled">
+                      <span className="text-micro font-medium text-lia-text-tertiary">
                         candidatos
                       </span>
                     </div>
@@ -176,7 +176,7 @@ export function PipelineStagesCarousel({
 
                 {index < stages.length - 1 && (
                   <div className="flex-shrink-0 flex items-center">
-                    <ChevronRight className="w-4 h-4 text-lia-text-disabled" />
+                    <ChevronRight className="w-4 h-4 text-lia-text-muted" />
                   </div>
                 )}
               </React.Fragment>

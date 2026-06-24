@@ -192,7 +192,7 @@ class IntegrationsService {
   async testIntegration(integrationId: string): Promise<boolean> {
     return this.sendWebhook(integrationId, 'test', {
       test: true,
-      message: 'Teste de conectividade da LIA Platform'
+      message: 'Teste de conectividade'
     })
   }
 }

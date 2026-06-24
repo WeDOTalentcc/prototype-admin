@@ -1,11 +1,12 @@
 /**
- * useSettingsBroadcast.test.ts — Task 2.7 (2026-05-26)
+ * useSettingsBroadcast.test.ts — Task 2.7 (2026-05-26) + GAP-09-005 (Sprint 5D)
  *
  * Tests for:
  * - dispatchSettingsUpdate: dispatches lia:settings-updated + lia:settings-success
  * - SETTINGS_QUERY_KEYS: returns correct stable key arrays
  * - useSettingsBroadcast: installs/removes listener, skips source="ui", invalidates on external
  * - useSettingsBroadcastDispatch: returns stable callback that calls dispatchSettingsUpdate
+ * - GAP-09-005: cross-tab sync via BroadcastChannel
  */
 import React from "react"
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest"
@@ -38,6 +39,21 @@ function makeWrapper() {
   const Wrapper = ({ children }: { children: React.ReactNode }) =>
     React.createElement(QueryClientProvider, { client: queryClient }, children)
   return { Wrapper, queryClient }
+}
+
+class MockBroadcastChannel {
+  static instances: MockBroadcastChannel[] = []
+  postMessage = vi.fn()
+  close = vi.fn()
+  onmessage: ((ev: MessageEvent) => void) | null = null
+
+  constructor(public name: string) {
+    MockBroadcastChannel.instances.push(this)
+  }
+
+  static reset() {
+    MockBroadcastChannel.instances = []
+  }
 }
 
 // ─── SETTINGS_QUERY_KEYS ─────────────────────────────────────────────────────
@@ -118,8 +134,6 @@ describe("dispatchSettingsUpdate", () => {
   })
 
   it("does not throw in SSR (window === undefined) — no-op if called in server context", () => {
-    // We can't easily simulate server context in jsdom, but we can verify the guard exists:
-    // Just call and ensure no unhandled exception
     expect(() => dispatchSettingsUpdate(makeDetail())).not.toThrow()
   })
 })
@@ -239,5 +253,92 @@ describe("useSettingsBroadcastDispatch", () => {
     const found = capturedDetails.find(d => d.section === "hiring_policies")
     expect(found).toBeDefined()
     expect(found!.field).toBe("lia_tone")
+  })
+})
+
+// ─── GAP-09-005: BroadcastChannel cross-tab sync ────────────────────────────
+
+describe("GAP-09-005: BroadcastChannel cross-tab sync", () => {
+  const originalBC = (globalThis as any).BroadcastChannel
+
+  beforeEach(() => {
+    MockBroadcastChannel.reset()
+    ;(globalThis as any).BroadcastChannel = MockBroadcastChannel
+  })
+
+  afterEach(() => {
+    if (originalBC) {
+      (globalThis as any).BroadcastChannel = originalBC
+    } else {
+      delete (globalThis as any).BroadcastChannel
+    }
+    vi.restoreAllMocks()
+  })
+
+  it("dispatchSettingsUpdate sends BroadcastChannel message for source='ui'", () => {
+    dispatchSettingsUpdate(makeDetail({ source: "ui" }))
+
+    const bcInstances = MockBroadcastChannel.instances
+    expect(bcInstances.length).toBeGreaterThanOrEqual(1)
+    const sendInstance = bcInstances[bcInstances.length - 1]
+    expect(sendInstance.name).toBe("lia-settings-sync")
+    expect(sendInstance.postMessage).toHaveBeenCalledTimes(1)
+    expect(sendInstance.postMessage).toHaveBeenCalledWith(
+      expect.objectContaining({ source: "ui", section: "company" }),
+    )
+    expect(sendInstance.close).toHaveBeenCalledTimes(1)
+  })
+
+  it("dispatchSettingsUpdate does NOT send BroadcastChannel message for source='chat'", () => {
+    dispatchSettingsUpdate(makeDetail({ source: "chat" }))
+
+    const bcInstances = MockBroadcastChannel.instances
+    const withPostMessage = bcInstances.filter(i => i.postMessage.mock.calls.length > 0)
+    expect(withPostMessage).toHaveLength(0)
+  })
+
+  it("dispatchSettingsUpdate does NOT send BroadcastChannel for source='external'", () => {
+    dispatchSettingsUpdate(makeDetail({ source: "external" }))
+
+    const bcInstances = MockBroadcastChannel.instances
+    const withPostMessage = bcInstances.filter(i => i.postMessage.mock.calls.length > 0)
+    expect(withPostMessage).toHaveLength(0)
+  })
+
+  it("useSettingsBroadcast invalidates queries on BroadcastChannel message", () => {
+    const { Wrapper, queryClient } = makeWrapper()
+    const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries")
+    renderHook(() => useSettingsBroadcast(), { wrapper: Wrapper })
+
+    const listenerInstance = MockBroadcastChannel.instances.find(i => i.onmessage !== null)
+    expect(listenerInstance).toBeDefined()
+
+    act(() => {
+      listenerInstance!.onmessage!(new MessageEvent("message", {
+        data: makeDetail({ source: "ui" }),
+      }))
+    })
+
+    expect(invalidateSpy).toHaveBeenCalled()
+  })
+
+  it("useSettingsBroadcast closes BroadcastChannel on unmount", () => {
+    const { Wrapper } = makeWrapper()
+    const { unmount } = renderHook(() => useSettingsBroadcast(), { wrapper: Wrapper })
+
+    const listenerInstance = MockBroadcastChannel.instances.find(i => i.onmessage !== null)
+    expect(listenerInstance).toBeDefined()
+
+    unmount()
+
+    expect(listenerInstance!.close).toHaveBeenCalled()
+  })
+
+  it("dispatchSettingsUpdate degrades silently when BroadcastChannel is unavailable", () => {
+    delete (globalThis as any).BroadcastChannel
+
+    expect(() => {
+      dispatchSettingsUpdate(makeDetail({ source: "ui" }))
+    }).not.toThrow()
   })
 })

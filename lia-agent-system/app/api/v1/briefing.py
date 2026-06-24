@@ -20,6 +20,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.shared.services.briefing_service import briefing_service
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError, LIAInternalError
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/briefing", tags=["briefing"])
@@ -170,10 +171,7 @@ async def get_daily_briefing(
         )
         inc_briefing_generated(company_id or "", "error")
         obs_briefing_duration(company_id or "", _elapsed)
-        raise HTTPException(
-            status_code=500,
-            detail=f"Falha ao gerar briefing: {e.__class__.__name__}",
-        )
+        raise LIAInternalError(f"Falha ao gerar briefing: {e.__class__.__name__}")
 
 
 @router.post("/refresh", response_model=None)
@@ -243,4 +241,4 @@ async def refresh_briefing(
         )
         inc_briefing_generated(company_id or "", "error")
         obs_briefing_duration(company_id or "", _elapsed)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")

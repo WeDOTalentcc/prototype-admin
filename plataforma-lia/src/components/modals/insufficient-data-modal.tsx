@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import { AlertTriangle, FileText, Briefcase, Award, GraduationCap, X, CheckCircle2, XCircle } from "lucide-react"
 import {
   AlertDialog,
@@ -34,6 +35,9 @@ export function InsufficientDataModal({
   requirements,
   candidateName
 }: InsufficientDataModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('insufficient-data', isOpen)
+
   const requiredMissing = requirements.filter(r => r.required && !r.hasData)
   const optionalMissing = requirements.filter(r => !r.required && !r.hasData)
   const hasEnoughData = requiredMissing.length === 0

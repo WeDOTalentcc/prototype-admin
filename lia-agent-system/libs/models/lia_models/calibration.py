@@ -26,6 +26,7 @@ class CalibrationFeedback(Base):
     feedback = Column(String, nullable=False)
     reason = Column(String, nullable=True)
     candidate_snapshot = Column(JSON, nullable=True)
+    company_id = Column(String, nullable=False)  # Bug 13: LGPD Art.18 tenant erasure anchor
     created_at = Column(DateTime, server_default=func.now())
     
     def to_dict(self):

@@ -58,6 +58,25 @@ import type { WizardStage } from "./wizard-types"
 import type { FlowStep } from "@/components/unified-chat/FlowStepMessage"
 import type { LiaChatMessage } from "@/hooks/chat/lia-chat-connection-types"
 
+
+export const WIZARD_STAGE_CARD_MESSAGE_ID = "lia-wizard-stage-card"
+
+const STAGE_CARD_STAGES = new Set([
+  "intake",
+  "jd_enrichment",
+  "competency",
+  "wsi_questions",
+  "calibration",
+])
+
+function stageCardDataEqual(
+  a: Record<string, unknown> | null,
+  b: Record<string, unknown> | null,
+): boolean {
+  if (a === b) return true
+  if (!a || !b) return false
+  return JSON.stringify(a) === JSON.stringify(b)
+}
 export interface UseWizardChatCardsOptions {
   /** Current wizard stage (null when no wizard run is active). */
   wizardStage: WizardStage | null
@@ -253,4 +272,99 @@ export function useWizardChatCards(options: UseWizardChatCardsOptions): void {
       return next
     })
   }, [wizardStage, wizardStageData, setChatMessages])
-}
+
+
+  // --- Stage card injection (inline enriched cards in chat feed) ---
+  // When the wizard emits stage data for a card-eligible stage, inject
+  // (or update) a single stage card message. The message carries the
+  // stage name and full payload so UnifiedMessageList can dispatch to
+  // the right card component (WizardIntakeCard, WizardJdCard, etc.).
+  const stageCardInsertedRef = useRef(false)
+  const prevStageForCardRef = useRef<WizardStage | null>(null)
+
+  useEffect(() => {
+    const isCardStage =
+      wizardStage != null && STAGE_CARD_STAGES.has(wizardStage)
+
+    // Reset latch on stage transition so the new stage can inject
+    if (wizardStage !== prevStageForCardRef.current) {
+      stageCardInsertedRef.current = false
+      prevStageForCardRef.current = wizardStage
+    }
+
+    if (!isCardStage || !wizardStageData) {
+      // Reset latch when leaving a card-eligible stage so the next
+      // entry re-injects. Keep existing card visible (don't remove —
+      // it serves as history of what LIA produced).
+      stageCardInsertedRef.current = false
+      return
+    }
+
+    setChatMessages((prev) => {
+      // Find any existing stage card for the CURRENT stage
+      const idx = prev.findIndex(
+        (m) =>
+          m.id === WIZARD_STAGE_CARD_MESSAGE_ID &&
+          m.metadata?.wizardStage === wizardStage,
+      )
+
+      // Also check if there's a stale card from a DIFFERENT stage
+      const staleIdx = prev.findIndex(
+        (m) =>
+          m.id === WIZARD_STAGE_CARD_MESSAGE_ID &&
+          m.metadata?.wizardStage !== wizardStage,
+      )
+
+      let base = prev
+      // Promote stale card to a permanent ID so it stays as history
+      if (staleIdx !== -1) {
+        const staleMsg = prev[staleIdx]
+        const permanentId = `lia-wizard-stage-${staleMsg.metadata?.wizardStage ?? "unknown"}`
+        base = prev.map((m, i) =>
+          i === staleIdx ? { ...m, id: permanentId } : m,
+        )
+      }
+
+      if (idx === -1) {
+        // No card for this stage in messages — inject (or re-inject after
+        // messages reset on reconnect; functional updater prevents duplicates
+        // since the second call's `prev` will already have the card).
+        stageCardInsertedRef.current = true
+        const msg: LiaChatMessage = {
+          id: WIZARD_STAGE_CARD_MESSAGE_ID,
+          sender: "lia",
+          content: "",
+          timestamp: new Date().toISOString(),
+          metadata: {
+            type: "wizard_stage_card",
+            wizardStage,
+            wizardStageData,
+          },
+        }
+        return [...base, msg]
+      }
+
+      // Update existing card if data changed
+      const existing = base[idx]
+      const prevData =
+        (existing.metadata?.wizardStageData as Record<string, unknown>) ?? null
+      if (
+        existing.metadata?.wizardStage === wizardStage &&
+        stageCardDataEqual(prevData, wizardStageData)
+      ) {
+        return base
+      }
+
+      const next = base.slice()
+      next[idx] = {
+        ...existing,
+        metadata: {
+          ...(existing.metadata ?? {}),
+          type: "wizard_stage_card",
+          wizardStage,
+          wizardStageData,
+        },
+      }
+      return next
+    })
+  }, [wizardStage, wizardStageData, setChatMessages])}

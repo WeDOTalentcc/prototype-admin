@@ -21,6 +21,7 @@ from app.auth.models import User
 from app.core.database import get_db
 from app.shared.services.learning_hub_service import learning_hub_service
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
@@ -282,7 +283,7 @@ company_id: str = Depends(require_company_id)) -> Stage8CandidateSearchResponse:
         raise
     except Exception as e:
         logger.error(f"Error in Stage 8 candidate search: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/wizard/stage8/feedback", response_model=Stage8SearchFeedbackResponse)
@@ -336,7 +337,7 @@ company_id: str = Depends(require_company_id)) -> Stage8SearchFeedbackResponse:
         raise
     except Exception as e:
         logger.error(f"Error recording Stage 8 feedback: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 # ---------------------------------------------------------------------------
@@ -474,7 +475,7 @@ company_id: str = Depends(require_company_id)) -> Stage9CalibrationResponse:
         raise
     except Exception as e:
         logger.error(f"Error in Stage 9 evaluation: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/wizard/stage9/calibrate", response_model=Stage9CalibrateFeedbackResponse)
@@ -562,7 +563,7 @@ company_id: str = Depends(require_company_id)) -> Stage9CalibrateFeedbackRespons
         raise
     except Exception as e:
         logger.error(f"Error in Stage 9 calibration: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 # ---------------------------------------------------------------------------
@@ -684,7 +685,7 @@ company_id: str = Depends(require_company_id)) -> Stage10ActiveSourcingResponse:
         raise
     except Exception as e:
         logger.error(f"Error in Stage 10 active sourcing: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/wizard/stage10/outreach", response_model=Stage10OutreachResponse)
@@ -727,7 +728,7 @@ company_id: str = Depends(require_company_id)) -> Stage10OutreachResponse:
         raise
     except Exception as e:
         logger.error(f"Error in Stage 10 outreach: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/wizard/stage10/feedback", response_model=Stage10FeedbackResponse)
@@ -795,4 +796,4 @@ company_id: str = Depends(require_company_id)) -> Stage10FeedbackResponse:
         raise
     except Exception as e:
         logger.error(f"Error in Stage 10 feedback: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")

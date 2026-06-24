@@ -1,7 +1,8 @@
 """
-Testes E2E — Rate Limiter (per-tenant sliding window).
+Testes E2E — Rate Limiter (per-tenant fixed window).
 
-Valida o comportamento do RateLimiter com sliding window Redis e fallback in-memory:
+Task #1355 — Atualizado para Fixed Window (INCR + EXPIRE, 4 ops/request).
+A implementação anterior usava ZSET sliding window (16 ops/request).
 
 Cenários cobertos:
 1. Requisição dentro dos limites → permitida
@@ -37,14 +38,18 @@ def _make_rate_limiter_with_memory_backend():
 
 
 def _make_rate_limiter_with_mock_redis(
-    sliding_window_results=None,
+    fixed_window_results=None,
     always_allow=True,
 ):
     """
     Cria RateLimiter com Redis mockado.
 
+    Task #1355 — atualizado para Fixed Window (_redis_fixed_window).
+    A implementação anterior mockava _redis_sliding_window (ZSET, 16 ops).
+    A nova usa _redis_fixed_window (INCR+EXPIRE, 4 ops).
+
     Args:
-        sliding_window_results: lista de (allowed, count) por chamada de sliding window
+        fixed_window_results: lista de (allowed, count) por chamada de fixed window
         always_allow: se True, todas as janelas retornam allowed=True, count=1
     """
     from app.middleware.rate_limiter import RateLimiter
@@ -52,9 +57,9 @@ def _make_rate_limiter_with_mock_redis(
     rl = RateLimiter()
 
     call_count = [0]
-    results = sliding_window_results or []
+    results = fixed_window_results or []
 
-    async def _mock_sliding_window(key, limit, window_sec):
+    async def _mock_fixed_window(key, limit, window_sec):
         if results:
             idx = min(call_count[0], len(results) - 1)
             call_count[0] += 1
@@ -65,7 +70,7 @@ def _make_rate_limiter_with_mock_redis(
     mock_redis.pipeline = MagicMock(return_value=MagicMock())
     rl._redis = mock_redis
     rl._redis_available = True
-    rl._redis_sliding_window = _mock_sliding_window
+    rl._redis_fixed_window = _mock_fixed_window
 
     return rl
 
@@ -158,10 +163,10 @@ class TestRateLimiterUserMinuteLimit:
         assert retry_after == rl.BLOCK_DURATION_SECONDS
 
     @pytest.mark.asyncio
-    async def test_redis_backed_user_blocked_when_sliding_window_denied(self):
-        """Redis-backed: usuário bloqueado quando sliding window retorna denied."""
+    async def test_redis_backed_user_blocked_when_fixed_window_denied(self):
+        """Redis-backed: usuário bloqueado quando fixed window retorna denied."""
         rl = _make_rate_limiter_with_mock_redis(
-            sliding_window_results=[(False, 601)]
+            fixed_window_results=[(False, 601)]
         )
 
         allowed, retry_after = await rl.check_rate_limit("user-denied", "company-001")
@@ -212,7 +217,7 @@ class TestRateLimiterCompanyMinuteLimit:
 
 
 # ---------------------------------------------------------------------------
-# Seção 4 — Retry-After coreto
+# Seção 4 — Retry-After correto
 # ---------------------------------------------------------------------------
 
 class TestRateLimiterRetryAfter:
@@ -300,12 +305,12 @@ class TestRateLimiterFallback:
         """Quando Redis levanta erro durante check, degrada para allow-all (fail-open)."""
         rl = _make_rate_limiter_with_memory_backend()
 
-        async def _broken_sliding_window(*args, **kwargs):
+        async def _broken_fixed_window(*args, **kwargs):
             raise ConnectionError("Redis connection refused")
 
         rl._redis = MagicMock()
         rl._redis_available = True
-        rl._redis_sliding_window = _broken_sliding_window
+        rl._redis_fixed_window = _broken_fixed_window
 
         allowed, _ = await rl._check_redis("user-redis-error", "company-001")
 
@@ -380,15 +385,13 @@ class TestRateLimiterStats:
         stats = rl.get_stats()
         assert stats["backend"] == "memory"
 
-    def test_get_stats_limits_include_all_keys(self):
-        """Stats incluem todos os limites configurados."""
+    def test_get_stats_limits_include_required_keys(self):
+        """Stats incluem os limites por minuto (os relevantes para Fixed Window)."""
         rl = _make_rate_limiter_with_memory_backend()
         stats = rl.get_stats()
         expected_keys = {
             "per_minute_per_user",
-            "per_hour_per_user",
             "per_minute_per_company",
-            "per_hour_per_company",
         }
         assert expected_keys.issubset(set(stats["limits"].keys()))
 
@@ -398,5 +401,3 @@ class TestRateLimiterStats:
         rl = RateLimiter()
         assert rl.LIMITS["per_minute_per_user"] == 600
         assert rl.LIMITS["per_minute_per_company"] == 3000
-        assert rl.LIMITS["per_hour_per_user"] == 20000
-        assert rl.LIMITS["per_hour_per_company"] == 60000

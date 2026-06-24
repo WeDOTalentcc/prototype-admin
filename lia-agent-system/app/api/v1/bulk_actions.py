@@ -10,13 +10,15 @@ from datetime import datetime
 from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, JSONResponse
 from pydantic import BaseModel, Field, field_validator
 
 from app.auth.dependencies import get_current_user, require_admin_or_recruiter
 from app.auth.models import User
-from app.domains.bulk_actions.dependencies import get_bulk_actions_repo
-from app.domains.bulk_actions.repositories.bulk_actions_repository import BulkActionsRepository
+from app.repositories.dependencies import get_bulk_actions_repo
+from app.core.database import get_tenant_db
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.repositories.bulk_actions_repository import BulkActionsRepository
 from app.domains.communication.services.email_service import get_email_service
 from app.shared.compliance.audit_service import audit_service  # module-level for test patchability
 from app.shared.compliance.fairness_guard import FairnessGuard as _FairnessGuard
@@ -32,14 +34,54 @@ _DECISION_TYPE_MAP = {
 from app.domains.communication.services.email_service import EmailService
 from app.models.job_vacancy import JobVacancy
 from app.shared.security.require_company_id import require_company_id
+from sqlalchemy import select as _sa_select
+from app.models.candidate import VacancyCandidate as _VacancyCandidate
 from app.shared.types import WeDoBaseModel
+from app.domains.recruitment.services.triagem_session_service.service import TriagemSessionService
 
 logger = logging.getLogger(__name__)
 
+
+from app.shared.hitl.hitl_approval_context import hitl_preflight as _hitl_preflight  # GAP-03-008
 router = APIRouter()
 
 MAX_BULK_ITEMS = 100
 VALID_CANDIDATE_STATUSES = ["new", "screening", "interview", "offer", "hired", "rejected"]
+# State machine: maps current_status -> set of allowed target statuses.
+# Prevents nonsensical transitions (e.g. hired->new) while allowing
+# legitimate recruiting flows including reconsideration (rejected->screening).
+STATUS_TRANSITIONS: dict[str, set[str]] = {
+    "new":        {"screening", "interview", "offer", "hired", "rejected"},
+    "screening":  {"new", "interview", "offer", "hired", "rejected"},
+    "interview":  {"new", "screening", "offer", "hired", "rejected"},
+    "offer":      {"interview", "hired", "rejected"},
+    "hired":      {"rejected"},          # only reversal allowed
+    "rejected":   {"new", "screening"},  # reconsideration only
+}
+# Sentinela: candidatos sem status (None/empty) podem ir pra qualquer estado
+_STATUS_UNKNOWN = "__unknown__"
+
+
+def _check_status_transition(current_status, new_status):
+    """Returns error message if transition is invalid, None if allowed.
+
+    Unknown current status (None/empty) is always allowed -- fail-open
+    for legacy data without a status set.
+    """
+    if not current_status:
+        return None
+    allowed = STATUS_TRANSITIONS.get(current_status)
+    if allowed is None:
+        return None  # unknown current status -- fail-open
+    if new_status not in allowed:
+        return (
+            f"Transicao invalida: {current_status!r} -> {new_status!r}. "
+            f"Permitido: {', '.join(sorted(allowed))}. "
+            f"Para corrigir: escolha um dos status permitidos para candidatos em {current_status!r}."
+        )
+    return None
+
+
 
 DEFAULT_SATURATION_THRESHOLD = 20
 DEFAULT_UNLOCK_INCREMENT = 10
@@ -113,6 +155,7 @@ class BulkUpdateStatusRequest(WeDoBaseModel):
     """Request to update status of multiple candidates."""
     candidate_ids: list[str] = Field(..., min_length=1, max_length=MAX_BULK_ITEMS)
     new_status: str = Field(..., description="Status: new, screening, interview, offer, hired, rejected")
+    rejection_notes: str | None = Field(None, description="Motivo/notas de reprovação (opcional). Validado via FairnessGuard quando new_status=rejected.")
 
     @field_validator("new_status")
     @classmethod
@@ -186,6 +229,20 @@ class BulkExportRequest(WeDoBaseModel):
         return v
 
 
+class BulkRequestDataRequest(WeDoBaseModel):
+    """Request to send data collection requests to multiple candidates."""
+    candidate_ids: list[str] = Field(..., min_length=1, max_length=MAX_BULK_ITEMS)
+    vacancy_id: str | None = Field(None, description="UUID da vaga para contextualizar a solicitação")
+    send_notification: bool = Field(True, description="Enviar notificação (email/whatsapp) ao candidato")
+
+    @field_validator("candidate_ids")
+    @classmethod
+    def validate_ids_limit(cls, v):
+        if len(v) > MAX_BULK_ITEMS:
+            raise ValueError(f"Maximum {MAX_BULK_ITEMS} items per operation")
+        return v
+
+
 class BulkDeleteRequest(WeDoBaseModel):
     """Request to delete (soft delete) multiple candidates."""
     candidate_ids: list[str] = Field(..., min_length=1, max_length=MAX_BULK_ITEMS)
@@ -216,6 +273,21 @@ company_id: str = Depends(require_company_id)):
     """
     logger.info(f"Bulk update status by {current_user.id}: {len(request.candidate_ids)} candidates to '{request.new_status}'")
 
+    # G-Fairness: notas de reprovação passam pelo FairnessGuard antes de processar candidatos
+    if request.new_status == "rejected" and request.rejection_notes:
+        _fg_result = _fairness_guard.check(request.rejection_notes)
+        if _fg_result.is_blocked:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error": "fairness_blocked",
+                    "fairness_blocked": True,
+                    "educational_message": _fg_result.educational_message,
+                    "category": _fg_result.category,
+                    "blocked_terms": _fg_result.blocked_terms or [],
+                },
+            )
+
     errors: list[BulkOperationError] = []
     processed_ids: list[str] = []
 
@@ -238,6 +310,15 @@ company_id: str = Depends(require_company_id)):
                     ))
                     continue
 
+                # State machine guard -- per-item error, does not fail the whole operation
+                transition_error = _check_status_transition(candidate.status, request.new_status)
+                if transition_error:
+                    errors.append(BulkOperationError(
+                        id=candidate_id,
+                        error_message=transition_error,
+                    ))
+                    continue
+
                 _old_status = candidate.status
                 candidate.status = request.new_status
                 candidate.updated_at = datetime.utcnow()
@@ -246,7 +327,7 @@ company_id: str = Depends(require_company_id)):
                 # Compliance: per-candidate audit trail (Task #311)
                 try:
                     await audit_service.log_decision(
-                        company_id=getattr(current_user, "company_id", ""),
+                        company_id=company_id,
                         agent_name="bulk_actions_api",
                         decision_type=_DECISION_TYPE_MAP.get(request.new_status, "move_stage"),
                         action=f"bulk_update_status_{request.new_status}",
@@ -254,7 +335,7 @@ company_id: str = Depends(require_company_id)):
                         reasoning=[
                             f"from_stage: {_old_status}",
                             f"to_stage: {request.new_status}",
-                        ],
+                        ] + ([f"rejection_notes: {request.rejection_notes}"] if getattr(request, "rejection_notes", None) else []),
                         criteria_used=["bulk_status_update"],
                         candidate_id=candidate_id,
                     )
@@ -293,7 +374,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error(f"Bulk update status failed: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.post("/candidates/bulk/assign-job", response_model=BulkOperationResult)
@@ -309,6 +390,15 @@ company_id: str = Depends(require_company_id)):
     Updates candidate's additional_data with job assignment info and optionally adds notes.
     Requires authentication.
     """
+    # GAP-03-008: HITL gate — dormant when LIA_HITL_GATE=off (zero regression)
+    _hitl_block = _hitl_preflight(
+        tool="bulk_assign",
+        domain="candidates",
+        data={"candidate_ids": request.candidate_ids, "job_vacancy_id": request.job_vacancy_id},
+    )
+    if _hitl_block:
+        return JSONResponse(status_code=202, content=_hitl_block)
+
     logger.info(f"Bulk assign job by {current_user.id}: {len(request.candidate_ids)} candidates to job {request.job_vacancy_id}")
 
     errors: list[BulkOperationError] = []
@@ -364,6 +454,29 @@ company_id: str = Depends(require_company_id)):
                     additional_data["job_assignments"] = job_assignments
                     candidate.additional_data = additional_data
 
+                # P0-1 (audit 2026-06-05): grava o LINK canônico em
+                # vacancy_candidates (o board + a contagem leem daqui). Antes só
+                # escrevia o blob inerte acima (ghost write ignorado pela UI).
+                _vc_exists = await repo.db.execute(
+                    _sa_select(_VacancyCandidate).where(
+                        _VacancyCandidate.vacancy_id == uuid.UUID(request.job_vacancy_id),
+                        _VacancyCandidate.candidate_id == uuid.UUID(candidate_id),
+                    )
+                )
+                if _vc_exists.scalar_one_or_none() is None:
+                    repo.db.add(_VacancyCandidate(
+                        id=uuid.uuid4(),
+                        vacancy_id=uuid.UUID(request.job_vacancy_id),
+                        candidate_id=uuid.UUID(candidate_id),
+                        company_id=company_id,
+                        source="manual_assign",
+                        stage="sourcing",
+                        status="sourced",
+                        lia_score=getattr(candidate, "lia_score", None),
+                        created_at=datetime.utcnow(),
+                        updated_at=datetime.utcnow(),
+                    ))
+
                 candidate.updated_at = datetime.utcnow()
                 candidate.last_activity_at = datetime.utcnow()
                 processed_ids.append(candidate_id)
@@ -400,7 +513,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error(f"Bulk assign job failed: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.post("/candidates/bulk/send-email", response_model=BulkOperationResult)
@@ -519,7 +632,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error(f"Bulk send email failed: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.post("/candidates/bulk/start-screening", response_model=BulkOperationResult)
@@ -579,6 +692,8 @@ company_id: str = Depends(require_company_id)):
         else:
             logger.info(f"Saturation override active for bulk screening job {request.job_vacancy_id} by {current_user.id}")
 
+        triagem_svc = TriagemSessionService()
+
         for candidate_id in request.candidate_ids:
             try:
                 candidate = await repo.get_candidate_by_id(uuid.UUID(candidate_id))
@@ -597,20 +712,19 @@ company_id: str = Depends(require_company_id)):
                     ))
                     continue
 
-                additional_data = candidate.additional_data or {}
-                screening_sessions = additional_data.get("screening_sessions", [])
-
-                screening_session = {
-                    "session_id": str(uuid.uuid4()),
-                    "job_vacancy_id": request.job_vacancy_id,
-                    "job_title": job_vacancy.title,
-                    "screening_type": request.screening_type,
-                    "status": "pending",
-                    "created_at": datetime.utcnow().isoformat()
-                }
-                screening_sessions.append(screening_session)
-                additional_data["screening_sessions"] = screening_sessions
-                candidate.additional_data = additional_data
+                voice_mode = request.screening_type == "voice"
+                session = await triagem_svc.create_session(
+                    db=repo.db,
+                    candidate_id=str(candidate_id),
+                    job_id=request.job_vacancy_id,
+                    company_id=company_id,
+                    candidate_name=candidate.name,
+                    candidate_email=candidate.email,
+                    job_title=job_vacancy.title,
+                    invite_channel="voice" if voice_mode else "email",
+                    created_by=str(current_user.id),
+                    voice_mode=voice_mode,
+                )
 
                 if candidate.status == "new":
                     candidate.status = "screening"
@@ -619,7 +733,7 @@ company_id: str = Depends(require_company_id)):
                 candidate.last_activity_at = datetime.utcnow()
                 processed_ids.append(candidate_id)
 
-                logger.info(f"Created screening session {screening_session['session_id']} for candidate {candidate_id}")
+                logger.info(f"Created triagem session {session.id} for candidate {candidate_id} via TriagemSessionService")
 
             except ValueError:
                 errors.append(BulkOperationError(
@@ -653,7 +767,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error(f"Bulk start screening failed: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.post("/candidates/bulk/export", response_model=None)
@@ -814,7 +928,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Bulk export failed: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.delete("/candidates/bulk/delete", response_model=BulkOperationResult)
@@ -831,6 +945,15 @@ company_id: str = Depends(require_company_id)):
     Set permanent=True for hard delete (use with caution).
     Requires admin or recruiter role.
     """
+    # GAP-03-008: HITL gate — dormant when LIA_HITL_GATE=off (zero regression)
+    _hitl_block = _hitl_preflight(
+        tool="bulk_delete",
+        domain="candidates",
+        data={"candidate_ids": request.candidate_ids, "permanent": request.permanent},
+    )
+    if _hitl_block:
+        return JSONResponse(status_code=202, content=_hitl_block)
+
     logger.info(f"Bulk delete by {current_user.id}: {len(request.candidate_ids)} candidates (permanent={request.permanent})")
 
     errors: list[BulkOperationError] = []
@@ -858,7 +981,7 @@ company_id: str = Depends(require_company_id)):
                 # Compliance: per-candidate audit trail (Task #311)
                 try:
                     await audit_service.log_decision(
-                        company_id=getattr(current_user, "company_id", ""),
+                        company_id=company_id,
                         agent_name="bulk_actions_api",
                         decision_type="reject_candidate",
                         action="bulk_delete",
@@ -906,7 +1029,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error(f"Bulk delete failed: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.post("/candidates/bulk/add-tags", response_model=BulkOperationResult)
@@ -977,7 +1100,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error(f"Bulk add tags failed: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.post("/candidates/bulk/remove-tags", response_model=BulkOperationResult)
@@ -1048,4 +1171,62 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error(f"Bulk remove tags failed: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
+
+@router.post("/candidates/bulk/request-data", response_model=BulkOperationResult)
+async def bulk_request_data(
+    request: BulkRequestDataRequest,
+    db: AsyncSession = Depends(get_tenant_db),
+    current_user: User = Depends(get_current_user),
+    company_id: str = Depends(require_company_id),
+):
+    """
+    Envia solicitação de dados (LGPD Art. 18 / coleta) para múltiplos candidatos.
+
+    Processa candidatos individualmente (fan-out) via DataRequestService.
+    Falha parcial: candidato com erro não aborta os demais.
+    G-RequestData fix (2026-06-17): antes era no-op no FE — nenhuma API chamada.
+    """
+    from app.domains.communication.services.data_request_service import (
+        data_request_service as _drs,
+    )
+    from app.models.data_request import TriggerType
+    from uuid import UUID as _UUID
+
+    logger.info(
+        "Bulk request data by %s: %d candidates",
+        current_user.id,
+        len(request.candidate_ids),
+    )
+
+    errors: list[BulkOperationError] = []
+    processed_ids: list[str] = []
+
+    for candidate_id in request.candidate_ids:
+        try:
+            vacancy_uuid = _UUID(request.vacancy_id) if request.vacancy_id else None
+            data_req = await _drs.create_data_request(
+                db=db,
+                company_id=company_id,
+                candidate_id=_UUID(candidate_id),
+                vacancy_id=vacancy_uuid,
+                trigger_type=TriggerType.MANUAL,
+            )
+            if request.send_notification:
+                try:
+                    await _drs.send_notification(db, data_req.id, None)
+                except Exception as _ne:
+                    logger.warning("Notificação falhou para %s: %s", candidate_id, _ne)
+            processed_ids.append(candidate_id)
+        except Exception as _e:
+            logger.warning("bulk_request_data falhou para %s: %s", candidate_id, _e)
+            errors.append(BulkOperationError(id=candidate_id, error_message=str(_e)))
+
+    return BulkOperationResult(
+        total=len(request.candidate_ids),
+        successful=len(processed_ids),
+        failed=len(errors),
+        errors=errors,
+        processed_ids=processed_ids,
+        message=f"Solicitação de dados enviada para {len(processed_ids)} candidato(s)",
+    )

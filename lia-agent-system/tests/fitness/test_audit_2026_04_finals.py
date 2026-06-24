@@ -246,3 +246,27 @@ class TestF12GlobalToolRegistryDeadCanary:
             "Decisão arquitetural pendente — ative (com pelo menos 1 caller) ou "
             "delete o módulo (F12 — AUDIT 2026-04, task #351)."
         )
+
+
+# ────────────────────────────────────────────────────────────────────
+# Shim/real service consolidation guard (Task #1283)
+# ────────────────────────────────────────────────────────────────────
+class TestShimServiceConsolidationGuard:
+    """Garante que arquivos em app/shared/services com twin em
+    app/domains/*/services permaneçam shims puros (só reexportam), sem
+    lógica de negócio duplicada. Fonte-da-verdade = app/domains/*/services.
+    """
+
+    def test_shim_guard_script_exists_and_runs(self):
+        script = _SCRIPTS / "check_shared_services_shims.py"
+        assert script.exists(), "scripts/check_shared_services_shims.py ausente"
+        result = subprocess.run(
+            [sys.executable, str(script)],
+            capture_output=True,
+            text=True,
+            cwd=str(_ROOT),
+            timeout=60,
+        )
+        assert result.returncode == 0, (
+            f"check_shared_services_shims.py falhou:\n{result.stdout}\n{result.stderr}"
+        )

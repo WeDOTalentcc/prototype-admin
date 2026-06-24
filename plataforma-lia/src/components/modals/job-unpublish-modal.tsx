@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import React from "react"
 import { Button } from "@/components/ui/button"
 import {
@@ -68,6 +69,9 @@ export interface UnpublishData {
 }
 
 export function JobUnpublishModal(props: JobUnpublishModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('job-unpublish', props.isOpen)
+
   const hook = useJobUnpublish(props)
 
   const {
@@ -120,7 +124,7 @@ export function JobUnpublishModal(props: JobUnpublishModalProps) {
               </span>
             </div>
             {index < steps.length - 1 && (
-              <ChevronRight className="w-3.5 h-3.5 text-lia-text-disabled mx-1" />
+              <ChevronRight className="w-3.5 h-3.5 text-lia-text-muted mx-1" />
             )}
           </React.Fragment>
         ))}

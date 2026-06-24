@@ -35,7 +35,7 @@ def compress_old_episodes_task(self, company_id: str, domain: str = None, age_da
         compressed = 0
         purged = 0
 
-        _DOMAINS = ["sourcing", "pipeline", "kanban", "wizard", "policy", "talent", "screening"]
+        _DOMAINS = ["sourcing", "pipeline", "kanban", "wizard", "hiring_policy", "talent", "screening"]
         domains_to_process = [domain] if domain else _DOMAINS
 
         for d in domains_to_process:

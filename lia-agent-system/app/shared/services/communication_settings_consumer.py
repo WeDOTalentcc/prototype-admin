@@ -161,7 +161,7 @@ async def get_company_communication_settings(
     """
     try:
         from sqlalchemy import select
-        from app.models.observability import CommunicationSettings
+        from app.models.communication_settings import CommunicationSettings
 
         result = await db.execute(
             select(CommunicationSettings).where(

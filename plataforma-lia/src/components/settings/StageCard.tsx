@@ -32,7 +32,6 @@ import {
   useStageDisplayName,
 } from "./StageCardHelpers"
 import { SubStatusPanel } from "./SubStatusPanel"
-import { DataFieldsPanel } from "./DataFieldsPanel"
 import { SaturationControlPanel } from "./SaturationControlPanel"
 
 export function ReadOnlyStageCard({ stage }: { stage: RecruitmentStage }) {
@@ -154,13 +153,13 @@ export function SortableStageCard({
           {canDrag ? (
             <button
               {...attributes} {...listeners}
-              className="mt-1 cursor-grab active:cursor-grabbing p-1 rounded-xl hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse transition-colors motion-reduce:transition-none"
+              className="mt-1 cursor-grab active:cursor-grabbing p-1 rounded-md hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse transition-colors motion-reduce:transition-none"
               aria-label={t('dragToReorder')}
             >
               <GripVertical className="h-5 w-5 text-lia-text-tertiary" />
             </button>
           ) : (
-            <div className="mt-1 p-1"><Lock className="h-5 w-5 text-lia-text-disabled" /></div>
+            <div className="mt-1 p-1"><Lock className="h-5 w-5 text-lia-text-muted" /></div>
           )}
 
           <div className="flex-1 space-y-3">
@@ -172,7 +171,7 @@ export function SortableStageCard({
                   data-testid={`pipeline-stage-display-name-${stage.name}`}
                   value={getStageDisplayName(stage)}
                   onChange={(e) => onUpdate(stage.id, { display_name: e.target.value, name: stage.name })}
-                  className="flex-1 px-3 py-2 text-base-ui font-medium text-lia-text-primary border border-lia-border-subtle dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg dark:focus:ring-lia-border-subtle focus:border-transparent transition-colors motion-reduce:transition-none"
+                  className="flex-1 px-3 py-2 text-base-ui font-medium text-lia-text-primary border border-lia-border-subtle dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg dark:focus:ring-lia-border-subtle focus:border-transparent transition-colors motion-reduce:transition-none"
                   placeholder={t('stageNamePlaceholder')}
                 />
               ) : (
@@ -205,7 +204,7 @@ export function SortableStageCard({
                 value={stage.notes}
                 onChange={(e) => onUpdate(stage.id, { notes: e.target.value })}
                 placeholder={t('notesPlaceholder')}
-                className="w-full px-3 py-2 text-xs text-lia-text-secondary border border-lia-border-subtle dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg dark:focus:ring-lia-border-subtle focus:border-transparent transition-colors motion-reduce:transition-none resize-none"
+                className="w-full px-3 py-2 text-xs text-lia-text-secondary border border-lia-border-subtle dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg dark:focus:ring-lia-border-subtle focus:border-transparent transition-colors motion-reduce:transition-none resize-none"
                 rows={2}
               />
             )}
@@ -223,7 +222,7 @@ export function SortableStageCard({
                       data-testid={`pipeline-stage-sla-${stage.name}`}
                       value={stage.sla}
                       onChange={(e) => onUpdate(stage.id, { sla: parseInt(e.target.value) || 0 })}
-                      className="w-14 px-2 py-1 text-xs text-center text-lia-text-primary border border-lia-border-subtle dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg dark:focus:ring-lia-border-subtle focus:border-transparent transition-colors motion-reduce:transition-none"
+                      className="w-14 px-2 py-1 text-xs text-center text-lia-text-primary border border-lia-border-subtle dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg dark:focus:ring-lia-border-subtle focus:border-transparent transition-colors motion-reduce:transition-none"
                       min={0} max={30}
                     />
                     <span className={textStyles.caption}>{t('slaDays')}</span>
@@ -237,7 +236,7 @@ export function SortableStageCard({
                     data-testid={`pipeline-stage-action-behavior-${stage.name}`}
                     value={stage.action_behavior || 'passive'}
                     onChange={(e) => onUpdate(stage.id, { action_behavior: e.target.value })}
-                    className="px-2 py-1 text-xs text-lia-text-primary border border-lia-border-subtle dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg dark:focus:ring-lia-border-subtle focus:border-transparent transition-colors motion-reduce:transition-none"
+                    className="px-2 py-1 text-xs text-lia-text-primary border border-lia-border-subtle dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg dark:focus:ring-lia-border-subtle focus:border-transparent transition-colors motion-reduce:transition-none"
                   >
                     <option value="passive">{t('actionPassive')}</option>
                     <option value="screening">{t('actionScreening')}</option>
@@ -259,7 +258,7 @@ export function SortableStageCard({
                     data-testid={`pipeline-stage-default-channel-${stage.name}`}
                     value={stage.default_channel || 'email'}
                     onChange={(e) => onUpdate(stage.id, { default_channel: e.target.value })}
-                    className="px-2 py-1 text-xs text-lia-text-primary border border-lia-border-subtle dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg dark:focus:ring-lia-border-subtle focus:border-transparent transition-colors motion-reduce:transition-none"
+                    className="px-2 py-1 text-xs text-lia-text-primary border border-lia-border-subtle dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg dark:focus:ring-lia-border-subtle focus:border-transparent transition-colors motion-reduce:transition-none"
                   >
                     <option value="email">{t('channelEmail')}</option>
                     <option value="whatsapp">{t('channelWhatsapp')}</option>
@@ -286,12 +285,6 @@ export function SortableStageCard({
               stage={stage}
               isEditMode={isEditMode}
               onToggleSubStatus={onToggleSubStatus}
-            />
-
-            <DataFieldsPanel
-              stage={stage}
-              isEditMode={isEditMode}
-              onUpdate={onUpdate}
             />
 
             <SaturationControlPanel

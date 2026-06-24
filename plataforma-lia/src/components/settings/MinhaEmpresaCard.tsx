@@ -14,6 +14,7 @@ import type { CompanyBenefit } from "@/types/benefits"
 import { WorkforceHubContent } from "./WorkforceHubContent"
 import { VariableCompCatalogSection } from "@/components/compensation/VariableCompCatalogSection"
 import { SalaryBandsSection } from "@/components/compensation/SalaryBandsSection"
+import { ErrorBoundarySection } from "@/components/ui/error-boundary-section"
 import { SectionUploadDropZone, type TargetSection } from "./SectionUploadDropZone"
 import { LogoUploadField } from "./LogoUploadField"
 import { InteractiveSurface } from "@/components/ui/interactive-surface"
@@ -35,7 +36,9 @@ const BLOCK_UPLOAD: Record<string, SectionUploadConfig | undefined> = {
   tech: { targetSection: "tech_stack", documentType: "tech_doc", sectionLabelKey: "techLabel", hintKey: "techHint" },
   benefits: { targetSection: "benefits", documentType: "handbook", sectionLabelKey: "benefitsLabel", hintKey: "benefitsHint" },
   policy: { targetSection: "policy", documentType: "handbook", sectionLabelKey: "policyLabel", hintKey: "policyHint" },
-  workforce: { targetSection: "workforce", documentType: "org_chart", sectionLabelKey: "workforceLabel", hintKey: "workforceHint" },
+  // workforce: organograma upload removed — it never structured department
+  // hierarchy (generic process_uploaded_document only). Import lives in the
+  // canonical SmartImportZone inside WorkforceHubContent. See plan.
   documents: { targetSection: "compensation", documentType: "compensation", sectionLabelKey: "documentsLabel", hintKey: "documentsHint" },
 }
 
@@ -122,7 +125,7 @@ function InlineFieldEditor({
         </button>
         <button
           onClick={onCancel}
-          className="p-0.5 rounded-xl hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
+          className="p-0.5 rounded-md hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
         >
           <X className="w-3 h-3 text-lia-text-tertiary" />
         </button>
@@ -153,7 +156,7 @@ function InlineFieldEditor({
       <button
         onClick={handleSave}
         disabled={isSaving}
-        className="p-0.5 rounded-xl hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
+        className="p-0.5 rounded-md hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
       >
         {isSaving ? (
           <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none text-lia-text-tertiary" />
@@ -163,7 +166,7 @@ function InlineFieldEditor({
       </button>
       <button
         onClick={onCancel}
-        className="p-0.5 rounded-xl hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
+        className="p-0.5 rounded-md hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
       >
         <X className="w-3 h-3 text-lia-text-tertiary" />
       </button>
@@ -339,12 +342,16 @@ export function MinhaEmpresaCard({
             />
           )}
           {block.key === "workforce" && (
-            <WorkforceHubContent />
+            <ErrorBoundarySection>
+              <WorkforceHubContent />
+            </ErrorBoundarySection>
           )}
           {block.key === "documents" && (
             <div className="mt-3 space-y-6">
-              <SalaryBandsSection />
-              <VariableCompCatalogSection />
+              <ErrorBoundarySection>
+                <SalaryBandsSection />
+                <VariableCompCatalogSection />
+              </ErrorBoundarySection>
             </div>
           )}
           {block.key !== "workforce" && (

@@ -74,7 +74,7 @@ export function SearchControlsBar({
         <Target className="w-4 h-4" />
         {t('controls.filters')}
         {getActiveTableFiltersCount() > 0 && (
-          <span className={`text-xs font-medium ${showTableFiltersPanel ? 'text-lia-text-disabled' : 'text-lia-text-tertiary'}`}>
+          <span className={`text-xs font-medium ${showTableFiltersPanel ? 'text-lia-text-tertiary' : 'text-lia-text-tertiary'}`}>
             {getActiveTableFiltersCount()}
           </span>
         )}
@@ -92,7 +92,7 @@ export function SearchControlsBar({
       >
         <ChevronsLeftRight className="w-4 h-4" />
         {t('controls.columns')}
-        <span className={`text-xs font-medium ${showColumnConfig ? 'text-lia-text-disabled' : 'text-lia-text-tertiary'}`}>
+        <span className={`text-xs font-medium ${showColumnConfig ? 'text-lia-text-tertiary' : 'text-lia-text-tertiary'}`}>
           {tableColumns.filter(col => col.visible && col.id !== 'acoes').length}
         </span>
       </button>

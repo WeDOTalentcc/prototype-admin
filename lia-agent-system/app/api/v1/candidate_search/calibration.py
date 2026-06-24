@@ -34,7 +34,7 @@ async def get_screening_repo(db: AsyncSession = Depends(get_db)) -> ScreeningRep
 class CalibrationFeedbackRequest(WeDoBaseModel):
     """Request para feedback de calibração."""
     candidate_id: str = Field(..., description="ID do candidato")
-    feedback: str = Field(..., pattern="^(like|dislike)$", description="Tipo: 'like' ou 'dislike'")
+    feedback: str = Field(..., pattern="^(like|dislike|skip)$", description="Tipo: 'like' ou 'dislike'")
     vacancy_id: str | None = Field(None, description="ID da vaga (opcional)")
     session_id: str | None = Field(None, description="ID da sessão de calibração")
     reason: str | None = Field(None, description="Motivo do feedback")
@@ -118,6 +118,7 @@ class VacancyGoalResponse(BaseModel):
 
 from app.domains.candidates.services.candidate_goal_service import candidate_goal_service as _recruiter_agent
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 
 
 @router.post("/calibration/feedback", response_model=CalibrationFeedbackResponse)
@@ -160,18 +161,21 @@ company_id: str = Depends(require_company_id)):
             await repo.create_calibration_session(session)
 
         feedback_entry = CalibrationFeedback(
-            session_id=session.id,
+            id=str(uuid.uuid4()),  # explicit so feedback_id is available before flush
+            search_session_id=session.id,
             candidate_id=request.candidate_id,
-            feedback_type=request.feedback,
+            feedback=request.feedback,
             reason=request.reason,
-            candidate_snapshot=request.candidate_snapshot
+            candidate_snapshot=request.candidate_snapshot,
+            company_id=company_id,  # Bug 13: LGPD Art.18 tenant erasure anchor
         )
         await repo.create_calibration_feedback(feedback_entry)
 
         if request.feedback.lower() == "like":
             session.likes_count = (session.likes_count or 0) + 1
-        else:
+        elif request.feedback.lower() == "dislike":
             session.dislikes_count = (session.dislikes_count or 0) + 1
+        # skip: nao conta como like nem dislike, mas conta em total_shown
         session.total_shown = (session.total_shown or 0) + 1
 
         min_feedbacks = session.min_feedbacks_required or 5
@@ -231,7 +235,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error(f"Calibration feedback failed: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Calibration feedback failed: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/calibration/start", response_model=CalibrationStartResponse)
@@ -312,7 +316,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error(f"Start calibration failed: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Start calibration failed: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/calibration/{session_id}/status", response_model=CalibrationStatusResponse)
@@ -388,7 +392,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Get calibration status failed: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Get calibration status failed: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/vacancy/goal-check", response_model=VacancyGoalResponse)
@@ -427,8 +431,134 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Vacancy goal check failed: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Vacancy goal check failed: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
+
+async def _add_candidates_to_vacancy_internal(
+    db: "AsyncSession",
+    job_id: str,
+    company_id: str,
+    candidate_ids: list,
+    *,
+    source: str = "local",
+    added_by: "str | None" = None,
+    with_rubric: bool = True,
+    rubric_svc=None,
+) -> dict:
+    """Core add logic shared by the HTTP endpoint and the wizard handoff.
+
+    with_rubric=True  -> endpoint path: includes RubricEvaluationService call.
+    with_rubric=False -> wizard path: fast (<1 s), no rubric (V1).
+
+    Returns dict: {added, skipped_ids, new_total, at_capacity, target_min, target_max}.
+    """
+    import uuid as _uuid
+    from app.models.candidate import VacancyCandidate
+    from app.shared.services.stage_id_resolver import resolve_recruitment_stage_id
+
+    _repo = ScreeningRepository(db)
+
+    vacancy = await _repo.get_job_vacancy_by_id(job_id)
+    vacancy_company_id = vacancy.company_id if vacancy else company_id
+
+    target_min = 50
+    target_max = 70
+
+    current_count = await _repo.count_vacancy_candidates(_uuid.UUID(job_id))
+    max_to_add = max(0, target_max - current_count)
+    candidates_to_add = candidate_ids[:max_to_add]
+    skipped_ids: list = list(candidate_ids[max_to_add:])
+
+    added_count = 0
+    for candidate_id in candidates_to_add:
+        try:
+            existing = await _repo.get_vacancy_candidate(
+                _uuid.UUID(job_id), _uuid.UUID(candidate_id)
+            )
+            if existing is None:
+                initial_stage_id = await resolve_recruitment_stage_id(
+                    db, str(vacancy_company_id), "sourcing"
+                )
+                new_vc = VacancyCandidate(
+                    vacancy_id=_uuid.UUID(job_id),
+                    candidate_id=_uuid.UUID(candidate_id),
+                    company_id=vacancy_company_id,
+                    source=source,
+                    added_by=added_by,
+                    status="sourced",
+                    stage="sourcing",
+                    recruitment_stage_id=initial_stage_id,
+                )
+                await _repo.create_vacancy_candidate(new_vc)
+                added_count += 1
+            else:
+                skipped_ids.append(candidate_id)
+        except ValueError:
+            skipped_ids.append(candidate_id)
+
+    # G-11: flush para que erros de integridade aflerem aqui, nao no commit final.
+    if added_count > 0:
+        await db.flush()
+
+    # RubricEvaluation: endpoint path only (with_rubric=True).
+    if with_rubric and added_count > 0 and rubric_svc and vacancy:
+        try:
+            job_requirements = await _repo.get_requirements_by_vacancy(_uuid.UUID(job_id))
+            if job_requirements:
+                requirements_list = [
+                    JobRequirementCreate(
+                        requirement=req.requirement,
+                        description=req.description,
+                        priority=_normalize_priority(req.priority),
+                        category=req.category,
+                    )
+                    for req in job_requirements
+                ]
+                for cand_id in candidates_to_add:
+                    try:
+                        candidate = await _repo.get_candidate_by_id(_uuid.UUID(cand_id))
+                        if candidate:
+                            candidate_data = {
+                                "name": candidate.name,
+                                "current_title": candidate.current_title,
+                                "current_company": candidate.current_company,
+                                "years_of_experience": candidate.years_of_experience,
+                                "seniority_level": candidate.seniority_level,
+                                "technical_skills": candidate.technical_skills or [],
+                                "soft_skills": getattr(candidate, "soft_skills", []) or [],
+                                "certifications": getattr(candidate, "certifications", []) or [],
+                                "languages": getattr(candidate, "languages", {}) or {},
+                                "location_city": candidate.location_city,
+                                "location_state": candidate.location_state,
+                                "education": getattr(candidate, "education", []) or [],
+                                "work_history": getattr(candidate, "work_history", []) or [],
+                                "resume_text": getattr(candidate, "resume_text", None),
+                            }
+                            await rubric_svc.evaluate_and_create_activity(
+                                candidate_id=cand_id,
+                                candidate_name=candidate.name or "Candidato",
+                                candidate_data=candidate_data,
+                                job_id=job_id,
+                                job_title=vacancy.title or "Vaga",
+                                job_code=getattr(vacancy, "code", None) or getattr(vacancy, "job_code", None),
+                                requirements=requirements_list,
+                                company_id=vacancy_company_id,
+                                created_by=added_by,
+                            )
+                    except Exception as eval_err:
+                        logger.warning(f"Rubric evaluation failed for candidate {cand_id}: {eval_err}")
+        except Exception as rubric_err:
+            logger.warning(f"Rubric evaluation setup failed: {rubric_err}")
+
+    new_total = current_count + added_count
+    return {
+        "added": added_count,
+        "skipped_ids": skipped_ids,
+        "new_total": new_total,
+        "at_capacity": new_total >= target_max,
+        "target_min": target_min,
+        "target_max": target_max,
+    }
 
 class AddCandidatesToVacancyRequest(WeDoBaseModel):
     """Request para adicionar candidatos a uma vaga."""
@@ -498,100 +628,22 @@ company_id: str = Depends(require_company_id)):
                 }
             )
 
-        target_min = 50
-        target_max = 70
-
-        current_count = await repo.count_vacancy_candidates(uuid.UUID(vacancy_id))
-
-        max_to_add = max(0, target_max - current_count)
-        candidates_to_add = request.candidate_ids[:max_to_add]
-        skipped_ids = request.candidate_ids[max_to_add:]
-
-        added_count = 0
-        for candidate_id in candidates_to_add:
-            try:
-                existing = await repo.get_vacancy_candidate(
-                    uuid.UUID(vacancy_id), uuid.UUID(candidate_id)
-                )
-                if existing is None:
-                    new_vc = VacancyCandidate(
-                        vacancy_id=uuid.UUID(vacancy_id),
-                        candidate_id=uuid.UUID(candidate_id),
-                        company_id=vacancy_company_id,
-                        source=request.source,
-                        added_by=request.added_by,
-                        status="sourced",
-                        stage="initial"
-                    )
-                    await repo.create_vacancy_candidate(new_vc)
-                    added_count += 1
-                else:
-                    skipped_ids.append(candidate_id)
-            except ValueError:
-                skipped_ids.append(candidate_id)
-
-        # G-11: flush explicito para que erros de integridade do bulk add
-        # aflorem AQUI (virando 500 honesto) em vez de falhar no commit final
-        # do get_tenant_db apos a resposta ja ter sido enviada (falso 200).
-        if added_count > 0:
-            await db.flush()
-
-        if added_count > 0 and vacancy:
-            try:
-                job_requirements = await repo.get_requirements_by_vacancy(uuid.UUID(vacancy_id))
-
-                if job_requirements:
-                    requirements_list = [
-                        JobRequirementCreate(
-                            requirement=req.requirement,
-                            description=req.description,
-                            priority=_normalize_priority(req.priority),
-                            category=req.category
-                        )
-                        for req in job_requirements
-                    ]
-
-                    for cand_id in candidates_to_add:
-                        try:
-                            candidate = await repo.get_candidate_by_id(uuid.UUID(cand_id))
-
-                            if candidate:
-                                candidate_data = {
-                                    "name": candidate.name,
-                                    "current_title": candidate.current_title,
-                                    "current_company": candidate.current_company,
-                                    "years_of_experience": candidate.years_of_experience,
-                                    "seniority_level": candidate.seniority_level,
-                                    "technical_skills": candidate.technical_skills or [],
-                                    "soft_skills": getattr(candidate, 'soft_skills', []) or [],
-                                    "certifications": getattr(candidate, 'certifications', []) or [],
-                                    "languages": getattr(candidate, 'languages', {}) or {},
-                                    "location_city": candidate.location_city,
-                                    "location_state": candidate.location_state,
-                                    "education": getattr(candidate, 'education', []) or [],
-                                    "work_history": getattr(candidate, 'work_history', []) or [],
-                                    "resume_text": getattr(candidate, 'resume_text', None),
-                                }
-
-                                await rubric_svc.evaluate_and_create_activity(
-                                    candidate_id=cand_id,
-                                    candidate_name=candidate.name or "Candidato",
-                                    candidate_data=candidate_data,
-                                    job_id=vacancy_id,
-                                    job_title=vacancy.title or "Vaga",
-                                    job_code=getattr(vacancy, 'code', None) or getattr(vacancy, 'job_code', None),
-                                    requirements=requirements_list,
-                                    company_id=vacancy_company_id,
-                                    created_by=request.added_by,
-                                )
-                        except Exception as eval_err:
-                            logger.warning(f"Rubric evaluation failed for candidate {cand_id}: {eval_err}")
-
-            except Exception as rubric_err:
-                logger.warning(f"Rubric evaluation setup failed: {rubric_err}")
-
-        new_total = current_count + added_count
-        at_capacity = new_total >= target_max
+        _r = await _add_candidates_to_vacancy_internal(
+            db=db,
+            job_id=vacancy_id,
+            company_id=str(vacancy_company_id or company_id),
+            candidate_ids=request.candidate_ids,
+            source=request.source,
+            added_by=request.added_by,
+            with_rubric=True,
+            rubric_svc=rubric_svc,
+        )
+        added_count = _r["added"]
+        skipped_ids = _r["skipped_ids"]
+        new_total = _r["new_total"]
+        at_capacity = _r["at_capacity"]
+        target_min = _r["target_min"]
+        target_max = _r["target_max"]
 
         goal_result = await _recruiter_agent.check_vacancy_candidate_goal(
             vacancy_id=vacancy_id,
@@ -639,7 +691,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error(f"Add candidates to vacancy failed: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Add candidates to vacancy failed: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/vacancy/{vacancy_id}/candidates/count", response_model=None)
@@ -678,4 +730,4 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Get vacancy candidates count failed: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Get vacancy candidates count failed: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")

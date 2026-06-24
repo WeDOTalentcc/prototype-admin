@@ -16,6 +16,7 @@ import {
 import { textStyles } from "@/lib/design-tokens"
 import { cn } from "@/lib/utils"
 import type { TransitionActionType } from "./stage-transition-utils"
+import { useAiPersona } from "@/hooks/company/use-ai-persona"
 
 interface StageTransitionRightPanelProps {
   needsMessageComposition: boolean | TransitionActionType | null
@@ -46,6 +47,8 @@ export function StageTransitionRightPanel({
   handleMessageChange,
   regenerateMessage,
 }: StageTransitionRightPanelProps) {
+  const { persona } = useAiPersona()
+  const personaName = persona?.name ?? "IA"
   return (
     <div className="w-1/2 bg-lia-bg-secondary/50 overflow-y-auto">
       <div className="p-5 space-y-4">
@@ -55,7 +58,7 @@ export function StageTransitionRightPanel({
               <Brain className="w-4 h-4 text-wedo-cyan mt-0.5 shrink-0" />
               <div>
                 <p className="text-xs text-lia-text-primary font-medium">
-                  LIA personalizou esta mensagem considerando:
+                  {`${personaName} personalizou`} considerando:
                 </p>
                 <p className="text-micro text-lia-text-secondary mt-0.5" aria-live="polite" aria-atomic="true">
                   nome, cargo, vaga e contexto do candidato
@@ -93,7 +96,7 @@ export function StageTransitionRightPanel({
 
             {isLoadingTemplates ? (
               <div className="flex items-center justify-center py-8" role="status" aria-live="polite" aria-label="Carregando...">
-                <Loader2 className="h-5 w-5 animate-spin motion-reduce:animate-none text-lia-text-disabled" />
+                <Loader2 className="h-5 w-5 animate-spin motion-reduce:animate-none text-lia-text-muted" />
               </div>
             ) : (
               <div className="relative" role="status" aria-live="polite" aria-label="Carregando...">
@@ -101,7 +104,7 @@ export function StageTransitionRightPanel({
                   <div className="absolute inset-0 bg-lia-bg-primary/80 rounded-xl flex items-center justify-center z-10" role="status" aria-live="polite" aria-label="Carregando...">
                     <div className="flex items-center gap-2" role="status" aria-live="polite" aria-label="Carregando...">
                       <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
-                      <span className="text-xs text-lia-text-secondary font-medium">LIA regenerando mensagem...</span>
+                      <span className="text-xs text-lia-text-secondary font-medium">Regenerando mensagem...</span>
                     </div>
                   </div>
                 )}
@@ -137,7 +140,7 @@ export function StageTransitionRightPanel({
         ) : (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <div className="w-12 h-12 bg-lia-bg-tertiary rounded-full flex items-center justify-center mb-3">
-              <ArrowRight className="w-6 h-6 text-lia-text-disabled" />
+              <ArrowRight className="w-6 h-6 text-lia-text-muted" />
             </div>
             <p className={textStyles.subtitle} aria-live="polite" aria-atomic="true">Apenas mover candidato</p>
             <p className={cn(textStyles.caption, "mt-1 max-w-[250px]")} aria-live="polite" aria-atomic="true">

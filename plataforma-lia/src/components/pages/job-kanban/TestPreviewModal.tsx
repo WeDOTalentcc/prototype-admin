@@ -29,7 +29,7 @@ export function TestPreviewModal({ open, onClose }: TestPreviewModalProps) {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-semibold mb-2">{t('testPreview.title')}</h2>
-              <p className="text-wedo-purple text-sm">{t('testPreview.jobInfo')}</p>
+              <p className="text-lia-text-muted text-sm">{t('testPreview.jobInfo')}</p>
             </div>
             <button
               onClick={onClose}

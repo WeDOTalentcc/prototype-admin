@@ -12,7 +12,11 @@ from typing import Any, Literal
 from app.domains.cv_screening.constants.wsi_constants import SENIORITY_DISTRIBUTIONS
 from app.domains.ai.services.llm import llm_service
 from app.shared.llm.safe_response import safe_llm_with_flag_async, LLMResponseEnvelope
-from app.shared.observability.fallback_metrics import inc_wsi_fallback
+from app.shared.observability.fallback_metrics import (
+    inc_wsi_fallback,
+    inc_wsi_generated,
+    inc_wsi_bias_block,
+)
 
 from .models import (
     safe_json_parse,
@@ -564,6 +568,8 @@ Retorne APENAS JSON válido (sem texto fora do JSON):
 
             # Estágio 1 — determinístico
             det_flags = self._validate_deterministic(question.question_text)
+            if "bias_marker_detected" in det_flags and _framework_label:
+                inc_wsi_bias_block(_framework_label)
             if det_flags:
                 logger.warning(
                     f"WSI F6.8 det. flags (attempt {attempt}/{MAX_RETRIES}) "
@@ -584,6 +590,7 @@ Retorne APENAS JSON válido (sem texto fora do JSON):
                     # Hardening C.1 -- REGRA 4 canary signal
                     if _framework_label:
                         inc_wsi_fallback(_framework_label, "validation_fail")
+                        inc_wsi_generated(_framework_label, "manual_review")
                     return question
                 continue
 
@@ -621,6 +628,7 @@ Retorne APENAS JSON válido (sem texto fora do JSON):
                         # Hardening C.1 -- REGRA 4 canary signal
                         if _framework_label:
                             inc_wsi_fallback(_framework_label, "validation_fail")
+                            inc_wsi_generated(_framework_label, "manual_review")
                         return question
                     continue
                 # Persiste metadados de ancoragem nos flags (auditável)
@@ -630,11 +638,15 @@ Retorne APENAS JSON válido (sem texto fora do JSON):
                     "evidence_in_jd": anchor.get("evidence_in_jd", ""),
                 }
 
+            if _framework_label:
+                inc_wsi_generated(_framework_label, "first_shot" if attempt == 1 else "retried")
             return question
 
         # Nunca deveria chegar aqui, mas retorna last_question por segurança
         if last_question:
             last_question.needs_manual_review = True
+        if _framework_label:
+            inc_wsi_generated(_framework_label, "manual_review")
         return last_question  # type: ignore[return-value]
 
     async def _generate_question_with_envelope(

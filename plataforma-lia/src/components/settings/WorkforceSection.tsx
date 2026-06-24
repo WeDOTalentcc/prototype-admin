@@ -18,16 +18,17 @@ import type { MonthlyPlanning } from"./goalsPlanningConstants"
 
 interface WorkforceSectionProps {
   hub: UseGoalsPlanningHubReturn
+  chatAffordance?: React.ReactNode
 }
 
-export function WorkforceSection({ hub }: WorkforceSectionProps) {
+export function WorkforceSection({ hub, chatAffordance }: WorkforceSectionProps) {
   const t = useTranslations("settings.workforce")
   const {
     selectedYear, setSelectedYear,
     departments, departmentsLoaded,
     saving,
     isEditingWorkforce, setIsEditingWorkforce,
-    fetchWorkforceData, saveWorkforceData, saveDepartmentPositions,
+    fetchHeadcountsForYear, saveDepartmentPositions,
     workforceStats, toggleDepartmentExpand,
     addDepartment, addPositionToDepartment,
     updatePositionSalary, updatePositionName,
@@ -41,10 +42,14 @@ export function WorkforceSection({ hub }: WorkforceSectionProps) {
         description={t("importDescription")}
         importEndpoint="/api/backend-proxy/workforce/entries/import"
         templateDownloadEndpoint="/api/backend-proxy/workforce/entries/import/template"
-        expectedFields={["department","month","year","planned","actual"]}
-        onImportSuccess={fetchWorkforceData}
+        expectedFields={["department","position","headcount","month","year"]}
+        onImportSuccess={() => fetchHeadcountsForYear(selectedYear)}
         disabled={!isEditingWorkforce}
       />
+
+      {chatAffordance ? (
+        <div className="flex justify-center -mt-1">{chatAffordance}</div>
+      ) : null}
 
       <Card className={cardStyles.default}>
         <CardHeader className="pb-2">

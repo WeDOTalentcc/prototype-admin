@@ -412,16 +412,19 @@ class JobCreationAPIClient:
             "location", "work_model", "seniority_level", "requirements",
             "responsibilities", "technical_requirements",
             "behavioral_competencies", "languages", "benefits", "variable_compensation", "status",
-            "employment_type", "manager", "manager_email", "salary_range",
+            "employment_type", "manager", "manager_email", "recruiter", "recruiter_email", "salary_range",
             "created_at", "updated_at",
         ]
+        # W0-A: recruiter identity from wizard session user
+        recruiter = _bp_str(job_data.get("recruiter"), max_chars=255)
+        recruiter_email = _bp_str(job_data.get("recruiter_email"), max_chars=255)
         # Sprint O.2: explicit timestamps (belt-and-suspenders with DB server_default)
         _now_utc = datetime.now(timezone.utc)
         _params_raw = [
             str(new_id), str(company_id), title, description, department,
             location, work_model, seniority, skills_list, resp_list,
             tech_reqs_jsonb, beh_comp_jsonb, languages_jsonb, benefits_jsonb, variable_comp_jsonb, "Rascunho",
-            employment_type, manager, manager_email, salary_range_jsonb,
+            employment_type, manager, manager_email, recruiter, recruiter_email, salary_range_jsonb,
             _now_utc, _now_utc,
         ]
 
@@ -494,11 +497,11 @@ class JobCreationAPIClient:
                     (id, company_id, title, description, department, location,
                      work_model, seniority_level, requirements, responsibilities,
                      technical_requirements, behavioral_competencies, languages, benefits, variable_compensation, status,
-                     employment_type, manager, manager_email, salary_range,
+                     employment_type, manager, manager_email, recruiter, recruiter_email, salary_range,
                      created_at, updated_at)
                     VALUES
                     (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s::jsonb, %s::jsonb, %s::jsonb, %s::jsonb, %s::jsonb, %s,
-                     %s, %s, %s, %s::jsonb,
+                     %s, %s, %s, %s, %s, %s::jsonb,
                      %s, %s)
                     RETURNING id
                     """,
@@ -635,6 +638,104 @@ class JobCreationAPIClient:
             "eligibility_questions": eligibility_questions or [],
         })
 
+    def activate_screening(self, job_id: int) -> "APIResponse":
+        """Ativa triagem automaticamente: seta screening_status=active no JSONB."""
+        if not self.base_url:
+            return self._activate_screening_local(job_id)
+        return self._request("POST", f"/api/v1/jobs/{job_id}/screening_config/activate")
+
+    def _activate_screening_local(self, job_id) -> "APIResponse":
+        """Dev-local: seta screening_config.status.screening_status=active via psycopg2."""
+        try:
+            conn = self._devlocal_conn()
+            try:
+                with conn.cursor() as cur:
+                    cur.execute(
+                        """
+                        UPDATE job_vacancies SET
+                            screening_config = COALESCE(screening_config, '{}'::jsonb) ||
+                                jsonb_build_object('status', jsonb_build_object('screening_status', 'active')),
+                            updated_at = NOW()
+                        WHERE id = %s
+                        RETURNING id
+                        """,
+                        (str(job_id),),
+                    )
+                    row = cur.fetchone()
+                    conn.commit()
+            finally:
+                conn.close()
+        except Exception as e:
+            logger.error("[JobCreationAPI] _activate_screening_local failed: %s", e, exc_info=True)
+            return APIResponse(success=False, error=f"activate_screening_local failed: {e}")
+        if not row:
+            return APIResponse(success=False, error=f"vaga {job_id} nao encontrada")
+        return APIResponse(success=True, data={"activated": True})
+
+    def update_affirmative_fields(
+        self,
+        job_id: int,
+        is_affirmative: bool,
+        affirmative_criteria_primary: Optional[str] = None,
+        affirmative_criteria_secondary: Optional[str] = None,
+        affirmative_description: Optional[str] = None,
+        affirmative_document_required: bool = True,
+        affirmative_document_types: Optional[List[str]] = None,
+    ) -> "APIResponse":
+        """Persiste campos de vaga afirmativa via UPDATE (nao vai no INSERT dev-local)."""
+        if not self.base_url:
+            return self._update_affirmative_local(
+                job_id, is_affirmative, affirmative_criteria_primary,
+                affirmative_criteria_secondary, affirmative_description,
+                affirmative_document_required, affirmative_document_types or [],
+            )
+        return self._request("PATCH", f"/api/v1/jobs/{job_id}", json_body={
+            "job": {
+                "is_affirmative": is_affirmative,
+                "affirmative_criteria_primary": affirmative_criteria_primary,
+                "affirmative_criteria_secondary": affirmative_criteria_secondary,
+                "affirmative_description": affirmative_description,
+                "affirmative_document_required": affirmative_document_required,
+                "affirmative_document_types": affirmative_document_types or [],
+            }
+        })
+
+    def _update_affirmative_local(
+        self, job_id, is_affirmative, criteria_primary, criteria_secondary,
+        description, document_required, document_types
+    ) -> "APIResponse":
+        """Dev-local: UPDATE direto via psycopg2."""
+        try:
+            conn = self._devlocal_conn()
+            try:
+                with conn.cursor() as cur:
+                    cur.execute(
+                        """
+                        UPDATE job_vacancies SET
+                            is_affirmative = %s,
+                            affirmative_criteria_primary = %s,
+                            affirmative_criteria_secondary = %s,
+                            affirmative_description = %s,
+                            affirmative_document_required = %s,
+                            affirmative_document_types = %s,
+                            updated_at = NOW()
+                        WHERE id = %s
+                        RETURNING id
+                        """,
+                        (is_affirmative, criteria_primary, criteria_secondary,
+                         description, document_required, document_types, str(job_id)),
+                    )
+                    row = cur.fetchone()
+                    conn.commit()
+            finally:
+                conn.close()
+        except Exception as e:
+            logger.error("[JobCreationAPI] _update_affirmative_local failed: %s", e, exc_info=True)
+            return APIResponse(success=False, error=f"update_affirmative_local failed: {e}")
+        if not row:
+            return APIResponse(success=False, error=f"vaga {job_id} nao encontrada")
+        return APIResponse(success=True, data={"updated": True})
+
     def _save_screening_config_local(
         self, job_id, questions: List[Dict[str, Any]], mode: str,
         eligibility: List[Dict[str, Any]],
@@ -670,6 +771,101 @@ class JobCreationAPIClient:
             return APIResponse(success=False, error=f"dev-local screening_config failed: {e}")
         if not row:
             return APIResponse(success=False, error=f"vaga {job_id} não encontrada")
+        return APIResponse(success=True, data={"saved": len(questions)})
+
+
+    def save_question_set(
+        self,
+        job_id: str,
+        questions: List[Dict[str, Any]],
+        mode: str = "compact",
+        seniority_level: Optional[str] = None,
+    ) -> "APIResponse":
+        """Cria question set versionado no lia-agent-system.
+
+        Chamado pelo publish do wizard para garantir que a triagem use as
+        perguntas aprovadas pelo recrutador (HITL #2) em vez de regenerar
+        do zero via WSIQuestionGenerator.
+
+        Endpoint destino: POST /api/v1/wsi/questions/save
+        (lia-agent-system, nao Rails -- usa LIA_API_URL se disponivel).
+        """
+        payload: Dict[str, Any] = {
+            "job_id": str(job_id),
+            "questions": questions,
+            "source": "wizard_approved",
+        }
+        if seniority_level:
+            payload["seniority_level"] = seniority_level
+        if mode:
+            payload["mode"] = mode
+
+        # Tentar lia-agent-system diretamente; fallback: sem question_set
+        # (triagem usara regeneracao -- nao e bloqueador de publicacao).
+        lia_url = (
+            getattr(getattr(self.settings, "lia_api", None), "base_url", None)
+            or _os.environ.get("LIA_API_URL", "")
+            or _os.environ.get("FASTAPI_URL", "")
+        )
+        if not lia_url:
+            # Dev-local: gravar via devlocal helper (psycopg2 direto)
+            return self._save_question_set_local(job_id, questions, mode, seniority_level)
+
+        url = f"{lia_url.rstrip('/')}/api/v1/wsi/questions/save"
+        try:
+            import httpx as _httpx
+            headers = self._get_headers()
+            with _httpx.Client(timeout=self.timeout) as client:
+                resp = client.post(url, json=payload, headers=headers)
+                resp.raise_for_status()
+                return APIResponse(success=True, data=resp.json())
+        except Exception as exc:  # noqa: BLE001
+            logger.error(
+                "[JobCreationAPI] save_question_set failed: %s", exc, exc_info=True,
+                extra={"job_id": job_id},
+            )
+            return APIResponse(success=False, error=str(exc))
+
+    def _save_question_set_local(
+        self,
+        job_id: str,
+        questions: List[Dict[str, Any]],
+        mode: str,
+        seniority_level: Optional[str],
+    ) -> "APIResponse":
+        """Dev-local: insere diretamente na tabela screening_question_sets."""
+        import json as _json
+        import uuid as _uuid
+        try:
+            conn = self._devlocal_conn()
+            try:
+                with conn.cursor() as cur:
+                    set_id = str(_uuid.uuid4())
+                    cur.execute(
+                        """
+                        INSERT INTO screening_question_sets
+                            (id, job_vacancy_id, questions, source, created_at, updated_at)
+                        VALUES (%s, %s, %s::jsonb, %s, NOW(), NOW())
+                        ON CONFLICT (job_vacancy_id) DO UPDATE SET
+                            questions = EXCLUDED.questions,
+                            source = EXCLUDED.source,
+                            updated_at = NOW()
+                        """,
+                        (
+                            set_id,
+                            str(job_id),
+                            _json.dumps(questions, ensure_ascii=False),
+                            "wizard_approved",
+                        ),
+                    )
+                    conn.commit()
+            finally:
+                conn.close()
+        except Exception as exc:  # noqa: BLE001
+            logger.warning(
+                "[JobCreationAPI] _save_question_set_local: tabela ausente ou erro: %s", exc
+            )
+            return APIResponse(success=False, error=f"dev-local question_set failed: {exc}")
         return APIResponse(success=True, data={"saved": len(questions)})
 
     # -------------------------------------------------------------------

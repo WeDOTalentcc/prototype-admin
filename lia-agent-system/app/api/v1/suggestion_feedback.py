@@ -23,6 +23,7 @@ from app.shared.types import WeDoBaseModel
 from typing import Annotated
 from fastapi import Path
 from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
+from app.shared.errors import LIAError
 
 router = APIRouter(prefix="/suggestion-feedback", tags=["Suggestion Feedback"])
 logger = logging.getLogger(__name__)
@@ -105,7 +106,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Failed to record suggestion feedback: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/{company_id}/stats", response_model=SuggestionStatsResponse)
@@ -142,7 +143,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
         raise
     except Exception as e:
         logger.error(f"Failed to get suggestion stats: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/{company_id}/adjustments", response_model=list[AdjustmentResponse])
@@ -179,6 +180,6 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
         raise
     except Exception as e:
         logger.error(f"Failed to get learned adjustments: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 reorder_collection_before_item(router)

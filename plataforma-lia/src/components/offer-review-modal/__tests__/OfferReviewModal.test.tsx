@@ -211,15 +211,19 @@ describe("OfferReviewModal", () => {
       await waitFor(() => expect(screen.getByText("Proposta enviada com sucesso!")).toBeTruthy())
     })
 
-    it("clique em 'Envio Manual' chama prepareManual() e emite lia:open_send_email_modal", async () => {
+    it("clique em 'Envio Manual' chama prepareManual() e emite lia:open_modal com modal_id=send_email_offer", async () => {
       vi.mocked(useOfferDraftStore).mockReturnValue(mockStore() as ReturnType<typeof useOfferDraftStore>)
-      const events: Event[] = []
-      window.addEventListener("lia:open_send_email_modal", (e) => events.push(e))
+      const events: CustomEvent[] = []
+      function listener(e: Event) { events.push(e as CustomEvent) }
+      window.addEventListener("lia:open_modal", listener)
       render(<OfferReviewModal />)
       fireEvent.click(screen.getByRole("button", { name: /Envio Manual/ }))
       await waitFor(() => expect(mockPrepareManual).toHaveBeenCalledOnce())
-      await waitFor(() => expect(events).toHaveLength(1))
-      window.removeEventListener("lia:open_send_email_modal", (e) => events.push(e))
+      await waitFor(() => {
+        const offerEvents = events.filter(e => e.detail?.modal_id === "send_email_offer")
+        expect(offerEvents).toHaveLength(1)
+      })
+      window.removeEventListener("lia:open_modal", listener)
     })
   })
 

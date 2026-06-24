@@ -173,6 +173,7 @@ export interface BulkDataRequestInfo {
   candidateId: string
   jobVacancyId?: string
   status: DataRequestStatus
+  isBlocking: boolean
   fieldsRequested: RequestedField[]
   fieldsCompleted: RequestedField[]
   expiresAt: string | null

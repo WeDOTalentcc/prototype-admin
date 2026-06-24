@@ -1,4 +1,70 @@
 {
+  "dynamicGreetings": {
+    "timeOfDay": {
+      "morning": "Good morning",
+      "afternoon": "Good afternoon",
+      "evening": "Good evening"
+    },
+    "chat": {
+      "curated": [
+        "How can I help today?",
+        "Where do we start?",
+        "What are we solving now?",
+        "Ready to find the next great hire?",
+        "Let's recruit smarter, shall we?"
+      ],
+      "curatedNamed": [
+        "Where do we start?",
+        "What are we solving today?",
+        "Ready to find the next great hire?",
+        "Let's recruit smarter, shall we?"
+      ],
+      "context": {
+        "interviewsAndFeedback": "{greeting}, {name}. You have {interviews, plural, one {# interview} other {# interviews}} today and {feedback, plural, one {# candidate awaiting} other {# candidates awaiting}} feedback.",
+        "interviewsAndFeedbackAnon": "{greeting}. You have {interviews, plural, one {# interview} other {# interviews}} today and {feedback, plural, one {# candidate awaiting} other {# candidates awaiting}} feedback.",
+        "interviewsToday": "{greeting}, {name}. You have {count, plural, one {# interview} other {# interviews}} today.",
+        "interviewsTodayAnon": "{greeting}. You have {count, plural, one {# interview} other {# interviews}} today.",
+        "candidatesToContact": "{greeting}, {name}. {count, plural, one {# candidate needs} other {# candidates need}} contact today.",
+        "candidatesToContactAnon": "{greeting}. {count, plural, one {# candidate needs} other {# candidates need}} contact today.",
+        "offersPending": "{greeting}, {name}. {count, plural, one {# offer is} other {# offers are}} awaiting your decision.",
+        "offersPendingAnon": "{greeting}. {count, plural, one {# offer is} other {# offers are}} awaiting your decision.",
+        "awaitingFeedback": "{greeting}, {name}. {count, plural, one {# candidate is} other {# candidates are}} awaiting your feedback.",
+        "awaitingFeedbackAnon": "{greeting}. {count, plural, one {# candidate is} other {# candidates are}} awaiting your feedback.",
+        "allClear": "{greeting}, {name}. All caught up. Want to get ahead on something?",
+        "allClearAnon": "{greeting}. All caught up. Want to get ahead on something?"
+      }
+    },
+    "funnel": {
+      "curated": [
+        "Let's search intelligently.",
+        "Who are you looking for today?",
+        "Let's find the right talent.",
+        "Describe the ideal profile and I'll find it."
+      ],
+      "context": {
+        "openJobsAndContacts": "You have {jobs, plural, one {# open job} other {# open jobs}} and {contacts, plural, one {# candidate to contact} other {# candidates to contact}}. Where do we start?",
+        "openJobs": "You have {count, plural, one {# open job} other {# open jobs}}. Want me to find candidates?",
+        "candidatesToContact": "{count, plural, one {# candidate is} other {# candidates are}} awaiting contact. Or search a new profile."
+      }
+    }
+  },
+  "rrp": {
+    "showMore": "Show more ({count})",
+    "expandFullscreen": "Expand to fullscreen",
+    "candidateYears": "{count} yrs",
+    "candidateUnverified": "No IA opinion yet",
+    "funnelTotal": "Total: {count}",
+    "funnelConversion": "Conversion: {pct}%",
+    "why": "why?",
+    "hide": "hide",
+    "confidenceLine": "Confidence: {level} — {basis}",
+    "unverifiedDefault": "Unverified estimate.",
+    "weight": "(weight {pct}%)",
+    "sources": "{count, plural, one {# source} other {# sources}}",
+    "showingOf": "Showing {shown} of {total}",
+    "unsupportedBlock": "(unsupported block in this version)",
+    "blockError": "(couldn't display this block)"
+  },
   "workflowRail": {
     "createJob": {
       "label": "Create job",
@@ -176,7 +242,6 @@
     },
     "items": {
       "conversar": "Chat",
-      "decidir": "Decide",
       "recrutar": "Recruit",
       "chatLia": "Chat",
       "tasks": "Tasks",
@@ -184,8 +249,13 @@
       "talentPipeline": "Talent Pipeline",
       "newTalentSearch": "New search",
       "pipelineView": "Pipeline View",
-      "agentStudio": "Agent Studio",
-      "modules": "Modules"
+      "modules": "Modules",
+      "projects": "Projects",
+      "agentes": "Agents",
+      "marketplace": "Marketplace",
+      "decidir": "Decide",
+      "indicadores": "Indicators",
+      "relatorios": "Reports"
     },
     "filters": {
       "all": "All",
@@ -217,6 +287,15 @@
       "logoSmallAlt": "WeDo",
       "expandSubmenu": "Expand submenu",
       "collapseSubmenu": "Collapse submenu"
+    },
+    "focusedJob": {
+      "label": "In Focus",
+      "dismiss": "Close focused job",
+      "candidates": "Candidates",
+      "configure": "Configure job",
+      "agents": "Agents",
+      "interviews": "Interviews",
+      "today": "today"
     },
     "user": {
       "admin": "Administrator",
@@ -285,8 +364,9 @@
   },
   "chat": {
     "agentActivity": {
-      "working": "Working",
-      "actions": "{count, plural, one {# action} other {# actions}}"
+      "thinking": "Thinking",
+      "actions": "{count, plural, one {# action} other {# actions}}",
+      "steps": "{count, plural, one {# step} other {# steps}}"
     },
     "messageActions": {
       "copyTitle": "Copy",
@@ -712,8 +792,6 @@
       "mentionJobCandidate": "Mention job or candidate",
       "suggestionsTitle": "Query suggestions",
       "suggestionsLabel": "Open query suggestions",
-      "contextConfig": "Context settings",
-      "contextConfigLabel": "Conversation settings",
       "auto": "Auto"
     },
     "suggestionsPanel": {
@@ -726,22 +804,6 @@
       "hint": "Click to insert into prompt",
       "dynamicLoading": "Generating suggestions...",
       "dynamicTitle": "Suggestions for you"
-    },
-    "contextPanel": {
-      "title": "Conversation Context",
-      "helpText": "Set the conversation focus. In Job or Candidate mode, IA uses specific data to respond more accurately.",
-      "clearContext": "Clear",
-      "recentJobs": "Recent Jobs",
-      "recentCandidates": "Recent Candidates",
-      "emptyHint": "Browse jobs or candidates so they appear here as shortcuts.",
-      "entityJob": "Job",
-      "entityCandidate": "Candidate",
-      "modeGeneral": "General Conversation",
-      "modeGeneralDesc": "Ask about any topic",
-      "modeJob": "Job Focus",
-      "modeJobDesc": "IA responds using data from the selected job",
-      "modeCandidate": "Candidate Focus",
-      "modeCandidateDesc": "IA responds using data from the selected candidate"
     },
     "queryCategories": {
       "metricas": "Metrics",
@@ -806,7 +868,7 @@
     "emptyState": {
       "settings": {
         "heading": "Set up your company",
-        "subtitle": "Tell LIA about your company to personalize the whole hiring process.",
+        "subtitle": "Tell IA about your company to personalize the whole hiring process.",
         "chips": {
           "profile": {
             "label": "Company profile",
@@ -912,7 +974,11 @@
         "divulgacao": "Publishing",
         "requisitos": "Requirements",
         "targeting": "Targeting",
-        "metricas": "Metrics"
+        "metricas": "Metrics",
+        "confidencialidade": "Confidentiality",
+        "processo": "Hiring Process",
+        "tags": "Tags",
+        "timestamps": "Dates"
       }
     },
     "tableColumns": {
@@ -995,6 +1061,7 @@
       "workModel": "Work Model",
       "seniority": "Seniority",
       "location": "Location",
+      "noLocationsAvailable": "No locations available",
       "department": "Department",
       "recruiter": "Recruiter",
       "noRecruiters": "No recruiters with jobs at the moment",
@@ -1089,7 +1156,8 @@
       "Arquivada": "Archived"
     },
     "tabs": {
-      "agents": "Agents"
+      "agents": "Agents",
+      "indicators": "Indicators"
     },
     "agents": {
       "header": "Agents attached to this job",
@@ -1143,7 +1211,10 @@
           "generic": "Failed to attach agent. Try again."
         }
       }
-    }
+    },
+    "emptyAtsTitle": "No ATS-imported jobs yet",
+    "emptyAtsDescription": "Import jobs from your ATS (Gupy, Greenhouse or spreadsheet) to manage them here.",
+    "emptyAtsAction": "Import jobs"
   },
   "kanban": {
     "loading": "Loading...",
@@ -1698,7 +1769,18 @@
       "compensation": "Compensation",
       "process": "Process",
       "other": "Other"
-    }
+    },
+    "sortFieldScore": "AI Score",
+    "sortFieldName": "Name",
+    "sortFieldAppliedDate": "Applied Date",
+    "sortFieldFitScore": "CV Match",
+    "sortFieldNotaLiaGeral": "Overall AI Score",
+    "sortOrderAsc": "Ascending",
+    "sortOrderDesc": "Descending",
+    "sortLabel": "Sort by",
+    "scheduleMessage": "Schedule message",
+    "indicators": "Indicators",
+    "moveTo": "Move to"
   },
   "pipeline": {
     "title": "Talent Pipeline",
@@ -1866,9 +1948,16 @@
       "openEnrichment": "Continue enrichment",
       "openWsi": "Configure WSI",
       "openApproval": "Review approval",
+      "viewApprovalStatus": "View approval status",
       "openPublish": "Publish job",
+      "openStatus": "Manage status",
       "openKanban": "Open kanban",
-      "openClosed": "View closure"
+      "openClosed": "View closure",
+      "requestApproval": "Request approval",
+      "duplicateJob": "Duplicate job",
+      "reactivateJob": "Reactivate job",
+      "duplicateJobSuccess": "Job duplicated successfully",
+      "reactivateJobSuccess": "Job reactivated successfully"
     },
     "empty": {
       "noVacancies": "No jobs in this stage",
@@ -1881,7 +1970,9 @@
       "title": "Agent Studio | WeDoTalent",
       "description": "Create sourcing agents from sector templates. Configure calibration and automation.",
       "layoutDescription": "Create and manage intelligent sourcing agents",
-      "layoutTitle": "Agent Studio"
+      "layoutTitle": "Agent Studio",
+      "marketplaceTitle": "Agent Marketplace",
+      "marketplaceDescription": "Explore ready-to-use agents from WeDOTalent marketplace"
     },
     "studio": {
       "title": "Agent Studio",
@@ -1945,7 +2036,7 @@
       "myAgentsCustom": "My Agents",
       "noCustomAgentsYet": "No agents created yet",
       "noCustomAgentsHint": "Choose a template below or describe to IA what you need",
-      "advancedForm": "Advanced form (technical mode)",
+      "advancedForm": "Advanced technical form",
       "status": {
         "active": "Active",
         "paused": "Paused",
@@ -1972,8 +2063,6 @@
         "cloneReasoning": "Clone the reasoning of your best evaluators",
         "cloneDesc": "Capture how a team specialist evaluates candidates. The Digital Twin learns the criteria and works as an automatic 'second opinion' in screening.",
         "label": "Digital Twins",
-        "headerTitle": "Digital Twins",
-        "subheader": "Create an AI agent that learns the evaluation pattern of your best experts.",
         "createCta": "Create Digital Twin",
         "emptyState": {
           "title": "No Digital Twin created yet",
@@ -2365,7 +2454,13 @@
         "templateSectionHint": "Pick one and adjust later.",
         "createManualDescription": "Configure every detail yourself: name, instructions, tools and persona. Best for those already familiar with agent concepts.",
         "approachGroupAriaLabel": "How to create the agent",
-        "capabilitiesLabel": "What it will do"
+        "capabilitiesLabel": "What it will do",
+        "channelsTitle": "Service channels",
+        "channelsHelper": "You can adjust the channels later on the agent card.",
+        "channelVoice": "Phone call",
+        "channelVoip": "In-browser voice",
+        "channelWhatsapp": "WhatsApp",
+        "channelTriagemInvite": "Screening invite"
       },
       "sandbox": {
         "title": "Simulate: {agent}",
@@ -2498,7 +2593,10 @@
         "step3Title": "All set!",
         "step3Desc": "Track the service funnel and activate more agents whenever you want.",
         "done": "Done"
-      }
+      },
+      "templatesInMarketplace": "Templates available in the Marketplace",
+      "templatesInMarketplaceHint": "Explore ready-made templates to customize and create new agents",
+      "viewTemplates": "View templates"
     },
     "status": {
       "active": "Active",
@@ -2536,7 +2634,11 @@
       "disableVoip": "Disable browser voice (VoIP) on agent {name}",
       "triagemInvite": "Screening invite",
       "enableTriagemInvite": "Enable screening invite creation on agent {name}",
-      "disableTriagemInvite": "Disable screening invite creation on agent {name}"
+      "disableTriagemInvite": "Disable screening invite creation on agent {name}",
+      "channelBadgeVoice": "Voice",
+      "channelBadgeVoip": "Web Voice",
+      "channelBadgeWhatsapp": "WhatsApp",
+      "channelBadgeTriagem": "Screening"
     },
     "createModal": {
       "titleWithTemplate": "Create Agent — {template}",
@@ -2666,7 +2768,22 @@
       "tryAnotherSearch": "Try another search term",
       "noAgentsPublished": "The marketplace has no published agents yet",
       "confirmUninstallTitle": "Uninstall agent?",
-      "viewSwitcher": "Marketplace view"
+      "viewSwitcher": "Marketplace view",
+      "sectionAgents": "WeDo Agents",
+      "sectionTemplates": "Templates",
+      "templateBadge": "Template",
+      "useTemplate": "Use template",
+      "templateCloneSuccess": "Agent created from template",
+      "templateComingSoon": "Coming soon",
+      "active": "Active",
+      "wedoAgentsSubtitle": "Official WeDOTalent platform agents",
+      "templatesSubtitle": "Customize a template to create your agent",
+      "sectionRoadmap": "Coming soon",
+      "roadmapSubtitle": "Platform features in development",
+      "roadmapBadge": "Coming soon",
+      "activate": "Activate",
+      "uninstallSuccess": "Agent uninstalled successfully",
+      "uninstallError": "Error uninstalling agent"
     },
     "calibration": {
       "completed": "Calibration completed",
@@ -3036,7 +3153,11 @@
         "job_management": "Jobs",
         "automation": "Automation",
         "jobManagement": "Jobs",
-        "general": "General"
+        "general": "General",
+        "interview_intelligence": "Interview Intelligence",
+        "talent_intelligence": "Talent Intelligence",
+        "workforce": "Workforce",
+        "voice": "Voice"
       },
       "triggers": {
         "manual": "Manual",
@@ -3543,7 +3664,21 @@
       "hide": "Hide",
       "candidatesHidden": "Candidates hidden",
       "candidatesHiddenDesc": "{count} candidate(s) hidden from search",
-      "saveToBase": "Save to Base ({count})"
+      "saveToBase": "Save to Base ({count})",
+      "addTags": "Add tags",
+      "removeTags": "Remove tags",
+      "addTagsDialog": "Add tags to selected candidates",
+      "removeTagsDialog": "Remove tags from selected candidates",
+      "tagInputPlaceholder": "e.g. senior, python, remote (comma-separated)",
+      "tagsAdded": "Tags added",
+      "tagsAddedDesc": "{count} candidate(s) updated",
+      "tagsRemoved": "Tags removed",
+      "tagsRemovedDesc": "{count} candidate(s) updated",
+      "export": "Export",
+      "exporting": "Exporting...",
+      "exportSuccess": "Candidates exported successfully",
+      "exportFallback": "Exported as CSV (XLSX temporarily unavailable)",
+      "exportError": "Error exporting candidates"
     },
     "controls": {
       "sortScoreDesc": "Highest Score",
@@ -3559,7 +3694,7 @@
     },
     "loadMore": {
       "loading": "Loading...",
-      "loadMoreCandidates": "Load 10 more candidates",
+      "loadMoreCandidates": "Load {count} more candidates",
       "showingOf": "{displayed} of {total} candidates",
       "allLoaded": "All {total} candidates loaded"
     },
@@ -3631,7 +3766,11 @@
       "first": "First",
       "previous": "Previous",
       "next": "Next",
-      "last": "Last"
+      "last": "Last",
+      "searchSuggestionsTitle": "Tips to refine your search:",
+      "searchSuggestion1": "Use broader terms or synonyms",
+      "searchSuggestion2": "Adjust experience, location, or salary filters",
+      "searchSuggestion3": "Try searching by specific skills instead of job title"
     },
     "profile": {
       "avatarAlt": "{name}'s photo",
@@ -3859,7 +3998,12 @@
       "yearsOld": "{age} years",
       "more": "+{count} more",
       "noCredits": "No credit usage",
-      "defaultCredits": "1 cred + $0.01 Apify/cand"
+      "defaultCredits": "1 cred + $0.01 Apify/cand",
+      "scoreCells": {
+        "noEvaluation": "No evaluation",
+        "noEvaluationDesc": "This candidate has not yet participated in any selection process.",
+        "liaScoreInfo": "The Score is calculated when the candidate is evaluated for a specific position."
+      }
     },
     "scoreCells": {
       "noEvaluation": "No evaluation",
@@ -4005,18 +4149,10 @@
       "viewLinkedinProfile": "View LinkedIn profile",
       "professionalProfile": "Professional profile",
       "interactionHistory": "Interaction History",
-      "emailSent2Days": "📧 Email sent 2 days ago",
-      "callScheduledTomorrow": "📞 Call scheduled for tomorrow at 2pm",
       "scheduleInterview": "Schedule Interview",
       "evaluation": "Evaluation",
       "dragToResize": "Drag to resize",
-      "skillLeadership": "Leadership",
-      "skillCommunication": "Communication",
-      "skillTeamwork": "Teamwork",
-      "skillProblemSolving": "Problem solving",
-      "current": "Present",
-      "expDesc1": "Web application development with React, Node.js and PostgreSQL",
-      "expDesc2": "Fullstack development and systems architecture"
+      "current": "Present"
     },
     "modals": {
       "defaultJobTitle": "Current job",
@@ -4581,7 +4717,43 @@
       "salaryGrantConfirmBodyRevoke": "This person will no longer be able to view salary data. Confirm?",
       "salaryGrantConfirmActionGrant": "Grant",
       "salaryGrantConfirmActionRevoke": "Revoke",
-      "salaryGrantConfirmCancel": "Cancel"
+      "salaryGrantConfirmCancel": "Cancel",
+      "piiVisibility": {
+        "title": "Sensitive data visibility (PII)",
+        "subtitle": "Choose which fields this user can see. Inherited follows the role default.",
+        "roleDefaultsTitle": "PII visibility by role",
+        "roleDefaultsSubtitle": "Per-role default. The per-user override above takes precedence.",
+        "groupSalary": "Compensation",
+        "groupSensitive": "Sensitive data",
+        "stateInherited": "Inherited",
+        "stateShow": "Show",
+        "stateHide": "Hide",
+        "fields": {
+          "current_salary": "Current salary",
+          "desired_salary_min": "Desired salary (min)",
+          "desired_salary_max": "Desired salary (max)",
+          "salary_expectation_clt": "Salary expectation (CLT)",
+          "salary_expectation_pj": "Salary expectation (PJ)",
+          "salary_expectation_freelance": "Salary expectation (freelance)",
+          "cpf": "Tax ID (CPF)",
+          "date_of_birth": "Date of birth",
+          "address_street": "Address (street)",
+          "address_number": "Address (number)",
+          "address_zip": "ZIP code",
+          "address_complement": "Address (complement)",
+          "secondary_email": "Secondary email",
+          "secondary_phone": "Secondary phone",
+          "personal_emails": "Personal emails",
+          "business_emails": "Business emails",
+          "best_personal_email": "Best personal email",
+          "best_business_email": "Best business email",
+          "vacancy_salary": "Vacancy salary"
+        },
+        "saving": "Saving...",
+        "saveSuccess": "Defaults saved!",
+        "saveError": "Error saving defaults.",
+        "groupVacancy": "Vacancy"
+      }
     },
     "departments": {
       "title": "Departments",
@@ -5388,7 +5560,6 @@
       "hiringPolicies": {
         "loading": "Loading policies...",
         "title": "Hiring Policies",
-        "configured": "{pct}% configured",
         "complete": "Complete",
         "pending": "Pending",
         "configuredStatus": "Configured",
@@ -5432,7 +5603,6 @@
         "trigger": "Trigger: {value}",
         "actions": "{count} actions",
         "executions": "{count} executions",
-        "successPct": "{pct}% success",
         "statusActive": "Active",
         "statusPaused": "Paused",
         "edit": "Edit",
@@ -5463,7 +5633,7 @@
         "pauseAutomation": "Pause automation",
         "builderTitleEdit": "Edit automation",
         "builderTitleNew": "New automation",
-        "createWithLia": "Create with LIA",
+        "createWithLia": "Create with IA",
         "deleteConfirm": "Are you sure you want to delete this automation?",
         "duplicateSuffix": "(copy)",
         "emptyTitle": "No automations created",
@@ -5684,7 +5854,12 @@
         "filterWhatsapp": "WhatsApp",
         "templatesFoundCount": "{count} template(s) found",
         "tryAdjustFilters": "Try adjusting the filters.",
-        "viewing": "Viewing"
+        "viewing": "Viewing",
+        "newTemplate": "+ New Template",
+        "subjectPlaceholder": "E.g.: {{company_name}} — Interview Invitation: {{job_title}}",
+        "bodyPlaceholder": "Write the content of your email or message...",
+        "ccEmailsLabel": "Additional recipients (CC)",
+        "ccEmailsPlaceholder": "manager@company.com, hr@company.com"
       },
       "signature": {
         "title": "Default Email Signature",
@@ -5822,15 +5997,57 @@
         "cooldownAria": "Cooldown between alerts for {type}",
         "toggleAria": "Enable or disable {type} alert",
         "channelEmail": "Email",
-        "channelInApp": "In-app",
+        "channelInApp": "Bell (panel)",
         "channelTeams": "Teams",
         "channelWhatsapp": "WhatsApp",
+        "groupRecruiter": "Recruiter alerts",
+        "groupRecruiterHint": "Internal notifications about your work and the system.",
+        "groupCandidate": "Candidate alerts",
+        "groupCandidateHint": "Messages sent directly to the candidate.",
+        "channelsLabel": "Send via",
+        "cooldownLabel": "Repeat at most every",
+        "cooldownUnit": "h",
+        "disabledHint": "Turn on to configure this alert.",
         "unit": {
           "count": "times",
           "hours": "hours",
           "days": "days",
           "percent": "%"
-        }
+        },
+        "generalTitle": "General notifications",
+        "generalSubtitle": "Control when and how to receive briefings and summaries",
+        "frequencyLabel": "Briefing frequency",
+        "frequency": {
+          "daily": "Daily",
+          "twice_daily": "Twice daily",
+          "weekly": "Weekly",
+          "monthly": "Monthly"
+        },
+        "digestLabel": "Weekly digest",
+        "digestHint": "Receive a consolidated metrics summary every week",
+        "personalFrequencyTitle": "My frequency",
+        "personalFrequencyLabel": "My digest frequency",
+        "personalFrequencyActive": "You have a personal setting active",
+        "personalFrequencyDefault": "Using company default",
+        "resetToCompanyDefault": "Use company default",
+        "activeCount": "{active} of {total} active",
+        "activeCountAria": "{active} of {total} alerts active",
+        "viewHistory": "View notification history",
+        "comingSoon": "Coming soon"
+      },
+      "dataChannel": {
+        "title": "Data Collection Channel",
+        "description": "Default channel for requesting data from candidates. Can be overridden per vacancy.",
+        "channelEmail": "Email",
+        "channelEmailDesc": "Sends data portal link via email",
+        "channelWeb": "Web Portal",
+        "channelWebDesc": "Candidate accesses data portal via direct link",
+        "channelWhatsapp": "WhatsApp",
+        "channelWhatsappDesc": "Collection via interactive WhatsApp message",
+        "channelVoice": "Voice Call",
+        "channelVoiceDesc": "Collection via AI-powered phone call",
+        "saveSuccess": "Data collection channel updated successfully",
+        "saveError": "Failed to update data collection channel"
       }
     },
     "integrations": {
@@ -5952,7 +6169,6 @@
         "executions": "Executions",
         "approved": "Approved",
         "blocked": "Blocked",
-        "ofTotal": "{pct}% of total",
         "activeAgents": "Active agents",
         "avgConfidence": "Average confidence: {pct}%",
         "executionsPerDay": "Executions per day",
@@ -5978,7 +6194,50 @@
       "googleConnectError": "Error connecting with Google",
       "companyNotIdentified": "Company not identified",
       "emptyCategory": "No integrations in this category",
-      "emptyCategoryHint": "New integrations are added regularly"
+      "emptyCategoryHint": "New integrations are added regularly",
+      "embedding": {
+        "title": "AI Semantic Search",
+        "description": "Text vectorization used in candidate search, similar jobs, chat memory, and similar JDs.",
+        "providerLabel": "Provider",
+        "providerDefault": "OpenAI (default)",
+        "byokConfigured": "Own key configured — active",
+        "byokManaged": "Using WeDO managed key",
+        "showSurfaces": "View surfaces",
+        "hideSurfaces": "Hide",
+        "surfacesTableLabel": "Embedding surfaces and PII policies",
+        "colSurface": "Surface",
+        "colContent": "What is embedded",
+        "colPiiPolicy": "PII Policy",
+        "presidioNote": "Structured PII = entity names recognized by Microsoft Presidio are masked before sending to the embedding provider.",
+        "surface": {
+          "chatMemory": {
+            "name": "Chat memory",
+            "content": "Conversation (question + answer)",
+            "piiPolicy": "Structured + names (Presidio)"
+          },
+          "candidateSearch": {
+            "name": "Candidate search",
+            "content": "Recruiter search text",
+            "piiPolicy": "Structured"
+          },
+          "similarJobs": {
+            "name": "Similar jobs",
+            "content": "Job description text",
+            "piiPolicy": "Structured"
+          },
+          "jdSimilar": {
+            "name": "Similar JD",
+            "content": "Job description (JD)",
+            "piiPolicy": "Structured"
+          },
+          "domainContent": {
+            "name": "Domain content",
+            "content": "Internal content",
+            "piiPolicy": "Structured"
+          }
+        }
+      },
+      "tabJobBoards": "Job Boards"
     },
     "page": {
       "title": "Settings",
@@ -6500,14 +6759,14 @@
       "ariaLabel": "Activate onboarding with IA"
     },
     "consumo": {
-      "title": "Consumption",
-      "description": "Track your platform credit and service usage.",
-      "sidebarLabel": "Consumption",
+      "title": "Plan & Billing",
+      "description": "Contracted plan, credit consumption, invoices, and billing details.",
+      "sidebarLabel": "Plan & Billing",
       "tabs": {
-        "ia": "AI Credits",
-        "pearch": "Pearch",
-        "agentes": "Agents",
-        "billing": "Billing"
+        "plano": "Plan",
+        "consumo": "Consumption",
+        "faturas": "Invoices",
+        "cobranca": "Billing"
       },
       "pearch": {
         "description": "Credits consumed in global candidate searches via Pearch.",
@@ -6598,8 +6857,8 @@
       "almostComplete": "Almost complete",
       "profileCompletePending": "Profile {progress}% complete · {count} pending fields",
       "sectionsToReview": "{count} sections to review",
-      "askLiaToFillTitle": "Ask LIA to fill in {section}",
-      "askLiaShort": "Ask LIA",
+      "askLiaToFillTitle": "Ask IA to fill in {section}",
+      "askLiaShort": "Ask IA",
       "fields": {
         "blocks": {
           "basic": "Company Profile",
@@ -6636,7 +6895,7 @@
           "leadership_style": "Leadership Style",
           "growth_opportunities": "Growth Opportunities",
           "team_dynamics": "Team Dynamics",
-          "evp_bullets": "EVP"
+          "evp_bullets": "EVP (Value Proposition)"
         },
         "tech": {
           "tech_stack": "Tech Stack",
@@ -6652,6 +6911,15 @@
           "communication_channels": "Communication Channels",
           "import_spreadsheet": "Import Spreadsheet"
         }
+      },
+      "cultureApproval": {
+        "title": "Auto-generated culture profile — pending approval",
+        "description": "This profile was extracted from your website by AI and hasn't been reviewed yet. Approve it so IA can use it in agent context, or reject to keep it out.",
+        "approve": "Approve",
+        "reject": "Reject",
+        "approvedToast": "Culture profile approved — IA can use it now.",
+        "rejectedToast": "Culture profile rejected — it stays out of agent context.",
+        "errorToast": "Couldn't update approval. Please try again."
       }
     },
     "minhaEmpresaCard": {
@@ -6678,8 +6946,6 @@
         "benefitsHint": "Upload the benefits handbook",
         "policyLabel": "Recruitment Policies",
         "policyHint": "Upload the HR policies document",
-        "workforceLabel": "Workforce Planning",
-        "workforceHint": "Upload the company org chart",
         "documentsLabel": "Variable Compensation",
         "documentsHint": "Upload the variable compensation policy"
       }
@@ -6701,10 +6967,9 @@
     },
     "workforce": {
       "importTitle": "Import Workforce Planning",
-      "importDescription": "Upload your headcount spreadsheet or describe it in chat — LIA structures the plan.",
+      "importDescription": "Upload your headcount spreadsheet or describe it in chat — IA structures the plan.",
       "headcountPlanning": "Headcount Planning {year}",
       "synchronized": "Synchronized",
-      "consumedByLia": "Consumed by LIA",
       "departmentsDesc": "Departments and positions planned for the period.",
       "export": "Export",
       "edit": "Edit",
@@ -6722,20 +6987,8 @@
       "positionPlaceholder": "e.g. Senior Backend Developer",
       "addPosition": "Add position",
       "addDepartment": "Add department",
-      "uploadFailed": "Failed to upload the file. Please try again.",
-      "spreadsheetPrompt": "I attached the spreadsheet {fileName}. Can you structure our workforce plan from it?",
       "describePrompt": "I want to describe our workforce plan. Can you help me structure it?",
-      "pastePromptPrefix": "Here is our planning data:",
-      "howToSend": "How to send your data",
-      "pathsExplanation": "Choose the most convenient path:",
-      "attachSpreadsheet": "Attach spreadsheet",
-      "describeInChat": "Describe in chat",
-      "pasteData": "Paste data",
-      "pasteDialogTitle": "Paste planning data",
-      "closeDialog": "Close",
-      "pasteDialogDesc": "Paste your headcount data (spreadsheet, table or free text).",
-      "pastePlaceholder": "Paste planning data here...",
-      "sendToLia": "Send to LIA"
+      "preferChat": "Prefer to talk? Ask IA in chat"
     },
     "documentUpload": {
       "errors": {
@@ -6763,7 +7016,7 @@
         "idle": "Ready",
         "uploading": "Uploading...",
         "extracting": "Extracting data...",
-        "sending": "Sending to LIA...",
+        "sending": "Sending to IA...",
         "done": "Done",
         "error": "Error"
       },
@@ -6802,7 +7055,7 @@
         "idle": "Ready",
         "uploading": "Uploading...",
         "extracting": "Extracting data...",
-        "sending": "Sending to LIA...",
+        "sending": "Sending to IA...",
         "done": "Done",
         "error": "Error"
       },
@@ -6818,7 +7071,7 @@
     },
     "aiTransparency": {
       "title": "AI Transparency",
-      "description": "See and adjust how LIA uses company data in decisions.",
+      "description": "See and adjust how IA uses company data in decisions.",
       "loading": "Loading...",
       "errorLoad": "Failed to load transparency settings.",
       "errorOverride": "Failed to save the change."
@@ -6844,8 +7097,8 @@
       "comingSoonText": "This feature will be available soon.",
       "enableField": "Enable field",
       "fieldCount": "{count} fields",
-      "helpText": "Define which candidate data LIA collects.",
-      "liaCollects": "LIA collects",
+      "helpText": "Define which candidate data IA collects.",
+      "liaCollects": "IA collects",
       "required": "Required"
     },
     "liaField": {
@@ -6855,8 +7108,8 @@
       "instructionPlaceholder": "e.g. Prioritize candidates with leadership experience..."
     },
     "liaFields": {
-      "title": "LIA Fields",
-      "description": "Control which data LIA uses and how it interprets each field.",
+      "title": "IA Fields",
+      "description": "Control which data IA uses and how it interprets each field.",
       "fieldsTotal": "fields",
       "tabs": {
         "fields": "Fields",
@@ -7320,6 +7573,63 @@
         "interview_completed": "Interview completed",
         "offer_sent": "Offer sent"
       }
+    },
+    "billing": {
+      "errors": {
+        "loadPlan": "Error loading plan information.",
+        "loadUsage": "Error loading usage data.",
+        "loadInvoices": "Error loading invoices.",
+        "loadPaymentMethods": "Error loading payment methods."
+      },
+      "currentPlan": "Current plan:",
+      "seats": "recruiters",
+      "trialNotice": "You are in the trial period. Convert now to keep your access.",
+      "usage": "Period usage",
+      "embeddingTokens": "Embedding Tokens",
+      "tokens": "tokens",
+      "byokActive": "BYOK active — your provider",
+      "llmGeneralTokens": "General LLM Tokens",
+      "pearchCredits": "Pearch Credits",
+      "apifyCredits": "Apify Credits",
+      "agentExecutions": "Agent Executions",
+      "executions": "exec.",
+      "credits": "credits",
+      "searchCredits": "Search credits",
+      "capReached": "Limit reached — overage will be charged in the next cycle.",
+      "capWarning": "Warning: {pct}% of limit used.",
+      "agentsSummary": "{custom} custom · {sourcing} sourcing · {twins} digital twins · {campaigns} campaigns",
+      "invoices": "Invoice History",
+      "noInvoices": "No invoices available yet.",
+      "invoiceDate": "Date",
+      "invoiceAmount": "Amount",
+      "invoiceStatus": "Status",
+      "invoicePdf": "PDF",
+      "download": "Download",
+      "paymentMethod": "Payment Method",
+      "noPaymentMethod": "No payment method on file.",
+      "card": "Card",
+      "status": {
+        "active": "Active",
+        "trialing": "Trial",
+        "suspended": "Suspended",
+        "canceled": "Canceled",
+        "past_due": "Past Due"
+      },
+      "invoiceStatuses": {
+        "paid": "Paid",
+        "pending": "Pending",
+        "overdue": "Overdue",
+        "failed": "Failed"
+      },
+      "fiscalData": "Fiscal data",
+      "fiscalDataComing": "Fiscal data configuration (CNPJ, company name, billing address) will be available soon through the admin panel.",
+      "descontoAlfa": "ALFA Discount",
+      "descontoValidade": "Valid until",
+      "descontoLabel": "{pct}% plan discount (ALFA)"
+    },
+    "screening": {
+      "sectionPauseControl": "Pause Control",
+      "sectionScheduling": "Automatic Scheduling"
     }
   },
   "publicJob": {
@@ -7526,6 +7836,7 @@
       },
       "internalMobility": {
         "talentMatching": "Internal talent matching",
+        "readinessScore": "Promotion readiness score",
         "developmentPlan": "Individual development plan",
         "successionMapping": "Succession mapping"
       },
@@ -7642,7 +7953,7 @@
       "valueAria": "Scale option"
     },
     "messageBubble": {
-      "liaMessageAria": "Message from LIA",
+      "liaMessageAria": "Message from IA",
       "myMessageAria": "Your message",
       "pauseAria": "Pause audio",
       "playAria": "Play audio"
@@ -7842,5 +8153,286 @@
         }
       }
     }
+  },
+  "bulkReport": {
+    "title": "{succeeded} of {total} sent",
+    "closeButton": "Close",
+    "copyFailed": "Copy failed list",
+    "deliveryFailed": "Last delivery failed: {reason}"
+  },
+  "interview": {
+    "lobby": {
+      "logoAlt": "{name} logo",
+      "greeting": "Hello, {name}! This screening is conducted by artificial intelligence.",
+      "aiDeclarationTitle": "Screening conducted by {aiName}",
+      "aiDeclarationBody": "This screening is conducted by artificial intelligence. A recruiter will review your application before any decision is made.",
+      "practiceQuestionHint": "A practice question will be shown before the real screening begins.",
+      "tipsTitle": "Preparation tips",
+      "tip1": "Choose a quiet location with a good internet connection.",
+      "tip2": "Answer honestly and directly — there are no right or wrong answers.",
+      "tip3": "If using voice, speak clearly and at a steady pace for best recognition.",
+      "consentTitle": "LGPD Consent",
+      "disclaimerAriaLabel": "Full consent text",
+      "disclaimerVersion": "Document version: {version}",
+      "scrollToEnable": "Scroll to the bottom to enable the consent checkbox.",
+      "consentCheckboxLabel": "I have read and agree to the processing of my data as per the",
+      "privacyPolicyLink": "Privacy Policy",
+      "affirmativeTitle": "Affirmative action programme: {type}",
+      "affirmativeGeneric": "affirmative action",
+      "affirmativeBody": "This position has inclusion quotas. By continuing, you declare that you meet the inclusion criteria stated in the selection process.",
+      "affirmativeCheckboxLabel": "I declare that I meet the inclusion criteria for this position.",
+      "consentError": "Failed to record consent. Please try again.",
+      "micDenied": "Microphone access denied. Allow access in your browser settings.",
+      "expiryWarning": "This link expires in less than 24 hours. Please complete your screening soon.",
+      "groupAsync": "Async response",
+      "channelChatLabel": "Reply by online message",
+      "channelChatDesc": "Answer at your own pace, via the browser.",
+      "channelWhatsappLabel": "WhatsApp",
+      "channelWhatsappDesc": "Receive and answer questions via WhatsApp.",
+      "groupSync": "Real-time call",
+      "channelOnlineCallLabel": "Online call",
+      "channelOnlineCallDesc": "Speak via your computer or mobile microphone now.",
+      "channelPhoneLabel": "Phone call",
+      "channelPhoneDesc": "Receive a phone call now.",
+      "syncBadge": "live"
+    }
+  },
+  "candidatePreview": {
+    "consentTab": {
+      "title": "LGPD Consents",
+      "loadingMessage": "Loading consent records...",
+      "emptyMessage": "No consent records found for this candidate.",
+      "errorMessage": "Error loading consents. Please try again.",
+      "retryButton": "Try again",
+      "exportButton": "Export CSV",
+      "filterAll": "All",
+      "statusActive": "Active",
+      "statusExpired": "Expired",
+      "statusRevoked": "Revoked",
+      "statusInactive": "Inactive",
+      "columnType": "Type",
+      "columnPurpose": "Purpose",
+      "columnLegalBasis": "Legal Basis",
+      "columnChannel": "Channel",
+      "columnDate": "Date",
+      "columnVersion": "Version",
+      "columnStatus": "Status",
+      "columnSource": "Source",
+      "detailPurpose": "Purpose",
+      "detailLegalBasis": "Legal basis",
+      "detailChannel": "Channel",
+      "detailGrantedAt": "Granted on",
+      "detailExpires": "Expires",
+      "detailRevokedAt": "Revoked on",
+      "detailVersion": "Version",
+      "detailSource": "Source",
+      "typeAudio": "Screening audio",
+      "typeAudioRevoked": "Audio revoked",
+      "typeSensitiveData": "Affirmative action data",
+      "typeCommunication": "Communication",
+      "channelChatWeb": "Chat web",
+      "channelWhatsapp": "WhatsApp",
+      "channelOnlineCall": "Online call",
+      "channelPhoneCall": "Phone call",
+      "channelNone": "—",
+      "tabLabel": "Consent",
+      "headerBadgeAudioOk": "Audio consent OK",
+      "headerBadgeNoAudio": "No audio consent",
+      "headerBadgeComm": "Comm. consent",
+      "profileConsentComm": "Communication consent",
+      "profileConsentAudio": "Screening audio consent",
+      "profileViewHistory": "→ View history"
+    },
+    "neverAnalyzed": "Never analyzed",
+    "justNow": "Just now",
+    "minutesAgo": "{count} min ago",
+    "hoursAgo": "{count}h ago",
+    "yesterday": "Yesterday",
+    "daysAgo": "{count} days ago",
+    "errorSendMessage": "Error sending message",
+    "errorSendMessageDesc": "Could not connect to the AI assistant. Please try again.",
+    "errorUnknown": "Unknown error",
+    "parecerGenerated": "Opinion generated",
+    "parecerGeneratedDesc": "AI generated a new opinion for the candidate.",
+    "errorGenerateParecer": "Failed to generate opinion",
+    "errorGenerateParecerTitle": "Error generating opinion",
+    "errorGenerateParecerDesc": "Could not generate the opinion. Please try again.",
+    "errorAnalysisFailed": "Analysis failed",
+    "errorAnalysisEmpty": "Analysis result was empty",
+    "errorSaveParecer": "Failed to save opinion"
+  },
+  "vacancySearch": {
+    "title": "Search candidates",
+    "subtitle": "Refine your search with natural language. AI will analyze and suggest improvements.",
+    "vacancyChip": "Vacancy: {title}",
+    "modeManual": "Search and select",
+    "modeManualDesc": "You choose which to add",
+    "modeAuto": "Add automatically",
+    "modeAutoDesc": "System populates by score",
+    "modeAutoRecommended": "Recommended",
+    "maxCandidates": "Maximum quantity",
+    "maxCandidatesHint": "Candidates to add (max 30)",
+    "minScore": "Minimum score",
+    "minScoreHint": "Only above this score",
+    "creditsLocal": "Local search — no cost",
+    "creditsHybrid": "Hybrid search — ~{credits} estimated credits",
+    "creditsGlobal": "Pearch Global — ~{credits} estimated credits",
+    "searchButton": "Search candidates",
+    "resultsTitle": "Candidate search",
+    "resultsCount": "{shown} of {total} candidates",
+    "loadMore": "Load more candidates",
+    "analyzing": "Analyzing found profiles... ({done} of {total} analyzed)",
+    "addToVacancy": "Add to Vacancy ({count})",
+    "addSuccess": "Candidates added",
+    "addSuccessDesc": "{count} candidates were added to the vacancy",
+    "alreadyInVacancy": "Already in vacancy",
+    "noResults": "No candidates found",
+    "noResultsDesc": "Try adjusting your search criteria",
+    "autoConfirmTitle": "Confirm automatic addition",
+    "autoConfirmDesc": "We found {count} candidates with score ≥ {score}",
+    "autoConfirmMore": "and {count} more...",
+    "autoConfirmAdd": "Add {count} to vacancy",
+    "autoSearching": "Searching candidates...",
+    "autoSearchingDesc": "Global searches may take up to 1 minute",
+    "editFilters": "Edit Filters",
+    "backToKanban": "Back to kanban",
+    "headerButton": "Search candidates",
+    "sourceLocal": "Local Search",
+    "sourceHybrid": "Hybrid Search",
+    "sourceGlobal": "Global Search",
+    "fairnessBlocked": "Search blocked for containing discriminatory terms"
+  },
+  "candidateStatus": {
+    "errors": {
+      "linkExpiredRh": "This link has expired. Please request a new link from the recruiter.",
+      "loadFailed": "Could not load your applications. Please try again later.",
+      "connectionError": "Connection error. Check your internet and try again.",
+      "invalidLinkContact": "Invalid link. Please contact the recruiter for a new one.",
+      "invalidLinkRh": "Invalid or corrupted link. Please request a new link from HR."
+    },
+    "loading": {
+      "portal": "Loading your portal..."
+    },
+    "errorState": {
+      "title": "Oops, something went wrong",
+      "contactHint": "If the issue persists, please contact the recruiter responsible for your process."
+    }
+  },
+  "portalProposta": {
+    "loading": {
+      "text": "Loading your offer..."
+    },
+    "error": {
+      "title": "Offer unavailable",
+      "invalidLink": "This link is invalid or the offer was not found. Please check the link you received.",
+      "missingToken": "Incomplete link. Please use the full link sent by the recruiter."
+    },
+    "done": {
+      "accepted": {
+        "title": "Offer accepted!"
+      },
+      "declined": {
+        "title": "Offer declined"
+      }
+    },
+    "benefit": {
+      "fallback": "Benefit"
+    },
+    "status": {
+      "draft": "Draft",
+      "sent": "Sent",
+      "viewed": "Viewed",
+      "accepted": "Accepted",
+      "declined": "Declined",
+      "expired": "Expired",
+      "cancelled": "Cancelled",
+      "negotiating": "Negotiating"
+    },
+    "header": {
+      "greeting": "Hello, {candidateName}! Review the details of your offer below."
+    },
+    "details": {
+      "sectionTitle": "Offer details",
+      "salary": {
+        "label": "Compensation"
+      },
+      "startDate": {
+        "label": "Start date"
+      },
+      "deadline": {
+        "label": "Response deadline"
+      },
+      "negotiationRound": {
+        "label": "Negotiation round"
+      },
+      "benefits": {
+        "label": "Benefits"
+      }
+    },
+    "letter": {
+      "sectionTitle": "Offer letter"
+    },
+    "response": {
+      "sectionTitle": "Your response",
+      "error": {
+        "generic": "Error submitting response. Please try again."
+      },
+      "button": {
+        "sending": "Sending...",
+        "accept": "Accept offer",
+        "decline": "Decline",
+        "confirmDecline": "Confirm decline",
+        "back": "Back"
+      },
+      "decline": {
+        "hint": "If you wish, share the reason for declining. This helps us improve future offers.",
+        "notesPlaceholder": "Reason for declining (optional)..."
+      }
+    },
+    "alreadyResponded": {
+      "accepted": "You have already accepted this offer. Congratulations!",
+      "declined": "You have already declined this offer."
+    },
+    "footer": {
+      "legal": "This portal is operated by WeDOTalent. Your data is protected under LGPD."
+    }
+  },
+  "iaSidebar": {
+    "aria": {
+      "historyPanel": "AI conversation history",
+      "collapsePanel": "Collapse panel",
+      "sessionOptions": "Session options"
+    },
+    "header": "Conversations",
+    "newConversation": "New conversation",
+    "search": {
+      "placeholder": "Search conversations...",
+      "noResults": "No conversations found"
+    },
+    "loading": "Loading...",
+    "empty": {
+      "title": "Start a conversation with LIA",
+      "hint": "Click \"New conversation\" to begin"
+    },
+    "sections": {
+      "pinned": "Pinned",
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "older": "Older"
+    },
+    "context": {
+      "pin": "Pin",
+      "unpin": "Unpin",
+      "rename": "Rename",
+      "note": "Note",
+      "archive": "Archive",
+      "delete": "Delete"
+    },
+    "note": {
+      "placeholder": "Add note...",
+      "save": "Save (⌘↵)",
+      "cancel": "Cancel"
+    },
+    "fallbackTitle": "Conversation"
   }
 }

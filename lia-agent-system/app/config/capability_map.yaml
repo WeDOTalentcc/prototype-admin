@@ -7,12 +7,14 @@
 capabilities:
 
   add_candidate:
+    label: "Adicionar candidato"
     chat_executable: false   # AddCandidateModal (3 abas) > chat loop de 5 perguntas
     entity_required: []
     modal_id: add_candidate
     navigate_fallback: /funil-de-talentos
 
   search_candidates:
+    label: "Buscar candidatos"
     chat_executable: true
     entity_required: []
     navigate_fallback: /funil-de-talentos
@@ -29,6 +31,7 @@ capabilities:
 
   # ── PR-CAL: schedule_interview — Card 4.1 opens InterviewSchedulingModal ─────
   schedule_interview:
+    label: "Agendar entrevista"
     chat_executable: false   # modal > AI stub (SIMULATION_STUB is AI-layer only)
     entity_required:
       - type: candidate
@@ -37,6 +40,7 @@ capabilities:
     navigate_fallback: /visao-do-funil?view=entrevistas
 
   reschedule_interview:
+    label: "Reagendar entrevista"
     chat_executable: true
     entity_required:
       - type: candidate
@@ -45,6 +49,7 @@ capabilities:
     navigate_fallback: /visao-do-funil?view=entrevistas
 
   compare_candidates:
+    label: "Comparar candidatos"
     chat_executable: true
     entity_required:
       - type: job
@@ -54,17 +59,22 @@ capabilities:
 
   # ── Wave 1 PR-Q2: job entity resolution for VERIFICAR cards ──────────────
   close_job:
+    label: "Encerrar vaga"
     chat_executable: true
+    requires_confirmation: true   # HITL: encerrar vaga é destrutivo (decisão Paulo 2026-06-06)
     entity_required:
       - type: job
         param: job_id
+    navigate_page: vaga_detalhe   # fechar acontece na vaga (HITL na página)
     navigate_fallback: /jobs?status=open
 
   generate_job_report:
+    label: "Gerar relatório da vaga"
     chat_executable: true
     entity_required:
       - type: job
         param: job_id
+    modal_id: job_report
     navigate_fallback: /analytics
 
   # ── Wave 1 PR-Q3: canonical intents for analytics/WSI cards ─────────────
@@ -85,6 +95,7 @@ capabilities:
 
   # ── Wave 4 PR-B + PR-C: Offer + Hire actions ────────────────────────────
   send_offer:
+    label: "Enviar oferta"
     chat_executable: false   # opens OfferReviewModal; HITL review before send
     entity_required:
       - type: candidate
@@ -133,10 +144,21 @@ capabilities:
     entity_required: []
     navigate_fallback: /talent-pools
 
+  view_talent_pool_insights:
+    label: "Ver Talent Pool Insights"
+    chat_executable: false
+    entity_required:
+      - type: job
+        param: job_id
+    modal_id: talent_pool_insights
+    navigate_fallback: /analytics
+
   criar_automacao:
+    label: "Criar automação"
+    description: "Criar regra de automação (gatilhos + ações no pipeline de recrutamento)"
     chat_executable: false
     entity_required: []
-    modal_id: automation_builder
+    navigate_page: agent_studio
     navigate_fallback: /automacoes
 
   consultar_consumo:
@@ -150,15 +172,375 @@ capabilities:
     modal_id: hiring_policy_config
     navigate_fallback: /configuracoes/politicas
 
-  criar_template:
-    chat_executable: false
-    entity_required: []
-    modal_id: template_builder
-    navigate_fallback: /templates
-
   criar_a_partir_de_template:
     chat_executable: true
     entity_required:
       - type: template
         param: template_id
     navigate_fallback: /templates
+
+  # ── Fase B (2026-06-06): set curado de modais globais abríveis pela LIA ──
+  # Decisão Paulo: ~18 modais globais (read-only abrem direto; destrutivos
+  # com requires_confirmation=true → o modal confirma a ação, HITL).
+  # open_ui(capability) valida + retorna ui_action=open_modal. Os ~110 modais
+  # internos de página ficam de fora (não-globais) — promoção caso-a-caso.
+
+  view_profile:
+    chat_executable: false
+    # Correção 2026-06-06: perfil de CANDIDATO = navegar p/ a página
+    # /funil-de-talentos/candidato/{id}. O 'profile-modal' é o perfil do
+    # USUÁRIO logado (SSO/email), NÃO do candidato. Sem modal_id → open_ui
+    # não oferece; o agente usa [NAVIGATE:candidato_detalhe:id] (Fase A).
+    entity_required:
+      - type: candidate
+        param: candidate_id
+    navigate_page: candidato_detalhe
+    navigate_fallback: /funil-de-talentos
+
+  job_insights:
+    label: "Ver insights da vaga"
+    chat_executable: false
+    entity_required:
+      - type: job
+        param: job_id
+    modal_id: job_insights          # B3b (2026-06-09): modal de insights inline
+    navigate_page: vaga_detalhe   # insights vivem na vaga (métricas pré-computadas)
+    navigate_fallback: /jobs
+
+  view_job_kanban:
+    label: "Abrir kanban/pipeline da vaga"
+    description: "Navega para a pagina de detalhes da vaga com candidatos e pipeline. Use SEMPRE que o recrutador quiser ABRIR, VER, ACESSAR ou MOSTRAR uma vaga existente."
+    chat_executable: true
+    entity_required:
+      - type: job
+        param: job_id
+    navigate_page: vaga_detalhe
+    navigate_fallback: /jobs
+
+  compare_jobs:
+    label: "Comparar vagas"
+    chat_executable: false
+    entity_required: []
+    modal_id: job_compare         # abre modal de comparação multi-vaga (Fase 1D)
+    navigate_fallback: /jobs
+
+  view_score:
+    label: "Ver score do candidato"
+    chat_executable: false
+    entity_required:
+      - type: candidate
+        param: candidate_id
+    modal_id: general_score
+    navigate_fallback: /funil-de-talentos
+
+  view_bigfive:
+    label: "Ver perfil Big Five"
+    chat_executable: false
+    entity_required:
+      - type: candidate
+        param: candidate_id
+    modal_id: big_five
+    navigate_fallback: /funil-de-talentos
+
+  change_job_status:
+    label: "Mudar status da vaga"
+    chat_executable: false
+    requires_confirmation: true   # HITL: mudança de status de vaga
+    entity_required:
+      - type: job
+        param: job_id
+    navigate_page: vaga_detalhe   # mudar status na vaga (HITL na página)
+    navigate_fallback: /jobs
+
+  bulk_action:
+    label: "Ação em massa"
+    chat_executable: false
+    requires_confirmation: true   # HITL: ação em massa (potencialmente destrutiva)
+    entity_required: []
+    navigate_page: funil_talentos # ação em massa exige seleção (no funil)
+    navigate_fallback: /funil-de-talentos
+
+  send_communication:
+    label: "Enviar comunicação"
+    chat_executable: false
+    requires_confirmation: true   # HITL: envio de comunicação a candidato(s)
+    entity_required: []
+    navigate_page: central_comunicacao
+    navigate_fallback: /central-comunicacao
+
+  assign_recruiter:
+    label: "Atribuir recrutador"
+    chat_executable: false
+    requires_confirmation: true   # HITL: reatribuir responsável da vaga
+    entity_required:
+      - type: job
+        param: job_id
+    navigate_page: vaga_detalhe   # atribuir na vaga
+    navigate_fallback: /jobs
+
+  data_request:
+    label: "Solicitar dados (LGPD)"
+    chat_executable: false
+    requires_confirmation: true   # HITL: solicitação de dados (LGPD)
+    entity_required: []
+    navigate_page: funil_talentos # solicitar dados exige seleção (no funil)
+    navigate_fallback: /trust
+
+  open_fullscreen_chat:
+    label: "Abrir chat em tela cheia"
+    chat_executable: true          # navegação executada diretamente pelo chat
+    requires_confirmation: false
+    entity_required: []
+    navigate_page: chat             # CanonicalPage.CHAT = "chat" -> /pt/chat
+    navigate_fallback: /chat
+
+  # Navegacao para paginas principais (Bug 2026-06-08).
+  ir_para_configuracoes:
+    label: Ir para Configuracoes
+    description: Navegar para a pagina de Configuracoes
+    chat_executable: false
+    entity_required: []
+    navigate_page: configuracoes
+    navigate_fallback: /configuracoes
+
+  ir_para_funil_talentos:
+    label: Ir para Funil de Talentos
+    description: Navegar para o Funil de Talentos
+    chat_executable: false
+    entity_required: []
+    navigate_page: funil_talentos
+    navigate_fallback: /funil-de-talentos
+
+  ir_para_agent_studio:
+    label: Ir para Estudio de Agentes
+    description: Navegar para o Estudio de Agentes de IA
+    chat_executable: false
+    entity_required: []
+    navigate_page: agent_studio
+    navigate_fallback: /agent-studio
+
+  # ── Alias: create_job = criar_vaga (corrige divergência SUGGESTION_HINTS vs YAML 2026-06-10)
+  create_job:
+    label: "Criar nova vaga"
+    description: "Iniciar criacao de nova vaga. Alias de criar_vaga para compatibilidade com intent_hint do Rail A."
+    chat_executable: true
+    entity_required: []
+    navigate_fallback: /jobs/new
+
+  # ── Navegacao para paginas principais — expansao canonical 2026-06-10 ──────
+  # chat_executable: false → Rail A short-circuit (sem LLM); navigate_page →
+  # open_ui via LLM usa enum canonico; navigate_fallback → fallback URL bruta.
+
+  ir_para_dashboard:
+    label: "Ir para Dashboard / Indicadores"
+    description: "Navegar para o dashboard de indicadores e metricas de recrutamento"
+    chat_executable: false
+    entity_required: []
+    navigate_page: dashboard
+    navigate_fallback: /?view=Indicadores
+
+  ir_para_tasks:
+    label: "Ir para Tarefas / Aprovacoes"
+    description: "Navegar para o centro de tarefas e aprovacoes pendentes (HITL)"
+    chat_executable: false
+    entity_required: []
+    navigate_page: tasks
+    navigate_fallback: /tasks
+
+  ir_para_central_comunicacao:
+    label: "Ir para Central de Comunicacao"
+    description: "Navegar para a central de comunicacao (emails, WhatsApp, templates)"
+    chat_executable: false
+    entity_required: []
+    navigate_page: central_comunicacao
+    navigate_fallback: /central-comunicacao
+
+  ir_para_biblioteca:
+    label: "Ir para Biblioteca LIA"
+    description: "Navegar para a biblioteca de templates e artefatos reutilizaveis da LIA"
+    chat_executable: false
+    entity_required: []
+    navigate_page: biblioteca
+    navigate_fallback: /biblioteca-lia
+
+  ir_para_bancos_talentos:
+    label: "Ir para Bancos de Talentos"
+    description: "Navegar para bancos de talentos (candidatos passados para reativacao e matching)"
+    chat_executable: false
+    entity_required: []
+    navigate_page: bancos_talentos
+    navigate_fallback: /bancos-de-talentos
+
+  ir_para_vagas:
+    label: "Ir para Lista de Vagas"
+    description: "Navegar para a lista de vagas cadastradas da empresa"
+    chat_executable: false
+    entity_required: []
+    navigate_page: vagas
+    navigate_fallback: /jobs
+
+  ir_para_trust:
+    label: "Ir para Trust Center / Conformidade"
+    description: "Navegar para o trust center de compliance, LGPD, auditoria e governanca"
+    chat_executable: false
+    entity_required: []
+    navigate_page: trust
+    navigate_fallback: /trust
+
+  ir_para_marketplace:
+    label: "Ir para Marketplace de Agentes"
+    description: "Navegar para o marketplace de agentes IA disponiveis para instalacao"
+    chat_executable: false
+    entity_required: []
+    navigate_page: agents_marketplace
+    navigate_fallback: /agents/marketplace
+
+  ir_para_creditos_ia:
+    label: "Ir para Creditos de IA"
+    description: "Navegar para a tela de creditos de IA (saldo, consumo, compra de creditos)"
+    chat_executable: false
+    entity_required: []
+    navigate_page: ai_credits
+    navigate_fallback: /configuracoes/ai-credits
+
+  ir_para_integracoes:
+    label: "Ir para Integracoes ATS"
+    description: "Navegar para a pagina de integracoes com sistemas externos de recrutamento"
+    chat_executable: false
+    entity_required: []
+    navigate_page: integracoes_ats
+    navigate_fallback: /integracoes-ats
+
+  ir_para_ajuda:
+    label: "Ir para Ajuda / Documentacao"
+    description: "Navegar para a pagina de ajuda e documentacao da plataforma"
+    chat_executable: false
+    entity_required: []
+    navigate_page: ajuda
+    navigate_fallback: /ajuda
+
+  ir_para_home:
+    label: "Ir para Inicio / Home"
+    description: "Navegar para a pagina inicial da plataforma"
+    chat_executable: false
+    entity_required: []
+    navigate_page: home
+    navigate_fallback: /
+
+  # ── Visão Global (Recrutar) — tabs candidatos e vagas (2026-06-10) ──────
+  ir_para_visao_global:
+    label: "Ir para Visao Global / Pipeline"
+    description: "Navegar para a Visao Global do pipeline de recrutamento (pagina Recrutar)"
+    chat_executable: false
+    entity_required: []
+    navigate_page: pipeline_kanban
+    navigate_fallback: /recrutar
+
+  ir_para_visao_global_candidatos:
+    label: "Ir para Visao Global — aba Candidatos"
+    description: "Navegar para a Visao Global mostrando o funil de candidatos por etapa"
+    chat_executable: false
+    entity_required: []
+    navigate_page: pipeline_kanban
+    navigate_query:
+      view: candidatos
+    navigate_fallback: /recrutar?view=candidatos
+
+  ir_para_visao_global_vagas:
+    label: "Ir para Visao Global — aba Vagas"
+    description: "Navegar para a Visao Global mostrando o ciclo de vida das vagas por etapa"
+    chat_executable: false
+    entity_required: []
+    navigate_page: pipeline_kanban
+    navigate_query:
+      view: vagas
+    navigate_fallback: /recrutar?view=vagas
+
+  # ── Deep-links de Configurações por seção (2026-06-10) ──────────────────
+  # settings_section → emite settings_open_tab (navega + abre aba na tela).
+  # chat_executable: false → Rail A short-circuit se houver intent_hint.
+
+  ir_para_config_empresa:
+    label: "Configurar Empresa"
+    description: "Abrir configuracoes de perfil da empresa, cultura, beneficios e dados basicos"
+    chat_executable: false
+    entity_required: []
+    settings_section: minha-empresa
+    navigate_fallback: /configuracoes?section=minha-empresa
+
+  ir_para_config_lia:
+    label: "Configurar LIA / Personalização"
+    description: "Abrir configuracoes de instrucoes da LIA, tom e aprendizado"
+    chat_executable: false
+    entity_required: []
+    settings_section: lia-personalizacao
+    navigate_fallback: /configuracoes?section=lia-personalizacao
+
+  ir_para_config_instrucoes_lia:
+    label: "Configurar Instrucoes LIA por Campo"
+    description: "Abrir a subsecao de instrucoes personalizadas da LIA por campo de triagem"
+    chat_executable: false
+    entity_required: []
+    settings_section: lia-personalizacao
+    settings_subsection: instrucoes-lia
+    navigate_fallback: /configuracoes?section=lia-personalizacao&subsection=instrucoes-lia
+
+  ir_para_config_recrutamento:
+    label: "Configurar Recrutamento"
+    description: "Abrir configuracoes de processo seletivo, pipeline e screening"
+    chat_executable: false
+    entity_required: []
+    settings_section: recrutamento-lia
+    navigate_fallback: /configuracoes?section=recrutamento-lia
+
+  ir_para_config_comunicacao:
+    label: "Configurar Comunicacao"
+    description: "Abrir configuracoes de comunicacao, templates de email e alertas"
+    chat_executable: false
+    entity_required: []
+    settings_section: comunicacao-alertas
+    navigate_fallback: /configuracoes?section=comunicacao-alertas
+
+  ir_para_config_alertas:
+    label: "Configurar Alertas"
+    description: "Abrir a subsecao de alertas e notificacoes das configuracoes"
+    chat_executable: false
+    entity_required: []
+    settings_section: comunicacao-alertas
+    settings_subsection: alerts
+    navigate_fallback: /configuracoes?section=comunicacao-alertas&subsection=alerts
+
+  ir_para_config_usuarios:
+    label: "Configurar Usuarios e Departamentos"
+    description: "Abrir configuracoes de usuarios, equipe, papeis e departamentos"
+    chat_executable: false
+    entity_required: []
+    settings_section: usuarios-departamentos
+    navigate_fallback: /configuracoes?section=usuarios-departamentos
+
+  ir_para_config_integracoes:
+    label: "Configurar Integracoes"
+    description: "Abrir configuracoes de integracoes com ATS externos"
+    chat_executable: false
+    entity_required: []
+    settings_section: integrations
+    navigate_fallback: /configuracoes?section=integrations
+
+  ir_para_config_conformidade:
+    label: "Configurar Conformidade / LGPD"
+    description: "Abrir configuracoes de fairness, compliance, LGPD e auditoria"
+    chat_executable: false
+    entity_required: []
+    settings_section: fairness-compliance
+    navigate_fallback: /configuracoes?section=fairness-compliance
+
+  # ── Alias: ir_para_relatorios → dashboard (P2 navegação 2026-06-22) ────
+  # LLM não mapeia "relatórios/indicadores/métricas/KPIs" para ir_para_dashboard
+  # porque o key name não contém essas palavras. Alias semântico resolve.
+  ir_para_relatorios:
+    label: "Ir para Relatórios / Indicadores"
+    description: "Navegar para relatórios, indicadores, métricas e KPIs de recrutamento"
+    chat_executable: false
+    entity_required: []
+    navigate_page: dashboard
+    navigate_fallback: /?view=Indicadores

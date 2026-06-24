@@ -3,7 +3,7 @@ import { devtools, persist } from 'zustand/middleware'
 
 export interface RecentItem {
   id: string
-  type: 'vaga' | 'chat' | 'candidato' | string
+  type: 'vaga' | 'chat' | 'candidato' | 'banco' | string
   title: string
   subtitle?: string
   timestamp: number
@@ -12,6 +12,8 @@ export interface RecentItem {
     candidateId?: string
     conversationId?: string
     jobTitle?: string
+    poolId?: string
+    poolName?: string
     [key: string]: unknown
   }
 }

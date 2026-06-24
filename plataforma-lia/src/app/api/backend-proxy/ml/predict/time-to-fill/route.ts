@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from "next/server"
+import { getAuthHeaders } from "@/lib/api/auth-headers"
 import { validateBody } from '@/lib/api/validate'
 import { z } from 'zod'
 
@@ -25,7 +26,7 @@ export async function POST(request: NextRequest) {
       `${BACKEND_URL}/api/v1/ml/predict/time-to-fill`,
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders(request),
         body: JSON.stringify(body),
       },
     )

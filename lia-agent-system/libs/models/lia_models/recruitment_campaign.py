@@ -54,6 +54,10 @@ class RecruitmentCampaign(Base):
 
     stage_history = Column(JSONB, nullable=False, default=list)
 
+    # multi-vacancy + Agent Studio wiring (migration 289)
+    job_ids = Column(ARRAY(UUID(as_uuid=True)), nullable=True, default=list)
+    agent_ids = Column(ARRAY(String()), nullable=True, default=list)
+
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

@@ -5,11 +5,13 @@ from typing import Any
 from uuid import UUID
 
 from ._base import analytics_db, error_response, extract_context, success_response
+from app.shared.tool_handler import tool_handler
 from app.tools.context_helpers import require_company_id_from_context
 
 logger = logging.getLogger(__name__)
 
 
+@tool_handler("analytics")
 async def get_pipeline_stats(
     period: str | None = "month",
     recruiter_id: str | None = None,
@@ -69,7 +71,7 @@ async def get_pipeline_stats(
                 status = j.status or 'Indefinido'
                 jobs_by_status[status] = jobs_by_status.get(status, 0) + 1
 
-            closed_jobs = sum(1 for j in jobs if j.status == 'Fechada')
+            closed_jobs = sum(1 for j in jobs if j.status == 'Concluída')
             active_jobs = sum(1 for j in jobs if j.status == 'Ativa')
 
             job_ids = [j.id for j in jobs]
@@ -123,6 +125,7 @@ async def get_pipeline_stats(
         return error_response(f"❌ Erro ao buscar estatísticas: {str(e)}", e)
 
 
+@tool_handler("analytics")
 async def get_vacancy_funnel(
     job_id: str,
     include_stalled: bool = True,
@@ -237,6 +240,7 @@ async def get_vacancy_funnel(
         return error_response(f"❌ Erro ao buscar funil da vaga: {str(e)}", e)
 
 
+@tool_handler("analytics")
 async def compare_candidates(
     candidate_ids: list[str],
     job_id: str | None = None,

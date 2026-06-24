@@ -144,6 +144,8 @@ const DEFAULT_NEW_APPROVER: NewApproverForm = {
   level: 1,
   departmentId: null,
   canApproveAboveAmount: null,
+  userId: null,
+  approvalMethod: "email_link",
 };
 
 const initialUIState: UIState = {
@@ -270,8 +272,11 @@ function mapDepartmentFromApi(d: {
   };
 }
 
-async function fetchDepartments(): Promise<Department[]> {
-  const res = await fetch("/api/backend-proxy/company/departments");
+async function fetchDepartments(companyId?: string): Promise<Department[]> {
+  const url = companyId
+    ? `/api/backend-proxy/company/departments?company_id=${encodeURIComponent(companyId)}`
+    : "/api/backend-proxy/company/departments";
+  const res = await fetch(url);
   if (!res.ok) throw new Error("Falha ao carregar departamentos");
   const data = await res.json();
   return Array.isArray(data) ? data.map(mapDepartmentFromApi) : [];
@@ -304,8 +309,8 @@ export function useDepartmentManagement({
 
   // ── React Query: departments list ──────────────────────────────────────────
   const { data: queriedDepartments = [] } = useQuery<Department[]>({
-    queryKey: ["departments"],
-    queryFn: fetchDepartments,
+    queryKey: ["departments", companyId],
+    queryFn: () => fetchDepartments(companyId ?? ''),
     staleTime: 30_000,
     initialData: initialDepartments.length > 0 ? initialDepartments : undefined,
   });
@@ -382,6 +387,8 @@ export function useDepartmentManagement({
         level: number;
         departmentId: string | null;
         canApproveAboveAmount: number | null;
+        userId?: string | null;
+        approvalMethod?: "platform" | "email_link";
       };
       isNew: boolean;
       id?: string;
@@ -400,6 +407,8 @@ export function useDepartmentManagement({
           level: approver.level,
           department_id: approver.departmentId,
           can_approve_above_amount: approver.canApproveAboveAmount,
+          user_id: approver.userId ?? null,
+          approval_method: approver.approvalMethod ?? "email_link",
         }),
       });
       if (!res.ok) throw new Error("Falha ao salvar aprovador");
@@ -474,11 +483,11 @@ export function useDepartmentManagement({
 
   async function loadDepartments() {
     try {
-      const data = await fetchDepartments();
+      const data = await fetchDepartments(companyId ?? '');
       dispatch({ type: "SET_DEPTS_OVERRIDE", payload: data });
     } catch (err) {
       console.error("[Departments] loadDepartments failed:", err);
-      toast.error("Falha ao carregar departamentos. Tente novamente.");
+      toast.error("Falha ao carregar departamentos. Tente novamente.", "Verifique sua conexão e tente novamente.");
     }
   }
 
@@ -631,7 +640,7 @@ export function useDepartmentManagement({
       }
     } catch (err) {
       console.error("[Departments] handleDeleteMember failed:", err);
-      toast.error("Falha ao remover membro. Tente novamente.");
+      toast.error("Falha ao remover membro. Tente novamente.", "Verifique sua conexão e tente novamente.");
     }
   }
 
@@ -679,7 +688,7 @@ export function useDepartmentManagement({
         const result = await saveApproverMutation.mutateAsync({ approver: ui.newApprover, isNew: true });
         const newApproverData: Approver = {
           id: result?.id || `approver-${Date.now()}`,
-          userId: result?.user_id || "",
+          userId: result?.user_id || ui.newApprover.userId || "",
           userName: ui.newApprover.userName,
           email: ui.newApprover.email,
           role: ui.newApprover.role,

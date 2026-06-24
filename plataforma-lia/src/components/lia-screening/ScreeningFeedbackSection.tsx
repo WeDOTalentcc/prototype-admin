@@ -56,9 +56,9 @@ export function ScreeningFeedbackSection({ feedbackStrategy, copiedSection, onCo
             <div className="p-4 bg-wedo-orange/10 dark:bg-wedo-orange/10/20 rounded-xl border border-wedo-orange/30">
               <div className="flex items-center gap-2 mb-2">
                 <Heart className="w-4 h-4 text-wedo-orange" />
-                <span className="font-medium text-wedo-orange dark:text-wedo-orange">Candidatos Não Selecionados</span>
+                <span className="font-medium text-wedo-orange-text dark:text-wedo-orange">Candidatos Não Selecionados</span>
               </div>
-              <p className="text-sm text-wedo-orange dark:text-wedo-orange">{feedbackStrategy.timing.rejected}</p>
+              <p className="text-sm text-wedo-orange-text dark:text-wedo-orange">{feedbackStrategy.timing.rejected}</p>
             </div>
           </div>
         </CardContent>
@@ -102,11 +102,11 @@ export function ScreeningFeedbackSection({ feedbackStrategy, copiedSection, onCo
           <div className="space-y-3">
             <div>
               <label className="text-xs font-medium text-lia-text-secondary">Assunto:</label>
-              <div className="p-2 bg-wedo-orange/10 rounded-md text-sm text-wedo-orange">{feedbackStrategy.rejectedTemplate.subject}</div>
+              <div className="p-2 bg-wedo-orange/10 rounded-md text-sm text-wedo-orange-text">{feedbackStrategy.rejectedTemplate.subject}</div>
             </div>
             <div>
               <label className="text-xs font-medium text-lia-text-secondary">Mensagem:</label>
-              <div className="p-3 bg-wedo-orange/10 rounded-md text-sm text-wedo-orange whitespace-pre-line">{feedbackStrategy.rejectedTemplate.message}</div>
+              <div className="p-3 bg-wedo-orange/10 rounded-md text-sm text-wedo-orange-text whitespace-pre-line">{feedbackStrategy.rejectedTemplate.message}</div>
             </div>
           </div>
         </CardContent>
@@ -151,7 +151,7 @@ export function ScreeningFeedbackSection({ feedbackStrategy, copiedSection, onCo
             <div className="flex gap-3">
               <Button className="flex-1 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active">Gerar Feedback Personalizado</Button>
               <Button variant="outline" className="gap-2">
-                <Brain className="w-4 h-4 text-wedo-cyan" />LIA Sugerir
+                <Brain className="w-4 h-4 text-wedo-cyan-text" />Sugerir
               </Button>
             </div>
           </div>

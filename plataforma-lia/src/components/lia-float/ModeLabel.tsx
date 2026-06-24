@@ -74,19 +74,19 @@ const MODE_CONFIG: Record<NonNullable<ActionType>, ModeLabelConfig> = {
   studio_create: {
     icon: Bot,
     bg: "bg-wedo-cyan/10",
-    text: "text-wedo-cyan-dark dark:text-wedo-cyan",
+    text: "text-lia-text-secondary dark:text-wedo-cyan",
     border: "border-wedo-cyan/20",
   },
   studio_query: {
     icon: Search,
     bg: "bg-wedo-cyan/10",
-    text: "text-wedo-cyan-dark dark:text-wedo-cyan",
+    text: "text-lia-text-secondary dark:text-wedo-cyan",
     border: "border-wedo-cyan/20",
   },
   studio_metrics: {
     icon: BarChart3,
     bg: "bg-wedo-cyan/10",
-    text: "text-wedo-cyan-dark dark:text-wedo-cyan",
+    text: "text-lia-text-secondary dark:text-wedo-cyan",
     border: "border-wedo-cyan/20",
   },
 }

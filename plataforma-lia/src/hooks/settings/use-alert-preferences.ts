@@ -20,6 +20,8 @@ import useSWR from "swr"
 import { apiFetch } from "@/lib/api/api-fetch"
 import { notifyChatOfSettingsUpdate } from "@/lib/api/settings-notify"
 import { useJWTAuth } from "@/contexts/auth-context"
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import { SETTINGS_QUERY_KEYS, dispatchSettingsUpdate } from "@/hooks/settings/useSettingsBroadcast"
 
 export type AlertPreferenceChannel = "email" | "bell" | "teams" | "whatsapp"
 
@@ -192,5 +194,79 @@ export function useAlertPreferences() {
     updatePreference,
     createPreference,
     refetch: () => mutate(),
+  }
+}
+
+export type BriefingFrequency = "daily" | "twice_daily" | "weekly" | "monthly"
+
+export interface BriefingPreferencesData {
+  briefingFrequency: BriefingFrequency
+  digestEnabled: boolean
+}
+
+/**
+ * useBriefingPreferences — lê/escreve briefing_frequency e digest_enabled
+ * via HiringPolicy.communication_rules (canonical desde migration 174).
+ *
+ * Leitura: GET /api/backend-proxy/hiring-policy
+ * Escrita: PATCH /api/backend-proxy/hiring-policy/block
+ * {block: "communication_rules", data: {briefing_frequency|digest_enabled}}
+ *
+ * Multi-tenancy: company_id do JWT, nunca do payload.
+ * REGRA 4: erro propagado via throw — sem silent fallback.
+ */
+export function useBriefingPreferences() {
+  const queryClient = useQueryClient()
+
+  const { data: policyData, isLoading } = useQuery({
+    queryKey: SETTINGS_QUERY_KEYS.hiringPolicy(),
+    queryFn: async () => {
+      const r = await fetch("/api/backend-proxy/hiring-policy")
+      if (!r.ok) throw new Error(`Falha ao carregar política (HTTP ${r.status})`)
+      return r.json()
+    },
+    staleTime: 30_000,
+  })
+
+  const commRules = (policyData?.communication_rules as Record<string, unknown>) ?? {}
+  const briefingFrequency: BriefingFrequency =
+    (commRules.briefing_frequency as BriefingFrequency) ?? "daily"
+  const digestEnabled: boolean = commRules.digest_enabled !== false  // fail-open: True when absent
+
+  const updateCommunicationRules = useMutation({
+    mutationFn: async (data: Record<string, unknown>) => {
+      const r = await fetch("/api/backend-proxy/hiring-policy/block", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ block: "communication_rules", data }),
+      })
+      if (!r.ok) {
+        const text = await r.text().catch(() => "")
+        throw new Error(
+          `Falha ao salvar configuração (HTTP ${r.status})${text ? `: ${text.slice(0, 120)}` : ""}`
+        )
+      }
+      return r.json()
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: SETTINGS_QUERY_KEYS.hiringPolicy() })
+      dispatchSettingsUpdate({ actionId: "update_briefing_preferences", section: "alerts", source: "ui", ts: Date.now() })
+    },
+  })
+
+  return {
+    briefingFrequency,
+    digestEnabled,
+    isLoading,
+    isSaving: updateCommunicationRules.isPending,
+    saveError: updateCommunicationRules.error
+      ? (updateCommunicationRules.error instanceof Error
+          ? updateCommunicationRules.error.message
+          : String(updateCommunicationRules.error))
+      : null,
+    updateBriefingFrequency: (freq: BriefingFrequency) =>
+      updateCommunicationRules.mutateAsync({ briefing_frequency: freq }),
+    updateDigestEnabled: (enabled: boolean) =>
+      updateCommunicationRules.mutateAsync({ digest_enabled: enabled }),
   }
 }

@@ -2,6 +2,7 @@
 Transition Dispatch Service - Deterministic auto-dispatch for pipeline transitions.
 Layer 1: Template-based message dispatch without AI interpretation.
 """
+from app.middleware.request_id import get_correlation_id
 import logging
 import re
 import uuid
@@ -52,6 +53,35 @@ ACTION_BEHAVIOR_TRIGGER_MAP: dict[str, str | None] = {
 
 # Channels this service can dispatch (candidate-facing external channels only)
 DISPATCHABLE_CHANNELS = {"email", "whatsapp", "sms"}
+
+
+def ai_personalization_allowed_for_channel(channel: str) -> bool:
+    """W1 (decisao Paulo 2026-06-10): texto livre gerado por IA so e permitido por
+    EMAIL. WhatsApp business-initiated exige template aprovado pela Meta -> usa o
+    template + variaveis, nunca texto livre da IA (senao a Meta nao entrega)."""
+    return (channel or "").lower() == "email"
+
+
+def is_feedback_fairness_blocked(text, company_id: str = "") -> bool:
+    """Mantido p/ compat (dispatch + preview). Delega ao guard canonico de feedback
+    (fairness L1 explicito + PII de documento). True = bloquear o texto da IA
+    (cai no template seguro). Fail-soft no proprio guard."""
+    from app.shared.compliance.feedback_guard import feedback_block_reason
+    return feedback_block_reason(text, company_id or "") is not None
+    try:
+        from app.shared.compliance.fairness_guard_middleware import check_fairness
+        result = check_fairness(
+            texts={"feedback": str(text)},
+            context="candidate_rejection_feedback",
+            company_id=company_id or "",
+        )
+        return bool(result.is_blocked)
+    except Exception as guard_err:
+        logger.warning(
+            "[DISPATCH] fairness guard do feedback falhou (fail-soft, nao bloqueia): %s",
+            guard_err,
+        )
+        return False
 
 
 class TransitionDispatchService:
@@ -354,11 +384,27 @@ class TransitionDispatchService:
         rendered_text = self._render_template(template.body_text or "", variables)
 
         ai_personalized = False
-        if personalized_content:
-            rendered_html = personalized_content
-            rendered_text = re.sub(r"<[^>]+>", "", personalized_content)
-            ai_personalized = True
-            logger.info("[DISPATCH] Using AI-personalized content instead of template")
+        if personalized_content and not ai_personalization_allowed_for_channel(channel):
+            # WhatsApp (e demais canais nao-email): template Meta obrigatorio -> ignora
+            # o texto livre da IA; o corpo do template aprovado + variaveis e usado.
+            logger.info(
+                "[DISPATCH] canal=%s: texto IA ignorado (template aprovado obrigatorio); IA so em email",
+                channel,
+            )
+        elif personalized_content:
+            if is_feedback_fairness_blocked(personalized_content, company_id or ""):
+                # Texto da IA reprovado pela camada de fairness/LGPD -> NAO envia a
+                # versao da IA; mantem o corpo do template seguro ja renderizado.
+                logger.warning(
+                    "[DISPATCH] feedback gerado por IA BLOQUEADO pela camada de fairness/LGPD "
+                    "(candidate=%s) — usando template seguro",
+                    candidate_data.get("candidate_id"),
+                )
+            else:
+                rendered_html = personalized_content
+                rendered_text = re.sub(r"<[^>]+>", "", personalized_content)
+                ai_personalized = True
+                logger.info("[DISPATCH] Using AI-personalized content instead of template")
 
         if channel == "whatsapp":
             phone = candidate_data.get("mobile_phone") or candidate_data.get("phone")
@@ -470,6 +516,55 @@ class TransitionDispatchService:
                 variables=variables,
                 created_by=triggered_by,
             )
+
+            if not result.get("success"):
+                phone = candidate_data.get("mobile_phone") or candidate_data.get("phone")
+                if not phone:
+                    phone = await self._reveal_contact_for_dispatch(
+                        candidate_data, "phone", company_id,
+                    )
+                if phone:
+                    logger.warning(
+                        "[DISPATCH] Email failed for candidate %s (%s) \u2014 "
+                        "attempting WhatsApp fallback to %s",
+                        candidate_data.get("candidate_id"),
+                        result.get("error", "unknown"),
+                        phone,
+                    )
+                    plain_msg = re.sub(r"<[^>]+>", "", rendered_html) if rendered_html else rendered_text
+                    wa_result = self.dispatcher.send_whatsapp(
+                        to_phone=phone,
+                        message=plain_msg,
+                    )
+                    wa_status = "sent" if wa_result.get("success") else "failed"
+                    await self._log_dispatch(
+                        template_id=template.id,
+                        candidate_id=str(candidate_data.get("candidate_id", "")),
+                        recipient=phone,
+                        subject=rendered_subject,
+                        body_html=rendered_html,
+                        body_text=plain_msg,
+                        status=wa_status,
+                        error=wa_result.get("error"),
+                        variables=variables,
+                        created_by=triggered_by,
+                    )
+                    if wa_result.get("success"):
+                        return {
+                            "success": True,
+                            "channel": "whatsapp",
+                            "fallback_from": "email",
+                            "original_email_error": result.get("error"),
+                            "message_id": wa_result.get("message_id"),
+                            "template_name": template.name,
+                            "recipient": phone,
+                            "mock": wa_result.get("mock", False),
+                            "ai_personalized": ai_personalized,
+                        }
+                    logger.error(
+                        "[DISPATCH] Both email and WhatsApp failed for candidate %s",
+                        candidate_data.get("candidate_id"),
+                    )
 
             return {
                 "success": result.get("success", False),
@@ -892,7 +987,7 @@ class TransitionDispatchService:
                 from app.shared.compliance.audit_service import get_audit_service
                 import uuid as _uuid
                 await get_audit_service().log_action(
-                    trace_id=str(_uuid.uuid4()),
+                    trace_id=get_correlation_id(),
                     company_id=company_id,
                     action_type="jd_similar_mark_filled",
                     actor="hook:conclusion_hired",
@@ -998,7 +1093,7 @@ class TransitionDispatchService:
         if not candidate_id:
             return
         try:
-            from app.domains.opinions.repositories.opinions_repository import (
+            from app.repositories.opinions_repository import (
                 OpinionsRepository,
             )
             from app.domains.job_creation.services.bigfive_service import (
@@ -1195,7 +1290,7 @@ class TransitionDispatchService:
                 from app.shared.compliance.audit_service import get_audit_service
                 import uuid as _uuid
                 await get_audit_service().log_action(
-                    trace_id=str(_uuid.uuid4()),
+                    trace_id=get_correlation_id(),
                     company_id=company_id,
                     action_type="wsi_effectiveness_write_gated",
                     actor="hook:conclusion_hired",

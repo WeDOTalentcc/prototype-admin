@@ -276,6 +276,19 @@ def _check_external_integrations() -> dict:
         "auth_method": "bot_token" if slack_token else ("webhook" if slack_webhook else None),
     }
 
+    # --- Microsoft Teams outbound (Incoming Webhook) ---
+    teams_webhook = os.getenv("TEAMS_WEBHOOK_URL")
+    teams_outbound_configured = bool(teams_webhook)
+    integrations["teams_outbound"] = {
+        "status": "connected" if teams_outbound_configured else "not_configured",
+        "configured": teams_outbound_configured,
+        "note": (
+            None if teams_outbound_configured
+            else "Teams outbound not configured — set TEAMS_WEBHOOK_URL. "
+                 "Get URL via Teams channel → Manage channel → Connectors → Incoming Webhook."
+        ),
+    }
+
     configured_count = sum(1 for v in integrations.values() if v.get("configured"))
     total = len(integrations)
 

@@ -67,7 +67,7 @@ def _load_config() -> dict:
     except FileNotFoundError as exc:
         logger.error(
             "[ProtectedAttributes] YAML NOT FOUND at %s — FairnessGuard will run "
-            "fail-OPEN (LGPD gap). Verify path resolver.",
+            "XXfail-OPEN (LGPD gap). Verify path resolver.XX",
             _CONFIG_PATH, exc_info=True,
         )
         _emit_sentry_breadcrumb("yaml_not_found", str(exc))

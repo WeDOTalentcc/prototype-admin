@@ -35,9 +35,6 @@ EXPECTED_DECORATED_NODES: tuple[str, ...] = (
     "wsi_questions_node",
     "eligibility_node",
     "review_node",
-    "publish_node",
-    "calibration_node",
-    "handoff_node",
 )
 
 
@@ -222,7 +219,6 @@ class TestEmittedWizardSpansAreValid:
         g.eligibility_node(
             dict(state, current_stage="eligibility", eligibility_questions=[]),
         )
-        g.handoff_node(dict(state, current_stage="handoff", job_id=1))
 
         wizard_spans = [
             s for s in _t._completed_spans

@@ -188,26 +188,38 @@ class TestFairnessGuardOrchestrator:
 
         mock_fg_blocked = MagicMock()
         mock_fg_blocked.is_blocked = False
+        mock_fg_blocked.soft_warnings = None
         mock_fg_implicit = []
 
-        with patch.object(main_orch._fairness_guard, "check", return_value=mock_fg_blocked):
-            with patch.object(main_orch._fairness_guard, "check_implicit_bias", return_value=mock_fg_implicit):
-                with patch(
-                    "app.orchestrator.execution.main_orchestrator.pending_action_store"
-                ) as mock_pas:
-                    mock_pas.get.return_value = None
-                    with patch(
-                        "app.orchestrator.execution.main_orchestrator.action_executor"
-                    ) as mock_ae:
-                        mock_ae_result = MagicMock()
-                        mock_ae_result.status = "not_actionable"
-                        mock_ae.try_execute = AsyncMock(return_value=mock_ae_result)
+        mock_security_result = MagicMock()
+        mock_security_result.is_blocked = False
+
+        with patch(
+            "app.orchestrator.execution.main_orchestrator.check_input_security",
+            return_value=mock_security_result,
+        ):
+            with patch(
+                "app.orchestrator.execution.main_orchestrator._is_phase_2_v1_enabled",
+                return_value=True,
+            ):
+                with patch.object(main_orch._fairness_guard, "check", return_value=mock_fg_blocked):
+                    with patch.object(main_orch._fairness_guard, "check_implicit_bias", return_value=mock_fg_implicit):
                         with patch(
-                            "app.orchestrator.execution.main_orchestrator.candidate_list_store"
-                        ) as mock_cls:
-                            mock_cls.set = AsyncMock()
-                            ctx = self._make_ctx("Quem são os melhores candidatos para a vaga?")
-                            result = await main_orch.process(ctx, db=AsyncMock())
+                            "app.orchestrator.execution.main_orchestrator.pending_action_store"
+                        ) as mock_pas:
+                            mock_pas.get.return_value = None
+                            with patch(
+                                "app.orchestrator.execution.main_orchestrator.action_executor"
+                            ) as mock_ae:
+                                mock_ae_result = MagicMock()
+                                mock_ae_result.status = "not_actionable"
+                                mock_ae.try_execute = AsyncMock(return_value=mock_ae_result)
+                                with patch(
+                                    "app.orchestrator.execution.main_orchestrator.candidate_list_store"
+                                ) as mock_cls:
+                                    mock_cls.set = AsyncMock()
+                                    ctx = self._make_ctx("Quem são os melhores candidatos para a vaga?")
+                                    result = await main_orch.process(ctx, db=AsyncMock())
 
         assert result.success is True
 
@@ -531,9 +543,9 @@ class TestPolicyHITL:
         assert "hitl_pending" in source, \
             "PolicyReActAgent deve marcar hitl_pending no metadata"
 
-        # Verificar que o domínio correto é usado
+        # Verificar que o domínio correto é usado (agent registers as "policy" domain)
         assert 'domain="policy"' in source or "domain='policy'" in source, \
-            "PolicyReActAgent deve usar domain='policy' no HITL"
+            "PolicyReActAgent deve usar domain='policy' no _setup_enhanced"
 
     @pytest.mark.asyncio
     async def test_hitl_not_called_when_no_policy_updates(self):
@@ -541,7 +553,11 @@ class TestPolicyHITL:
         from app.domains.hiring_policy.agents.policy_react_agent import PolicyReActAgent
         from lia_agents_core.agent_interface import AgentOutput
 
-        agent = PolicyReActAgent()
+        # Use __new__ to skip __init__ which requires checkpointer
+        agent = PolicyReActAgent.__new__(PolicyReActAgent)
+        agent._memory_service = MagicMock()
+        agent._fairness_guard = MagicMock()
+        agent._all_tool_names = []
         input_data = self._make_agent_input()
 
         # Output sem state_updates (nenhuma política foi alterada)

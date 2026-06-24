@@ -20,6 +20,51 @@ from app.shared.providers.llm_client import get_anthropic_client, is_llm_availab
 logger = logging.getLogger(__name__)
 
 
+# Aliases legados -> codigo canonico de CANONICAL_SUB_STATUSES['rejected'].
+# Cobrem vocabulario antigo do predictor/foco e dados ja persistidos em transito.
+_LEGACY_REJECTION_SUBSTATUS_ALIASES = {
+    "overqualified": "over_qualified",
+    "underqualified": "under_qualified",
+    "insufficient_technical_skills": "lacking_technical_skills",
+    "cultural_fit": "cultural_mismatch",
+    "profile_not_aligned": "another_candidate_selected",
+    "manager_decision": "another_candidate_selected",
+    "salary_expectation": "salary_above_budget",
+    "candidate_withdrew": "withdrew",
+}
+
+
+def normalize_rejection_substatus(code):
+    """Normaliza um codigo de sub-status de reprovacao para o vocabulario canonico.
+
+    Vazio/None passa direto. Codigo ja canonico passa direto.
+    """
+    if not code:
+        return code
+    return _LEGACY_REJECTION_SUBSTATUS_ALIASES.get(code, code)
+
+
+# Motivos de reprovacao de ALTO RISCO juridico: a IA NUNCA redige feedback sobre
+# eles (forca texto generico neutro). O motivo segue selecionavel/persistido p/
+# uso interno (funil/rastreio), mas nada sensivel chega ao candidato.
+# Decisao Paulo 2026-06-10 (auditoria de feedback). LGPD Art. 20 / CLT 373-A /
+# risco de difamacao.
+HIGH_RISK_REJECTION_SUBSTATUS = frozenset({
+    "negative_references",
+    "failed_background_check",
+    "failed_admission_exam",
+    "inadequate_attitude",
+    "lack_professionalism",
+})
+
+
+def is_high_risk_rejection(substatus) -> bool:
+    """True se o motivo de reprovacao e de alto risco juridico (IA nao redige)."""
+    if not substatus:
+        return False
+    return normalize_rejection_substatus(substatus) in HIGH_RISK_REJECTION_SUBSTATUS
+
+
 class SubStatusPredictor:
     """Predicts appropriate sub-status based on candidate context."""
     
@@ -115,28 +160,28 @@ class SubStatusPredictor:
         
         if technical_score and technical_score < 50:
             return {
-                'predicted_substatus': 'insufficient_technical_skills',
+                'predicted_substatus': 'lacking_technical_skills',
                 'confidence': 0.85,
                 'reasoning': f'Score técnico baixo ({technical_score}/100)'
             }
         
         if cultural_score and cultural_score < 50:
             return {
-                'predicted_substatus': 'cultural_fit',
+                'predicted_substatus': 'cultural_mismatch',
                 'confidence': 0.80,
                 'reasoning': f'Score cultural baixo ({cultural_score}/100)'
             }
         
         if overall_score and overall_score < 50:
             return {
-                'predicted_substatus': 'underqualified',
+                'predicted_substatus': 'under_qualified',
                 'confidence': 0.75,
                 'reasoning': f'Score geral baixo ({overall_score}/100)'
             }
         
         if from_stage and 'manager' in from_stage:
             return {
-                'predicted_substatus': 'manager_decision',
+                'predicted_substatus': 'another_candidate_selected',
                 'confidence': 0.80,
                 'reasoning': 'Reprovação em etapa de entrevista com gestor'
             }
@@ -148,7 +193,7 @@ class SubStatusPredictor:
             )
             if tech_notes and len(tech_notes.get('gaps', [])) >= 2:
                 return {
-                    'predicted_substatus': 'insufficient_technical_skills',
+                    'predicted_substatus': 'lacking_technical_skills',
                     'confidence': 0.85,
                     'reasoning': f"Gaps técnicos identificados: {', '.join(tech_notes.get('gaps', [])[:3])}"
                 }
@@ -161,9 +206,9 @@ class SubStatusPredictor:
             }
         
         return {
-            'predicted_substatus': 'profile_not_aligned',
+            'predicted_substatus': 'another_candidate_selected',
             'confidence': 0.60,
-            'reasoning': 'Perfil geral não alinhado com requisitos da vaga'
+            'reasoning': 'Sem sinais especificos — usando motivo neutro de decisao de negocio'
         }
     
     @classmethod
@@ -188,7 +233,7 @@ class SubStatusPredictor:
             'offer': 'preparing_offer',
             'hired': 'onboarding_scheduled',
             'offer_declined': 'accepted_other_offer',
-            'standby': 'temporary_hold'
+            'standby': 'future_talent'
         }
         
         default = stage_default_substatus.get(to_stage, 'in_progress')
@@ -242,15 +287,51 @@ class MessageGenerator:
     }
     
     SUBSTATUS_MESSAGE_FOCUS = {
-        'another_candidate_selected': 'Agradecer participação, reconhecer qualificações, manter positivo sobre competição forte',
-        'insufficient_technical_skills': 'Agradecer, mencionar pontos fortes soft skills, sugerir áreas técnicas para desenvolvimento',
-        'cultural_fit': 'Ser diplomático, focar em diferença de momento/estilo, não criticar personalidade',
-        'profile_not_aligned': 'Feedback geral construtivo, manter porta aberta para futuro',
-        'overqualified': 'Reconhecer fortemente as qualificações, expressar que a senioridade excede a posição',
-        'underqualified': 'Encorajar desenvolvimento, ser construtivo sobre experiência necessária',
-        'manager_decision': 'Agradecer, mencionar que foi decisão do gestor, manter profissional',
-        'salary_expectation': 'Ser discreto sobre valores, mencionar incompatibilidade sem detalhes',
-        'candidate_withdrew': 'Tom neutro, desejar sucesso, não assumir motivos'
+        # Decisao de negocio (NAO e sobre o candidato; manter positivo, porta aberta)
+        'another_candidate_selected': 'Agradecer participacao, reconhecer qualificacoes, deixar claro que foi competicao forte; manter porta aberta para futuras vagas',
+        'position_cancelled': 'Explicar que a vaga foi cancelada por decisao interna; deixar claro que NAO reflete o desempenho do candidato; manter porta aberta',
+        'position_frozen': 'Explicar que a vaga foi congelada/pausada por decisao interna; reforcar que nao e sobre o candidato; oferecer reengajamento futuro',
+        'internal_hire': 'Explicar que a posicao foi preenchida internamente; agradecer o interesse; manter porta aberta',
+        'budget_insufficient': 'Explicar de forma discreta que houve restricao orcamentaria da vaga; nao e sobre o candidato; manter porta aberta',
+        'org_restructuring': 'Explicar que houve reestruturacao organizacional; nao reflete o candidato; manter relacionamento',
+        # Qualificacao (encorajar desenvolvimento, construtivo)
+        'lacking_experience': 'Reconhecer potencial; ser construtivo sobre a experiencia adicional necessaria para a senioridade da vaga; encorajar',
+        'under_qualified': 'Encorajar desenvolvimento; ser construtivo sobre requisitos ainda a desenvolver; tom positivo',
+        'over_qualified': 'Reconhecer fortemente as qualificacoes; explicar que a senioridade excede o escopo da posicao; valorizar o candidato',
+        'lacking_technical_skills': 'Agradecer; destacar pontos fortes (inclusive soft skills); sugerir areas tecnicas concretas para desenvolvimento',
+        'education_mismatch': 'Ser respeitoso quanto ao requisito de formacao da vaga; valorizar a trajetoria; manter porta aberta',
+        'missing_certification': 'Explicar o requisito de certificacao especifico; sugerir caminho para obte-la; encorajar reaplicacao futura',
+        'language_insufficient': 'Ser diplomatico sobre o requisito de idioma; sugerir desenvolvimento; manter tom positivo',
+        'tools_insufficient': 'Destacar pontos fortes; sugerir ferramentas/tecnologias especificas para desenvolver; construtivo',
+        # Cultural / comportamental (diplomatico, nao criticar personalidade)
+        'cultural_mismatch': 'Ser diplomatico; focar em diferenca de momento/estilo; NAO criticar personalidade; manter respeito',
+        'poor_communication': 'Ser delicado; enquadrar como oportunidade de desenvolvimento de comunicacao; nao condescendente',
+        'inadequate_attitude': 'Ser muito cuidadoso e respeitoso; feedback geral construtivo sem julgamento de carater',
+        'lack_professionalism': 'Ser respeitoso e neutro; evitar julgamento pessoal; tom profissional',
+        'lack_of_interest': 'Tom neutro; agradecer o tempo; desejar sucesso',
+        'misaligned_expectations': 'Explicar de forma neutra o desalinhamento de expectativas sobre a posicao; manter respeito',
+        # Logistica (objetivo, sem culpar competencia)
+        'location_mismatch': 'Explicar de forma objetiva a incompatibilidade de localizacao; nao e sobre competencia; manter porta aberta',
+        'work_model_mismatch': 'Explicar a incompatibilidade de modelo de trabalho (presencial/hibrido/remoto); neutro; porta aberta',
+        'visa_required': 'Ser discreto e respeitoso sobre requisito de visto/patrocinio; manter relacionamento',
+        'start_date_mismatch': 'Explicar de forma objetiva a incompatibilidade de data de inicio; manter porta aberta',
+        'schedule_mismatch': 'Explicar a incompatibilidade de horario/jornada; objetivo; porta aberta',
+        'travel_requirements_mismatch': 'Explicar a incompatibilidade com requisitos de viagem; neutro; porta aberta',
+        # Remuneracao (discreto sobre valores)
+        'salary_above_budget': 'Ser discreto sobre valores; mencionar incompatibilidade de faixa sem detalhes; respeitoso',
+        'benefits_mismatch': 'Ser discreto sobre a incompatibilidade de expectativa de beneficios; respeitoso',
+        'compensation_not_competitive': 'Ser discreto e honesto sobre o pacote total; agradecer; manter relacionamento',
+        # Processo (neutro, factual)
+        'interview_no_show': 'Tom neutro e factual sobre o nao comparecimento; oferecer canal caso queira reagendar/explicar',
+        'test_no_show': 'Tom neutro e factual sobre o nao comparecimento ao teste; oferecer canal de contato',
+        'withdrew': 'Tom neutro; respeitar a decisao de desistencia; desejar sucesso; NAO assumir motivos',
+        'unresponsive': 'Tom neutro; informar encerramento por falta de retorno; deixar canal aberto',
+        'incomplete_documentation': 'Explicar de forma objetiva a documentacao pendente; oferecer oportunidade de regularizar se aplicavel',
+        'failed_technical_test': 'Agradecer; ser construtivo sobre o resultado do teste tecnico; sugerir desenvolvimento',
+        'failed_behavioral_test': 'Ser diplomatico sobre o resultado da avaliacao comportamental; construtivo; sem julgamento',
+        'negative_references': 'Ser extremamente discreto; NAO detalhar conteudo de referencias; tom neutro e profissional',
+        'failed_background_check': 'Ser extremamente discreto e factual; NAO detalhar; tom profissional e respeitoso',
+        'failed_admission_exam': 'Ser discreto e respeitoso sobre o exame admissional; tom profissional',
     }
     
     DO_RULES = """
@@ -297,6 +378,14 @@ class MessageGenerator:
         Returns:
             Dict with subject (if email), body, and metadata
         """
+        # Motivo de alto risco juridico -> IA NUNCA redige (feedback generico forcado).
+        if to_stage == 'rejected' and is_high_risk_rejection(substatus):
+            logger.info(
+                "[PIPELINE] motivo de alto risco juridico (%s) -> feedback generico, IA nao redige",
+                normalize_rejection_substatus(substatus),
+            )
+            return cls._generate_fallback(candidate_context, to_stage, substatus, job_context, channel)
+
         if not is_llm_available():
             logger.warning("Anthropic API key not configured, using template fallback")
             return cls._generate_fallback(candidate_context, to_stage, substatus, job_context, channel)
@@ -306,7 +395,7 @@ class MessageGenerator:
 
             channel_config = cls.CHANNEL_LIMITS.get(channel, cls.CHANNEL_LIMITS['email'])
             message_config = cls.MESSAGE_TYPES.get(message_type, cls.MESSAGE_TYPES['feedback_construtivo'])
-            substatus_focus = cls.SUBSTATUS_MESSAGE_FOCUS.get(substatus, 'Feedback geral construtivo')
+            substatus_focus = cls.SUBSTATUS_MESSAGE_FOCUS.get(normalize_rejection_substatus(substatus), 'Feedback geral construtivo')
             
             candidate_name = candidate_context.get('name', 'Candidato')
             candidate_name.split()[0] if candidate_name else 'Candidato'
@@ -314,7 +403,8 @@ class MessageGenerator:
             
             personalization_data = cls._build_personalization_data(candidate_context)
             
-            prompt = f"""Assistente de recrutamento da WeDoTalent. Gere uma mensagem personalizada.
+            company_signature = job_context.get('company_name') or 'Equipe de Recrutamento'
+            prompt = f"""Assistente de recrutamento (atuando em nome de {company_signature}). Gere uma mensagem personalizada.
 
 CANDIDATO:
 - Nome: {candidate_name}
@@ -341,6 +431,8 @@ REGRAS DO QUE FAZER:
 
 REGRAS DO QUE NÃO FAZER:
 {cls.DONT_RULES}
+
+ASSINATURA: assine a mensagem como "{company_signature}". NUNCA mencione "WeDoTalent" no texto.
 
 {"Gere também um assunto para o email (máximo 60 caracteres)." if channel == 'email' else ""}
 
@@ -374,35 +466,23 @@ Responda em JSON com os campos: {'"subject" (para email), ' if channel == 'email
     
     @classmethod
     def _build_personalization_data(cls, context: dict[str, Any]) -> str:
-        """Build personalization data string from context."""
+        """Dados de personalizacao SEGUROS para o prompt do LLM.
+
+        Defesa em profundidade (auditoria 2026-06-10, decisao Paulo): NAO injetar
+        scores WSI, gaps de entrevista, nem notas verbatim de entrevistadores no
+        prompt — dado interno que nao deve chegar ao candidato ("o que nao entra,
+        nao vaza"). So pontos fortes curados (positivos) entram.
+        """
         parts = []
-        
-        if context.get('wsi_score'):
-            wsi = context['wsi_score']
-            parts.append(f"- Score WSI geral: {wsi.get('overall', 'N/A')}/100")
-            if wsi.get('technical'):
-                parts.append(f"- Score técnico: {wsi.get('technical')}/100")
-            if wsi.get('behavioral'):
-                parts.append(f"- Score comportamental: {wsi.get('behavioral')}/100")
-        
-        if context.get('lia_parecer'):
-            parecer = context['lia_parecer']
-            if parecer.get('strengths'):
-                parts.append(f"- Pontos fortes identificados: {', '.join(parecer['strengths'][:3])}")
-            if parecer.get('development_areas'):
-                parts.append(f"- Áreas de desenvolvimento: {', '.join(parecer['development_areas'][:2])}")
-        
-        if context.get('interview_notes'):
-            for note in context['interview_notes'][:2]:
-                stage_name = note.get('stage', 'Entrevista')
-                if note.get('strengths'):
-                    parts.append(f"- Pontos fortes ({stage_name}): {', '.join(note['strengths'][:2])}")
-                if note.get('gaps'):
-                    parts.append(f"- Gaps ({stage_name}): {', '.join(note['gaps'][:2])}")
-        
+
+        parecer = context.get('lia_parecer') or {}
+        strengths = parecer.get('strengths') or []
+        if strengths:
+            parts.append(f"- Pontos fortes identificados: {', '.join(strengths[:3])}")
+
         if not parts:
-            parts.append("- Dados detalhados não disponíveis, usar tom geral construtivo")
-        
+            parts.append("- Dados detalhados nao disponiveis, usar tom geral construtivo")
+
         return '\n'.join(parts)
     
     @classmethod
@@ -418,6 +498,7 @@ Responda em JSON com os campos: {'"subject" (para email), ' if channel == 'email
         candidate_name = candidate_context.get('name', 'Candidato')
         first_name = candidate_name.split()[0] if candidate_name else 'Candidato'
         job_title = job_context.get('title', 'a vaga')
+        company_signature = job_context.get('company_name') or 'Equipe de Recrutamento'
         
         if to_stage == 'rejected':
             body = f"""Olá {first_name},
@@ -431,7 +512,7 @@ Mantemos seu currículo em nosso banco de talentos para futuras oportunidades qu
 Desejamos sucesso em sua carreira!
 
 Atenciosamente,
-Equipe WeDoTalent"""
+{company_signature}"""
         else:
             body = f"""Olá {first_name},
 
@@ -440,7 +521,7 @@ Gostaríamos de informá-lo(a) sobre uma atualização em sua candidatura para {
 Em breve entraremos em contato com mais detalhes sobre os próximos passos.
 
 Atenciosamente,
-Equipe WeDoTalent"""
+{company_signature}"""
         
         return {
             'subject': f'Retorno sobre sua candidatura - {job_title}' if channel == 'email' else None,
@@ -475,8 +556,8 @@ Equipe WeDoTalent"""
         try:
             container = get_anthropic_client()
 
-            old_focus = cls.SUBSTATUS_MESSAGE_FOCUS.get(old_substatus, 'Feedback geral')
-            new_focus = cls.SUBSTATUS_MESSAGE_FOCUS.get(new_substatus, 'Feedback geral')
+            old_focus = cls.SUBSTATUS_MESSAGE_FOCUS.get(normalize_rejection_substatus(old_substatus), 'Feedback geral')
+            new_focus = cls.SUBSTATUS_MESSAGE_FOCUS.get(normalize_rejection_substatus(new_substatus), 'Feedback geral')
             
             prompt = f"""A mensagem abaixo precisa ser ajustada porque o motivo da transição mudou.
 

@@ -26,7 +26,7 @@ export const AVAILABLE_MODULES: LicenseModule[] = [
     name: 'Recrutamento Core',
     description: 'Funcionalidades básicas de recrutamento e seleção',
     isActive: true,
-    features: ['Gestão de vagas', 'Candidatos', 'Entrevistas', 'Chat LIA básico'],
+    features: ['Gestão de vagas', 'Candidatos', 'Entrevistas', 'Chat IA básico'],
     price: 0,
     category: 'core'
   },

@@ -279,7 +279,7 @@ function SummaryCard({
     accent === "danger"
       ? "text-status-error"
       : accent === "warning"
-        ? "text-wedo-orange"
+        ? "text-wedo-orange-text"
         : "text-lia-text-primary"
   return (
     <div className={cn(cardStyles.default, "p-3")}>

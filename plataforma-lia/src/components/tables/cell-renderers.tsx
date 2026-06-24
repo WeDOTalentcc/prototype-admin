@@ -1,4 +1,5 @@
 "use client"
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import NextImage from"next/image"
 
 import React, { useState, lazy, Suspense } from"react"
@@ -538,6 +539,8 @@ export function InteractiveStageCell({
   onTransitionRequest
 }: InteractiveStageCellProps) {
   const [open, setOpen] = useState(false)
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('interactive-stage', open)
   const [selectedStage, setSelectedStage] = useState<string>('')
 
   // WT-2022 P0.STAGES: hook canonical com fallback transitional ao RECRUITMENT_STAGES estatico
@@ -751,7 +754,7 @@ export function ActionButtons({
             variant="ghost"
             size="sm"
             className={`h-7 w-7 p-0 hover:bg-wedo-orange/15 dark:hover:bg-wedo-orange/10/20 ${
- isFavorite ? 'text-wedo-orange' : 'text-lia-text-secondary'
+ isFavorite ? 'text-wedo-orange-text' : 'text-lia-text-secondary'
             }`}
             onClick={onToggleFavorite}
             title={isFavorite ?"Remover dos favoritos" :"Adicionar aos favoritos"}

@@ -449,7 +449,7 @@ export default function VagasDetailClient({ slug }: Props) {
             <ul className="space-y-3">
               {vacancy.requirements.map((req, idx) => (
                 <li key={`req-${idx}`} className="flex items-start gap-3 text-lia-text-primary dark:text-lia-text-primary">
-                  <CheckCircle2 className="w-4 h-4 text-lia-text-disabled dark:text-lia-text-secondary mt-0.5 flex-shrink-0" aria-hidden="true" />
+                  <CheckCircle2 className="w-4 h-4 text-lia-text-muted dark:text-lia-text-secondary mt-0.5 flex-shrink-0" aria-hidden="true" />
                   <span>{req}</span>
                 </li>
               ))}
@@ -544,7 +544,7 @@ export default function VagasDetailClient({ slug }: Props) {
                   key={`benefit-${idx}`}
                   className="flex items-center gap-3 text-lia-text-primary dark:text-lia-text-primary py-2"
                 >
-                  <CheckCircle2 className="w-4 h-4 text-lia-text-disabled dark:text-lia-text-secondary flex-shrink-0" aria-hidden="true" />
+                  <CheckCircle2 className="w-4 h-4 text-lia-text-muted dark:text-lia-text-secondary flex-shrink-0" aria-hidden="true" />
                   <span className="text-sm">{benefit}</span>
                 </li>
               ))}
@@ -589,7 +589,7 @@ export default function VagasDetailClient({ slug }: Props) {
                     </p>
                   </div>
                   {idx < processSteps.length - 1 && (
-                    <ArrowRight className="w-4 h-4 text-lia-text-disabled dark:text-lia-text-primary absolute left-2 -bottom-3 hidden sm:block" aria-hidden="true" />
+                    <ArrowRight className="w-4 h-4 text-lia-text-muted dark:text-lia-text-primary absolute left-2 -bottom-3 hidden sm:block" aria-hidden="true" />
                   )}
                 </li>
               ))}

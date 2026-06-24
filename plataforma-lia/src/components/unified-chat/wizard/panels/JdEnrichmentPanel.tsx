@@ -2,10 +2,84 @@
 
 import React, { useState, useEffect } from"react"
 import { cn } from"@/lib/utils"
-import { CheckCircle, AlertTriangle, XCircle, Brain, Shield } from"lucide-react"
+import { CheckCircle, AlertTriangle, XCircle, Brain, Shield, ChevronDown } from"lucide-react"
 import type { JdEnrichmentData } from"../wizard-types"
 import { FallbackBanner } from "./FallbackBanner"
 import { AiDegradedModeBanner } from "./AiDegradedModeBanner"
+
+const DIMENSION_INFO: Record<string, { definition: string; howToImprove: string }> = {
+  D1: {
+    definition: "Avalia se o título da vaga é claro, usa nomenclatura de mercado e inclui nível de senioridade.",
+    howToImprove: "Inclua o nível (Júnior/Pleno/Sênior/Especialista) e use títulos reconhecidos no mercado.",
+  },
+  D2: {
+    definition: "Verifica se a vaga lista responsabilidades concretas e específicas (mínimo 5).",
+    howToImprove: "Adicione mais responsabilidades. Use verbos de ação: 'Liderar', 'Desenvolver', 'Implementar'.",
+  },
+  D3: {
+    definition: "Mede a presença de skills técnicas mensuráveis (ferramentas, linguagens, plataformas).",
+    howToImprove: "Liste ferramentas e tecnologias específicas que o candidato precisa dominar.",
+  },
+  D4: {
+    definition: "Avalia se a vaga define competências comportamentais relevantes ao cargo.",
+    howToImprove: "Adicione 3+ competências como 'Liderança', 'Comunicação', 'Visão estratégica'.",
+  },
+  D5: {
+    definition: "Verifica se os requisitos, responsabilidades e salário são coerentes com o nível de senioridade.",
+    howToImprove: "Revise os requisitos para alinhá-los ao nível declarado. Júnior e Sênior têm expectativas bem diferentes.",
+  },
+  D6: {
+    definition: "Detecta contradições, repetições e linguagem excludente que prejudicam a qualidade.",
+    howToImprove: "Revise a vaga para remover requisitos contraditórios e termos que possam afastar candidatos qualificados.",
+  },
+  D7: {
+    definition: "Avalia se a vaga apresenta contexto sobre a empresa, equipe ou missão do cargo.",
+    howToImprove: "Adicione informações sobre a empresa, tamanho da equipe, cultura ou impacto do cargo.",
+  },
+  D8: {
+    definition: "Verifica o uso de linguagem neutra e inclusiva, sem termos que excluam grupos.",
+    howToImprove: "Use 'você' em vez de termos generificados. Evite 'ninja', 'rockstar', 'nativo digital'.",
+  },
+  D9: {
+    definition: "Mede a densidade do texto — vagas muito curtas não geram triagens precisas (mínimo 150 palavras).",
+    howToImprove: "Expanda a descrição. Mais contexto e detalhes resultam em triagens mais precisas pela IA.",
+  },
+}
+
+function getDimensionAnalysis(ind: {
+  dimension: string
+  earned: number
+  weight: number
+  status: string
+  count?: number
+  minimum?: number
+  word_count?: number
+}): string {
+  const pct = ind.weight > 0 ? ind.earned / ind.weight : 0
+
+  if (ind.dimension === "D2" && ind.count !== undefined) {
+    if (ind.count >= (ind.minimum ?? 5)) return `Ótimo! ${ind.count} responsabilidades listadas.`
+    return `Apenas ${ind.count} responsabilidades. Mínimo recomendado: ${ind.minimum ?? 5}.`
+  }
+  if (ind.dimension === "D3" && ind.count !== undefined) {
+    if (ind.count >= (ind.minimum ?? 3)) return `${ind.count} skills técnicas identificadas. Bom nível de especificidade.`
+    return `Apenas ${ind.count} skills técnicas. Adicione mais ferramentas e tecnologias específicas.`
+  }
+  if (ind.dimension === "D4" && ind.count !== undefined) {
+    if (ind.count >= 3) return `${ind.count} competências comportamentais definidas.`
+    return `Apenas ${ind.count} competências comportamentais. Inclua pelo menos 3.`
+  }
+  if (ind.dimension === "D9" && ind.word_count !== undefined) {
+    if (ind.word_count >= 150) return `${ind.word_count} palavras — boa densidade para triagem precisa.`
+    return `Apenas ${ind.word_count} palavras. Expanda para pelo menos 150 para triagens de maior qualidade.`
+  }
+
+  if (pct >= 1) return "Dimensão completa. Nenhuma ação necessária."
+  if (pct >= 0.7) return "Bom, com pequenas oportunidades de melhoria."
+  if (pct >= 0.4) return "Dimensão parcialmente atendida. Melhora recomendada."
+  return "Dimensão com lacunas significativas. Ação recomendada."
+}
+
 
 interface Props {
   data: Record<string, unknown>
@@ -16,7 +90,7 @@ interface Props {
 
 function getQualityBadge(score: number) {
   if (score >= 70) return { label:"Bom", icon: CheckCircle, color:"text-status-success bg-status-success/10" }
-  if (score >= 50) return { label:"Adequado", icon: CheckCircle, color:"text-wedo-cyan bg-wedo-cyan/10" }
+  if (score >= 50) return { label:"Adequado", icon: CheckCircle, color:"text-wedo-cyan-text bg-wedo-cyan/10" }
   if (score >= 30) return { label:"Insuficiente", icon: AlertTriangle, color:"text-status-warning bg-status-warning/10" }
   return { label:"Critico", icon: XCircle, color:"text-status-error bg-status-error/10" }
 }
@@ -32,6 +106,7 @@ export function JdEnrichmentPanel({ data, requiresApproval, onApprove, onReject 
   const score = d.quality_score || 0
   const warnings = d.quality_warnings || []
   const indicators = d.quality_indicators || []
+  const [expandedDim, setExpandedDim] = React.useState<string | null>(null)
   const badge = getQualityBadge(score)
   const BadgeIcon = badge.icon
 
@@ -83,11 +158,11 @@ export function JdEnrichmentPanel({ data, requiresApproval, onApprove, onReject 
             </div>
           )}
           {indicators.length > 0 && (
-            <details open className="mt-2 group">
-              <summary className="text-xs text-lia-text-secondary cursor-pointer select-none hover:text-lia-text-primary">
-                {indicators.length} dimensões de qualidade (WSI)
-              </summary>
-              <div className="mt-2 space-y-1">
+            <div className="mt-2">
+              <p className="text-xs text-lia-text-secondary mb-1.5">
+                {indicators.length} dimensões de qualidade
+              </p>
+              <div className="space-y-0.5">
                 {indicators.map((ind) => {
                   const dot =
                     ind.status === "sufficient"
@@ -95,20 +170,52 @@ export function JdEnrichmentPanel({ data, requiresApproval, onApprove, onReject 
                       : ind.status === "partial"
                       ? "bg-status-warning"
                       : "bg-lia-text-disabled"
+                  const isOpen = expandedDim === ind.dimension
+                  const info = DIMENSION_INFO[ind.dimension]
+
                   return (
-                    <div key={ind.dimension} className="flex items-center gap-2 text-[11px]">
-                      <span className={cn("w-1.5 h-1.5 rounded-full flex-shrink-0", dot)} />
-                      <span className="text-lia-text-secondary flex-1 min-w-0 truncate">
-                        {ind.label}
-                      </span>
-                      <span className="text-lia-text-tertiary tabular-nums flex-shrink-0">
-                        {ind.earned}/{ind.weight}
-                      </span>
+                    <div key={ind.dimension}>
+                      <button
+                        type="button"
+                        onClick={() => setExpandedDim(isOpen ? null : ind.dimension)}
+                        className="w-full flex items-center gap-2 text-[11px] py-0.5 hover:bg-lia-interactive-hover rounded px-1 -mx-1 transition-colors text-left"
+                        aria-expanded={isOpen}
+                      >
+                        <span className={cn("w-1.5 h-1.5 rounded-full flex-shrink-0", dot)} />
+                        <span className="text-lia-text-secondary flex-1 min-w-0 truncate">
+                          {ind.label}
+                        </span>
+                        <span className="text-lia-text-tertiary tabular-nums flex-shrink-0">
+                          {ind.earned}/{ind.weight}
+                        </span>
+                        <ChevronDown className={cn(
+                          "w-3 h-3 text-lia-text-muted flex-shrink-0 transition-transform",
+                          isOpen && "rotate-180"
+                        )} />
+                      </button>
+                      {isOpen && info && (
+                        <div className="mt-1 mb-2 ml-3.5 p-2.5 rounded-md bg-lia-bg-secondary border border-lia-border-subtle space-y-1.5">
+                          <p className="text-[11px] text-lia-text-secondary leading-relaxed">
+                            {info.definition}
+                          </p>
+                          <p className={cn(
+                            "text-[11px] font-medium leading-relaxed",
+                            ind.status === "sufficient" ? "text-status-success" : "text-status-warning"
+                          )}>
+                            {getDimensionAnalysis(ind)}
+                          </p>
+                          {ind.status !== "sufficient" && (
+                            <p className="text-[11px] text-lia-text-tertiary leading-relaxed border-t border-lia-border-subtle pt-1.5">
+                              💡 {info.howToImprove}
+                            </p>
+                          )}
+                        </div>
+                      )}
                     </div>
                   )
                 })}
               </div>
-            </details>
+            </div>
           )}
         </div>
       )}
@@ -255,7 +362,7 @@ function JdAwaitingInputState({ message }: { message?: string }) {
         Aguardando descricao da vaga
       </p>
       <p className="text-xs text-lia-text-secondary leading-relaxed">
-        {message ?? "Cole a descricao da vaga (JD) no chat — texto, PDF, DOCX ou TXT. A LIA enriquece automaticamente assim que receber."}
+        {message ?? "Cole a descricao da vaga (JD) no chat — texto, PDF, DOCX ou TXT. A IA enriquece automaticamente assim que receber."}
       </p>
     </div>
   )

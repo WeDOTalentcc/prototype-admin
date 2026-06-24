@@ -46,6 +46,7 @@ Idempotent: DELETE on a missing thread returns ``was_active=False`` and
 from __future__ import annotations
 
 import asyncio
+from app.shared.errors import LIAInternalError
 import logging
 from typing import Any
 
@@ -246,10 +247,7 @@ company_id: str = Depends(require_company_id)) -> ResetSessionResponse:
             type(exc).__name__,
             exc_info=True,
         )
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to reset wizard session: {type(exc).__name__}",
-        ) from exc
+        raise LIAInternalError(f"Failed to reset wizard session: {type(exc).__name__}") from exc
 
     logger.info(
         "[wizard_session.reset] cleared thread=%s session=%s company=%s",

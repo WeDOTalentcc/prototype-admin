@@ -38,17 +38,11 @@ _CONFIRMATION_WORDS = {
 from app.shared.agents.agent_registry import register_agent
 from app.shared.agents.tenant_aware_agent import TenantAwareAgentMixin
 from app.shared.prompts.prompt_composer import PromptComposer
+from app.shared.hitl.hitl_canonical_actions import HITL_REQUIRED_ACTIONS
 
 @register_agent("talent_funnel", aliases=["talent"])  # talent alias for legacy callers (test_context_type_routing_contracts)
 class TalentFunnelReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgentMixin):
     # W4-032 (2026-05-23): bulk shortlist + sourcing outbound requerem HITL.
-    _HITL_ACTION_TYPES = frozenset({
-        "bulk_shortlist",
-        "bulk_sourcing_outreach",
-        "import_external_candidates",
-        "talent_pool_assignment",
-        "auto_reject_funnel",
-    })
 
     DOMAIN_INSTRUCTIONS = PromptComposer.for_domain(
         agent_type="talent",
@@ -64,7 +58,16 @@ class TalentFunnelReActAgent(TenantAwareAgentMixin, LangGraphReActBase, Enhanced
         Falls back to legacy DOMAIN_INSTRUCTIONS if PromptComposer fails.
         """
         try:
+            from app.orchestrator.context.view_context import (
+                format_view_context,
+                view_context_from_context,
+            )
             ctx = input.context or {}
+            # P0.1: estado-da-tela vivo no prompt (agente ciente da visao atual).
+            _view_block = format_view_context(view_context_from_context(ctx))
+            _stage = ctx.get("stage_context", "") or ""
+            if _view_block:
+                _stage = (_view_block + "\n\n" + _stage).strip()
             return self._compose_runtime_prompt(
                 input,
                 agent_type="talent",
@@ -72,7 +75,7 @@ class TalentFunnelReActAgent(TenantAwareAgentMixin, LangGraphReActBase, Enhanced
             few_shot_examples=TALENT_FEW_SHOT_EXAMPLES,
                 reasoning_template=TALENT_REASONING_PROMPT,
                 memory_summary=ctx.get("memory_summary", ""),
-                stage_context=ctx.get("stage_context", ""),
+                stage_context=_stage,
             ).text
         except Exception as exc:
             logger.warning(
@@ -116,7 +119,18 @@ class TalentFunnelReActAgent(TenantAwareAgentMixin, LangGraphReActBase, Enhanced
     def _get_tools(self) -> list:
         """Todos os tools do domínio Talent (LangGraph usa set completo)."""
         from lia_agents_core.tool_adapter import tool_definition_to_langchain_tool
-        tool_defs = get_talent_tools() + self._get_all_enhanced_tools()
+        from app.domains.recruiter_assistant.agents.ui_tool_registry import (
+            get_open_ui_tools,
+            get_table_state_tools,
+        )
+        # Grant UI (least-privilege, anti-ghost): open_ui (modais/nav) +
+        # apply_table_state (surface 'candidates'/Funil TEM ponte FE).
+        tool_defs = (
+            get_talent_tools()
+            + get_open_ui_tools()
+            + get_table_state_tools()
+            + self._get_all_enhanced_tools()
+        )
         return [tool_definition_to_langchain_tool(td) for td in tool_defs]
 
     def _state_to_output(self, state: dict, input: AgentInput) -> AgentOutput:
@@ -159,7 +173,7 @@ class TalentFunnelReActAgent(TenantAwareAgentMixin, LangGraphReActBase, Enhanced
                             reason=criteria.get("description", "Critérios atendidos"),
                             auto_navigate=False,
                         )
-        except Exception:
+        except Exception:  # ADR-031-R3-EXEMPT: deteccao opcional de navegacao por confirmacao do usuario; falha nao bloqueia resposta
             pass
 
         _confidence = 0.75
@@ -195,7 +209,7 @@ class TalentFunnelReActAgent(TenantAwareAgentMixin, LangGraphReActBase, Enhanced
         _hitl_response = await maybe_request_hitl_approval(
             agent_input=input,
             domain=self.domain_name,
-            action_types=self._HITL_ACTION_TYPES,
+            action_types=HITL_REQUIRED_ACTIONS,
             agent_name="talent_funnel_react_agent",
             description_template=(
                 "Confirmar **{action_type}** no talent pool. "

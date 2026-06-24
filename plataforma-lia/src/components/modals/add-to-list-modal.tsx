@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import { useState, useEffect } from "react"
 import { liaApi, CandidateList } from "@/services/lia-api"
 import { Button } from "@/components/ui/button"
@@ -43,6 +44,9 @@ export function AddToListModal({
   candidateNames, 
   onSuccess 
 }: AddToListModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('add-to-list', isOpen)
+
 const [lists, setLists] = useState<CandidateList[]>([])
   const [selectedListId, setSelectedListId] = useState<string | null>(null)
   const [isCreatingNew, setIsCreatingNew] = useState(false)
@@ -70,7 +74,7 @@ const [lists, setLists] = useState<CandidateList[]>([])
         setIsCreatingNew(true)
       }
     } catch (error) {
-      toast.error("Erro ao carregar listas")
+      toast.error("Erro ao carregar listas", { description: "Verifique sua conexão e reabra o modal." })
     } finally {
       setIsLoading(false)
     }
@@ -114,7 +118,7 @@ const [lists, setLists] = useState<CandidateList[]>([])
       onSuccess?.()
       onClose()
     } catch (error) {
-      toast.error("Erro ao adicionar candidatos")
+      toast.error("Erro ao adicionar candidatos", { description: "Verifique sua conexão e tente novamente." })
     } finally {
       setIsSubmitting(false)
     }

@@ -12,7 +12,7 @@ export interface ActionBehaviorConfig {
 export const AUTHORITATIVE_ACTION_MATRIX: Record<string, ActionBehaviorConfig> = {
   intake: {
     label: 'Receber Candidato',
-    description: 'LIA orienta o recrutador sobre o candidato recebido',
+    description: 'IA orienta o recrutador sobre o candidato recebido',
     modalType: 'passive',
     defaultChannel: 'email',
     allowLiaAuto: true,
@@ -21,7 +21,7 @@ export const AUTHORITATIVE_ACTION_MATRIX: Record<string, ActionBehaviorConfig> =
   },
   screening: {
     label: 'Convidar para Triagem WSI',
-    description: 'LIA conduz triagem automatizada com o candidato',
+    description: 'IA conduz triagem automatizada com o candidato',
     modalType: 'screening',
     defaultChannel: 'email',
     allowLiaAuto: true,
@@ -30,7 +30,7 @@ export const AUTHORITATIVE_ACTION_MATRIX: Record<string, ActionBehaviorConfig> =
   },
   scheduling: {
     label: 'Abrir Agendamento',
-    description: 'LIA envia convite de agendamento ao candidato',
+    description: 'IA envia convite de agendamento ao candidato',
     modalType: 'scheduling',
     defaultChannel: 'email_whatsapp',
     allowLiaAuto: true,
@@ -40,7 +40,7 @@ export const AUTHORITATIVE_ACTION_MATRIX: Record<string, ActionBehaviorConfig> =
   },
   evaluation: {
     label: 'Enviar Teste',
-    description: 'LIA envia teste técnico ou avaliação',
+    description: 'IA envia teste técnico ou avaliação',
     modalType: 'evaluation',
     defaultChannel: 'email',
     allowLiaAuto: true,
@@ -49,7 +49,7 @@ export const AUTHORITATIVE_ACTION_MATRIX: Record<string, ActionBehaviorConfig> =
   },
   verification: {
     label: 'Solicitar Documentos',
-    description: 'LIA solicita documentos necessários',
+    description: 'IA solicita documentos necessários',
     modalType: 'verification',
     defaultChannel: 'email',
     allowLiaAuto: true,
@@ -68,7 +68,7 @@ export const AUTHORITATIVE_ACTION_MATRIX: Record<string, ActionBehaviorConfig> =
   },
   passive: {
     label: 'Mover Candidato',
-    description: 'LIA orienta sobre a movimentação do candidato',
+    description: 'IA orienta sobre a movimentação do candidato',
     modalType: 'passive',
     defaultChannel: 'email',
     allowLiaAuto: true,
@@ -77,7 +77,7 @@ export const AUTHORITATIVE_ACTION_MATRIX: Record<string, ActionBehaviorConfig> =
   },
   standby: {
     label: 'Mover para Stand By',
-    description: 'LIA registra candidato no banco de talentos',
+    description: 'IA registra candidato no banco de talentos',
     modalType: 'passive',
     defaultChannel: 'email',
     allowLiaAuto: true,
@@ -86,7 +86,7 @@ export const AUTHORITATIVE_ACTION_MATRIX: Record<string, ActionBehaviorConfig> =
   },
   conclusion_hired: {
     label: 'Confirmar Contratação',
-    description: 'LIA envia boas-vindas e próximos passos ao candidato',
+    description: 'IA envia boas-vindas e próximos passos ao candidato',
     modalType: 'conclusion',
     defaultChannel: 'email',
     allowLiaAuto: true,
@@ -104,7 +104,7 @@ export const AUTHORITATIVE_ACTION_MATRIX: Record<string, ActionBehaviorConfig> =
   },
   conclusion_declined: {
     label: 'Proposta Recusada',
-    description: 'LIA envia agradecimento e mantém porta aberta',
+    description: 'IA envia agradecimento e mantém porta aberta',
     modalType: 'conclusion',
     defaultChannel: 'email',
     allowLiaAuto: true,

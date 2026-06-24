@@ -59,6 +59,8 @@ WIZARD_STAGE_NAMES: tuple[str, ...] = (
     "pipeline_template",
     "bigfive",
     "salary",
+    "benefits",
+    "variable_comp",
     "competency",
     "wsi_questions",
     "eligibility",
@@ -66,6 +68,8 @@ WIZARD_STAGE_NAMES: tuple[str, ...] = (
     "publish",
     "calibration",
     "handoff",
+    "done",
+    "scheduling",
 )
 
 

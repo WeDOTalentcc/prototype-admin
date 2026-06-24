@@ -19,15 +19,16 @@
   --lia-bg-elevated: #FFFFFF;          /* Cards elevados (com shadow) */
   
   /* Borders & Dividers - Tom único (ElevenLabs-style) */
-  --lia-border-subtle: #D4D4D4;        /* Borders sutis - padrão para tudo */
-  --lia-border-default: #BEBEBE;       /* Unificado com subtle */
-  --lia-border-medium: #BEBEBE;        /* Unificado com subtle */
+  --lia-border-subtle: #C8C8C8;        /* Borders sutis - padrão para tudo */
+  --lia-border-default: #B0B0B0;       /* Bordas com destaque */
+  --lia-border-medium: #A0A0A0;        /* Bordas fortes, separadores de seção */
   --lia-border-strong: #999999;        /* Border forte - inputs centrais */
   
   /* Textos - Hierarquia tipográfica clara (ElevenLabs-style) */
   --lia-text-primary: #111111;         /* Preto puro - títulos, texto principal */
   --lia-text-secondary: #2D2D2D;       /* Cinza médio - texto corpo, descrições */
-  --lia-text-tertiary: #5C5C5C;        /* Cinza claro - placeholders, hints */
+  --lia-text-tertiary: #404040;        /* Cinza escuro - descriptions, metadata */
+  --lia-text-muted:    #737373;        /* Cinza médio - ícones, microtexto, captions */
   --lia-text-disabled: #999999;        /* Cinza muito claro - desabilitado */
   --lia-text-inverse: #FFFFFF;         /* Branco - texto em fundo escuro */
   --lia-text-inverted: var(--lia-text-inverse); /* Alias para compatibilidade retroativa */
@@ -91,6 +92,15 @@
   --wedo-magenta: #D160AB;
   --wedo-magenta-light: #D5A8C6;
   --wedo-magenta-hover: #B84D95;
+  /* TEXT-SAFE DARKER VARIANTS — WCAG AA on white (Junho 2026 v4.2.4)
+     Usar text-wedo-*-text em TEXTO legível. Ícones/decoração continuam com text-wedo-*.
+     Fundo claro: usa este valor. Fundo escuro (dark mode): CSS var reverte ao original. */
+  --wedo-cyan-text:    #0D6E82;   /* 5.5:1 on white — cyan escuro texto-safe */
+  --wedo-orange-text:  #7A4E14;   /* 6.2:1 on white — orange escuro texto-safe */
+  --wedo-green-text:   #1E6B42;   /* 5.4:1 on white — green escuro texto-safe */
+  --wedo-purple-text:  #5E35A8;   /* 7.9:1 on white — purple escuro texto-safe */
+  --wedo-magenta-text: #882B72;   /* 7.7:1 on white — magenta escuro texto-safe */
+
   
   /* AMBER - Warning vibrante, urgência */
   --wedo-amber: #F59E0B;
@@ -145,16 +155,16 @@
     
     --lia-btn-secondary-bg: transparent;
     --lia-btn-secondary-hover: #F3F4F6;
-    --lia-btn-secondary-text: #6B7280;
+    --lia-btn-secondary-text: #374151;
     --lia-btn-secondary-border: #E5E7EB;
     
     --lia-btn-ghost-bg: transparent;
     --lia-btn-ghost-hover: #F3F4F6;
-    --lia-btn-ghost-text: #6B7280;
+    --lia-btn-ghost-text: #374151;
     
     /* Badges/Tags */
     --lia-badge-neutral-bg: #F3F4F6;
-    --lia-badge-neutral-text: #6B7280;
+    --lia-badge-neutral-text: #4B5563;
     --lia-badge-neutral-border: #E5E7EB;
     
     /* Input/Forms */
@@ -222,6 +232,7 @@
     --lia-text-primary: #F9FAFB;         /* Branco suave */
     --lia-text-secondary: #D1D5DB;       /* Cinza claro */
     --lia-text-tertiary: #5C5C5C;        /* Cinza médio */
+    --lia-text-muted:    #A0A0A0;        /* Cinza claro - ícones, microtexto dark */
     --lia-text-disabled: #6B7280;
     --lia-text-inverse: #111827;
     
@@ -613,7 +624,7 @@
   --lia-text-black: #030712;        /* Migrar para --wedo-text-title */
   --lia-text-dark: #1F2937;         /* Migrar para --wedo-text-body */
   --lia-text-body: #4B5563;         /* Migrar para --wedo-text-secondary */
-  --lia-text-muted: #6B7280;        /* Migrar para --wedo-text-muted */
+  --lia-text-muted: #737373;        /* Migrar para --wedo-text-muted */
   
   /* Cores de categoria (para badges e ícones) */
   /* --lia-cat-* ELIMINADOS 2026-03-29

@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import React, { useState, useCallback, useRef } from "react"
 import {
   Dialog,
@@ -33,7 +34,7 @@ const ACCEPTED_FILE_TYPES = {
   'text/plain': ['.txt'],
 }
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
+import { MAX_FILE_SIZE } from '@/constants/upload'
 
 interface CVUploadModalProps {
   isOpen: boolean
@@ -95,6 +96,9 @@ export interface ParsedCVResponse {
 }
 
 export function CVUploadModal({ isOpen, onClose, onParsed }: CVUploadModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('cv-upload', isOpen)
+
   const [activeTab, setActiveTab] = useState<"upload" | "text">("upload")
   const [isDragging, setIsDragging] = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)

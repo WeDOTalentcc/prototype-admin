@@ -29,6 +29,16 @@ from app.schemas.rubric import (
     RequirementPriorityEnum,
     RubricEvaluationResult,
 )
+
+
+class RubricEvaluationError(Exception):
+    """LLM evaluation failed — cannot produce reliable score.
+
+    Callers MUST handle this explicitly: either re-try or route the
+    candidate to manual review.  Silently returning score=0 is the
+    anti-pattern this exception replaces (F5a fail-loud).
+    """
+
 from app.domains.ai.services.llm import LLMService
 from app.services.notification_service import NotificationChannel, NotificationService, NotificationType
 from app.domains.analytics.services.sector_benchmark_service import sector_benchmark_service
@@ -209,10 +219,43 @@ class CalibrationFeedback:
         self._feedback_log: list[dict[str, Any]] = []
         self._calibration_adjustments: dict[str, dict[str, Any]] = {}
         self._lock = threading.RLock()
+        self._redis_client = None  # lazy — fail-open se Redis ausente
+
+    def _get_redis(self):
+        """Lazy Redis client (sync). Retorna None se Redis indisponível (fail-open)."""
+        if self._redis_client is not None:
+            return self._redis_client
+        try:
+            import redis as _redis_lib  # noqa: PLC0415
+            redis_url = os.environ.get("REDIS_URL")
+            if not redis_url:
+                try:
+                    from app.core.config import settings as _s  # noqa: PLC0415
+                    redis_url = getattr(_s, "REDIS_URL", None)
+                except Exception:
+                    pass
+            if redis_url:
+                self._redis_client = _redis_lib.from_url(
+                    redis_url, decode_responses=True, socket_timeout=1
+                )
+        except Exception:
+            pass
+        return self._redis_client
     
     def get_calibration_version(self, job_id: str) -> int:
-        """Get the calibration version for a job (incremented on each feedback)."""
+        """Get the calibration version for a job (incremented on each feedback).
+        Lê Redis primeiro para sobreviver restarts (fail-open).
+        """
         key = f"job:{job_id}"
+        redis_key = f"calibration_adjustment:{job_id}"
+        try:
+            r = self._get_redis()
+            if r:
+                v = r.hget(redis_key, "version")
+                if v is not None:
+                    return int(float(v))
+        except Exception:
+            pass
         with self._lock:
             data = self._calibration_adjustments.get(key)
             return data.get("version", 0) if data else 0
@@ -267,15 +310,18 @@ class CalibrationFeedback:
             self._update_calibration_adjustments(job_id, original_score, recruiter_adjusted_score)
     
     def _update_calibration_adjustments(
-        self, 
-        job_id: str, 
-        original: float, 
-        adjusted: float
+        self,
+        job_id: str,
+        original: float,
+        adjusted: float,
     ) -> None:
-        """Update running calibration adjustment for a job using proper averaging."""
+        """Update running calibration adjustment for a job using proper averaging.
+        Persiste no Redis para sobreviver restarts (fail-open).
+        """
         key = f"job:{job_id}"
+        redis_key = f"calibration_adjustment:{job_id}"
         delta = adjusted - original
-        
+
         with self._lock:
             if key not in self._calibration_adjustments:
                 self._calibration_adjustments[key] = {"sum": delta, "count": 1, "avg": delta, "version": 1}
@@ -285,14 +331,46 @@ class CalibrationFeedback:
                 data["count"] += 1
                 data["avg"] = data["sum"] / data["count"]
                 data["version"] = data.get("version", 0) + 1
-    
+            snapshot = dict(self._calibration_adjustments[key])
+
+        # persist to Redis (fail-open — indisponível não bloqueia o feedback)
+        try:
+            r = self._get_redis()
+            if r:
+                r.hset(redis_key, mapping={k: str(v) for k, v in snapshot.items()})
+                r.expire(redis_key, _CALIBRATION_REDIS_TTL)
+        except Exception as _redis_err:
+            logger.debug("[CalibrationFeedback] Redis write failed (fail-open): %s", _redis_err)
+
     def get_calibration_adjustment(self, job_id: str) -> float:
-        """Get the calibration adjustment for a job based on feedback. Thread-safe."""
+        """Get the calibration adjustment for a job based on feedback.
+        Lê Redis primeiro (sobrevive restarts), fallback in-memory (fail-open).
+        """
         key = f"job:{job_id}"
+        redis_key = f"calibration_adjustment:{job_id}"
+
+        try:
+            r = self._get_redis()
+            if r:
+                raw = r.hgetall(redis_key)
+                if raw and "avg" in raw:
+                    avg = float(raw["avg"])
+                    with self._lock:
+                        if key not in self._calibration_adjustments:
+                            self._calibration_adjustments[key] = {
+                                "sum": float(raw.get("sum", avg)),
+                                "count": int(float(raw.get("count", 1))),
+                                "avg": avg,
+                                "version": int(float(raw.get("version", 1))),
+                            }
+                    return avg
+        except Exception as _redis_err:
+            logger.debug("[CalibrationFeedback] Redis read failed (fallback in-memory): %s", _redis_err)
+
         with self._lock:
             data = self._calibration_adjustments.get(key)
             return data["avg"] if data else 0.0
-    
+
     def get_feedback_stats(self, job_id: str | None = None) -> dict[str, Any]:
         """Get statistics about feedback for analysis. Thread-safe."""
         with self._lock:
@@ -325,6 +403,7 @@ class CalibrationFeedback:
 
 evaluation_cache = RubricEvaluationCache()
 calibration_feedback = CalibrationFeedback()
+_CALIBRATION_REDIS_TTL = 30 * 24 * 3600  # 30 dias — sobrevive um mês de histórico
 
 
 RUBRIC_EVALUATION_PROMPT = """You are an expert HR analyst evaluating a candidate's CV against specific job requirements.
@@ -700,11 +779,15 @@ class RubricEvaluationService:
             return evaluations, strengths, concerns, overall_reasoning
             
         except json.JSONDecodeError as e:
-            logger.error(f"Failed to parse LLM response as JSON: {e}")
-            return self._fallback_evaluation(requirements)
+            logger.error("[RubricEval] Failed to parse LLM response as JSON: %s", e, exc_info=True)
+            raise RubricEvaluationError(
+                f"LLM response is not valid JSON: {e}"
+            ) from e
         except Exception as e:
-            logger.error(f"Error parsing LLM response: {e}")
-            return self._fallback_evaluation(requirements)
+            logger.error("[RubricEval] Error parsing LLM response: %s", e, exc_info=True)
+            raise RubricEvaluationError(
+                f"LLM evaluation parse failed: {e}"
+            ) from e
     
     def _fallback_evaluation(
         self, 
@@ -1080,23 +1163,18 @@ class RubricEvaluationService:
             try:
                 result = await self.evaluate_candidate(candidate, requirements)
                 results.append((candidate, result))
-            except Exception as e:
-                logger.error(f"Failed to evaluate candidate: {e}")
-                fallback_result = RubricEvaluationResult(
-                    score=0.0,
-                    raw_score=0.0,
-                    total_weighted_points=0.0,
-                    max_possible_points=0.0,
-                    evaluations=[],
-                    strengths=[],
-                    concerns=[f"Evaluation failed: {str(e)}"],
-                    reasoning="Evaluation could not be completed.",
-                    recommendation="Não Recomendado",
+            except RubricEvaluationError as e:
+                logger.error(
+                    "[RubricEval] Candidate evaluation FAILED (no score produced): %s",
+                    e, exc_info=True,
                 )
-                results.append((candidate, fallback_result))
+                results.append((candidate, None))
+            except Exception as e:
+                logger.error("[RubricEval] Unexpected error evaluating candidate: %s", e, exc_info=True)
+                raise
         
         if sort_by_score:
-            results.sort(key=lambda x: x[1].score, reverse=True)
+            results.sort(key=lambda x: x[1].score if x[1] is not None else -1, reverse=True)
         
         return results
     

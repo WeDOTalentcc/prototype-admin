@@ -73,6 +73,10 @@ class TriggerType(str, Enum):
     # ── Oferta ──
     OFFER_SENT = "offer_sent"
     OFFER_ACCEPTED = "offer_accepted"
+    OFFER_VIEWED = "offer_viewed"
+    OFFER_DECLINED = "offer_declined"
+    OFFER_EXPIRED = "offer_expired"
+    OFFER_COUNTER_PROPOSED = "offer_counter_proposed"
 
     # ── Vaga ──
     JOB_PUBLISHED = "job_published"
@@ -282,6 +286,34 @@ TRIGGER_TYPE_CATALOG: tuple[TriggerMetadata, ...] = (
         label_pt="Proposta aceita",
         label_en="Offer accepted",
         description="Candidato confirmou aceite da proposta.",
+        category="offer",
+    ),
+    TriggerMetadata(
+        value=TriggerType.OFFER_VIEWED,
+        label_pt="Proposta visualizada",
+        label_en="Offer viewed",
+        description="Candidato abriu o link da proposta pelo portal.",
+        category="offer",
+    ),
+    TriggerMetadata(
+        value=TriggerType.OFFER_DECLINED,
+        label_pt="Proposta recusada",
+        label_en="Offer declined",
+        description="Candidato recusou a proposta pelo portal.",
+        category="offer",
+    ),
+    TriggerMetadata(
+        value=TriggerType.OFFER_EXPIRED,
+        label_pt="Proposta expirada",
+        label_en="Offer expired",
+        description="Prazo de resposta da proposta venceu sem decisão do candidato.",
+        category="offer",
+    ),
+    TriggerMetadata(
+        value=TriggerType.OFFER_COUNTER_PROPOSED,
+        label_pt="Contraproposta recebida",
+        label_en="Counter-proposal received",
+        description="Candidato enviou uma contraproposta (N3).",
         category="offer",
     ),
 

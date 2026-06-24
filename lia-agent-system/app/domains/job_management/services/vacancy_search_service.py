@@ -6,6 +6,7 @@ Provides functionality to:
 - Search previous vacancies by criteria
 - Apply adjustments to reused vacancies
 """
+from app.shared.llm_models import CANONICAL_GEMINI_FLASH_MODEL
 import json
 import logging
 import re
@@ -97,7 +98,7 @@ Se nenhum ajuste for mencionado, retorne null para todos os campos."""
             
             gemini = self._llm_service.gemini_native
             response = await gemini.aio.models.generate_content(
-                model="gemini-2.5-flash",
+                model=CANONICAL_GEMINI_FLASH_MODEL,
                 contents=prompt
             )
             
@@ -197,7 +198,7 @@ Se nenhum ajuste for mencionado, retorne null para todos os campos."""
             
             # Include all valid statuses (both Portuguese and English, various cases)
             valid_statuses = [
-                "Concluída", "Fechada", "Filled", "Closed", "Cancelada", "Cancelled",
+                "Concluída", "Cancelada", "Arquivada",
                 "Ativa", "Active", "Open", "Em Andamento", "active", "ativa", "open"
             ]
             conditions.append(JobVacancy.status.in_(valid_statuses))
@@ -243,7 +244,7 @@ Se nenhum ajuste for mencionado, retorne null para todos os campos."""
             
             summaries = []
             for v in vacancies:
-                status_normalized = "contratado" if v.status in ["Concluída", "Filled", "Closed", "Fechada"] else (
+                status_normalized = "contratado" if v.status in ["Concluída", "Cancelada", "Arquivada"] else (
                     "cancelado" if v.status in ["Cancelada", "Cancelled"] else "ativa"
                 )
                 
@@ -336,7 +337,7 @@ Se nenhum ajuste for mencionado, retorne null para todos os campos."""
             
             gemini = self._llm_service.gemini_native
             response = await gemini.aio.models.generate_content(
-                model="gemini-2.5-flash",
+                model=CANONICAL_GEMINI_FLASH_MODEL,
                 contents=prompt
             )
             

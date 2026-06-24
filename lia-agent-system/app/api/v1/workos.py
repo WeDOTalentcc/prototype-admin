@@ -32,9 +32,9 @@ from app.auth.workos_schemas import (
     WorkOSSyncUserResponse,
 )
 from app.auth.workos_schemas import SCIMGroupMembership as SCIMGroupMembershipSchema
-from app.domains.auth.dependencies import get_user_repo, get_workos_repo
-from app.domains.auth.repositories.user_repository import UserRepository
-from app.domains.auth.repositories.workos_repository import WorkOSRepository
+from app.repositories.dependencies import get_user_repo, get_workos_repo
+from app.repositories.auth_user_repository import UserRepository
+from app.repositories.workos_repository import WorkOSRepository
 from app.shared.resilience.circuit_breaker import WORKOS_CIRCUIT, circuit_breaker_decorator
 from app.shared.compliance.audit_service import AuditService
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
@@ -273,9 +273,12 @@ company_id: str = Depends(require_company_id)):
     is_new_user = False
     name = f"{user_data.first_name or ''} {user_data.last_name or ''}".strip() or user_data.email.split('@')[0]
 
+    # PERM-EXEMPT: null check, nao e gate de role
     if not user:
         user = await user_repo.get_by_email(user_data.email)
 
+        # PERM-EXEMPT: null check, nao e gate de role
+        # PERM-EXEMPT: null check, nao e gate de role
         if user:
             user = await user_repo.update_by_instance(user, {
                 "workos_id": user_data.workos_id,
@@ -1532,7 +1535,7 @@ async def scim_webhook(
         logger.warning("Invalid WorkOS webhook signature")
         return JSONResponse(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            content={"error": "Invalid signature"}
+            content={"error": "Invalid signature", "request_id": getattr(request.state, "request_id", "unknown")}
         )
 
     try:
@@ -1541,7 +1544,7 @@ async def scim_webhook(
         logger.error(f"Failed to parse webhook JSON: {e}")
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content={"error": "Invalid JSON payload"}
+            content={"error": "Invalid JSON payload", "request_id": getattr(request.state, "request_id", "unknown")}
         )
 
     event_type = event.get("event")

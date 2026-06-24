@@ -35,9 +35,25 @@ export function useKanbanTransitions({
             channel: data.channel || 'email',
             action_behavior: data.actionBehavior || universalModalState.actionBehavior,
             extracted_preferences: data.extracted_preferences || undefined,
+            // AUD-4: o clique "Confirmar" do modal de transicao E a aprovacao humana (HITL).
+            // Com LIA_HITL_GATE on, libera o dispatch; chamadas nao-confirmadas ao endpoint ficam bloqueadas.
+            hitl_approved: true,
           })
         })
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}))
+          const errMsg = errData.detail?.message || errData.error || `HTTP ${response.status}`
+          toast.error('Erro na transição', { description: `Candidato ${candidateId}: ${errMsg}` })
+          continue
+        }
         const result = await response.json()
+        if (!result.success && !result.requires_approval) {
+          toast.error('Transição não concluída', {
+            description: result.message || `Candidato ${candidateId}: erro interno — não foi persistido.`,
+            duration: 6000,
+          })
+          continue
+        }
         if (result.dispatch_results?.length) {
           for (const dr of result.dispatch_results) {
             if (dr.success) {

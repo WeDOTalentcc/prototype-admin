@@ -21,14 +21,15 @@ from pydantic import BaseModel
 
 from app.auth.dependencies import get_current_active_user
 from app.auth.models import User
-from app.domains.approvals.dependencies import get_approvals_repo
-from app.domains.approvals.repositories.approvals_repository import ApprovalsRepository
+from app.repositories.dependencies import get_approvals_repo
+from app.repositories.approvals_repository import ApprovalsRepository
 from app.domains.communication.services.email_service import EmailService, get_email_service
 from app.models.approval import ApprovalRequest
 from app.shared.compliance.audit_service import AuditService, get_audit_service
 from app.shared.pii_masking import get_masked_logger
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 from app.shared.types import WeDoBaseModel
+from app.shared.errors import LIAError
 
 logger = get_masked_logger(__name__)
 
@@ -168,7 +169,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error creating approval request: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("", response_model=list[ApprovalRequestResponse])
@@ -210,7 +211,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error listing approval requests: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/pending", response_model=list[ApprovalRequestResponse])
@@ -232,7 +233,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error listing pending approvals: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/{approval_id}", response_model=ApprovalRequestResponse)
@@ -254,7 +255,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting approval request: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.put("/{approval_id}/approve", response_model=ApprovalRequestResponse)
@@ -346,7 +347,7 @@ async def approve_request(
         raise
     except Exception as e:
         logger.error(f"Error approving request: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.put("/{approval_id}/reject", response_model=ApprovalRequestResponse)
@@ -435,7 +436,7 @@ async def reject_request(
         raise
     except Exception as e:
         logger.error(f"Error rejecting request: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.put("/{approval_id}/cancel", response_model=ApprovalRequestResponse)
@@ -487,7 +488,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error cancelling request: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 async def send_approval_request_email(db, approval: ApprovalRequest, email_svc: "EmailService" = None):
@@ -518,7 +519,7 @@ async def send_approval_request_email(db, approval: ApprovalRequest, email_svc: 
         "<li>Data: " + date_str + "</li>"
         "</ul>"
         + description_block +
-        "<p>Por favor, acesse a plataforma LIA para aprovar ou rejeitar esta solicitacao.</p>"
+        "<p>Por favor, acesse a WeDOTalent para aprovar ou rejeitar esta solicitacao.</p>"
         "<p>Atenciosamente,<br>Sistema LIA</p>"
         "</body></html>"
     )

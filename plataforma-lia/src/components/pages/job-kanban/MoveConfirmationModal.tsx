@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import React, { useState } from"react"
 import {
   Dialog,
@@ -37,6 +38,9 @@ export function MoveConfirmationModal({
   stages,
   liaSuggestions,
 }: MoveConfirmationModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('move-confirmation', isOpen)
+
   const t = useTranslations('kanban')
   const [selectedSubstatus, setSelectedSubstatus] = useState<string>("")
   const [reason, setReason] = useState("")
@@ -82,7 +86,7 @@ export function MoveConfirmationModal({
               <span className="text-lia-text-secondary">{fromStage.name}</span>
             </div>
             
-            <ArrowRight className="h-4 w-4 text-lia-text-disabled" />
+            <ArrowRight className="h-4 w-4 text-lia-text-muted" />
             
             <div className="flex items-center gap-2">
               <div 

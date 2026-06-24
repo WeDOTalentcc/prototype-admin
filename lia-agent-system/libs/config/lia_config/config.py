@@ -19,6 +19,25 @@ from pydantic import AliasChoices, Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # ---------------------------------------------------------------------------
+# Dev guard de quota de Redis remoto (ex.: Upstash free 500k cmd/mes).
+# Em desenvolvimento, REDIS_URL remoto e redirecionado para o redis-server
+# local (que o workflow `lia-backend` ja sobe) para nao consumir a quota
+# do Redis gerenciado. Fix no produtor: cobre app + Celery + consumidores.
+# ---------------------------------------------------------------------------
+_LOCAL_REDIS_HOSTS = {"localhost", "127.0.0.1", "::1", ""}
+
+
+def _redis_host_is_local(url: str) -> bool:
+    """True se a URL Redis aponta para um host local (nao consome quota remota)."""
+    try:
+        from urllib.parse import urlparse
+
+        host = (urlparse(url).hostname or "").lower()
+    except Exception:
+        return False
+    return host in _LOCAL_REDIS_HOSTS
+
+# ---------------------------------------------------------------------------
 # 1. Database
 # ---------------------------------------------------------------------------
 
@@ -189,6 +208,21 @@ class AuthSettings(BaseSettings):
     # WorkOS
     # Rails JWT shared secret (same as Rails secret_key_base)
     RAILS_JWT_SECRET_KEY: str | None = None
+    # Phase 1 Auth Decoupling: enable DB-backed cache for Rails user resolution.
+    # True (default): checks users.rails_user_id before calling Rails GET /v1/me.
+    # False: reverts to in-memory-only cache (instant rollback if DB issues).
+    FASTAPI_RAILS_DB_CACHE: bool = True
+    # Phase 1b: FastAPI is the sole JWT issuer. When True, Rails JWT fallback
+    # raises 401 with upgrade_required=True instead of silently accepting.
+    # Default False = backward compat (Rails JWTs still accepted).
+    # Flip to True only after all active users have FastAPI JWTs.
+    FASTAPI_AUTH_PRIMARY: bool = False
+    # Phase 2a: WorkOS SSO callback issues FastAPI JWT (lia_access_token).
+    # Default False = backward compat (workos_session cookie still used).
+    WORKOS_FASTAPI_JWT: bool = False
+    # Phase 2b: Magic-link verification done by FastAPI instead of Rails.
+    # Default False = backward compat (Rails magic-link still used).
+    FASTAPI_MAGIC_LINK_PRIMARY: bool = False
     WORKOS_CLIENT_ID: str | None = None
     WORKOS_API_KEY: str | None = None
     WORKOS_WEBHOOK_SECRET: str | None = None
@@ -206,11 +240,16 @@ class AuthSettings(BaseSettings):
     # Microsoft Teams
     MICROSOFT_APP_ID: str | None = None
     MICROSOFT_APP_PASSWORD: str | None = None
+    # TEAMS_WEBHOOK_URL — Incoming Webhook URL for proactive outbound delivery.
+    # Without this, TeamsService runs in dev mode (messages logged only, not sent).
+    # How to obtain: Teams channel → click channel name → Manage channel →
+    #   Connectors → search "Incoming Webhook" → Configure → copy generated URL.
+    # See also: Configurações → Integrações → Microsoft Teams in the LIA UI.
     TEAMS_WEBHOOK_URL: str | None = None
     TEAMS_WEBHOOK_SECRET: str | None = None
     # Home tenant of the Bot App Registration (used for outbound token acquisition)
     # Separate from AZURE_TENANT_ID which is used for Graph API
-    TEAMS_APP_TENANT_ID: str | None = None
+    TEAMS_APP_TENANT_ID: str | None = Field(default=None)
 
     # Secrets provider (Phase 5)
     SECRETS_PROVIDER: str = "env"  # "env" (dev) | "doppler" (prod)
@@ -328,10 +367,14 @@ class IntegrationSettings(BaseSettings):
     # Hard deadline na chamada externa Pearch (envolve search_candidates):
     # supera read_timeout para acomodar 1 retry de tenacity (stop_after_attempt=2)
     # mas mantém-se abaixo do deadline da rota.
-    PEARCH_CALL_DEADLINE_SECONDS: float = 12.0
+    # BUG-PEARCH-TIMEOUT (2026-06-09): API v2 /v2/search demora ~26s (retrieval
+    # 14s + scoring 5s + insights 4s). Elevado de 12s para 35s.
+    PEARCH_CALL_DEADLINE_SECONDS: float = 35.0
     # Hard deadline da rota POST /api/v1/search/candidates: cobre busca local
     # + chamada Pearch. Acima disso devolvemos resposta degradada (warning).
-    SEARCH_CANDIDATES_DEADLINE_SECONDS: float = 18.0
+    # BUG-PEARCH-TIMEOUT (2026-06-09): elevado de 18s para 45s para acomodar
+    # os 35s de PEARCH_CALL_DEADLINE_SECONDS + margem local + dedup.
+    SEARCH_CANDIDATES_DEADLINE_SECONDS: float = 45.0
     # Reveal-sob-demanda (Paulo): por padrao NAO enriquece contato via Apify
     # durante a busca (era lento -> 504 + gasto Apify automatico) nem descarta
     # candidatos sem contato revelado. Contato vem sob demanda (botao/auto-reveal).
@@ -342,7 +385,7 @@ class IntegrationSettings(BaseSettings):
     # o alvo (pearch_limit) de candidatos COM email, ou até esgotar fontes.
     # Guardrails: deadline interno (< deadline da rota) + teto de páginas.
     # O loop só dispara quando require_emails=True; demais modos seguem 1 lote.
-    SEARCH_HYBRID_EMAIL_LOOP_DEADLINE_SECONDS: float = 14.0
+    SEARCH_HYBRID_EMAIL_LOOP_DEADLINE_SECONDS: float = 38.0
     SEARCH_HYBRID_EMAIL_MAX_PAGES: int = 4
 
     # Twilio / WhatsApp
@@ -420,6 +463,61 @@ class Settings(
                 "SECRET_KEY deve ser configurado via variável de ambiente em produção. "
                 "Defina SECRET_KEY=<valor seguro> no seu .env ou nas variáveis de ambiente."
             )
+        return self
+
+    @model_validator(mode="after")
+    def _redirect_redis_url_in_dev(self):
+        """Dev guard: impede que desenvolvimento consuma a quota do Redis remoto.
+
+        Quando APP_ENV != "production" e REDIS_URL aponta para host remoto
+        (ex.: Upstash, free tier 500k cmd/mes), redireciona para o
+        redis-server local que o workflow `lia-backend` ja sobe
+        (redis://localhost:6379/0). Cobre app + Celery + todos os
+        consumidores de settings.REDIS_URL de uma vez (fix no produtor).
+
+        Escape hatch: LIA_DEV_ALLOW_REMOTE_REDIS=true forca o remoto em dev.
+        Producao (APP_ENV=production) nunca e afetada.
+        """
+        import os
+
+        # APP_ENV nao e confiavel sozinho: o workspace Replit de DEV pode ter
+        # APP_ENV=production setado como Secret. Sinal robusto de dev: estar no
+        # workspace de edicao do Replit (REPLIT_DEV_DOMAIN presente) e NAO num
+        # Replit Deployment. Producao real (Cloud Run) nao tem env REPLIT_*.
+        on_replit_workspace = bool(os.getenv("REPLIT_DEV_DOMAIN")) and not os.getenv(
+            "REPLIT_DEPLOYMENT"
+        )
+        if self.APP_ENV == "production" and not on_replit_workspace:
+            return self
+        if os.getenv("LIA_DEV_ALLOW_REMOTE_REDIS", "").strip().lower() in (
+            "1",
+            "true",
+            "yes",
+            "on",
+        ):
+            return self
+        if _redis_host_is_local(self.REDIS_URL):
+            return self
+
+        import logging
+        from urllib.parse import urlparse
+
+        remote_host = urlparse(self.REDIS_URL).hostname or "?"
+        logging.getLogger(__name__).warning(
+            "[Redis] DEV GUARD: REDIS_URL aponta p/ host remoto (%s) em APP_ENV=%s; "
+            "redirecionando p/ redis://localhost:6379/0 para NAO consumir quota "
+            "remota em desenvolvimento. Para forcar o remoto, set "
+            "LIA_DEV_ALLOW_REMOTE_REDIS=true.",
+            remote_host,
+            self.APP_ENV,
+        )
+        local_url = "redis://localhost:6379/0"
+        self.REDIS_URL = local_url
+        # ~18 consumidores leem os.getenv("REDIS_URL") direto (bypass de
+        # settings.REDIS_URL): get_redis, rate_limiter, response_cache_service,
+        # hitl_service, etc. Reescrever o env garante que TODOS usem o Redis
+        # local em dev. Seguro: so ocorre fora de producao.
+        os.environ["REDIS_URL"] = local_url
         return self
 
     model_config = SettingsConfigDict(

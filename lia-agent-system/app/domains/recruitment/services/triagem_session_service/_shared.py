@@ -117,27 +117,27 @@ WSI_BLOCKS_FALLBACK = [
     {"index": 0, "name": "Abordagem Inicial", "block_type": "technical", "competency": "technical_skills", "questions": [
         "Para começar, gostaria de confirmar algumas informações. Você tem disponibilidade para início imediato ou em qual prazo?",
         "Qual sua pretensão salarial para esta posição?",
-    ]},
+    ], "question_frameworks": ["CBI", "CBI"]},
     {"index": 1, "name": "Apresentação da Oportunidade", "block_type": "behavioral", "competency": "motivation", "questions": [
         "O que te motivou a se candidatar para esta vaga?",
         "O que você sabe sobre a nossa empresa?",
-    ]},
+    ], "question_frameworks": ["CBI", "CBI"]},
     {"index": 2, "name": "Perguntas Padrão da Empresa", "block_type": "behavioral", "competency": "cultural_fit", "questions": [
         "Descreva seu estilo de trabalho em equipe.",
-    ]},
+    ], "question_frameworks": ["CBI"]},
     {"index": 3, "name": "Competências Técnicas", "block_type": "technical", "competency": "technical_skills", "questions": [
         "Conte-me sobre sua experiência mais relevante para esta vaga. Quais tecnologias ou ferramentas você domina?",
         "Descreva um projeto técnico desafiador que você liderou ou participou. Qual foi seu papel e o resultado?",
-    ]},
+    ], "question_frameworks": ["CBI", "CBI"]},
     {"index": 4, "name": "Competências Comportamentais e Fit", "block_type": "behavioral", "competency": "interpersonal_skills", "questions": [
         "Me conte sobre uma situação em que você precisou lidar com um conflito no ambiente de trabalho. Como você agiu?",
         "Descreva um momento em que você recebeu um feedback difícil. Como reagiu e o que mudou?",
         "Imagine que você recebe uma demanda urgente de dois gestores diferentes ao mesmo tempo. Como você priorizaria?",
-    ]},
+    ], "question_frameworks": ["CBI", "CBI", "CBI"]},
     {"index": 5, "name": "Resultado e Encerramento", "block_type": "behavioral", "competency": "self_assessment", "questions": [
         "Onde você se vê profissionalmente nos próximos 2-3 anos?",
         "Há algo mais que você gostaria de compartilhar sobre seu perfil ou experiência?",
-    ]},
+    ], "question_frameworks": ["CBI", "CBI"]},
 ]
 
 WSI_BLOCKS = WSI_BLOCKS_FALLBACK

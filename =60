@@ -1,0 +1,2072 @@
+     1	"""
+     2	WizardSessionService — Sprint A.1 — Bug 6 (state persistence across WS turns).
+     3	
+     4	harness-engineering guide computacional:
+     5	Encapsulates JobCreationGraph session lifecycle so conversation_messages
+     6	accumulate across WebSocket turns instead of being reset on every message.
+     7	Mirrors the `rail_a_hint_override.py` single-responsibility pattern.
+     8	
+     9	Multi-tenant: workspace_id (= company_id as int) validated in every call.
+    10	LGPD: no PII stored beyond what JobCreationState already carries.
+    11	"""
+    12	from __future__ import annotations
+    13	# ADR-001-EXEMPT: fail-open mirror sync of Rails-owned `job_vacancies.wizard_stage`.
+    14	# Single fire-and-forget UPDATE inside a fail-open try/except. Source-of-truth
+    15	# for this column is Rails (mirror is best-effort); repository abstraction would
+    16	# obscure the fail-open semantics.
+    17	
+    18	import asyncio
+    19	import logging
+    20	import os
+    21	import re
+    22	from typing import Any
+    23	
+    24	logger = logging.getLogger(__name__)
+    25	
+    26	# Captura determinística do email do gestor a partir do texto CRU (pré-masking
+    27	# LGPD). Mesmo pattern do pii_masking.EMAIL_PATTERN. Usado APENAS no servidor
+    28	# (wizard layer) — o valor NUNCA é enviado ao LLM (decisão Paulo 2026-05-31).
+    29	_MANAGER_EMAIL_RE = re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b")
+    30	
+    31	
+    32	def _extract_manager_email(raw_text: str) -> str | None:
+    33	    """Extrai o primeiro email válido do texto cru. None se ausente."""
+    34	    if not raw_text:
+    35	        return None
+    36	    m = _MANAGER_EMAIL_RE.search(raw_text)
+    37	    return m.group(0) if m else None
+    38	
+    39	
+    40	def _competency_tree_for_panel(state: dict) -> list[dict]:
+    41	    """Monta competency_tree (shape do CompetencyPanel FE) das competências do
+    42	    state. Usa confirmadas; se ainda não confirmadas, cai nas sugeridas (para o
+    43	    recrutador ver/ajustar). B3 fix — alinha ao nó canônico competency.py."""
+    44	    sugg = state.get("suggested_competencies") or {}
+    45	    tech = state.get("confirmed_technical_competencies") or sugg.get("technical") or []
+    46	    behav = state.get("confirmed_behavioral_competencies") or sugg.get("behavioral") or []
+    47	    tree: list[dict] = []
+    48	    for s_ in tech:
+    49	        if isinstance(s_, dict):
+    50	            name = s_.get("skill") or s_.get("name") or ""
+    51	            ctx = s_.get("contexto", "")
+    52	        else:
+    53	            name, ctx = str(s_), ""
+    54	        if name:
+    55	            tree.append({"skill": name, "contexto": ctx, "block": "technical"})
+    56	    for c_ in behav:
+    57	        if isinstance(c_, dict):
+    58	            name = c_.get("competencia") or c_.get("skill") or c_.get("name") or ""
+    59	            ctx = c_.get("contexto", "")
+    60	            trait = c_.get("trait_big_five", "") or c_.get("trait_ocean", "")
+    61	        else:
+    62	            name, ctx, trait = str(c_), "", ""
+    63	        if name:
+    64	            tree.append({"skill": name, "contexto": ctx, "block": "behavioral", "trait": trait})
+    65	    return tree
+    66	
+    67	
+    68	def _derive_wizard_stage(state: dict) -> str:
+    69	    """Deriva o stage canonical a partir do progresso do estado.
+    70	
+    71	    O orquestrador é não-linear (não tem máquina de stages rígida), mas o
+    72	    painel lateral é stage-driven. Derivamos o stage do conteúdo do estado
+    73	    para o painel transicionar naturalmente (ficha → JD → publicado).
+    74	    """
+    75	    # Bug 13: calibração pós-publish — candidatos em calibração + vaga publicada
+    76	    # + calibração NÃO concluída → manter no stage de calibração.
+    77	    # guard not calibration_complete para cair em handoff após advance_calibration.
+    78	    # Bug B fix: isinstance(list) em vez de truthiness — [] (0 candidatos Rails)
+    79	    # também sinaliza "fase de calibração iniciada". None/ausente = não iniciada.
+    80	    _calib_cands = state.get("calibration_candidates")
+    81	    if (
+    82	        isinstance(_calib_cands, list)
+    83	        and state.get("job_id")
+    84	        and not state.get("calibration_complete")
+    85	    ):
+    86	        return "calibration"
+    87	    # Navegação explícita OU pós-publish → handoff (o FE auto-navega para a
+    88	    # página de vagas quando currentStage == "handoff").
+    89	    if state.get("_navigate_to_jobs") or state.get("job_id"):
+    90	        return "handoff"
+    91	    if state.get("wsi_questions"):
+    92	        return "wsi_questions"
+    93	    if state.get("jd_enriched"):
+    94	        return "jd_enrichment"
+    95	    # B3 fix (2026-05-31): stage "competency" — quando há competências
+    96	    # sugeridas/confirmadas (mas JD ainda não gerada), o painel mostra o
+    97	    # CompetencyPanel (add/remove). Antes o orquestrador pulava direto de
+    98	    # intake p/ jd_enrichment e o painel de competências nunca aparecia.
+    99	    if (
+   100	        state.get("confirmed_technical_competencies")
+   101	        or state.get("confirmed_behavioral_competencies")
+   102	        or state.get("suggested_competencies")
+   103	    ):
+   104	        return "competency"
+   105	    return "intake"
+   106	
+   107	def _consume_panel_pref(state: dict) -> str | None:
+   108	    """Manus F1 — preferência de painel one-shot (tools open_panel/close_panel).
+   109	
+   110	    Remove ``panel_pref`` do state (pop) e retorna o valor SE válido
+   111	    ("expanded" | "docked"). One-shot por design: o pop acontece ANTES de
+   112	    ``_persist_orchestrator_state`` (que usa ``update_state`` = MERGE no
+   113	    checkpoint), então a key nunca chega ao checkpoint — o FE recebe a
+   114	    preferência UMA vez no payload do ``wizard_stage`` e as etapas seguintes
+   115	    não re-forçam o modo (preserva a escolha manual do recrutador). Valor
+   116	    inválido é consumido e descartado (não emite).
+   117	    """
+   118	    pref = state.pop("panel_pref", None)
+   119	    return pref if pref in ("expanded", "docked") else None
+   120	
+   121	
+   122	# Keys carried forward from context into wizard state
+   123	_CONTEXT_CARRY_KEYS = ("right_panel_form", "attached_file_text", "tenant_context_snippet")
+   124	
+   125	# ── Sprint F.2-v2 (2026-05-26) — Supervisor skip with content threshold ──
+   126	# Sprint F.2 (2026-05-20) introduziu skip binário do supervisor quando
+   127	# prior_stage em ACTIVE_WIZARD_STAGES. Protege respostas curtas a prompts
+   128	# HITL ("sim", "ok", "modo compacto", "aprovado") de serem misrotuladas
+   129	# pelo Haiku como create_new/meta_question/exit_wizard.
+   130	#
+   131	# Defeito de Sprint F.2: o skip era BINÁRIO — engolia também JD/briefing
+   132	# substancial colado durante stage ativa. Transcript Paulo 2026-05-26:
+   133	# user colou JD 1500 chars no turno 2, supervisor skipou, graph reentrou
+   134	# em loop de "preciso de mais contexto" sem nunca re-classificar.
+   135	#
+   136	# Fix v2: skip SOMENTE quando msg_len < 100 chars. Threshold empírico —
+   137	# JD real começa em ~120 chars (graph.py:842 documenta), prompt-answers
+   138	# canônicos ficam < 30. Margem de 100 dá folga inequívoca.
+   139	#
+   140	# Sensor: tests/wizard/test_supervisor_skip_long_content_threshold.py
+   141	_ACTIVE_WIZARD_STAGES = frozenset({
+   142	    "intake", "jd_enrichment", "pipeline_template",
+   143	    "bigfive", "salary", "competency",
+   144	    "wsi_questions", "eligibility", "review", "publish",
+   145	})
+   146	
+   147	# JD real começa em ~120 chars (graph.py:842 documenta esse mesmo número).
+   148	# Prompt-answers HITL canônicos ("sim"/"ok"/"modo compacto, 7 perguntas")
+   149	# ficam < 30 chars. Threshold 100 dá folga sem ambiguidade.
+   150	_SUPERVISOR_SKIP_LONG_CONTENT_THRESHOLD = 100
+   151	
+   152	
+   153	def _compute_supervisor_skip(
+   154	    user_message: str | None, prior_stage: str | None,
+   155	) -> bool:
+   156	    """Decide if pre-graph supervisor classifier should be skipped.
+   157	
+   158	    Contract:
+   159	      skip ⇔ (prior_stage in _ACTIVE_WIZARD_STAGES)
+   160	             AND (len(user_message.strip()) < _SUPERVISOR_SKIP_LONG_CONTENT_THRESHOLD)
+   161	
+   162	    Skip protects short HITL prompt-answers from being re-classified
+   163	    (Sprint F.2). Long content (JD pastes, briefings) MUST re-classify
+   164	    so the graph can ingest new substance instead of swallowing it as
+   165	    a no-op HITL answer (Sprint F.2-v2).
+   166	    """
+   167	    if not isinstance(prior_stage, str) or prior_stage not in _ACTIVE_WIZARD_STAGES:
+   168	        return False
+   169	    msg_len = len((user_message or "").strip())
+   170	    return msg_len < _SUPERVISOR_SKIP_LONG_CONTENT_THRESHOLD
+   171	
+   172	
+   173	
+   174	# Task #1089 (T3) — o dict canned por stage que mascarava estado inválido
+   175	# do graph (mensagem repetida 4× em HITL, bug original do screenshot) foi
+   176	# REMOVIDO. Sentinela arquitetural em
+   177	# tests/integration/agents/test_wizard_no_canned_fallback_t3.py veta a
+   178	# reintrodução. Path canônico de fallback agora é fail-loud:
+   179	# log error + Sentry + audit row (decision_type=wizard_fallback_invoked) +
+   180	# Prometheus counter (lia_wizard_silent_fallback_total) + tracker
+   181	# rolling-window + mensagem contextual gerada via LLM (Haiku) ou, em
+   182	# último caso, mensagem hard-prefixada (NÃO confundível com produto).
+   183	# Ver _emit_silent_fallback abaixo.
+   184	
+   185	# Hard-prefix sinaliza estado inconsistente — UX vê isso e contata suporte
+   186	# em vez de seguir achando que é resposta válida da LIA.
+   187	_FALLBACK_HARD_PREFIX = "[ATENÇÃO: estado inconsistente — contate suporte]"
+   188	
+   189	# Prometheus counter explícito (Task #1089 / code review #2 follow-up).
+   190	# Idempotente entre reimports — espelha pattern de tenant_aware_agent.py.
+   191	try:  # pragma: no cover — exercitado via integração
+   192	    from prometheus_client import Counter as _PromCounter  # type: ignore
+   193	    from prometheus_client import REGISTRY as _PROM_REGISTRY  # type: ignore
+   194	
+   195	    _existing = getattr(_PROM_REGISTRY, "_names_to_collectors", {}).get(
+   196	        "lia_wizard_silent_fallback_total"
+   197	    )
+   198	    if _existing is not None:
+   199	        _SILENT_FALLBACK_COUNTER = _existing
+   200	    else:
+   201	        _SILENT_FALLBACK_COUNTER = _PromCounter(
+   202	            "lia_wizard_silent_fallback_total",
+   203	            "Total de fail-loud fallbacks emitidos por WizardSessionService "
+   204	            "(Task #1089). Cada incremento indica estado anômalo do graph e "
+   205	            "deve disparar investigação.",
+   206	            labelnames=("stage", "company_id", "cause"),
+   207	        )
+   208	except Exception:  # pragma: no cover — fail-OPEN se prometheus indisponível
+   209	    _SILENT_FALLBACK_COUNTER = None
+   210	
+   211	
+   212	def _build_hard_fallback_message(stage: str | None) -> str:
+   213	    """Mensagem de último recurso (LLM indisponível). Prefixada para NUNCA
+   214	    ser confundida com mensagem de produto da LIA."""
+   215	    stage_label = stage or "wizard"
+   216	    return (
+   217	        f"{_FALLBACK_HARD_PREFIX} Não consegui interpretar o turno atual "
+   218	        f"(etapa: {stage_label}). Você quer (1) tentar novamente, "
+   219	        f"(2) revisar o que já registramos ou (3) pedir ajuda?"
+   220	    )
+   221	
+   222	
+   223	async def _generate_fallback_reply(
+   224	    *,
+   225	    stage: str | None,
+   226	    conversation_tail: list[dict] | None,
+   227	    tenant_snippet: str | None,
+   228	) -> str:
+   229	    """LLM-based contextual fallback. Cheap model (Haiku), 3s timeout, safe
+   230	    fallback to hard-prefixed message on any failure. Disabled in tests via
+   231	    LIA_WIZARD_FALLBACK_LLM_DISABLED=1."""
+   232	    if os.environ.get("LIA_WIZARD_FALLBACK_LLM_DISABLED", "").strip() in {"1", "true", "yes"}:
+   233	        return _build_hard_fallback_message(stage)
+   234	    try:
+   235	        from langchain_core.messages import HumanMessage, SystemMessage  # type: ignore
+   236	
+   237	        from app.shared.llm_models import CANONICAL_HAIKU_MODEL
+   238	        from app.shared.providers.anthropic_client import get_chat_anthropic
+   239	
+   240	        model_name = os.environ.get(
+   241	            "LIA_WIZARD_FALLBACK_MODEL", CANONICAL_HAIKU_MODEL,
+   242	        )
+   243	        timeout_s = float(os.environ.get("LIA_WIZARD_FALLBACK_TIMEOUT_S", "3"))
+   244	        # Task #1166: centralized seam — proxy ``base_url`` is enforced
+   245	        # by the bootstrap monkey-patch and the AST sentinel forbids
+   246	        # bare ``ChatAnthropic(...)`` inside ``app/domains/job_creation/``.
+   247	        llm = get_chat_anthropic(
+   248	            model=model_name, temperature=0, timeout=timeout_s, max_tokens=200,
+   249	        )
+   250	
+   251	        tail_lines: list[str] = []
+   252	        for msg in (conversation_tail or [])[-4:]:
+   253	            role = (msg.get("role") or "").lower()
+   254	            content = str(msg.get("content") or "").strip()[:300]
+   255	            if content:
+   256	                tail_lines.append(f"- {role or 'msg'}: {content}")
+   257	        tail_text = "\n".join(tail_lines) or "(sem histórico)"
+   258	        sys = (
+   259	            "Você é a LIA, assistente de recrutamento. O wizard está em estado "
+   260	            f"inconsistente na etapa '{stage or 'wizard'}'. Gere UMA resposta curta "
+   261	            "(1-2 frases) em PT-BR, natural, perguntando o que o recrutador quer "
+   262	            "fazer (tentar de novo, revisar o registrado, ou pedir ajuda). NÃO "
+   263	            "invente conteúdo da vaga. NÃO repita prompts canned como 'preciso da "
+   264	            "sua aprovação'. NUNCA peça ao recrutador dados do tenant "
+   265	            "(company_id, id da empresa, nome da empresa, setor, plano, "
+   266	            "nome do consultor, nome do gestor, nome do recrutador) — esses "
+   267	            "vêm do contexto autenticado. Se faltar contexto, ofereça TENTAR "
+   268	            "DE NOVO ou REVISAR o registrado — NUNCA peça dados de identificação."
+   269	        )
+   270	        if tenant_snippet:
+   271	            sys += f"\n\nContexto do tenant: {tenant_snippet[:400]}"
+   272	        user = f"Últimos turnos:\n{tail_text}"
+   273	        result = await asyncio.wait_for(
+   274	            llm.ainvoke([SystemMessage(content=sys), HumanMessage(content=user)]),
+   275	            timeout=timeout_s,
+   276	        )
+   277	        text = (getattr(result, "content", "") or "").strip()
+   278	        # R-008 harness guard (2026-05-19): reject responses that ask for
+   279	        # tenant data — regressão B1 anti-pattern (`wizard_no_tenant_leak.jsonl`).
+   280	        # Tenant comes from authenticated context, never from chat input.
+   281	        _tlow = text.lower() if text else ""
+   282	        _tenant_question_patterns = (
+   283	            "company_id", "id da empresa", "nome da empresa", "qual o setor",
+   284	            "qual a empresa", "qual sua empresa", "qual seu plano",
+   285	            "nome do consultor", "nome do gestor", "nome do recrutador",
+   286	            "qual o seu nome", "informe a empresa", "qual é a empresa",
+   287	        )
+   288	        _asks_tenant = any(p in _tlow for p in _tenant_question_patterns)
+   289	        if _asks_tenant:
+   290	            logger.warning(
+   291	                "[WizardSession] fallback LLM tentou perguntar tenant data (stage=%s) "
+   292	                "— bloqueado por harness guard e degradado para hard prefix. "
+   293	                "Resposta rejeitada (preview): %r",
+   294	                stage, text[:120],
+   295	            )
+   296	        if text and "preciso da sua aprovação" not in _tlow and not _asks_tenant:
+   297	            return text[:500]
+   298	    except Exception as exc:  # noqa: BLE001 — fallback é fail-open p/ hard prefix
+   299	        logger.warning(
+   300	            "[WizardSession] fallback LLM falhou (stage=%s): %s — usando hard prefix",
+   301	            stage, exc,
+   302	        )
+   303	    return _build_hard_fallback_message(stage)
+   304	
+   305	
+   306	def _emit_silent_fallback(
+   307	    *,
+   308	    stage: str | None,
+   309	    company_id: Any,
+   310	    session_id: str | None,
+   311	    thread_id: str | None,
+   312	    conversation_tail: list[dict] | None,
+   313	    cause: str,
+   314	) -> None:
+   315	    """Task #1089 (T3) — fail-LOUD path quando o graph não devolve mensagem.
+   316	    Combina:
+   317	      (a) ``logger.error`` com contexto completo;
+   318	      (b) Sentry ``capture_message`` (level=error) em prod;
+   319	      (c) audit row ``decision_type=wizard_fallback_invoked`` (EU AI Act);
+   320	      (d) Prometheus counter via :func:`WizardFallbackTracker.record_fallback`
+   321	          (label ``stage``, escopo session+tenant, threshold de alerta).
+   322	    Todas as 4 sub-chamadas são fail-open individualmente — telemetria nunca
+   323	    derruba o turno do recrutador."""
+   324	    cid = str(company_id) if company_id else None
+   325	    stage_label = stage or "unknown"
+   326	
+   327	    # Sanitized bounded tail snapshot p/ diagnosticabilidade (R-013 / code
+   328	    # review #2): mantém apenas role + 200 chars do content dos últimos 3
+   329	    # turnos. PII leakage mitigado pelo truncate; log nunca explode.
+   330	    tail_snapshot: list[dict] = []
+   331	    for _msg in (conversation_tail or [])[-3:]:
+   332	        if not isinstance(_msg, dict):
+   333	            continue
+   334	        _role = str(_msg.get("role") or "")[:24]
+   335	        _content = str(_msg.get("content") or "").strip()[:200]
+   336	        if _content:
+   337	            tail_snapshot.append({"role": _role, "content_excerpt": _content})
+   338	
+   339	    logger.error(
+   340	        "[WizardSession] silent fallback invoked stage=%s session=%s thread=%s "
+   341	        "company=%s cause=%s tail_len=%s tail=%s — graph returned no message",
+   342	        stage_label, session_id, thread_id, cid, cause,
+   343	        len(conversation_tail or []), tail_snapshot,
+   344	    )
+   345	
+   346	    # (b) Sentry
+   347	    try:  # pragma: no cover — Sentry opcional em testes
+   348	        import sentry_sdk
+   349	        sentry_sdk.capture_message(
+   350	            f"Wizard silent fallback invoked (stage={stage_label})",
+   351	            level="error",
+   352	            extras={
+   353	                "stage": stage_label,
+   354	                "session_id": session_id,
+   355	                "thread_id": thread_id,
+   356	                "company_id": cid,
+   357	                "cause": cause,
+   358	            },
+   359	        )
+   360	    except Exception:
+   361	        pass
+   362	
+   363	    # (c) Audit row
+   364	    try:
+   365	        from app.shared.compliance.audit_service import AuditService
+   366	
+   367	        if cid:
+   368	            asyncio.create_task(AuditService().log_decision(  # AUDIT-NO-DEMO: wizard fallback telemetry (job creation flow, no candidate decision; LGPD Art.20 N/A)
+   369	                company_id=cid,
+   370	                agent_name=f"wizard_session:{stage_label}",
+   371	                decision_type="wizard_fallback_invoked",
+   372	                action=f"silent_fallback_{stage_label}",
+   373	                decision="fallback_emitted",
+   374	                reasoning=[
+   375	                    f"stage={stage_label}",
+   376	                    f"cause={cause}",
+   377	                    f"session_id={session_id or '∅'}",
+   378	                    f"thread_id={thread_id or '∅'}",
+   379	                ],
+   380	                criteria_used=[
+   381	                    "wizard_fallback",
+   382	                    f"stage:{stage_label}",
+   383	                    f"cause:{cause}",
+   384	                ],
+   385	                human_review_required=True,
+   386	            ))
+   387	    except Exception as audit_exc:  # noqa: BLE001
+   388	        logger.warning(
+   389	            "[WizardSession] fallback audit emission failed (fail-open): %s",
+   390	            audit_exc,
+   391	        )
+   392	
+   393	    # (d) Prometheus counter explícito (Task #1089 / code review #2 follow-up)
+   394	    if _SILENT_FALLBACK_COUNTER is not None:
+   395	        try:
+   396	            _SILENT_FALLBACK_COUNTER.labels(
+   397	                stage=stage_label, company_id=(cid or "∅"), cause=cause,
+   398	            ).inc()
+   399	        except Exception as pm_exc:  # noqa: BLE001
+   400	            logger.warning(
+   401	                "[WizardSession] prometheus counter inc failed (fail-open): %s",
+   402	                pm_exc,
+   403	            )
+   404	
+   405	    # (e) Fallback tracker (rolling-window threshold + alerta agregado)
+   406	    try:
+   407	        from app.shared.observability.wizard_fallback_tracker import (
+   408	            get_wizard_fallback_tracker,
+   409	        )
+   410	        get_wizard_fallback_tracker().record_fallback(
+   411	            session_id=session_id, company_id=cid,
+   412	            stage=stage_label, reason=f"silent_{cause}",
+   413	        )
+   414	    except Exception as tr_exc:  # noqa: BLE001
+   415	        logger.warning(
+   416	            "[WizardSession] fallback tracker emission failed (fail-open): %s",
+   417	            tr_exc,
+   418	        )
+   419	
+   420	
+   421	class WizardSessionService:
+   422	    """Manages JobCreationGraph invocation with per-session state accumulation.
+   423	
+   424	    Fixes Bug 6: conversation_messages are now accumulated across WS turns.
+   425	    On Turn N the service pulls the checkpointed state from LangGraph,
+   426	    appends the new user message, and re-invokes — so the graph always has
+   427	    the full conversation history.
+   428	
+   429	    Responsibilities
+   430	    ────────────────
+   431	    - derive_thread_id(): stable session → thread_id mapping
+   432	    - _get_prior_state(): non-raising checkpointer read
+   433	    - _build_state(): merge or fresh-start state builder
+   434	    - process_message(): main entry point for agent_chat_ws.py
+   435	
+   436	    NOT responsible for: HITL approval routing (stays in agent_chat_ws.py),
+   437	    token streaming setup (caller provides on_token callback).
+   438	    """
+   439	
+   440	    # ── Public helpers ────────────────────────────────────────────────────
+   441	
+   442	    # Task #1080 canonical refactor: the legacy 4-priority ``derive_thread_id``
+   443	    # (msg.thread_id custom > company-prefixed > legacy) and the Redis
+   444	    # marker bookkeeping (``lia:wizard:active:*``) have been removed. The
+   445	    # canonical pure function lives in ``app.shared.sessions.thread_id``
+   446	    # and is the SINGLE source of truth across WS / SSE / REST orchestrator.
+   447	    # The two thin staticmethods below are delegating wrappers kept for
+   448	    # backward compatibility with existing call-sites and tests that mock
+   449	    # ``WizardSessionService.derive_thread_id`` / ``.is_session_active``.
+   450	
+   451	    @staticmethod
+   452	    def derive_thread_id(
+   453	        msg_or_company_id: dict | str | None = None,
+   454	        session_id: str = "",
+   455	        company_id: str | None = None,
+   456	    ) -> str:
+   457	        """Delegating wrapper around the canonical
+   458	        ``app.shared.sessions.derive_thread_id``.
+   459	
+   460	        Accepts both the legacy signature ``(msg, session_id, company_id=...)``
+   461	        AND the canonical ``(company_id, session_id)`` so existing call-sites
+   462	        and tests continue to type-check during the migration. The legacy
+   463	        ``msg["thread_id"]`` custom honor is INTENTIONALLY ignored — Task
+   464	        #1080 collapses the multiple sources of truth into one. New callers
+   465	        SHOULD import ``derive_thread_id`` directly from
+   466	        ``app.shared.sessions``.
+   467	        """
+   468	        from app.shared.sessions import derive_thread_id as _canonical
+   469	
+   470	        # Legacy signature: first arg is a dict (the WS msg) — discard it.
+   471	        if isinstance(msg_or_company_id, dict):
+   472	            return _canonical(company_id, session_id)
+   473	        # Canonical signature: first arg is the company_id string (or None).
+   474	        return _canonical(msg_or_company_id, session_id)
+   475	
+   476	    @classmethod
+   477	    async def is_session_active(
+   478	        cls,
+   479	        session_id: str,
+   480	        company_id: str | None = None,
+   481	    ) -> bool:
+   482	        """Delegating wrapper around the canonical
+   483	        ``app.shared.sessions.is_wizard_session_active``.
+   484	
+   485	        Task #1080: the implementation now reads the LangGraph checkpoint
+   486	        for the SINGLE deterministic thread_id derived from
+   487	        ``(company_id, session_id)`` — no Redis marker, no candidate list,
+   488	        no client-supplied thread_id honor. A session counts as active iff
+   489	        a checkpoint exists AND ``current_stage != "completed"``.
+   490	        """
+   491	        from app.shared.sessions import is_wizard_session_active as _canonical
+   492	
+   493	        return await _canonical(company_id, session_id)
+   494	
+   495	    @staticmethod
+   496	    async def _get_prior_state(thread_id: str) -> dict:
+   497	        """Read checkpointed wizard state without raising.
+   498	
+   499	        Returns empty dict on any error so callers always get a valid dict.
+   500	        Fail-open: a checkpointer miss means start fresh, never crash.
+   501	
+   502	        Harness: computational sensor — reads LangGraph checkpoint directly.
+   503	        """
+   504	        try:
+   505	            from app.domains.job_creation.graph import get_job_creation_graph
+   506	            wiz_g = get_job_creation_graph()
+   507	            config = {"configurable": {"thread_id": thread_id}}
+   508	            snapshot = await asyncio.to_thread(wiz_g._graph.get_state, config)
+   509	            if snapshot is not None and snapshot.values:
+   510	                state = dict(snapshot.values)
+   511	                logger.debug(
+   512	                    "[WizardSession] Prior state loaded thread=%s stage=%s conv_len=%d",
+   513	                    thread_id,
+   514	                    state.get("current_stage") or "?",
+   515	                    len(state.get("conversation_messages") or []),
+   516	                )
+   517	                return state
+   518	        except Exception as exc:
+   519	            # Audit-final (PLAN_FIX_wizard_memory_loss): promovido de DEBUG
+   520	            # para WARNING. O bug V1.d (Onda 1) ficou escondido porque
+   521	            # esse miss caia em logger.debug, invisivel em logs INFO+.
+   522	            # WARNING + structured fields permite alerta + observabilidade
+   523	            # do canary suite + canary detectar regressao silenciosa.
+   524	            logger.warning(
+   525	                "[WizardSession] Checkpointer read miss thread=%s "
+   526	                "reason=%s — falling back to fresh session. Sensor canonical: "
+   527	                "tests/integration/test_checkpointer_canonical.py.",
+   528	                thread_id, type(exc).__name__,
+   529	                extra={
+   530	                    "event": "wizard_checkpointer_read_miss",
+   531	                    "thread_id": thread_id,
+   532	                    "reason": type(exc).__name__,
+   533	                },
+   534	            )
+   535	        return {}
+   536	
+   537	    @staticmethod
+   538	    def _build_state(
+   539	        *,
+   540	        thread_id: str,
+   541	        user_message: str,
+   542	        user_id: str | None,
+   543	        company_id: str | None,
+   544	        session_id: str,
+   545	        context: dict | None,
+   546	        prior_state: dict,
+   547	    ) -> dict:
+   548	        """Build the state dict for the next JobCreationGraph invocation.
+   549	
+   550	        Bug 6 fix: when prior_state is non-empty (continuing session),
+   551	        appends the new message to conversation_messages and preserves
+   552	        all accumulated fields. Avoids the previous behaviour of
+   553	        overwriting the full history with a single-element list.
+   554	
+   555	        Multi-tenancy: workspace_id always derived from company_id param,
+   556	        never trusted from prior_state (prevents tenant escalation via
+   557	        stale checkpoint data).
+   558	
+   559	        T-B canonical (Task #970): valida ``company_id`` via
+   560	        ``CompanyId.parse`` (UUID v4 ou slug). Em strict-mode (default em
+   561	        prod/staging) qualquer entrada inválida — vazia, ``"default"``,
+   562	        formato errado — levanta ``InvalidCompanyIdError`` AQUI, antes de
+   563	        invocar o grafo. Em legacy/dev mode (``LIA_AGENT_TENANT_STRICT=false``)
+   564	        loga warning e degrada para ``workspace_id=0``/``company_id=""`` (compat).
+   565	
+   566	        Para UUID v4 / slug não-numérico: ``workspace_id=0`` e ``company_id``
+   567	        normalizado é propagado como string — ``review_node`` faz fallback
+   568	        ``workspace_id or company_id`` para ``api_client.get_company_defaults``
+   569	        (vide replit.md → "UUID company_id tenants use workspace_id=0 with
+   570	        company_id string fallback in review_node").
+   571	
+   572	        Para slug numérico legado: ``workspace_id`` recebe o int (compat com
+   573	        Rails ``workspace_id`` integer column).
+   574	        """
+   575	        from app.shared.agents.tenant_aware_agent import is_tenant_strict_mode
+   576	        from app.shared.exceptions.tenant_errors import (
+   577	            InvalidCompanyIdError,
+   578	            MissingTenantContextError,
+   579	        )
+   580	        from app.shared.value_objects.company_id import CompanyId
+   581	
+   582	        ctx = context or {}
+   583	        resolution_source = "valid"
+   584	        try:
+   585	            # T-B contract: company_id ausente (None) é "tenant context faltando"
+   586	            # — semanticamente distinto de "company_id presente mas malformado".
+   587	            # Strict-mode levanta MissingTenantContextError nesse caso.
+   588	            if company_id is None:
+   589	                raise MissingTenantContextError(
+   590	                    details={
+   591	                        "tenant_source": "wizard_session_service",
+   592	                        "agent": "wizard_react_agent",
+   593	                        "company_id_raw": None,
+   594	                    },
+   595	                )
+   596	            parsed_cid = CompanyId.parse(company_id)
+   597	            normalized_cid = parsed_cid.as_str()
+   598	            # Legacy: slug puramente numérico mapeia 1:1 em workspace_id int
+   599	            safe_workspace_id = (
+   600	                int(normalized_cid) if normalized_cid.isdigit() else 0
+   601	            )
+   602	        except (InvalidCompanyIdError, MissingTenantContextError) as exc:
+   603	            if is_tenant_strict_mode():
+   604	                logger.error(
+   605	                    "[WizardSession] tenant context faltando/inválido em strict-mode "
+   606	                    "thread=%s raw=%r kind=%s — abortando (fail-closed T-B).",
+   607	                    thread_id, company_id, type(exc).__name__,
+   608	                )
+   609	                raise
+   610	            resolution_source = (
+   611	                "fail_open_missing"
+   612	                if isinstance(exc, MissingTenantContextError)
+   613	                else "fail_open_invalid"
+   614	            )
+   615	            logger.warning(
+   616	                "[WizardSession] tenant context faltando/inválido em legacy-mode "
+   617	                "thread=%s raw=%r kind=%s — degradando para workspace_id=0 "
+   618	                "(compat dev). Set LIA_AGENT_TENANT_STRICT=true para fail-closed.",
+   619	                thread_id, company_id, type(exc).__name__,
+   620	            )
+   621	            normalized_cid = ""
+   622	            safe_workspace_id = 0
+   623	
+   624	        # Structured per-turn log: permite eval suite + canary detectarem
+   625	        # regressão silenciosa de tenant context no wizard.
+   626	        snippet_len = len(ctx.get("tenant_context_snippet") or "")
+   627	        logger.info(
+   628	            "wizard_tenant_context_resolved",
+   629	            extra={
+   630	                "event": "wizard_tenant_context_resolved",
+   631	                "thread_id": thread_id,
+   632	                "company_id": normalized_cid,
+   633	                "workspace_id": safe_workspace_id,
+   634	                "source": resolution_source,
+   635	                "snippet_len": snippet_len,
+   636	            },
+   637	        )
+   638	
+   639	        if prior_state:
+   640	            # ── Continuing session ──────────────────────────────────────
+   641	            conv = list(prior_state.get("conversation_messages") or [])
+   642	            conv.append({"role": "user", "content": user_message})
+   643	            state: dict = {
+   644	                **prior_state,
+   645	                # Override tenant fields with authoritative values
+   646	                "workspace_id": safe_workspace_id,
+   647	                "company_id": normalized_cid,
+   648	                "user_id": str(user_id) if user_id else prior_state.get("user_id", ""),
+   649	                # Update query fields with new message.
+   650	                # T2 fix #10 (code review #8): NÃO sobrescrever raw_input
+   651	                # em sessões continuing. raw_input é a JD original (fonte
+   652	                # de jd_enrichment); sobrescrever a cada turno deixa
+   653	                # ``user_query == raw_input`` SEMPRE, neutralizando o
+   654	                # initial-pass guard do jd_gate_node (que usa
+   655	                # ``user_query != raw_input`` como sinal de "este turno é
+   656	                # resposta do recrutador, não a JD inicial"). Sem isso,
+   657	                # WS resume nunca dispara → bug original Task #1085 volta.
+   658	                # ``provide_new_content`` ainda atualiza raw_input
+   659	                # explicitamente dentro do gate (mid-invoke), preservando
+   660	                # a semântica de "nova JD trocou a anterior".
+   661	                "user_query": user_message,
+   662	                "conversation_messages": conv,
+   663	                # Reset approval flags — this is NOT an approval resume
+   664	                "hitl_approved": False,
+   665	            }
+   666	            # Carry any fresh context overrides
+   667	            for k in _CONTEXT_CARRY_KEYS:
+   668	                if ctx.get(k):
+   669	                    state[k] = ctx[k]
+   670	            # W0-A: recruiter from context (first turn) or prior_state (subsequent turns)
+   671	            if ctx.get("user_name"):
+   672	                state["parsed_recruiter_name"] = ctx["user_name"]
+   673	            if ctx.get("user_email"):
+   674	                state["parsed_recruiter_email"] = ctx["user_email"]
+   675	            # W0-B: extract jd_similar_reuse_id from right_panel_form if present
+   676	            _rpf = ctx.get("right_panel_form") or {}
+   677	            if _rpf.get("jd_similar_reuse_id"):
+   678	                state["jd_similar_reuse_id"] = str(_rpf["jd_similar_reuse_id"])
+   679	            logger.info(
+   680	                "[WizardSession] Continuing session thread=%s stage=%s conv_turns=%d",
+   681	                thread_id,
+   682	                state.get("current_stage") or "?",
+   683	                len(conv),
+   684	            )
+   685	            return state
+   686	
+   687	        # ── Fresh session ─────────────────────────────────────────────────
+   688	        logger.info("[WizardSession] New session thread=%s source=wizard_new", thread_id)
+   689	        state = {
+   690	            "session_id": session_id,
+   691	            "user_id": str(user_id) if user_id else "",
+   692	            "workspace_id": safe_workspace_id,
+   693	            "company_id": normalized_cid,
+   694	            "auth_token": "",
+   695	            "language": "pt-BR",
+   696	            "current_stage": None,
+   697	            "stage_history": [],
+   698	            "user_query": user_message,
+   699	            "raw_input": user_message,
+   700	            "conversation_messages": [
+   701	                {"role": "user", "content": user_message},
+   702	            ],
+   703	        }
+   704	        for k in _CONTEXT_CARRY_KEYS:
+   705	            if ctx.get(k):
+   706	                state[k] = ctx[k]
+   707	        # W0-A: recruiter identity from session user (passed via context by SSE/REST endpoint)
+   708	        state["parsed_recruiter_name"] = ctx.get("user_name") or None
+   709	        state["parsed_recruiter_email"] = ctx.get("user_email") or None
+   710	        # W0-B: extract jd_similar_reuse_id from right_panel_form if present
+   711	        _rpf = ctx.get("right_panel_form") or {}
+   712	        if _rpf.get("jd_similar_reuse_id"):
+   713	            state["jd_similar_reuse_id"] = str(_rpf["jd_similar_reuse_id"])
+   714	        return state
+   715	
+   716	    # ── Task #1127 (T1.1 + T2.1 + T2.2) — Supervisor pre-graph ────────
+   717	    #
+   718	    # Helper que (a) resolve contexto mínimo (tenant snippet, últimas
+   719	    # turns, draft-active flag); (b) chama o ``WizardSupervisorClassifier``
+   720	    # síncrono via ``asyncio.to_thread`` (não bloqueia event loop);
+   721	    # (c) decide short-circuit para ``meta_question`` / ``exit_wizard``;
+   722	    # (d) emite audit row + Prometheus counter (telemetria fail-OPEN).
+   723	    #
+   724	    # Fail-OPEN é INTENCIONAL: qualquer falha do supervisor (sem API key,
+   725	    # timeout, schema inválido, off-allowlist) devolve ``None`` → caller
+   726	    # cai 100% no fluxo legacy (preserva contrato vigente do graph).
+   727	    # ------------------------------------------------------------------
+   728	
+   729	    @classmethod
+   730	    async def _run_supervisor(
+   731	        cls,
+   732	        *,
+   733	        user_message: str,
+   734	        prior_state: dict | None,
+   735	        context: dict | None,
+   736	        company_id: str | None,
+   737	        session_id: str,
+   738	        thread_id: str,
+   739	    ) -> dict | None:
+   740	        """Roda o supervisor pre-graph e devolve decisão de roteamento.
+   741	
+   742	        Returns:
+   743	            ``None`` se supervisor desabilitado / fail-OPEN — caller cai
+   744	            no fluxo legacy (continue_current).
+   745	
+   746	            ``{"intent": str, "short_circuit": False}`` se intent é
+   747	            ``continue_current`` / ``create_new`` / ``resume_draft`` /
+   748	            ``edit_published`` — caller segue para o graph (esses 3
+   749	            últimos terão handlers próprios nas Tasks #1128+).
+   750	
+   751	            ``{"intent": "meta_question", "short_circuit": True,
+   752	            "message": str, "ws_stage_payload": dict}`` quando o
+   753	            supervisor classifica como meta — caller responde direto sem
+   754	            tocar o graph.
+   755	
+   756	            ``{"intent": "exit_wizard", "short_circuit": True,
+   757	            "message": str, "ws_stage_payload": dict}`` quando o
+   758	            supervisor classifica como saída — caller emite despedida.
+   759	        """
+   760	        from app.domains.job_creation.services.wizard_supervisor_classifier import (
+   761	            get_wizard_supervisor_classifier,
+   762	            is_supervisor_enabled,
+   763	        )
+   764	
+   765	        if not is_supervisor_enabled():
+   766	            return None
+   767	
+   768	        # Contexto mínimo para o classifier — sem PII, snippets curtos.
+   769	        ctx = context or {}
+   770	        prior = prior_state or {}
+   771	        current_stage = prior.get("current_stage") if isinstance(prior, dict) else None
+   772	
+   773	        # tenant snippet via helper canônico (NON-ReAct callsite — T-F).
+   774	        # Assinatura canônica: (ctx, *, agent_name, company_id_raw).
+   775	        # NÃO use kwargs `company_id=`/`context=` — TypeError silenciado
+   776	        # quebraria a postura de governança T-F.
+   777	        tenant_snippet = ""
+   778	        try:
+   779	            from app.shared.agents.tenant_aware_agent import (
+   780	                resolve_tenant_snippet_for_non_react,
+   781	            )
+   782	            tenant_snippet = (
+   783	                resolve_tenant_snippet_for_non_react(
+   784	                    ctx,
+   785	                    agent_name="wizard_supervisor",
+   786	                    company_id_raw=company_id,
+   787	                )
+   788	                or prior.get("tenant_context_snippet")
+   789	                or ""
+   790	            )
+   791	        except Exception as exc:  # noqa: BLE001
+   792	            logger.debug(
+   793	                "[WizardSupervisor] tenant snippet resolve failed: %s", exc,
+   794	            )
+   795	
+   796	        # Últimas 3 turns (apenas conteúdo, sem role) — sinal pra LLM
+   797	        # detectar loop / mudança de intenção.
+   798	        last_turns: list[str] = []
+   799	        conv = prior.get("conversation_messages") if isinstance(prior, dict) else None
+   800	        if isinstance(conv, list):
+   801	            for m in conv[-6:]:
+   802	                if isinstance(m, dict):
+   803	                    c = str(m.get("content") or "").strip()
+   804	                    if c:
+   805	                        last_turns.append(c)
+   806	
+   807	        has_active_draft = bool(prior)
+   808	
+   809	        classifier = get_wizard_supervisor_classifier()
+   810	        try:
+   811	            output = await asyncio.to_thread(
+   812	                classifier.classify_sync,
+   813	                user_message=user_message,
+   814	                current_stage=current_stage,
+   815	                tenant_context_snippet=tenant_snippet,
+   816	                last_turns=last_turns,
+   817	                has_active_draft=has_active_draft,
+   818	            )
+   819	        except Exception as exc:  # noqa: BLE001 — fail-OPEN
+   820	            logger.warning(
+   821	                "[WizardSupervisor] classify_sync raised (fail-open): %s",
+   822	                exc,
+   823	            )
+   824	            return None
+   825	
+   826	        if output is None:
+   827	            return None
+   828	
+   829	        intent = output.intent
+   830	        cls._emit_supervisor_telemetry(
+   831	            intent=intent,
+   832	            confidence=output.confidence,
+   833	            company_id=company_id,
+   834	            thread_id=thread_id,
+   835	            current_stage=current_stage,
+   836	        )
+   837	
+   838	        # ── Short-circuit: meta_question ─────────────────────────────
+   839	        # Contrato canônico (Task #1127, fase 1.1): meta perguntas são
+   840	        # respondidas pelo `wizard_meta_question_helper` (Sonnet, stage-aware).
+   841	        # O `output.conversational_reply` do supervisor (Haiku) é APENAS
+   842	        # last-resort — nunca primário. Inverter essa ordem produz respostas
+   843	        # genéricas e perde a awareness de etapa.
+   844	        if intent == "meta_question":
+   845	            reply = ""
+   846	            try:
+   847	                from app.domains.job_creation.services.wizard_meta_question_helper import (
+   848	                    generate_meta_response_sync,
+   849	                )
+   850	                reply = await asyncio.to_thread(
+   851	                    generate_meta_response_sync,
+   852	                    stage=current_stage or "wizard",
+   853	                    user_message=user_message,
+   854	                    tenant_context_snippet=tenant_snippet,
+   855	                    last_turns=last_turns,
+   856	                    stage_description=(
+   857	                        f"wizard de criação de vaga, etapa {current_stage}"
+   858	                        if current_stage else "wizard de criação de vaga"
+   859	                    ),
+   860	                ) or ""
+   861	            except Exception as exc:  # noqa: BLE001
+   862	                logger.warning(
+   863	                    "[WizardSupervisor] meta helper failed (fail-open): %s",
+   864	                    exc,
+   865	                )
+   866	            if not reply:
+   867	                # Last-resort: usa reply do supervisor classifier (Haiku).
+   868	                reply = (output.conversational_reply or "").strip()
+   869	            if not reply:
+   870	                # Fallback determinístico — NÃO é canned do produto (sentinela
+   871	                # T3 veta literais de produto). Hard-prefix sinaliza estado.
+   872	                reply = (
+   873	                    "Posso responder rapidinho: estamos no wizard de criação "
+   874	                    "de vaga. Quer que eu repita o que estava pedindo?"
+   875	                )
+   876	            return {
+   877	                "intent": "meta_question",
+   878	                "short_circuit": True,
+   879	                "message": reply,
+   880	                "ws_stage_payload": {
+   881	                    "type": "wizard_meta_reply",
+   882	                    "data": {"message": reply, "stage": current_stage or ""},
+   883	                },
+   884	            }
+   885	
+   886	        # ── Short-circuit: exit_wizard ────────────────────────────────
+   887	        if intent == "exit_wizard":
+   888	            reply = (output.conversational_reply or "").strip() or (
+   889	                "Sem problema, paramos por aqui. Quando quiser retomar, é só "
+   890	                "me chamar."
+   891	            )
+   892	            return {
+   893	                "intent": "exit_wizard",
+   894	                "short_circuit": True,
+   895	                "message": reply,
+   896	                "ws_stage_payload": {
+   897	                    "type": "wizard_exit",
+   898	                    "data": {"message": reply, "stage": current_stage or ""},
+   899	                },
+   900	            }
+   901	
+   902	        # create_new / resume_draft / edit_published / continue_current
+   903	        # caem no fluxo legacy (graph). Handlers dedicados virão nas
+   904	        # Tasks #1128+ (follow-ups). Preservar fluxo é a postura segura.
+   905	        return {"intent": intent, "short_circuit": False}
+   906	
+   907	    @staticmethod
+   908	    def _emit_supervisor_telemetry(
+   909	        *,
+   910	        intent: str,
+   911	        confidence: float,
+   912	        company_id: str | None,
+   913	        thread_id: str,
+   914	        current_stage: str | None,
+   915	    ) -> None:
+   916	        """Telemetria fail-OPEN do supervisor (Prometheus + audit).
+   917	
+   918	        Counter Prometheus ``lia_wizard_supervisor_intent_total``
+   919	        (label=intent,stage) e audit row ``decision_type=
+   920	        wizard_supervisor_routed`` (SOX 7y) — best-effort, nunca derruba
+   921	        o turno.
+   922	        """
+   923	        stage_label = current_stage or "unstarted"
+   924	
+   925	        # Prometheus
+   926	        try:  # pragma: no cover — exercitado via integração
+   927	            from prometheus_client import REGISTRY as _PROM_REGISTRY
+   928	            from prometheus_client import Counter as _PromCounter
+   929	
+   930	            existing = getattr(
+   931	                _PROM_REGISTRY, "_names_to_collectors", {},
+   932	            ).get("lia_wizard_supervisor_intent_total")
+   933	            if existing is None:
+   934	                counter = _PromCounter(
+   935	                    "lia_wizard_supervisor_intent_total",
+   936	                    "Total de intents classificados pelo Wizard Supervisor "
+   937	                    "(Task #1127). Label intent ∈ allowlist canônica; "
+   938	                    "label stage = current_stage do graph ou 'unstarted'.",
+   939	                    labelnames=("intent", "stage"),
+   940	                )
+   941	            else:
+   942	                counter = existing
+   943	            counter.labels(intent=intent, stage=stage_label).inc()
+   944	        except Exception as pm_exc:  # noqa: BLE001
+   945	            logger.debug(
+   946	                "[WizardSupervisor] prometheus inc failed (fail-open): %s",
+   947	                pm_exc,
+   948	            )
+   949	
+   950	        # Audit row (best-effort)
+   951	        cid = str(company_id) if company_id else ""
+   952	        if not cid:
+   953	            return
+   954	        try:
+   955	            from app.shared.compliance.audit_service import AuditService
+   956	            asyncio.create_task(AuditService().log_decision(  # AUDIT-NO-DEMO: wizard supervisor routing telemetry (job creation flow, no candidate decision; LGPD Art.20 N/A)
+   957	                company_id=cid,
+   958	                agent_name="wizard_supervisor_classifier",
+   959	                decision_type="wizard_supervisor_routed",
+   960	                action=f"supervisor_route:{intent}",
+   961	                decision=intent,
+   962	                reasoning=[
+   963	                    f"intent={intent}",
+   964	                    f"confidence={confidence:.2f}",
+   965	                    f"stage={stage_label}",
+   966	                    f"thread_id={thread_id}",
+   967	                ],
+   968	                criteria_used=[
+   969	                    "wizard_supervisor_t1127",
+   970	                    f"intent:{intent}",
+   971	                    f"stage:{stage_label}",
+   972	                ],
+   973	                human_review_required=False,
+   974	            ))
+   975	        except Exception as audit_exc:  # noqa: BLE001
+   976	            logger.debug(
+   977	                "[WizardSupervisor] audit emit failed (fail-open): %s",
+   978	                audit_exc,
+   979	            )
+   980	
+   981	    # ── Orquestrador conversacional (strangler-fig, Paulo 2026-05-31) ────
+   982	    # Caminho alternativo ao pipeline LangGraph: um tool-calling agent
+   983	    # state-aware. Ligado por LIA_WIZARD_ORCHESTRATOR (default OFF). Quando
+   984	    # ON, BYPASSA o graph completamente — lê o state via checkpointer
+   985	    # (mesma fonte do graph), roda o orquestrador, e persiste o state
+   986	    # mutado via update_state. Coexistência: o schema JobCreationState é o
+   987	    # mesmo, então alternar a flag preserva a sessão.
+   988	    @staticmethod
+   989	    def _orchestrator_enabled() -> bool:
+   990	        """Lê a flag de os.environ (prod/Secrets) OU do .env (dev).
+   991	
+   992	        No setup Replit dev, o ``.env`` NÃO é injetado em ``os.environ``
+   993	        (pydantic-settings o lê para o objeto Settings, não para o environ).
+   994	        Para a flag funcionar em dev sem precisar de Secret nem restart com
+   995	        export, fazemos fallback para uma leitura cacheada do ``.env``.
+   996	        Fail-open: qualquer erro → False (orquestrador desligado).
+   997	        """
+   998	        _TRUTHY = ("1", "true", "yes", "on")
+   999	        val = os.environ.get("LIA_WIZARD_ORCHESTRATOR")
+  1000	        if val is not None:
+  1001	            return val.strip().lower() in _TRUTHY
+  1002	        try:
+  1003	            from dotenv import dotenv_values  # type: ignore
+  1004	            cached = getattr(WizardSessionService, "_dotenv_cache", None)
+  1005	            if cached is None:
+  1006	                cached = dotenv_values(".env") or {}
+  1007	                WizardSessionService._dotenv_cache = cached  # type: ignore[attr-defined]
+  1008	            dv = (cached.get("LIA_WIZARD_ORCHESTRATOR") or "").strip().lower()
+  1009	            return dv in _TRUTHY
+  1010	        except Exception:  # noqa: BLE001 — fail-open
+  1011	            return False
+  1012	
+  1013	    @classmethod
+  1014	    async def _persist_orchestrator_state(
+  1015	        cls, thread_id: str, values: dict
+  1016	    ) -> bool:
+  1017	        """Persiste o state mutado no checkpointer do graph (fonte única).
+  1018	
+  1019	        Usa ``update_state`` (escreve checkpoint sem rodar nós). Fail-loud:
+  1020	        loga WARNING se falhar (o reply já foi gerado; só sinaliza que o
+  1021	        state pode não ter persistido — nunca silent).
+  1022	        """
+  1023	        try:
+  1024	            from app.domains.job_creation.graph import get_job_creation_graph
+  1025	            wiz_g = get_job_creation_graph()
+  1026	            config = {"configurable": {"thread_id": thread_id}}
+  1027	            await asyncio.to_thread(wiz_g._graph.update_state, config, values)
+  1028	            return True
+  1029	        except Exception as exc:  # noqa: BLE001
+  1030	            logger.warning(
+  1031	                "[WizardOrchestrator] state persist FAILED thread=%s reason=%s "
+  1032	                "— reply entregue mas state pode não ter persistido.",
+  1033	                thread_id, type(exc).__name__,
+  1034	            )
+  1035	            return False
+  1036	
+  1037	    @classmethod
+  1038	    async def _process_via_orchestrator(
+  1039	        cls,
+  1040	        *,
+  1041	        thread_id: str,
+  1042	        user_message: str,
+  1043	        user_id: str | None,
+  1044	        company_id: str | None,
+  1045	        prior_state: dict,
+  1046	        context: dict | None,
+  1047	    ) -> tuple[str, dict, int]:
+  1048	        """Processa o turno via WizardOrchestrator (bypass do graph)."""
+  1049	        from app.domains.job_creation.orchestrator.wizard_orchestrator import (
+  1050	            get_wizard_orchestrator,
+  1051	        )
+  1052	        from app.domains.job_creation.orchestrator.wizard_tools import ToolContext
+  1053	        from app.domains.job_creation.helpers.ws_payload_builder import (
+  1054	            build_ws_stage_payload,
+  1055	        )
+  1056	        from app.domains.job_creation.state import calculate_completeness
+  1057	
+  1058	        state = dict(prior_state or {})
+  1059	
+  1060	        # ── Terminal stage guard (belt-and-suspenders) ─────────────────
+  1061	        # When the checkpoint is at a terminal stage, the previous wizard
+  1062	        # is finished. Reset to fresh state so a new wizard can start.
+  1063	        _prior_stage = state.get('current_stage', '')
+  1064	        if _prior_stage in {'handoff', 'completed', 'done'}:
+  1065	            logger.info(
+  1066	                "[WizardOrchestrator] terminal stage: stage=%s thread=%s "
+  1067	                "— resetting to fresh state for new wizard",
+  1068	                _prior_stage, thread_id,
+  1069	            )
+  1070	            state = {}
+  1071	        # Carrega campos do context (right_panel_form, tenant snippet) p/ o state.
+  1072	        for k in _CONTEXT_CARRY_KEYS:
+  1073	            if context and context.get(k) is not None:
+  1074	                state[k] = context[k]
+  1075	
+  1076	        # ── Captura determinística do email do gestor (LGPD) ───────────
+  1077	        # O email é apagado pelo c3b/pii_masking ('[EMAIL REMOVIDO]') ANTES
+  1078	        # do LLM. O wizard PRECISA do valor (registro do gestor), mas o LLM
+  1079	        # NÃO — então extraímos do texto cru (context['_raw_user_message'])
+  1080	        # no servidor e gravamos direto no state, sem nunca enviar ao LLM.
+  1081	        # Decisão Paulo 2026-05-31 (extração determinística).
+  1082	        # Fonte do texto cru para extrair o email:
+  1083	        #  - WS: context['_raw_user_message'] (user_message chega mascarado).
+  1084	        #  - SSE: user_message já é cru (SSE não mascara inbound) — fallback.
+  1085	        # Cobrir ambos torna a captura robusta ao transporte (root cause do
+  1086	        # round 2: SSE não preenchia _raw_user_message → zero capturas).
+  1087	        _raw_msg = (context or {}).get("_raw_user_message") or user_message or ""
+  1088	        _email = _extract_manager_email(_raw_msg)
+  1089	        if _email:
+  1090	            # Bug 2a fix: skip if email matches the recruiter's own email.
+  1091	            # parsed_recruiter_email is set from JWT/session at login time.
+  1092	            _recruiter_email = (state.get("parsed_recruiter_email") or "").lower().strip()
+  1093	            if _email.lower() != _recruiter_email:
+  1094	                state["parsed_manager_email"] = _email
+  1095	                logger.info(
+  1096	                    "[WizardOrchestrator] manager_email capturado deterministicamente "
+  1097	                    "(len=%d) thread=%s", len(_email), thread_id,
+  1098	                )
+  1099	                # H2-warning: dominio diferente do recrutador pode indicar email
+  1100	                # de outra empresa (sem validacao de tenant para manager).
+  1101	                _mgr_domain = _email.split("@")[-1].lower()
+  1102	                if _recruiter_email and _mgr_domain != _recruiter_email.split("@")[-1].lower():
+  1103	                    logger.warning(
+  1104	                        "[WizardOrchestrator] manager_email dominio difere do recrutador "
+  1105	                        "(%s vs %s) — sem validacao de tenant, thread=%s",
+  1106	                        _mgr_domain,
+  1107	                        _recruiter_email.split("@")[-1].lower(),
+  1108	                        thread_id,
+  1109	                    )
+  1110	            else:
+  1111	                logger.debug(
+  1112	                    "[WizardOrchestrator] manager_email ignorado (igual ao email do recrutador) "
+  1113	                    "thread=%s", thread_id,
+  1114	                )
+  1115	
+  1116	        # ── Captura determinISTICa do NOME do gestor (audit 2026-06-05) ─────
+  1117	        # Mesma razao do email (decisao Paulo 2026-05-31, estendida): por LGPD
+  1118	        # o nome e mascarado (Presidio PERSON) ANTES do LLM, que entao o
+  1119	        # INVENTA a cada turno (Carlos Mendes -> Ricardo Almeida...).
+  1120	        # Capturamos do texto CRU no servidor -- NUNCA pelo LLM. Fontes:
+  1121	        # (1) texto cru ("o gestor e Paulo Moraes" / correcao "nao e X e Y"),
+  1122	        # (2) derivacao do email (paulo.moraes@ -> Paulo Moraes). Sugestao a
+  1123	        # confirmar. Corre a cada turno: a correcao vence; sem sinal, mantem.
+  1124	        from app.domains.job_creation.helpers.manager_identity import (
+  1125	            derive_name_from_email,
+  1126	            extract_manager_name_from_text,
+  1127	        )
+  1128	        _mgr_hint = False
+  1129	        for _m in reversed(state.get("conversation_messages") or []):
+  1130	            if _m.get("role") == "assistant":
+  1131	                _c = (_m.get("content") or "").lower()
+  1132	                _mgr_hint = (
+  1133	                    "nome do gestor" in _c
+  1134	                    or "gestor responsavel" in _c
+  1135	                    or "gestor responsável" in _c
+  1136	                    or "quem e o gestor" in _c
+  1137	                    or "quem é o gestor" in _c
+  1138	                )
+  1139	                break
+  1140	        _mgr_name = extract_manager_name_from_text(
+  1141	            _raw_msg, manager_context_hint=_mgr_hint
+  1142	        )
+  1143	        if not _mgr_name and _email:
+  1144	            _mgr_name = derive_name_from_email(_email)
+  1145	        if _mgr_name:
+  1146	            state["parsed_manager_name"] = _mgr_name
+  1147	            state["manager_name_suggested"] = True
+  1148	            logger.info(
+  1149	                "[WizardOrchestrator] manager_name capturado deterministicamente "
+  1150	                "(len=%d) thread=%s", len(_mgr_name), thread_id,
+  1151	            )
+  1152	
+  1153	        ctx = ToolContext(
+  1154	            company_id=str(company_id or state.get("company_id") or ""),
+  1155	            user_id=user_id,
+  1156	            workspace_id=state.get("workspace_id"),
+  1157	        )
+  1158	        orch = get_wizard_orchestrator()
+  1159	        # B5b: pré-busca o company context (missão/valores filtrados por toggle)
+  1160	        # AQUI no loop async — DB async NÃO funciona dentro do thread do
+  1161	        # process_turn (MissingGreenlet). Cacheia no state (1x por sessão); o
+  1162	        # enrich tool lê state['company_context'] e injeta no JD (about_company).
+  1163	        if "company_context" not in state and ctx.company_id:
+  1164	            try:
+  1165	                from app.core.database import AsyncSessionLocal
+  1166	                from app.shared.services.lia_agent_context_builder import (
+  1167	                    build_company_agent_context,
+  1168	                )
+  1169	                async with AsyncSessionLocal() as _cc_db:
+  1170	                    state["company_context"] = await build_company_agent_context(
+  1171	                        company_id=ctx.company_id,
+  1172	                        db=_cc_db,
+  1173	                        job_context={
+  1174	                            "title": state.get("parsed_title", ""),
+  1175	                            "department": state.get("parsed_department", ""),
+  1176	                            "seniority": state.get("parsed_seniority", ""),
+  1177	                        },
+  1178	                    ) or ""
+  1179	            except Exception as _cc_exc:  # noqa: BLE001 — fail-open
+  1180	                logger.warning(
+  1181	                    "[WizardOrchestrator] company_context fetch falhou: %s", _cc_exc
+  1182	                )
+  1183	                state["company_context"] = ""
+  1184	        result = await asyncio.to_thread(
+  1185	            orch.process_turn,
+  1186	            state=state,
+  1187	            user_message=user_message,
+  1188	            ctx=ctx,
+  1189	        )
+  1190	
+  1191	        new_state = {**state, **result.state_updates}
+  1192	        new_state["company_id"] = ctx.company_id
+  1193	        # Stage derivado do progresso (o painel é stage-driven). Persistido
+  1194	        # para o próximo turno e usado no payload.
+  1195	        stage = _derive_wizard_stage(new_state)
+  1196	        new_state["current_stage"] = stage
+  1197	        # Acumula histórico (mesma estrutura que os nós usam).
+  1198	        conv = list(new_state.get("conversation_messages") or [])
+  1199	        conv.append({"role": "user", "content": user_message})
+  1200	        conv.append({"role": "assistant", "content": result.reply})
+  1201	        new_state["conversation_messages"] = conv[-50:]
+  1202	
+  1203	        # Manus F1 — panel_pref one-shot: consumir (pop) ANTES do persist
+  1204	        # para a key nunca chegar ao checkpoint (update_state faz MERGE —
+  1205	        # pop pós-persist não removeria, e os turnos seguintes re-emitiriam).
+  1206	        panel_pref = _consume_panel_pref(new_state)
+  1207	
+  1208	        await cls._persist_orchestrator_state(thread_id, new_state)
+  1209	
+  1210	        # Payload alinhado ao contrato canonical do painel (DRY com _ficha_data
+  1211	        # do intake_gate) + campos de gestor + JD enriquecida. O FE substitui
+  1212	        # stageData pelo payload (não faz merge) — por isso é cumulativo.
+  1213	        try:
+  1214	            from app.domains.job_creation.nodes.intake_gate import _ficha_data
+  1215	            data = _ficha_data(new_state, result.reply)
+  1216	            # Gestor (não cobertos por _ficha_data) — painel renderiza estes.
+  1217	            data["parsed_manager_name"] = new_state.get("parsed_manager_name")
+  1218	            data["parsed_manager_email"] = new_state.get("parsed_manager_email")
+  1219	            # T10: stakeholders/envolvidos adicionais
+  1220	            if new_state.get("parsed_stakeholders"):
+  1221	                data["parsed_stakeholders"] = new_state["parsed_stakeholders"]
+  1222	            # Responsabilidades confirmadas (item #2) — surfacar pro painel.
+  1223	            if new_state.get("confirmed_responsibilities"):
+  1224	                data["confirmed_responsibilities"] = new_state.get("confirmed_responsibilities")
+  1225	            # Idiomas confirmados (item #3) — surfacar pro painel.
+  1226	            if new_state.get("confirmed_languages"):
+  1227	                data["confirmed_languages"] = new_state.get("confirmed_languages")
+  1228	            # Bug 3a fix: Benefits and variable compensation — surface to JobCreationPanel.
+  1229	            if new_state.get("confirmed_benefits"):
+  1230	                data["confirmed_benefits"] = new_state.get("confirmed_benefits")
+  1231	            if new_state.get("confirmed_variable_compensation"):
+  1232	                data["confirmed_variable_compensation"] = new_state.get("confirmed_variable_compensation")
+  1233	            # B3 fix: competency_tree p/ o CompetencyPanel (add/remove).
+  1234	            _ctree = _competency_tree_for_panel(new_state)
+  1235	            if _ctree:
+  1236	                data["competency_tree"] = _ctree
+  1237	                data["seniority"] = (
+  1238	                    new_state.get("seniority_resolved")
+  1239	                    or new_state.get("parsed_seniority")
+  1240	                    or ""
+  1241	                )
+  1242	                data["seniority_display"] = data["seniority"]
+  1243	                data.setdefault("distribution", {
+  1244	                    "technical": sum(1 for x in _ctree if x["block"] == "technical"),
+  1245	                    "behavioral": sum(1 for x in _ctree if x["block"] == "behavioral"),
+  1246	                })
+  1247	            # JD enriquecida — surfacar para o painel exibir a descrição.
+  1248	            if new_state.get("jd_enriched"):
+  1249	                _jd = new_state.get("jd_enriched") or {}
+  1250	                data["jd_enriched"] = _jd
+  1251	                data["jd_raw"] = new_state.get("jd_raw") or new_state.get("raw_input")
+  1252	                data["jd_approved"] = new_state.get("jd_approved")
+  1253	                # B5 fix (2026-05-31): 9 dimensões de qualidade (D1-D9) +
+  1254	                # band, via o canônico evaluate_jd_quality — MESMO contrato do
+  1255	                # endpoint /jd-evaluate de Settings. Antes o painel só recebia
+  1256	                # um score consolidado (sem o breakdown). Determinístico.
+  1257	                try:
+  1258	                    from app.domains.cv_screening.services.wsi_service.jd_quality import (
+  1259	                        evaluate_jd_quality,
+  1260	                    )
+  1261	                    _q = evaluate_jd_quality(
+  1262	                        description=_jd.get("about_role"),
+  1263	                        job_title=_jd.get("titulo_padronizado"),
+  1264	                        seniority=_jd.get("senioridade_confirmada"),
+  1265	                        responsibilities=list(_jd.get("responsabilidades") or []),
+  1266	                        technical_skills=[
+  1267	                            x.get("skill", "") for x in (_jd.get("skills_obrigatorias") or [])
+  1268	                        ],
+  1269	                        behavioral_competencies=[
+  1270	                            x.get("competencia", "")
+  1271	                            for x in (_jd.get("competencias_comportamentais") or [])
+  1272	                        ],
+  1273	                    )
+  1274	                    data["quality_score"] = _q["score"]
+  1275	                    data["quality_indicators"] = _q["indicators"]
+  1276	                    data["quality_band"] = _q["band_label"]
+  1277	                except Exception as _q_exc:  # noqa: BLE001 — fallback p/ score simples
+  1278	                    logger.warning(
+  1279	                        "[WizardOrchestrator] jd 9-dim breakdown falhou: %s", _q_exc
+  1280	                    )
+  1281	                    data["quality_score"] = new_state.get("jd_quality_score")
+  1282	                data["jd_enrichment_used_fallback"] = new_state.get(
+  1283	                    "jd_enrichment_used_fallback", False
+  1284	                )
+  1285	            # Perguntas WSI — surfacar para o WsiQuestionsPanel renderizar.
+  1286	            if new_state.get("wsi_questions"):
+  1287	                # B7 fix (2026-05-31): o painel FE (WsiQuestionsData) lê
+  1288	                # `questions` e `distribution` — NÃO `wsi_questions`/
+  1289	                # `question_distribution`. Key mismatch fazia o painel mostrar
+  1290	                # "0 perguntas" mesmo com a tool tendo gerado. Alinhado ao nó
+  1291	                # canônico wsi_questions_node (chave "questions").
+  1292	                data["questions"] = new_state.get("wsi_questions")
+  1293	                data["questions_approved"] = new_state.get("questions_approved")
+  1294	                data["distribution"] = new_state.get("question_distribution")
+  1295	                data["wsi_questions_used_fallback"] = new_state.get(
+  1296	                    "wsi_questions_used_fallback", False
+  1297	                )
+  1298	                # Task-6 fix: expor seniority_level + screening_mode +
+  1299	                # expected_distribution para o FE abandonar MIN_DISTRIBUTION
+  1300	                # hardcoded e usar os dados canônicos do YAML.
+  1301	                try:
+  1302	                    from app.domains.job_creation.helpers.wsi_distribution import (
+  1303	                        block_distribution as _block_dist,
+  1304	                    )
+  1305	                    _seniority = new_state.get("seniority_resolved") or "pleno"
+  1306	                    _mode = new_state.get("screening_mode") or "compact"
+  1307	                    data["seniority_level"] = _seniority
+  1308	                    data["screening_mode"] = _mode
+  1309	                    data["expected_distribution"] = _block_dist(
+  1310	                        mode=_mode, seniority=_seniority
+  1311	                    )
+  1312	                except Exception as _t6_exc:  # noqa: BLE001 — best-effort, não bloqueia painel
+  1313	                    logger.debug(
+  1314	                        "[WizardOrchestrator] expected_distribution calc falhou: %s",
+  1315	                        _t6_exc,
+  1316	                    )
+  1317	                # Gate de distribuição (mesma lógica do approve_wsi_questions,
+  1318	                # fail-open): popula distribution_gap para o banner do
+  1319	                # WsiQuestionsPanel disparar também no caminho live.
+  1320	                try:
+  1321	                    from app.domains.job_creation.orchestrator.wizard_service_tools import (
+  1322	                        _wsi_distribution_status,
+  1323	                    )
+  1324	                    _ds = _wsi_distribution_status(new_state)
+  1325	                    if _ds["gap"]:
+  1326	                        data["distribution_gap"] = _ds["gap"]
+  1327	                except Exception as _dg_exc:  # noqa: BLE001 — banner é best-effort
+  1328	                    logger.debug(
+  1329	                        "[WizardOrchestrator] distribution_gap calc falhou: %s",
+  1330	                        _dg_exc,
+  1331	                    )
+  1332	            # W1-A: Perguntas de elegibilidade — surfacar para EligibilityPanel.
+  1333	            # EligibilityPanel usa data["questions"] (igual ao WSI).
+  1334	            # Só preenche quando WSI ainda não foi gerado (eligibility vem antes).
+  1335	            _elig_q = new_state.get("eligibility_questions")
+  1336	            if _elig_q and not new_state.get("wsi_questions"):
+  1337	                data["questions"] = _elig_q
+  1338	
+  1339	            # Bug 13: Calibração — alimenta WizardCalibrationCard
+  1340	            # threshold: like + dislike contam; skip NÃO (decisão 2026-06-19)
+  1341	            if new_state.get("calibration_candidates") and stage == "calibration":
+  1342	                _cands = new_state.get("calibration_candidates") or []
+  1343	                _threshold = new_state.get("calibration_threshold", 3)
+  1344	                _signal_count = sum(
+  1345	                    1 for c in _cands
+  1346	                    if c.get("decision") in ("approved", "rejected")
+  1347	                )
+  1348	                _approved_count = sum(
+  1349	                    1 for c in _cands if c.get("decision") == "approved"
+  1350	                )
+  1351	                _can_advance = new_state.get("can_advance", _signal_count >= _threshold)
+  1352	                data["calibration_candidates"] = _cands
+  1353	                data["threshold"] = _threshold
+  1354	                data["signal_count"] = _signal_count
+  1355	                data["approved_count"] = _approved_count
+  1356	                data["can_advance"] = _can_advance
+  1357	            if new_state.get("job_id"):
+  1358	                data["job_id"] = new_state.get("job_id")
+  1359	                data["share_link"] = new_state.get("share_link")
+  1360	            # handoff_url para o FE navegar à vaga (auto-nav em stage=handoff).
+  1361	            if stage == "handoff":
+  1362	                _jid = new_state.get("job_id")
+  1363	                data["handoff_url"] = f"/jobs/{_jid}" if _jid else "/jobs"
+  1364	            # Manus F1 — preferência de painel one-shot (open_panel/
+  1365	            # close_panel). Emitida UMA vez; já removida do state acima.
+  1366	            if panel_pref:
+  1367	                data["panel_pref"] = panel_pref
+  1368	            payload = build_ws_stage_payload(
+  1369	                stage=stage,
+  1370	                requires_approval=bool(new_state.get("requires_approval")),
+  1371	                data=data,
+  1372	                completeness=calculate_completeness(stage),
+  1373	            )
+  1374	            # Bug #3 fix: surface response_blocks (RRP juicybox cards) from orchestrator
+  1375	            if result.response_blocks:
+  1376	                payload["response_blocks"] = result.response_blocks
+  1377	            # P0-E fix (2026-06-14): user pediu "me leve pro chat full" no wizard.
+  1378	            # Emite ui_action="navigate_to" page="chat" para o SSE handler propagar
+  1379	            # ao frontend (useUIAction.dispatchOrEmit -> router.push /pt/chat).
+  1380	            if new_state.get("_navigate_to_fullscreen_chat"):
+  1381	                payload["ui_action"] = "navigate_to"
+  1382	                payload["ui_action_params"] = {"page": "chat"}
+  1383	        except Exception as exc:  # noqa: BLE001  # REGRA-4-EXEMPT: payload é best-effort (UI continua com payload vazio), reply já foi gerado
+  1384	            logger.warning(
+  1385	                "[WizardOrchestrator] payload build failed: %s", type(exc).__name__,
+  1386	                exc_info=True,
+  1387	            )
+  1388	            # FIX defect #1: NEVER set payload = {} — empty dict is falsy,
+  1389	            # SSE handler skips panel_update, panel disappears. Build a
+  1390	            # minimal valid payload so the panel stays alive.
+  1391	            payload = {
+  1392	                "type": "wizard_stage",
+  1393	                "stage": stage,
+  1394	                "data": {
+  1395	                    "message": result.reply or "[Estado do wizard em atualização]",
+  1396	                },
+  1397	                "requires_approval": False,
+  1398	            }
+  1399	
+  1400	        # ── Fix: mark wizard checkpoint as completed after handoff ──────
+  1401	        # Same fix as the graph path — the orchestrator persists
+  1402	        # current_stage="handoff" but never transitions to "completed".
+  1403	        if stage == "handoff" and thread_id:
+  1404	            try:
+  1405	                await cls._persist_orchestrator_state(
+  1406	                    thread_id, {"current_stage": "completed"}
+  1407	                )
+  1408	                logger.info(
+  1409	                    "[WizardOrchestrator] marked checkpoint completed after "
+  1410	                    "handoff thread=%s", thread_id,
+  1411	                )
+  1412	            except Exception as _mark_exc:  # REGRA-4-EXEMPT: marcar checkpoint é best-effort, falha não cancela o turn
+  1413	                logger.warning(
+  1414	                    "[WizardOrchestrator] failed to mark checkpoint completed "
+  1415	                    "(fail-open): %s", type(_mark_exc).__name__,
+  1416	                )
+  1417	
+  1418	        logger.info(
+  1419	            "[WizardOrchestrator] turn done thread=%s tools=%s iters=%d "
+  1420	            "fairness_blocked=%s error=%s",
+  1421	            thread_id, result.tool_calls, result.iterations,
+  1422	            result.fairness_blocked, result.error,
+  1423	        )
+  1424	        return (result.reply, payload, 0)
+  1425	
+  1426	    @classmethod
+  1427	    async def process_message(
+  1428	        cls,
+  1429	        *,
+  1430	        thread_id: str,
+  1431	        user_message: str,
+  1432	        user_id: str | None,
+  1433	        company_id: str | None,
+  1434	        session_id: str,
+  1435	        context: dict | None,
+  1436	        on_token: Any | None = None,
+  1437	    ) -> tuple[str, dict, int]:
+  1438	        """Invoke JobCreationGraph for a wizard message (new or continuing).
+  1439	
+  1440	        Entry point for agent_chat_ws.py wizard path. Replaces the inline
+  1441	        _invoke_wizard_canonical_streaming logic with the session-aware variant.
+  1442	
+  1443	        Args:
+  1444	            thread_id:    Stable session thread_id (from derive_thread_id()).
+  1445	            user_message: Recruiter's current message.
+  1446	            user_id:      From JWT (never from payload — multi-tenancy).
+  1447	            company_id:   From JWT (never from payload — multi-tenancy).
+  1448	            session_id:   WS session id (used as fallback thread_id key).
+  1449	            context:      Raw WS context dict (right_panel_form, metadata, …).
+  1450	            on_token:     Optional async callback ``(chunk: str) → None``.
+  1451	
+  1452	        Returns:
+  1453	            ``(recruiter_message, ws_stage_payload, tokens_emitted)``
+  1454	        """
+  1455	        from app.domains.job_creation.graph import get_job_creation_graph
+  1456	        wiz_g = get_job_creation_graph()
+  1457	
+  1458	        prior_state = await cls._get_prior_state(thread_id)
+  1459	
+  1460	        # ── Orquestrador conversacional (flag LIA_WIZARD_ORCHESTRATOR) ──
+  1461	        # Quando ON, bypassa o pipeline LangGraph e roda o tool-calling
+  1462	        # agent state-aware. Default OFF — zero impacto em produção.
+  1463	        if cls._orchestrator_enabled():
+  1464	            logger.info(
+  1465	                "[WizardSession] routing via ORCHESTRATOR thread=%s", thread_id,
+  1466	            )
+  1467	            return await cls._process_via_orchestrator(
+  1468	                thread_id=thread_id,
+  1469	                user_message=user_message,
+  1470	                user_id=user_id,
+  1471	                company_id=company_id,
+  1472	                prior_state=prior_state,
+  1473	                context=context,
+  1474	            )
+  1475	
+  1476	        # ── Sprint F.2 (2026-05-20) — Skip supervisor mid-flow ─────────
+  1477	        # CANONICAL FIX (Option A): when ``prior_state.current_stage`` is
+  1478	        # in the ACTIVE wizard stages, SKIP the pre-graph supervisor
+  1479	        # classifier entirely. Rationale: those stages have an active
+  1480	        # HITL gate (``langgraph.types.interrupt()``) waiting for a
+  1481	        # specific recruiter response (modo compact/full, aprovação JD,
+  1482	        # ajuste de competência). Re-classifying short answers like
+  1483	        # "modo compacto" / "aprovado" / "ok" via Haiku risks misrouting
+  1484	        # them as ``create_new`` / ``meta_question`` / ``exit_wizard``
+  1485	        # and regressing the wizard to intake. The supervisor must only
+  1486	        # run for (a) genuine new conversations (no prior_state) or
+  1487	        # (b) terminal/idle stages where re-classification is safe.
+  1488	        #
+  1489	        # Active wizard stages = entire WizardStage Literal minus
+  1490	        # ``intake`` (where supervisor is needed to detect meta_question
+  1491	        # / exit_wizard before the first JD parse) and terminal
+  1492	        # ``done`` / ``handoff`` / ``calibration`` (post-publish).
+  1493	        # The 8 active stages map 1:1 to nodes with interrupt() gates.
+  1494	        # Sprint F.2-v2 canonical: helper module-level testable em isolamento.
+  1495	        # ``_ACTIVE_WIZARD_STAGES`` + threshold vivem no topo do módulo agora.
+  1496	        _prior_stage = None
+  1497	        if isinstance(prior_state, dict):
+  1498	            _prior_stage = prior_state.get("current_stage")
+  1499	        # ── Terminal stage guard (graph path) ─────────────────────
+  1500	        if _prior_stage in ('handoff', 'completed', 'done'):
+  1501	            logger.info(
+  1502	                "[WizardSession] terminal stage (graph): stage=%s "
+  1503	                "thread=%s — resetting prior_state for new wizard",
+  1504	                _prior_stage, thread_id,
+  1505	            )
+  1506	            prior_state = {}
+  1507	        _skip_supervisor = _compute_supervisor_skip(user_message, _prior_stage)
+  1508	        _msg_len = len((user_message or "").strip())
+  1509	        # Sprint F.4 (iter 3) — diagnostic INFO so we can see supervisor
+  1510	        # skip engagement in prod INFO logs (was logger.debug, filtered).
+  1511	        # Sprint F.2-v2 adiciona ``msg_len`` ao diagnostic pra correlacionar
+  1512	        # skip decisions com tamanho do conteúdo (root cause Paulo 2026-05-26).
+  1513	        logger.info(
+  1514	            "[WizardSession] supervisor decision: prior_stage=%r skip=%s "
+  1515	            "msg_len=%d thread=%s",
+  1516	            _prior_stage, _skip_supervisor, _msg_len, thread_id,
+  1517	        )
+  1518	
+  1519	        # ── Task #1127 (T1.1 + T2.1) — Supervisor pre-graph ────────────
+  1520	        # Classifica a INTENÇÃO GLOBAL do turno antes de tocar o graph.
+  1521	        # Short-circuit determinístico para meta_question / exit_wizard;
+  1522	        # demais intents (continue_current / create_new / resume_draft /
+  1523	        # edit_published) caem no fluxo legacy (preserva contrato vigente
+  1524	        # — extensões nas Tasks #1128+ via follow-ups).
+  1525	        # Fail-OPEN: qualquer falha do supervisor devolve None →
+  1526	        # continue_current → fluxo intacto. Sentinela offline em
+  1527	        # tests/integration/agents/test_wizard_supervisor_t1127.py.
+  1528	        sv_result = None
+  1529	        if _skip_supervisor:
+  1530	            logger.info(
+  1531	                "[WizardSession] supervisor SKIPPED (active stage=%s "
+  1532	                "thread=%s) — Sprint F.2 canonical fix",
+  1533	                _prior_stage, thread_id,
+  1534	            )
+  1535	        else:
+  1536	            try:
+  1537	                sv_result = await cls._run_supervisor(
+  1538	                    user_message=user_message,
+  1539	                    prior_state=prior_state,
+  1540	                    context=context,
+  1541	                    company_id=company_id,
+  1542	                    session_id=session_id,
+  1543	                    thread_id=thread_id,
+  1544	                )
+  1545	            except Exception as sv_exc:  # noqa: BLE001 — supervisor é fail-OPEN
+  1546	                logger.warning(
+  1547	                    "[WizardSession] supervisor raised (fail-open): %s", sv_exc,
+  1548	                )
+  1549	                sv_result = None
+  1550	        if sv_result is not None and sv_result.get("short_circuit"):
+  1551	            return (
+  1552	                sv_result["message"],
+  1553	                sv_result.get("ws_stage_payload") or {},
+  1554	                0,
+  1555	            )
+  1556	
+  1557	        # Task #1094 — caminho canônico de resume: se o checkpoint está
+  1558	        # pausado em ``langgraph.types.interrupt()`` (HITL gate ativo),
+  1559	        # resumimos via ``Command(resume=<msg>)`` SEM rebuilder/enrichment
+  1560	        # de state. As enrichments (manager_preferences, hiring_policy_summary,
+  1561	        # tenant_context_snippet) já vivem no checkpoint desde a invocação
+  1562	        # inicial do wizard — re-injetar seria desperdício e arrisca
+  1563	        # sobrescrever mutações que o gate fez no turno anterior.
+  1564	        if await asyncio.to_thread(wiz_g.is_interrupted, thread_id):
+  1565	            try:
+  1566	                result = await wiz_g.aresume_with_message(thread_id, user_message)
+  1567	            except Exception as inv_exc:  # noqa: BLE001
+  1568	                # Task #1161 (Bug B): preserve full traceback before fallback.
+  1569	                # The original catch only logged `type(exc).__name__`, hiding
+  1570	                # the actual stack and root cause (e.g. `NotImplementedError`
+  1571	                # from a legacy stub deep in the graph). `logger.exception`
+  1572	                # writes the full traceback; `sentry_sdk.capture_exception`
+  1573	                # surfaces it in prod observability.
+  1574	                logger.exception(
+  1575	                    "[WizardSession] aresume_with_message raised %s "
+  1576	                    "(session=%s thread=%s company=%s) — triggering silent "
+  1577	                    "fallback. Stack trace above is the ROOT CAUSE; do not "
+  1578	                    "treat fallback message as the real error.",
+  1579	                    type(inv_exc).__name__, session_id, thread_id, company_id,
+  1580	                )
+  1581	                try:  # pragma: no cover — Sentry opcional em testes
+  1582	                    import sentry_sdk
+  1583	                    sentry_sdk.capture_exception(inv_exc)
+  1584	                except Exception:
+  1585	                    pass
+  1586	                _emit_silent_fallback(
+  1587	                    stage=None,
+  1588	                    company_id=company_id,
+  1589	                    session_id=session_id,
+  1590	                    thread_id=thread_id,
+  1591	                    conversation_tail=(prior_state or {}).get("conversation_messages"),
+  1592	                    cause=f"resume_exception:{type(inv_exc).__name__}",
+  1593	                )
+  1594	                fallback_msg = await _generate_fallback_reply(
+  1595	                    stage=None,
+  1596	                    conversation_tail=(prior_state or {}).get("conversation_messages"),
+  1597	                    tenant_snippet=(prior_state or {}).get("tenant_context_snippet"),
+  1598	                )
+  1599	                return (fallback_msg, {}, 0)
+  1600	            # Fix Loop 1+2: se o graph pausou em interrupt() dentro de um node,
+  1601	            # o result contém state do checkpoint anterior (stale ws_stage_payload).
+  1602	            # Extrair a mensagem do interrupt data e injetar como override.
+  1603	            _intr_msg = await asyncio.to_thread(
+  1604	                wiz_g.get_pending_interrupt_message, thread_id
+  1605	            )
+  1606	            if _intr_msg and isinstance(result, dict):
+  1607	                result = {**result, "_interrupt_msg_override": _intr_msg}
+  1608	            state = prior_state or {}
+  1609	            tokens_emitted = 0
+  1610	            return await cls._post_process_result(
+  1611	                result=result,
+  1612	                state=state,
+  1613	                prior_state=prior_state,
+  1614	                company_id=company_id,
+  1615	                session_id=session_id,
+  1616	                thread_id=thread_id,
+  1617	                tokens_emitted=tokens_emitted,
+  1618	            )
+  1619	
+  1620	        state = cls._build_state(
+  1621	            thread_id=thread_id,
+  1622	            user_message=user_message,
+  1623	            user_id=user_id,
+  1624	            company_id=company_id,
+  1625	            session_id=session_id,
+  1626	            context=context,
+  1627	            prior_state=prior_state,
+  1628	        )
+  1629	
+  1630	        # ── Create-from-source seeding (PR-A5b — fresh session only) ──
+  1631	        # If the recruiter started the wizard from a template/vacancy, the
+  1632	        # source descriptor arrives in context["seed_source"]. Build the
+  1633	        # seed via the canonical producer + merge it into the fresh state
+  1634	        # (user input on later turns wins — precedence handled by the mapper).
+  1635	        # Only on a brand-new session: never re-seed a continuing turn.
+  1636	        seed_source = (context or {}).get("seed_source")
+  1637	        if seed_source and not prior_state and company_id:
+  1638	            from app.core.database import AsyncSessionLocal
+  1639	            from app.domains.job_creation.helpers.seed_session import (
+  1640	                seed_initial_state,
+  1641	            )
+  1642	            async with AsyncSessionLocal() as _seed_db:
+  1643	                await seed_initial_state(
+  1644	                    state, seed_source, str(company_id), _seed_db
+  1645	                )
+  1646	
+  1647	        # ── Manager preferences injection (GUIDE — fail-open) ──────────
+  1648	        # Only on the first message of a session (when manager_email is known)
+  1649	        # to avoid overwriting state already set by the user in later turns.
+  1650	        manager_email = state.get("manager_email") or (context or {}).get("manager_email")
+  1651	        if manager_email and company_id and not state.get("manager_preferences_loaded"):
+  1652	            try:
+  1653	                from app.core.database import AsyncSessionLocal
+  1654	                from app.domains.job_creation.services.manager_preferences_service import ManagerPreferencesService
+  1655	                async with AsyncSessionLocal() as _mp_db:
+  1656	                    prefs = await ManagerPreferencesService.apply_to_state(
+  1657	                        _mp_db, str(company_id), manager_email, state
+  1658	                    )
+  1659	                    if prefs:
+  1660	                        state.update(prefs)
+  1661	                        state["company_defaults_applied"] = list(state.get("company_defaults_applied") or []) + ["manager_preferences"]
+  1662	                        state["manager_preferences_loaded"] = True
+  1663	                        logger.info("[WizardSession] manager_preferences applied: %s", list(prefs.keys()))
+  1664	            except Exception as mp_exc:
+  1665	                logger.warning("[WizardSession] manager_preferences injection failed (fail-open): %s", mp_exc)
+  1666	
+  1667	        # ── Sprint 4 (2026-05-26) — Proactive context inject canonical ──
+  1668	        # Espelha Sprint 3.4 do MainOrchestrator.process para o wizard path.
+  1669	        # Settings UI edits (notifyChatOfSettingsUpdate dispatch via
+  1670	        # Sprint 2.4 debounce → Sprint 3.3 POST → Sprint 3.2 Redis store)
+  1671	        # ficam disponíveis para nodes do wizard que consomem
+  1672	        # ``state['tenant_context_snippet']`` (jd_enrichment, gate_classifier,
+  1673	        # bigfive, etc). Sem essa injeção, editar Settings durante wizard
+  1674	        # ativo NÃO chega ao LLM do wizard — gap identificado no audit
+  1675	        # 2026-05-26 (~/Documents/wedotalent_audit_2026-05-26/AUDIT_SESSION_REVIEW.md §3.1).
+  1676	        #
+  1677	        # Estratégia: appendar notes ao tenant_context_snippet existente
+  1678	        # (não substituir) para preservar contexto canonical do tenant.
+  1679	        # Reforça Anti-pattern #1 inline igual Sprint 3.4 (consistência
+  1680	        # comportamental cross-paths).
+  1681	        # Fail-open total: Redis down -> noop, NÃO quebra wizard.
+  1682	        if company_id and user_id:
+  1683	            try:
+  1684	                from app.shared.services.proactive_context_store import (
+  1685	                    ProactiveContextStore,
+  1686	                    PROACTIVE_CTX_MAX_NOTES,  # PR-12/F-4.15 env-tunable
+  1687	                    proactive_context_inject_counter,  # PR-12/F-4.14
+  1688	                )
+  1689	                _pc_notes = await ProactiveContextStore.list_recent(
+  1690	                    company_id=str(company_id),
+  1691	                    user_id=str(user_id),
+  1692	                    limit=PROACTIVE_CTX_MAX_NOTES,
+  1693	                )
+  1694	                if _pc_notes:
+  1695	                    _pc_lines = [
+  1696	                        "\n\n### Contexto recente das configurações (últimos 30min)",
+  1697	                        "O recrutador acabou de editar configurações via UI. "
+  1698	                        "Considere reagir proativamente APENAS se for relevante "
+  1699	                        "para a vaga sendo criada. NUNCA enumere features "
+  1700	                        "(Anti-pattern #1) — comente apenas o que mudou se útil "
+  1701	                        "para a triagem/wizard.",
+  1702	                        "",
+  1703	                    ]
+  1704	                    for _n in _pc_notes[:PROACTIVE_CTX_MAX_NOTES]:
+  1705	                        _act = str(_n.get("action_id") or "")
+  1706	                        _sec = str(_n.get("section") or "")
+  1707	                        _fld = _n.get("field")
+  1708	                        _val = _n.get("value")
+  1709	                        _fld_part = f' · campo "{_fld}"' if _fld else ""
+  1710	                        _val_part = ""
+  1711	                        if _val is not None:
+  1712	                            _val_str = str(_val)
+  1713	                            if len(_val_str) > 200:
+  1714	                                _val_str = _val_str[:200] + "…"
+  1715	                            _val_part = f" = {_val_str}"
+  1716	                        _pc_lines.append(
+  1717	                            f"- {_sec}{_fld_part}{_val_part}  (ação: {_act})"
+  1718	                        )
+  1719	                    _pc_block = "\n".join(_pc_lines)
+  1720	                    _existing_snippet = state.get("tenant_context_snippet") or ""
+  1721	                    state["tenant_context_snippet"] = _existing_snippet + _pc_block
+  1722	                    logger.info(
+  1723	                        "[WizardSession] Sprint 4: injected %d proactive context "
+  1724	                        "notes into tenant_context_snippet (company=%s user=%s)",
+  1725	                        len(_pc_notes), company_id, user_id,
+  1726	                    )
+  1727	                    # PR-12 / F-4.14 — telemetry: count successful injections
+  1728	                    if proactive_context_inject_counter is not None:
+  1729	                        try:
+  1730	                            proactive_context_inject_counter.labels(
+  1731	                                path="wizard", status="hit"
+  1732	                            ).inc()
+  1733	                        except Exception:
+  1734	                            pass
+  1735	                    # Clear consumed (Sprint 4 mirror Sprint 3.4) — evita
+  1736	                    # re-injeção do mesmo contexto a cada turn do wizard.
+  1737	                    try:
+  1738	                        await ProactiveContextStore.clear_consumed(
+  1739	                            company_id=str(company_id),
+  1740	                            user_id=str(user_id),
+  1741	                        )
+  1742	                    except Exception:
+  1743	                        pass
+  1744	            except Exception as _pc_exc:
+  1745	                logger.debug(
+  1746	                    "[WizardSession] Sprint 4 proactive context inject failed "
+  1747	                    "(fail-open): %s",
+  1748	                    _pc_exc,
+  1749	                )
+  1750	                # PR-12 / F-4.14 — telemetry: count fail-open occurrences
+  1751	                try:
+  1752	                    from app.shared.services.proactive_context_store import (
+  1753	                        proactive_context_inject_counter as _ctr,
+  1754	                    )
+  1755	                    if _ctr is not None:
+  1756	                        _ctr.labels(path="wizard", status="fail_open").inc()
+  1757	                except Exception:
+  1758	                    pass
+  1759	
+  1760	        # ── Hiring policy summary injection (T2 fix #7 — code review #5) ─
+  1761	        # O ``wizard_gate_classifier`` recebe ``hiring_policy_summary`` para
+  1762	        # calibrar a classificação de intent (ex.: tenants com
+  1763	        # ``manager_approval_for_offer=true`` exigem aprovação explícita;
+  1764	        # tenants com automação alta podem aceitar "ok" como approve).
+  1765	        # Sem essa injeção, o classifier opera sem contexto organizacional
+  1766	        # — requisito da Task #1085. Best-effort lazy load + cache no state.
+  1767	        if company_id and not state.get("hiring_policy_summary"):
+  1768	            try:
+  1769	                from app.core.database import AsyncSessionLocal
+  1770	                from sqlalchemy import text as _sql_text
+  1771	                async with AsyncSessionLocal() as _hp_db:
+  1772	                    row = (await _hp_db.execute(
+  1773	                        _sql_text(
+  1774	                            "SELECT pipeline_rules, screening_rules, automation_rules "
+  1775	                            "FROM company_hiring_policies "
+  1776	                            "WHERE company_id = CAST(:cid AS uuid) "
+  1777	                            "LIMIT 1"
+  1778	                        ),
+  1779	                        {"cid": str(company_id)},
+  1780	                    )).first()
+  1781	                if row:
+  1782	                    pr, sr, ar = row[0] or {}, row[1] or {}, row[2] or {}
+  1783	                    parts: list[str] = []
+  1784	                    if pr.get("manager_approval_for_offer") is not None:
+  1785	                        parts.append(
+  1786	                            f"aprovação_gestor_oferta={pr['manager_approval_for_offer']}"
+  1787	                        )
+  1788	                    if sr.get("min_quality_score") is not None:
+  1789	                        parts.append(f"qualidade_min_jd={sr['min_quality_score']}")
+  1790	                    if ar.get("auto_approve_threshold") is not None:
+  1791	                        parts.append(
+  1792	                            f"auto_approve_threshold={ar['auto_approve_threshold']}"
+  1793	                        )
+  1794	                    if ar.get("automation_level"):
+  1795	                        parts.append(f"automação={ar['automation_level']}")
+  1796	                    if parts:
+  1797	                        state["hiring_policy_summary"] = " | ".join(parts)[:500]
+  1798	                        logger.info(
+  1799	                            "[WizardSession] hiring_policy_summary injected (%d fields)",
+  1800	                            len(parts),
+  1801	                        )
+  1802	            except Exception as _hp_exc:
+  1803	                # Fail-open: classifier opera com summary vazio, mantém allowlist intacta.
+  1804	                logger.debug(
+  1805	                    "[WizardSession] hiring_policy_summary lazy-load failed (fail-open): %s",
+  1806	                    _hp_exc,
+  1807	                )
+  1808	
+  1809	        tokens_emitted = 0
+  1810	        try:
+  1811	            if hasattr(wiz_g, "stream_invoke"):
+  1812	                result, tokens_emitted = await wiz_g.stream_invoke(
+  1813	                    state, thread_id, on_token=on_token,
+  1814	                )
+  1815	            else:  # pragma: no cover — defensive: older deploy without stream_invoke
+  1816	                result = await asyncio.to_thread(wiz_g.invoke, state, thread_id)
+  1817	        except Exception as inv_exc:  # noqa: BLE001
+  1818	            # Task #1089 (T3) — fail-LOUD em invocação do graph. Antes da
+  1819	            # remoção do dict canned este path PROPAGAVA a exceção e o
+  1820	            # WS handler caía em outra mensagem canned. Agora: emite
+  1821	            # telemetria completa + devolve fallback contextual em vez
+  1822	            # de quebrar o turno (e o cliente WS recebe payload válido).
+  1823	            _emit_silent_fallback(
+  1824	                stage=None,
+  1825	                company_id=company_id,
+  1826	                session_id=session_id,
+  1827	                thread_id=thread_id,
+  1828	                conversation_tail=state.get("conversation_messages") if isinstance(state, dict) else None,
+  1829	                cause=f"invoke_exception:{type(inv_exc).__name__}",
+  1830	            )
+  1831	            fallback_msg = await _generate_fallback_reply(
+  1832	                stage=None,
+  1833	                conversation_tail=state.get("conversation_messages") if isinstance(state, dict) else None,
+  1834	                tenant_snippet=state.get("tenant_context_snippet") if isinstance(state, dict) else None,
+  1835	            )
+  1836	            return (fallback_msg, {}, tokens_emitted)
+  1837	
+  1838	        # Fix Loop 1+2: mesma injecao de interrupt override para o path fresh invoke
+  1839	        _intr_msg_fresh = await asyncio.to_thread(
+  1840	            wiz_g.get_pending_interrupt_message, thread_id
+  1841	        )
+  1842	        if _intr_msg_fresh and isinstance(result, dict):
+  1843	            result = {**result, "_interrupt_msg_override": _intr_msg_fresh}
+  1844	
+  1845	        return await cls._post_process_result(
+  1846	            result=result,
+  1847	            state=state,
+  1848	            prior_state=prior_state,
+  1849	            company_id=company_id,
+  1850	            session_id=session_id,
+  1851	            thread_id=thread_id,
+  1852	            tokens_emitted=tokens_emitted,
+  1853	        )
+  1854	
+  1855	    @classmethod
+  1856	    async def _post_process_result(
+  1857	        cls,
+  1858	        *,
+  1859	        result: Any,
+  1860	        state: dict,
+  1861	        prior_state: dict | None,
+  1862	        company_id: str | None,
+  1863	        session_id: str,
+  1864	        thread_id: str,
+  1865	        tokens_emitted: int,
+  1866	    ) -> tuple[str, dict, int]:
+  1867	        """Task #1094 — pós-processamento compartilhado entre o caminho fresh
+  1868	        invoke e o caminho ``Command(resume=...)`` (interrupt). Antes da
+  1869	        Task #1094 esta lógica vivia inline em ``process_message`` no único
+  1870	        caminho ``stream_invoke`` — agora é compartilhada para garantir que
+  1871	        gate_clarify_message / wizard_stage sync / manager_preferences
+  1872	        recording sejam idênticos em ambos os paths."""
+  1873	        if not isinstance(result, dict):
+  1874	            # Task #1089 — fail-loud: graph devolveu tipo inesperado.
+  1875	            _emit_silent_fallback(
+  1876	                stage=None,
+  1877	                company_id=company_id,
+  1878	                session_id=session_id,
+  1879	                thread_id=thread_id,
+  1880	                conversation_tail=state.get("conversation_messages") if isinstance(state, dict) else None,
+  1881	                cause=f"non_dict_result:{type(result).__name__}",
+  1882	            )
+  1883	            fallback_msg = await _generate_fallback_reply(
+  1884	                stage=None,
+  1885	                conversation_tail=state.get("conversation_messages") if isinstance(state, dict) else None,
+  1886	                tenant_snippet=state.get("tenant_context_snippet") if isinstance(state, dict) else None,
+  1887	            )
+  1888	            return (fallback_msg, {}, tokens_emitted)
+  1889	
+  1890	        # ── Learning loop: record manager preferences on handoff ──────
+  1891	        # Called here (async context) instead of inside handoff_node (sync).
+  1892	        # Idempotency key: prevents double-counting on WS reconnect.
+  1893	        if (
+  1894	            result.get("current_stage") == "handoff"
+  1895	            and result.get("manager_email")
+  1896	            and company_id
+  1897	        ):
+  1898	            import hashlib, datetime as _dt
+  1899	            _ikey = hashlib.md5(
+  1900	                f"{company_id}:{result['manager_email']}:{result.get('job_id') or thread_id}:{_dt.date.today().isoformat()}".encode()
+  1901	            ).hexdigest()
+  1902	            try:
+  1903	                from app.core.database import AsyncSessionLocal
+  1904	                from app.domains.job_creation.services.manager_preferences_service import ManagerPreferencesService
+  1905	                async with AsyncSessionLocal() as _rl_db:
+  1906	                    await ManagerPreferencesService.record_job_completion(
+  1907	                        _rl_db,
+  1908	                        company_id=str(company_id),
+  1909	                        manager_email=result["manager_email"],
+  1910	                        final_state=result,
+  1911	                        initial_state=prior_state or None,
+  1912	                        idempotency_key=_ikey,
+  1913	                    )
+  1914	                    logger.info("[WizardSession] manager_preferences recorded for %s", result["manager_email"])
+  1915	            except Exception as _rl_exc:
+  1916	                logger.error("[WizardSession] record_job_completion FAILED — learning loop data loss (company_id=%s, email=%s): %s", company_id, result.get("manager_email", "?"), _rl_exc)
+  1917	
+  1918	        # ── Phase 4I — wizard_stage sync to job_vacancies.wizard_stage ──
+  1919	        # Only fires post-publish (state['job_id'] becomes truthy after publish_node
+  1920	        # creates the JobVacancy via Rails). Pre-publish stages are not tracked
+  1921	        # at this column — see Phase 4J for extended scope (create row earlier).
+  1922	        # FAIL-OPEN: any error logs warning and continues — UX never blocked
+  1923	        # by sync regression.
+  1924	        _jv_id = result.get("job_id")
+  1925	        _stage_for_db = result.get("current_stage")
+  1926	        if _jv_id and _stage_for_db and company_id:
+  1927	            try:
+  1928	                from sqlalchemy import text as sa_text
+  1929	                from app.core.database import AsyncSessionLocal
+  1930	                async with AsyncSessionLocal() as _ws_db:
+  1931	                    _ws_res = await _ws_db.execute(
+  1932	                        sa_text(
+  1933	                            "UPDATE job_vacancies SET wizard_stage = :s, updated_at = NOW() "
+  1934	                            "WHERE id = CAST(:jid AS uuid) AND company_id = :co"
+  1935	                        ),
+  1936	                        {
+  1937	                            "s": _stage_for_db,
+  1938	                            "jid": str(_jv_id),
+  1939	                            "co": str(company_id),
+  1940	                        },
+  1941	                    )
+  1942	                    await _ws_db.commit()
+  1943	                    if _ws_res.rowcount == 0:
+  1944	                        logger.debug(
+  1945	                            "[WizardSession] wizard_stage sync: no row for job_id=%s "
+  1946	                            "(Rails-only? not yet mirrored?)",
+  1947	                            _jv_id,
+  1948	                        )
+  1949	                    else:
+  1950	                        logger.debug(
+  1951	                            "[WizardSession] wizard_stage=%s synced for job_id=%s",
+  1952	                            _stage_for_db, _jv_id,
+  1953	                        )
+  1954	            except Exception as _ws_exc:
+  1955	                logger.warning(
+  1956	                    "[WizardSession] wizard_stage sync failed (fail-open): %s", _ws_exc,
+  1957	                )
+  1958	
+  1959	
+  1960	        # ── Fix: mark wizard checkpoint as completed after handoff ──────
+  1961	        # handoff_node sets current_stage="handoff" for the WS payload,
+  1962	        # but never transitions to "completed". Without this, the
+  1963	        # checkpointer keeps the session "active" and the next page load
+  1964	        # rehydrates the stale handoff panel ("Vaga publicada" on a fresh
+  1965	        # conversation). We update the checkpoint AFTER the learning loop
+  1966	        # and wizard_stage sync (which both check for "handoff") so they
+  1967	        # see the original stage, then mark as terminal.
+  1968	        if result.get("current_stage") == "handoff" and thread_id:
+  1969	            try:
+  1970	                import asyncio as _asyncio_mark
+  1971	                _mark_config = {"configurable": {"thread_id": thread_id}}
+  1972	                await _asyncio_mark.to_thread(
+  1973	                    wiz_g._graph.update_state,
+  1974	                    _mark_config,
+  1975	                    {"current_stage": "completed"},
+  1976	                )
+  1977	                logger.info(
+  1978	                    "[WizardSession] marked checkpoint completed after handoff "
+  1979	                    "thread=%s session=%s",
+  1980	                    thread_id, session_id,
+  1981	                )
+  1982	            except Exception as _mark_exc:
+  1983	                logger.warning(
+  1984	                    "[WizardSession] failed to mark checkpoint completed "
+  1985	                    "(fail-open, TTL will expire): %s", _mark_exc,
+  1986	                )
+  1987	
+  1988	        stage_payload = result.get("ws_stage_payload") or {}
+  1989	        stage_data = stage_payload.get("data") or {}
+  1990	        current_stage = result.get("current_stage", "") or ""
+  1991	
+  1992	        # Sprint O.1 canonical: propagate job_vacancy_id forward.
+  1993	        # publish_node sets state["job_id"] AND ws_stage_payload.data.job_id, but
+  1994	        # subsequent nodes (calibration_node, handoff_node, review_gate_node)
+  1995	        # overwrite ws_stage_payload with their own data dict (without job_id),
+  1996	        # so the orchestrator loses the id after the publish turn. Inject from
+  1997	        # top-level state so downstream readers always see it regardless of
+  1998	        # which node produced the final ws_stage_payload.
+  1999	        _o1_job_id = result.get("job_id") if isinstance(result, dict) else None
+  2000	        if _o1_job_id:
+  2001	            stage_payload.setdefault("job_vacancy_id", str(_o1_job_id))
+  2002	            if isinstance(stage_data, dict):
+  2003	                stage_data.setdefault("job_id", str(_o1_job_id))
+  2004	                stage_payload["data"] = stage_data
+  2005	
+  2006	
+  2007	        # Task #1080: Redis session marker upkeep removed. The canonical
+  2008	        # ``is_wizard_session_active`` reads the checkpointer directly, so
+  2009	        # there is nothing to mark/clear on each turn. Wizard "doneness" is
+  2010	        # detected from ``current_stage == "completed"`` in the checkpoint.
+  2011	
+  2012	        # Fix Loop 1+2: interrupt override tem prioridade maxima — indica que
+  2013	        # intake_gate_node chamou interrupt() mid-node e o checkpoint contem
+  2014	        # ws_stage_payload stale do node anterior. Ver get_pending_interrupt_message.
+  2015	        interrupt_msg_override = (
+  2016	            result.get("_interrupt_msg_override") if isinstance(result, dict) else None
+  2017	        )
+  2018	        if interrupt_msg_override:
+  2019	            return (str(interrupt_msg_override), stage_payload, tokens_emitted)
+  2020	
+  2021	        # T2 fix #5 (code review #4): quando o LLM gate (jd_gate_node) acabou
+  2022	        # de classificar o turno do recrutador, a resposta contextual está em
+  2023	        # ``state["gate_clarify_message"]``. Sem esta linha, o WS caía no
+  2024	        # path canned em LOOP (bug original do screenshot, Task #1085).
+  2025	        # Preferência: gate_clarify_message > stage_data.message >
+  2026	        # stage_data.response_text > fail-loud (_emit_silent_fallback +
+  2027	        # _generate_fallback_reply). Aplicável APENAS quando o gate
+  2028	        # registrou um intent neste turno (``gate_last_intent`` truthy).
+  2029	        gate_msg = result.get("gate_clarify_message") if isinstance(result, dict) else None
+  2030	        gate_intent = result.get("gate_last_intent") if isinstance(result, dict) else None
+  2031	        # T2 fix #11 (code review #9 comment 2): fairness-block path no
+  2032	        # ``jd_gate_node`` (FairnessGuard L1) seta ``gate_clarify_message``
+  2033	        # com a mensagem educacional MAS NÃO seta ``gate_last_intent``
+  2034	        # (não houve classificação — bloqueio precede o classifier). Se
+  2035	        # exigíssemos ambos, a mensagem educacional de fairness seria
+  2036	        # suprimida no WS canônico e o recrutador veria o canned default
+  2037	        # legado em vez da explicação de fairness. Honrar também quando
+  2038	        # ``jd_fairness_blocked is True``.
+  2039	        gate_fairness_blocked = (
+  2040	            result.get("jd_fairness_blocked") is True if isinstance(result, dict) else False
+  2041	        )
+  2042	        if gate_msg and (gate_intent or gate_fairness_blocked):
+  2043	            message = str(gate_msg)
+  2044	        else:
+  2045	            message = (
+  2046	                stage_data.get("message")
+  2047	                or stage_data.get("response_text")
+  2048	            )
+  2049	            if not message:
+  2050	                # Task #1089 (T3) — fail-LOUD em vez de canned por stage.
+  2051	                # O graph chegou aqui sem produzir mensagem nem
+  2052	                # gate_clarify_message — estado anômalo que ANTES era
+  2053	                # mascarado pelo dict canned removido (anti-pattern Caso
+  2054	                # #3/#4 do canonical-fix). Agora: log error + Sentry +
+  2055	                # audit (wizard_fallback_invoked) + Prometheus counter,
+  2056	                # e devolve resposta contextual via LLM (ou hard-prefix
+  2057	                # quando LLM falha).
+  2058	                _emit_silent_fallback(
+  2059	                    stage=current_stage,
+  2060	                    company_id=company_id,
+  2061	                    session_id=session_id,
+  2062	                    thread_id=thread_id,
+  2063	                    conversation_tail=result.get("conversation_messages"),
+  2064	                    cause="empty_message",
+  2065	                )
+  2066	                message = await _generate_fallback_reply(
+  2067	                    stage=current_stage,
+  2068	                    conversation_tail=result.get("conversation_messages"),
+  2069	                    tenant_snippet=result.get("tenant_context_snippet")
+  2070	                    or (state.get("tenant_context_snippet") if isinstance(state, dict) else None),
+  2071	                )
+  2072	        return (message, stage_payload, tokens_emitted)

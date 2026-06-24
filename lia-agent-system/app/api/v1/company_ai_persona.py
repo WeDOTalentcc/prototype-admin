@@ -30,6 +30,7 @@ backend valida + persiste + audita atomicamente.
 from __future__ import annotations
 
 import logging
+from app.shared.errors import LIAInternalError
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, ConfigDict, Field
@@ -48,6 +49,7 @@ from app.domains.persona.services.ai_persona_validator import (
     TONE_UI_METADATA,
 )
 from app.shared.security.require_company_id import require_company_id
+from app.domains.ai.services.context_aggregator_service import context_aggregator
 
 logger = logging.getLogger(__name__)
 
@@ -178,6 +180,7 @@ async def update_company_ai_persona(
             actor_user_id=str(current_user.id) if current_user else None,
         )
         await db.commit()
+        context_aggregator.clear_cache(str(company_id))
     except ValueError as val_exc:
         # Validator rejected — return structured errors for UI.
         errors = val_exc.args[0] if val_exc.args else []
@@ -195,10 +198,7 @@ async def update_company_ai_persona(
     except Exception as exc:  # noqa: BLE001
         logger.exception("[ai_persona] unexpected error updating persona")
         await db.rollback()
-        raise HTTPException(
-            status_code=500,
-            detail="Erro interno ao atualizar persona. Tente novamente.",
-        ) from exc
+        raise LIAInternalError("Erro interno ao atualizar persona. Tente novamente.") from exc
     return AiPersonaResponse(**result)
 
 

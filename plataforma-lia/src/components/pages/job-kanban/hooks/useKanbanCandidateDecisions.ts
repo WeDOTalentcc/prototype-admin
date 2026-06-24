@@ -2,6 +2,7 @@
 
 import { type KanbanCandidate, type DynamicStage } from "@/components/kanban"
 import { type KanbanJob } from "@/components/pages/job-kanban/types"
+import { useAuthenticatedUserId } from "@/hooks/shared/use-authenticated-user-id"
 import { toast } from "sonner"
 
 interface RubricCriterion {
@@ -33,6 +34,7 @@ export interface KanbanCandidateDecisionsContext {
   setShowRubricModal: (open: boolean) => void
   setRubricEvaluationData: (data: RubricEvaluationData) => void
   setDecisionFlowType: (type: string) => void
+  setShowCloseVacancyModal: (open: boolean) => void
 }
 
 export function useKanbanCandidateDecisions(ctx: KanbanCandidateDecisionsContext) {
@@ -51,7 +53,10 @@ export function useKanbanCandidateDecisions(ctx: KanbanCandidateDecisionsContext
     setShowRubricModal,
     setRubricEvaluationData,
     setDecisionFlowType,
+    setShowCloseVacancyModal,
   } = ctx
+
+  const { userId: reviewerId } = useAuthenticatedUserId()
 
   const handleApproveCandidate = async (candidate: KanbanCandidate) => {
     try {
@@ -113,7 +118,8 @@ export function useKanbanCandidateDecisions(ctx: KanbanCandidateDecisionsContext
         body: JSON.stringify({
           job_id: job?.id?.toString() || null,
           decision: 'rejected',
-          reason: 'Reprovado via análise'
+          reason: 'Reprovado via análise',
+          reviewer_id: reviewerId ?? undefined,
         })
       })
 
@@ -208,7 +214,8 @@ export function useKanbanCandidateDecisions(ctx: KanbanCandidateDecisionsContext
         body: JSON.stringify({
           job_id: job?.id?.toString() || null,
           decision: 'rejected',
-          reason: 'Reprovado via análise de triagem'
+          reason: 'Reprovado via análise de triagem',
+          reviewer_id: reviewerId ?? undefined,
         })
       })
 
@@ -255,7 +262,108 @@ export function useKanbanCandidateDecisions(ctx: KanbanCandidateDecisionsContext
     } else if (action.startsWith('reject')) {
       await handleRejectCandidate(candidate)
       if (action === 'reject_with_feedback' && feedbackMessage) {
-        toast.success('Feedback enviado', { description: `Mensagem de feedback enviada para ${candidate.name} via ${channel === 'whatsapp' ? 'WhatsApp' : 'Email'}.` })
+        // Anti-ghost (auditoria 2026-06-10): ENVIAR de fato pelo endpoint guardado
+        // (communication/send-email|send-whatsapp ja passam por fairness + PII).
+        // Antes: so toast "Feedback enviado" — a mensagem era descartada (claim falso).
+        const ch = channel === 'whatsapp' ? 'whatsapp' : 'email'
+        try {
+          const endpoint = ch === 'whatsapp' ? 'communication/send-whatsapp' : 'communication/send-email'
+          const payload = ch === 'whatsapp'
+            ? { to_phone: candidate.phone ?? '', message: feedbackMessage, candidate_id: candidate.id, candidate_name: candidate.name, vacancy_id: job?.id?.toString() ?? null, communication_type: 'feedback' }
+            : { to_email: candidate.email ?? '', to_name: candidate.name, subject: `Retorno sobre sua candidatura${job?.title ? ` - ${job.title}` : ''}`, body_html: feedbackMessage, body_text: feedbackMessage, candidate_id: candidate.id, candidate_name: candidate.name, vacancy_id: job?.id?.toString() ?? null, communication_type: 'feedback' }
+          const sendResp = await fetch(`/api/backend-proxy/${endpoint}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          })
+          if (sendResp.ok) {
+            toast.success('Feedback enviado', { description: `Mensagem enviada para ${candidate.name} via ${ch === 'whatsapp' ? 'WhatsApp' : 'Email'}.` })
+          } else {
+            const err = await sendResp.json().catch(() => ({}))
+            toast.error('Feedback não enviado', { description: err?.detail?.message || err?.error || 'Revise o texto e tente novamente.' })
+          }
+        } catch {
+          toast.error('Feedback não enviado', { description: 'Falha de conexão ao enviar o feedback.' })
+        }
+      }
+    } else if (action === 'confirm_hire') {
+      try {
+        const transitionResp = await fetch('/api/backend-proxy/transition/execute', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            vacancy_candidate_id: candidate.id,
+            to_stage: 'hired',
+            action: 'lia_auto',
+            action_behavior: 'conclusion_hired',
+            vacancy_id: job?.id?.toString() ?? null,
+            channel: 'email',
+          })
+        })
+
+        if (!transitionResp.ok) {
+          const errorData = await transitionResp.json().catch(() => ({}))
+          toast.error('Erro ao contratar', { description: errorData.detail?.message || errorData.error || 'Falha na conexão — não foi possível registrar a contratação.' })
+        } else {
+          const transitionData = await transitionResp.json()
+          if (!transitionData.success) {
+            toast.error('Transição não concluída', {
+              description: transitionData.message || 'Erro interno — contratação não foi persistida. Tente novamente.',
+              duration: 6000,
+            })
+          } else { setCandidatesData(prev => {
+            const currentStage = Object.keys(prev).find(stage =>
+              prev[stage]?.some((c: KanbanCandidate) => c.id === candidate.id)
+            )
+            if (!currentStage) return prev
+
+            const newData = { ...prev }
+            newData[currentStage] = newData[currentStage].filter((c: KanbanCandidate) => c.id !== candidate.id)
+            const updatedCandidate: KanbanCandidate = { ...candidate, stage: 'hired', status: 'hired' }
+            newData['hired'] = [...(newData['hired'] || []), updatedCandidate]
+            return newData
+          })
+
+          // Side-effects: email boas-vindas + ATS sync + audit trail
+          // Não bloqueia o fluxo principal (contratação já confirmada), mas avisa se falhar
+          try {
+            const sideEffectResp = await fetch('/api/backend-proxy/automation/handle-trigger/candidate-hired', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                candidate_id: candidate.id,
+                vacancy_id: job?.id?.toString() ?? null,
+                candidate_name: candidate.name,
+                candidate_email: candidate.email ?? null,
+              }),
+            })
+            if (!sideEffectResp.ok) {
+              console.error('[candidate-hired] side-effects handler failed:', sideEffectResp.status)
+              toast.warning('Contratação registrada', {
+                description: 'Email de boas-vindas pode não ter sido enviado. Verifique com o candidato.',
+                duration: 6000,
+              })
+            }
+          } catch (networkErr) {
+            console.error('[candidate-hired] side-effects network error:', networkErr)
+            toast.warning('Contratação registrada', {
+              description: 'Email de boas-vindas pode não ter sido enviado. Verifique com o candidato.',
+              duration: 6000,
+            })
+          }
+
+          toast.success('Candidato contratado! 🎉', {
+            description: `${candidate.name} foi movido para Contratados.`,
+            action: {
+              label: 'Fechar vaga',
+              onClick: () => setShowCloseVacancyModal(true),
+            },
+            duration: 8000,
+          })
+          } // end transitionData.success
+        } // end response.ok
+      } catch {
+        toast.error('Erro de conexão', { description: 'Não foi possível conectar ao servidor.' })
       }
     }
 

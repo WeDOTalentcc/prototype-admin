@@ -71,3 +71,44 @@ class CandidateSelfServiceRepository:
             },
         )
         await self._session.commit()
+
+    async def list_candidate_applications(
+        self,
+        candidate_id: str,
+        company_id: str,
+        limit: int = 20,
+    ) -> list[dict[str, Any]]:
+        """List active vacancy applications for a candidate.
+
+        ADR-001: query via repository, not inline in endpoint.
+        ADR-006: no PII in logs.
+        Multi-tenancy: company_id + candidate_id both required.
+        """
+        result = await self._session.execute(
+            text("""
+                SELECT
+                    vc.id AS application_id,
+                    vc.candidate_id,
+                    vc.vacancy_id,
+                    vc.stage,
+                    vc.created_at AS applied_at,
+                    jv.title AS vacancy_title,
+                    jv.department,
+                    jv.location,
+                    jv.status AS vacancy_status
+                FROM vacancy_candidates vc
+                JOIN job_vacancies jv ON jv.id::text = vc.vacancy_id::text
+                WHERE vc.candidate_id = :candidate_id
+                  AND vc.account_id = :company_id
+                  AND vc.is_deleted IS NOT TRUE
+                ORDER BY vc.created_at DESC
+                LIMIT :limit
+            """),
+            {
+                "candidate_id": candidate_id,
+                "company_id": company_id,
+                "limit": limit,
+            },
+        )
+        rows = result.mappings().all()
+        return [dict(r) for r in rows]

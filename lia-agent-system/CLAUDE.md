@@ -26,6 +26,8 @@ Estas regras vêm do CLAUDE.md global do usuário. **Aplicam a 100% do código.*
 3. **Fairness**: prompts que rankam/filtram candidatos DEVEM passar por `FairnessGuard`. Pattern canônico em `app/domains/communication/agents/communication_react_agent.py` (FAR-2, ACH-026).
 4. **Secrets**: zero hardcoded. Tudo via env vars + Pydantic Settings.
 
+> **⚠️ RLS é INERTE em runtime — o app conecta como superuser (`postgres`).** Postgres ignora Row-Level Security para superusers, então TODO o RLS do projeto (068 deny-by-default em ~250 tabelas, `job_vacancies`, etc.) **não protege contra as queries do próprio app**. A proteção multi-tenant REAL é a **regra #1 acima** (camada de aplicação): `company_id` do JWT + filtro em toda query + ownership gates (ex: `JobVacancyCrudRepository.owned_by_company`) + `_require_company_id` nos repos. **NUNCA** confie em RLS — nem em comentário `# RLS-EXEMPT: transitive via ...` — como proteção enquanto o app for superuser. RLS só ativa para cliente NÃO-superuser (role `lia_app` / Rails) usando `SET app.company_id`; migrar o app para role não-superuser é um épico separado (pré-req do C8 RLS da auditoria). Diagnóstico: `python3 scripts/check_rls_runtime_role.py` (sensor `tests/contract/test_rls_runtime_role.py`). (audit C8 2026-06-05)
+
 ## Anti-patterns proibidos (sensores existentes detectam)
 
 | Anti-pattern | Por quê | Sensor |
@@ -636,7 +638,7 @@ code (idênticos).
 Único path canônico de criação de vaga conversacional via REST:
 **`POST /api/v1/wizard/smart-orchestrate`** (`app/api/v1/wizard_smart_orchestrator.py:152`).
 
-**Mirrors the WS pattern** em `agent_chat_ws.py:1108` (canonical wizard via WebSocket). Mesmo `WizardSessionService.process_message()` + mesmo `JobCreationGraph` (12 stages: intake → jd_enrichment → bigfive → salary → competency → wsi_questions → eligibility → review → publish → calibration → handoff → done).
+**Mirrors the WS pattern** em `agent_chat_ws.py:1108` (canonical wizard via WebSocket). Mesmo `WizardSessionService.process_message()` + mesmo `JobCreationGraph` (12 stages: intake → jd_enrichment → pipeline_template → bigfive → salary → competency → wsi_questions → eligibility → review → publish → calibration → handoff → done).
 
 **Dois modos** no SmartOrchestrateRequest, mutuamente exclusivos:
 
@@ -654,6 +656,15 @@ code (idênticos).
 - TestClient + AsyncMock têm flakiness ocasional por event-loop cleanup; follow-up migrar pra `httpx.AsyncClient`.
 
 **Endpoint legacy deprecado:** `POST /chat/message` com `domain="wizard"` retornava `internal_error` por NameErrors em helpers nunca implementados. Aposentado pelo refactor 2026-05-20. Frontend nunca chamou esse path.
+
+### Triagem & elegibilidade — produtores canônicos (audit C6 2026-06-05)
+
+**Sistema de triagem canônico:** `TriagemSessionService`
+(`app/domains/recruitment/services/triagem_session_service/`). `WSIInterviewGraph` (`app/domains/cv_screening/agents/wsi_interview_graph.py`) é **legacy em aposentadoria** — canibalizar HITL + consent gate + checkpointing pro canônico. NÃO adicionar feature nova ao grafo WSI.
+
+**Elegibilidade — shape + parser únicos:** toda pergunta eliminatória segue `EligibilityQuestionItem` (`app/schemas/eligibility_question_item.py`): `{id, question, question_type, options, is_eliminatory, expected_answer, category, order}`. O ÚNICO parser é `EligibilityVerificationService.get_eligibility_questions_from_job()` (`app/domains/cv_screening/services/eligibility_verification_service.py`) — delega ao `model_validator` do `EligibilityQuestionItem`, que normaliza os 4 shapes legados (wizard `required_answer`; edição `disqualify_on_fail`/`expected_answer`; catálogo `eliminatory`/`eliminatoryAnswer`; extractor `question_text`/`is_eliminatory`). NUNCA ler `job.eligibility_questions` cru nem reimplementar matching/reconsideração: o produtor já faz reconsideração 2x + talent pool + FairnessGuard (CLT 373-A / LGPD Art.20). Elegibilidade roda ANTES do WSI (eliminatória). Detalhe completo no CLAUDE.md global ("Eligibility question canonical shape").
+
+**Sensores:** `tests/contract/test_eligibility_producer_contract.py` + `tests/unit/test_eligibility_phase.py`. Qualquer produtor novo (FE/BE) grava/lê no shape canônico — divergência de shape = regressão.
 
 ### Bateria 9 — Wizard canonical E2E sensors (Sprint H/I)
 
@@ -859,6 +870,86 @@ Sub-agents que rodam SSH ao Replit **DEVEM** usar `safe_commit.sh` — nao
 `tests/contract/test_safe_commit_guard.sh` — 7 cases (happy path, stage
 mismatch, empty staging, missing args, dry run, multi-file). Rodar quando
 modificar `scripts/safe_commit.sh`.
+
+### REGRA — git direto PROIBIDO com agente paralelo (registrada 2026-06-23)
+
+> **Principio:** enquanto houver agente paralelo no Replit (billing, deploy,
+> ou qualquer outro Claude Code Agent rodando na mesma working tree),
+> staging + commit direto e PROIBIDO. Usar SEMPRE
+> safe_commit.sh --message ... --files ...
+
+**Incidente 2026-06-23:** F5a (2 arquivos) foi staged via SSH. Entre o
+staging e o commit (sessao SSH separada), o agente billing paralelo fez
+commit do BILLING_PRICING_HANDOFF.md — capturou tudo que estava staged,
+incluindo os 2 arquivos F5a. Resultado: F5a commitado com mensagem do
+billing, commit atomico perdido, necessario marco empty commit.
+
+safe_commit.sh previne: guard 4 faz reset antes de re-stage (staging
+limpo). Guards 5/6/7 detectam absorcao pos-commit.
+
+Proibido:
+- staging + commit direto (em qualquer sessao, SSH ou local)
+- commit -a (stage implicito de TUDO)
+- staging de toda working tree
+
+Permitido:
+- safe_commit.sh --message ... --files ...
+- commit --allow-empty -m marco:... (marcos, sem files)
+- Commits via Replit IDE (Paulo via UI)
+
+### REGRA — git add && git commit direto PROIBIDO (registrada 2026-06-23)
+
+> **Princípio:** enquanto houver agente paralelo no Replit (billing, deploy,
+> ou qualquer outro Claude Code Agent rodando na mesma working tree),
+>  direto é **PROIBIDO**. Usar SEMPRE
+> .
+
+**Por quê (incidente 2026-06-23):** F5a (2 arquivos) foi staged via 
+em sessão SSH. Entre o  e o On branch feat/benefits-prv-canonical
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   ../.deploy-bin/env.sh
+
+no changes added to commit (use "git add" and/or "git commit -a") (sessão SSH separada), o
+agente billing paralelo fez On branch feat/benefits-prv-canonical
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   ../.deploy-bin/env.sh
+
+no changes added to commit (use "git add" and/or "git commit -a") do  —
+esse commit capturou tudo que estava staged, incluindo os 2 arquivos F5a.
+Resultado: F5a commitado com mensagem do billing (),
+commit atômico perdido, necessário marco empty commit pra rastrear.
+
+**safe_commit.sh previne isso:** guard 4 faz Unstaged changes after reset:
+M	.deploy-bin/env.sh
+M	lia-agent-system/CLAUDE.md antes de
+re-stage, garantindo staging limpo. Guards 5/6/7 detectam absorção pós-commit.
+
+**Proibido:**
+- ❌  (em qualquer sessão, SSH ou local)
+- ❌  (stage implícito de TUDO)
+- ❌  (stage de toda working tree)
+
+**Permitido:**
+- ✅ 🔍 safe_commit guard ativo (race-condition harness)
+  HEAD before: 58b2813892e74a6506496e9b5fbfd0967e93c446
+  ⚠ File nao existe (sera tratado como delete se tracked): lia-agent-system/X
+  ⚠ File nao existe (sera tratado como delete se tracked): lia-agent-system/Y
+  🚨 PRE-EXISTING ROGUE STAGING detected — files staged antes do script:
+    lia-agent-system/CLAUDE.md
+
+  Declared files:
+    lia-agent-system/X
+    lia-agent-system/Y
+
+  Likely cause: outro agent ou comando staged files antes desta invocacao.
+  Action: rodar 'git reset HEAD' manualmente, revisar, e rerun.
+- ✅ [feat/benefits-prv-canonical da6f5f337] marco: ...
+ 1 file changed, 26 insertions(+) (marcos, sem files)
+- ✅ Commits via Replit IDE (Paulo via UI — fluxo manual próprio)
 
 ### Quando NAO usar
 
@@ -1210,3 +1301,84 @@ deixando status preso em "running" e progress em 0 (Fase 0, fix 2026-06-03).
 - Linhas vestigiais `context["streaming_callback"] = ...` em `agent_chat_sse.py` e
   `main_orchestrator.py:2390` são write-only/dead (no SSE o `_streaming_callback` é
   consumido via ContextVar `_llm_streaming_callback`, só a linha de context é morta).
+
+
+## P0.1 — Paridade WS/SSE/REST de view-context (registrado 2026-06-04)
+
+Todo transporte do chat (REST, SSE, WebSocket) DEVE extrair o estado-da-tela que o FE envia e threadar ao orquestrador. NUNCA descartar silenciosamente.
+- REST: page_context = message_data.context or {}  -> passa page_context= ao adapter.
+- SSE: view_context = body.get("view_context") or body.get("page_context")  -> passa view_context=.
+- WS: page_context = data.get("context") or {}  -> _invoke_orchestrator_legacy(page_context=...).
+
+Sem isso o agente fica cego ao estado da tela (P0.1: "voce tem N na visao atual"). Fix sempre no PRODUTOR (o handler do transporte), nunca no consumidor.
+Sensor (computacional, AST): tests/contract/test_ws_sse_context_parity.py.
+Irmao pendente (mesmo bug): send_message_with_attachments passa page_context=None — precisa Form "context" no endpoint + wiring FE.
+
+## Ghost-context approval gate — contexto auto-gerado precisa de aprovação humana (registrado 2026-06-04)
+
+**Contexto (Fase 5.1, P0 governança LGPD/bias):** o "Context Center" gera um `CompanyCultureProfile` automaticamente via scrape de website + LLM (`source="auto"`). Esse perfil alimentava o system prompt dos agentes (Big Five blend em `bigfive_service`, tool `get_company_culture` do CV screening) **sem nenhuma aprovação humana** — irmão do ghost-setting `lia_field_toggles` e da proveniência fabricada (REGRA 4). Contexto auto-gerado não-revisado alimentando decisão de candidato = risco LGPD/bias.
+
+### Regra canônica
+
+**Todo contexto auto-gerado (scrape/LLM) que alimenta o system prompt de um agente DEVE passar por aprovação humana antes de ativar. Auto-save sem gate = ghost-context = proibido.**
+
+### Como aplica (CompanyCultureProfile)
+
+1. **Gate único no produtor de leitura-de-agente:** `CultureProfileRepository.get_for_agent_context(company_id)` retorna o profile só se `source != 'auto'` (humano: manual/onboarding/inline-edit) **OU** `is_approved=True` (auto aprovado). Auto pendente é **withheld** (retorna None → agente cai em fallback gracioso). UI/aprovação usam `get_for_company()` (vê pendentes).
+2. **Consumidores de agente usam o método gateado**, NUNCA `get_for_company` cru: `bigfive_service._get_culture_profile` e `pipeline_tool_registry.get_company_culture`.
+3. **Produtor reseta aprovação:** toda nova análise auto (`run_culture_analysis_job`) grava `is_approved=False` — re-scrape regenera conteúdo, exige re-aprovação.
+4. **HITL endpoints:** `PATCH /company-culture/{company_id}/approve` e `/reject` (`set_approval`), multi-tenant via `require_company_id_strict_match`. Estado exposto no `CompanyCultureProfileResponse` (`is_approved`, `approved_at`).
+5. **Campos:** `company_culture_profiles.is_approved` (BOOLEAN NOT NULL DEFAULT false) + `approved_at` + `approved_by_user_id` (migration 241). Decisão de produto 2026-06-04: gate estrito — perfis auto existentes nascem pendentes (sem clientes em produção ainda; fazer o correto).
+
+### Sensor
+
+`tests/contract/test_culture_profile_approval_gate.py` — pina o contrato do gate (auto pendente withheld; auto aprovado servido; manual/onboarding/inline sempre servidos; None passthrough). Pure unit (mock `get_for_company`).
+
+### Ao criar nova fonte de contexto auto-gerado
+
+Replicar o padrão: estado inicial `pending_approval`/`is_approved=False`, gate no método de leitura-de-agente (não no repo cru que a UI usa), endpoint HITL de aprovação, reset em regeneração, contract test do gate.
+
+## Criar vaga a partir de fonte — produtor único (registrado 2026-06-04)
+
+Recrutador cria vaga pelo chat a partir de uma fonte (arquétipo `JobTemplate` OU vaga existente `JobVacancy`), pré-preenchendo o grafo de criação. Experiência agêntica: a LIA geral (`recruiter_copilot`) conduz a identificação; NÃO é formulário.
+
+### Regras canônicas (GUIDES)
+1. **Produtor único de seed:** todo seed de criação passa por `app/domains/job_creation/services/job_seed_builder_service.py::JobSeedBuilderService`. Proibido grafo/orchestrator montarem seed isolado. Schema canônico = `JobCreationSeed` em `app/domains/job_creation/schemas.py` (é MÓDULO — NUNCA criar dir `schemas/`, shadowa o módulo e quebra imports).
+2. **`simulated:True` / `str(<ORM>)` proibido** em handler de produção (era o fake `apply_template` em `recruiter_assistant/services/wizard_action_executor.py` — dead code).
+3. **`ALWAYS_FRESH_FIELDS`** (manager_name/email, headcount, deadline, cost_center) NUNCA herdados de fonte.
+4. **Proveniência honesta:** `FieldProvenance.source_type` flipa pra `user`/`derived` em edit/regen; salário herdado = `needs_review=True`. Badge nunca mente.
+5. **Chat `duplicar_vaga`** usa `JobCloneService.clone_from_template` (Rascunho + `FIELDS_TO_CLONE`), NUNCA SQL inline com `status='Ativa'`.
+6. **Identificação SEMPRE mostra ID da vaga + recrutador** (desambiguação). Tool `list_job_creation_sources`.
+7. **Seed só em sessão fresca:** `wizard_session_service` lê `context["seed_source"]` em `not prior_state`. A diretiva `start_wizard_seeded` (de `start_creation_from_source`) é consumida no `main_orchestrator` via `_start_seeded_wizard` (helper ÚNICO, dedup com `_try_wizard_canonical`).
+
+### Sensores ativos
+- `tests/unit/test_job_creation_seed_schema.py`, `test_job_seed_builder.py`, `test_seed_apply.py`, `test_seed_session.py`, `test_list_job_creation_sources.py`
+- `tests/contract/test_create_from_source_wiring.py` (tool/federação/guard), `test_seeded_wizard_directive_wiring.py` (regressão + happy + dedup)
+- `tests/unit/test_duplicate_job_canonical.py` (anti SQL-inline + anti 'Ativa')
+
+### Reuso (não duplicar)
+`JobCloneService` (`FIELDS_TO_CLONE`, `clone_from_template`), `search_for_summary_by_criteria` (busca por gestor), `JobTemplateService.get_templates`.
+
+
+## JSON Operator Syntax (PostgreSQL) — REGRA CANÔNICA (registrado 2026-06-14)
+
+Operadores JSON `->` e `->>` EXIGEM aspas simples na chave string:
+- `->` retorna JSON: `behavioral_analysis->'ocean_traits'`
+- `->>` retorna text: `additional_data->>'workforce_plan'`
+- ❌ `behavioral_analysis->ocean_traits` → `UndefinedColumnError` (trata como coluna)
+- ❌ `context->>action_behavior` → `UndefinedColumnError`
+
+### Regras canônicas
+
+1. **Toda chave de objeto JSON DEVE ter aspas simples** no operador `->` / `->>`.
+2. **Índices numéricos são OK sem aspas:** `json_col->0` é válido (acesso por índice).
+3. **Sensor computacional:** `scripts/check_json_operator_syntax.py` detecta o padrão bugado em `app/repositories/` e `app/domains/*/repositories/`. Honra marcador `# JSON-OP-EXEMPT: <razão>`.
+4. **Histórico de bugs:** `context->>action_behavior` em `recruiter_preferences_repository.py` (corrigido 2026-06-14), padrão análogo em `behavioral_analysis->ocean_traits` (corrigido anteriormente).
+
+### Sensor ativo
+
+```bash
+python3 scripts/check_json_operator_syntax.py  # deve mostrar 0 violations
+```
+
+Bloqueador em CI. Output é otimizado para consumo de LLM (mensagem com fix sugerido).

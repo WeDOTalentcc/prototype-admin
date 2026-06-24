@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
+import { getAuthHeaders } from '@/lib/api/auth-headers'
 import { validateBody } from '@/lib/api/validate'
 import { z } from 'zod'
 import { unwrapEnvelopeSuccess, unwrapEnvelopeError } from '@/lib/api/unwrapEnvelope'
@@ -18,7 +19,7 @@ export async function POST(request: NextRequest) {
 
     const response = await fetch(`${BACKEND_URL}/api/v1/skills-catalog/wizard/suggest-skills`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(request),
       body: JSON.stringify(body),
     })
 

@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import { useState, useEffect } from "react"
 import {
   Dialog,
@@ -11,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { FormField } from "@/components/ui/form-field"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import {
   Select,
@@ -78,6 +80,9 @@ export function JobDuplicateModal({
   recruiters = [],
   onDuplicate,
 }: JobDuplicateModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('job-duplicate', isOpen)
+
   const [newTitle, setNewTitle] = useState("")
   const [deadlineShortlist, setDeadlineShortlist] = useState("")
   const [deadlineScreening, setDeadlineScreening] = useState("")
@@ -199,14 +204,14 @@ export function JobDuplicateModal({
                   <div className="flex items-center space-x-2 p-2 rounded-xl bg-lia-bg-secondary border border-lia-border-subtle">
                     <RadioGroupItem value="all" id="all" className="border-lia-border-medium text-lia-text-primary" />
                     <Label htmlFor="all" className="text-xs text-lia-text-primary cursor-pointer flex items-center gap-1">
-                      <Users className="w-2.5 h-2.5 text-lia-text-disabled" />
+                      <Users className="w-2.5 h-2.5 text-lia-text-muted" />
                       Todos ({job.candidates_count || 0})
                     </Label>
                   </div>
                   <div className="flex items-center space-x-2 p-2 rounded-xl bg-lia-bg-secondary border border-lia-border-subtle">
                     <RadioGroupItem value="approved" id="approved" className="border-lia-border-medium text-lia-text-primary" />
                     <Label htmlFor="approved" className="text-xs text-lia-text-primary cursor-pointer flex items-center gap-1">
-                      <Check className="w-2.5 h-2.5 text-lia-text-disabled" />
+                      <Check className="w-2.5 h-2.5 text-lia-text-muted" />
                       Apenas aprovados ({job.approved_count || 0})
                     </Label>
                   </div>
@@ -226,15 +231,14 @@ export function JobDuplicateModal({
                   Nova Vaga
                 </h4>
                 <div className="space-y-2">
-                  <div className="space-y-1">
-                    <Label className="text-xs text-lia-text-primary">Nome</Label>
+                  <FormField label="Nome" labelClassName="text-xs">
                     <Input
                       value={newTitle}
                       onChange={(e) => setNewTitle(e.target.value)}
                       placeholder="Nome da nova vaga"
                       className="h-8 text-xs border-lia-border-subtle focus:ring-lia-btn-primary-bg/20 focus:border-lia-border-medium"
                     />
-                  </div>
+                  </FormField>
                   <div className="space-y-1">
                     <Label className="text-xs text-lia-text-primary">Recrutador Responsável</Label>
                     <Select value={recruiterId} onValueChange={setRecruiterId}>
@@ -258,42 +262,39 @@ export function JobDuplicateModal({
                   Novas Datas
                 </h4>
                 <div className="space-y-2">
-                  <div className="space-y-1">
-                    <Label className="text-xs text-lia-text-primary flex items-center gap-1">
-                      <Calendar className="w-2.5 h-2.5 text-lia-text-disabled" />
-                      Deadline Short List
-                    </Label>
+                  <FormField
+                    label={<><Calendar className="w-2.5 h-2.5 text-lia-text-muted" />Deadline Short List</>}
+                    labelClassName="text-xs flex items-center gap-1"
+                  >
                     <Input
                       type="date"
                       value={deadlineShortlist}
                       onChange={(e) => setDeadlineShortlist(e.target.value)}
                       className="h-8 text-xs border-lia-border-subtle focus:ring-lia-btn-primary-bg/20 focus:border-lia-border-medium"
                     />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs text-lia-text-primary flex items-center gap-1">
-                      <Calendar className="w-2.5 h-2.5 text-lia-text-disabled" />
-                      Fim da Triagem
-                    </Label>
+                  </FormField>
+                  <FormField
+                    label={<><Calendar className="w-2.5 h-2.5 text-lia-text-muted" />Fim da Triagem</>}
+                    labelClassName="text-xs flex items-center gap-1"
+                  >
                     <Input
                       type="date"
                       value={deadlineScreening}
                       onChange={(e) => setDeadlineScreening(e.target.value)}
                       className="h-8 text-xs border-lia-border-subtle focus:ring-lia-btn-primary-bg/20 focus:border-lia-border-medium"
                     />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs text-lia-text-primary flex items-center gap-1">
-                      <Calendar className="w-2.5 h-2.5 text-lia-text-disabled" />
-                      Conclusão da Vaga
-                    </Label>
+                  </FormField>
+                  <FormField
+                    label={<><Calendar className="w-2.5 h-2.5 text-lia-text-muted" />Conclusão da Vaga</>}
+                    labelClassName="text-xs flex items-center gap-1"
+                  >
                     <Input
                       type="date"
                       value={deadlineClosing}
                       onChange={(e) => setDeadlineClosing(e.target.value)}
                       className="h-8 text-xs border-lia-border-subtle focus:ring-lia-btn-primary-bg/20 focus:border-lia-border-medium"
                     />
-                  </div>
+                  </FormField>
                 </div>
               </div>
             </div>

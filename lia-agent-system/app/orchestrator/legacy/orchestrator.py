@@ -169,7 +169,10 @@ class Orchestrator:
                     ctx.update({k: state.get(k) for k in ("last_agent", "current_job", "current_candidate")})
             route = await self._cascaded_router.route(sanitized, ctx, session_id=conversation_id)
             domain_id, confidence = route.domain_id, route.confidence
-            intent = (route.intent_details or {}).get("raw_intent") or route.domain_id
+            # Normalize: intent_details may be OrchestratorIntentResult (dataclass) or legacy dict
+            _idet = route.intent_details
+            _idet_d: dict = (_idet.to_dict() if hasattr(_idet, "to_dict") else (_idet or {})) or {}
+            intent = _idet_d.get("raw_intent") or route.domain_id
             if intent in self._cacheable_intents and self._response_cache.is_enabled():
                 ck = self._response_cache.generate_cache_key(
                     intent=intent, context=ctx, user_message=sanitized,
@@ -250,9 +253,9 @@ class Orchestrator:
                 logger.warning(f"Plan detection/execution failed (non-blocking): {plan_err}")
             # ── Tier 6: AutonomousReActAgent — intercept before DomainRegistry ──
             if domain_id == "autonomous":
-                _auto_response = (route.intent_details or {}).get("response", "")
-                _auto_meta = (route.intent_details or {}).get("metadata", {})
-                _tool_calls = (route.intent_details or {}).get("tool_calls", 0)
+                _auto_response = _idet_d.get("response", "") or _idet_d.get("routing_metadata", {}).get("response", "")
+                _auto_meta = _idet_d.get("metadata", {})
+                _tool_calls = _idet_d.get("tool_calls", 0)
                 if _auto_response:
                     self.state_manager.add_message(conversation_id, "assistant", _auto_response,
                         metadata={"agent": "autonomous_react_agent", "intent": "cross_domain",
@@ -307,6 +310,19 @@ class Orchestrator:
                           "message": resp_msg, "requires_user_input": dr.needs_clarification or dr.needs_confirmation,
                           "suggested_prompts": dr.suggestions or [], "next_actions": [],
                           "result": {"message": resp_msg, "data": dr.data, "suggestions": dr.suggestions},
+                          # FIX-RRP-SUP (AUD-4 §4.2, 2026-06-07): carrega response_blocks
+                          # do sub-agente (vivem em dr.metadata, via rrp_block_sink) que o
+                          # legacy dropava -> from_orchestrator_result le ->
+                          # _orchestrator_result_to_frames emite no frame message. Fecha o
+                          # moat RRP na trilha supervisor (paridade com o federado).
+                          "response_blocks": (dr.metadata or {}).get("response_blocks"),
+                          "hitl_pending": (dr.metadata or {}).get("hitl_pending"),
+                          # Fase 2 (2026-06-09): diretiva ui_action do sub-agente
+                          # (open_ui/apply_table_state via ui_action_sink -> metadata)
+                          # que o legacy dropava -> from_orchestrator_result le ->
+                          # ChatResponse.ui_action. Simetria do supervisor Phase 2.
+                          "ui_action": (dr.metadata or {}).get("ui_action"),
+                          "ui_action_params": (dr.metadata or {}).get("ui_action_params"),
                           "policy_constraints": policy.get("constraints", {})}
             else:
                 fb = await self._handle_directly(intent, sanitized, {}, context=ctx)

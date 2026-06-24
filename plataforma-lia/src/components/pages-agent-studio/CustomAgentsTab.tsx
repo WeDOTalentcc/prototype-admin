@@ -1,8 +1,9 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import React, { useState, useEffect, useCallback, useMemo } from "react"
 import { useTranslations } from "next-intl"
-import { Bot, Brain, Briefcase, ChevronRight, Copy, Database, Edit3, ExternalLink, Loader2, MoreVertical, Pause, Play, Plus, Settings, Sliders, Store, TestTube2, Trash2 } from "lucide-react"
+import { Bot, Brain, Briefcase, ChevronRight, Copy, Database, Edit3, ExternalLink, Loader2, MoreVertical, Pause, Play, Settings, Sliders, Store, TestTube2, Trash2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 // Sprint 4 Fase 3 (Studio Experience) — config humana `/edit`. Ferramentas como
 // checkboxes agrupados em PT (TOOL_GROUP/CAPABILITY_GROUP_ORDER), nunca slug cru.
@@ -10,7 +11,6 @@ import { TOOL_GROUP, CAPABILITY_GROUP_ORDER, type CapabilityGroup } from "@/lib/
 import { ConfirmAlertDialog } from "@/components/agent-studio/confirm-alert-dialog"
 import { getCustomAgentStatusConfig } from "@/lib/agent-studio/status-config"
 import { Button } from "@/components/ui/button"
-import { TabSectionHeader } from "@/components/pages-agent-studio/TabSectionHeader"
 // Onda 4 F6.1 — empty state persona-aware canonical
 import { StudioEmptyState } from "@/components/pages-agent-studio/StudioEmptyState"
 import {
@@ -42,6 +42,7 @@ interface CustomAgent {
   config?: Record<string, unknown>
   category?: string
   preferences?: Record<string, unknown>
+  agent_type?: string
 }
 
 // UX-Sprint-A QW#18 Batch 3 (audit 2026-05-21): STATUS_CONFIG extraído para
@@ -59,7 +60,6 @@ export default function CustomAgentsTab() {
   // White-label canonical: fallback do nome do agente no card list.
   const { persona: aiPersona } = useAiPersona()
   const [agents, setAgents] = useState<CustomAgent[]>([])
-  const [total, setTotal] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [editingAgent, setEditingAgent] = useState<CustomAgent | null>(null)
@@ -71,8 +71,9 @@ export default function CustomAgentsTab() {
       const res = await fetch("/api/backend-proxy/custom-agents")
       if (res.ok) {
         const data = await res.json()
-        setAgents(data.agents || [])
-        setTotal(data.total || 0)
+        const allAgents = data.agents || []
+        const customOnly = allAgents.filter((a: { agent_type?: string }) => a.agent_type !== "first_party")
+        setAgents(customOnly)
       }
     } catch (err) {
       console.error("Failed to load custom agents:", err)
@@ -128,22 +129,6 @@ export default function CustomAgentsTab() {
 
   return (
     <div className="space-y-6">
-      <TabSectionHeader
-        title={t('customAgentsTitle')}
-        subtitle={t('customAgentsSubtitle')}
-        count={total}
-        actions={
-          <Button
-            size="sm"
-            onClick={() => { setEditingAgent(null); setShowCreateModal(true) }}
-            className="gap-2 bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover"
-          >
-            <Plus className="w-4 h-4" />
-            {t('newCustomAgent')}
-          </Button>
-        }
-      />
-
       {agents.length === 0 ? (
         // Onda 4 F6.1 — empty state persona-aware com 2 CTAs (marketplace + chat).
         // Original "createFirstAgent" inline state substituído pelo canonical.
@@ -198,7 +183,7 @@ export default function CustomAgentsTab() {
                         </span>
                       ))}
                       {agent.allowed_tools.length > 3 && (
-                        <span className="px-2 py-0.5 rounded-xl bg-lia-bg-tertiary text-micro text-lia-text-disabled">
+                        <span className="px-2 py-0.5 rounded-xl bg-lia-bg-tertiary text-micro text-lia-text-muted">
                           +{agent.allowed_tools.length - 3}
                         </span>
                       )}
@@ -208,15 +193,15 @@ export default function CustomAgentsTab() {
                   <div className="grid grid-cols-3 gap-2 mb-3">
                     <div className="flex flex-col items-center p-2 rounded-lg bg-lia-bg-primary">
                       <span className="text-xs font-bold text-lia-text-primary">{agent.total_executions}</span>
-                      <span className="text-micro text-lia-text-disabled uppercase">{t('executions')}</span>
+                      <span className="text-micro text-lia-text-tertiary uppercase">{t('executions')}</span>
                     </div>
                     <div className="flex flex-col items-center p-2 rounded-lg bg-lia-bg-primary">
                       <span className="text-xs font-bold text-lia-text-primary">v{agent.version}</span>
-                      <span className="text-micro text-lia-text-disabled uppercase">{t('version')}</span>
+                      <span className="text-micro text-lia-text-tertiary uppercase">{t('version')}</span>
                     </div>
                     <div className="flex flex-col items-center p-2 rounded-lg bg-lia-bg-primary">
                       <span className="text-xs font-bold text-lia-text-primary">{agent.domain}</span>
-                      <span className="text-micro text-lia-text-disabled uppercase">{t('domain')}</span>
+                      <span className="text-micro text-lia-text-tertiary uppercase">{t('domain')}</span>
                     </div>
                   </div>
 
@@ -356,6 +341,9 @@ export function CreateCustomAgentModal({
   sourcingCreate?: boolean
   initialTemplate?: { id: string; display_name: string } | null
 }) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('create-custom-agent', true)
+
   const t = useTranslations('agents.customAgents')
   const isEditing = !!agent
   const isSourcing = agent?.category === "sourcing" || !!sourcingCreate
@@ -638,7 +626,7 @@ export function CreateCustomAgentModal({
             </div>
             {linkType === "none" && (
               <div className="mt-2 px-3 py-2 rounded-md bg-wedo-orange/10 border border-wedo-orange/30">
-                <p className="text-xs text-wedo-orange">{tStudio('noLinkWarning')}</p>
+                <p className="text-xs text-wedo-orange-text">{tStudio('noLinkWarning')}</p>
               </div>
             )}
             {linkType === "job" && (
@@ -736,7 +724,7 @@ export function CreateCustomAgentModal({
                 if (groupTools.length === 0) return null
                 return (
                   <div key={group}>
-                    <p className="text-micro font-semibold uppercase tracking-wide text-lia-text-disabled mb-1.5">
+                    <p className="text-micro font-semibold uppercase tracking-wide text-lia-text-tertiary mb-1.5">
                       {t(CAPABILITY_GROUP_I18N[group])}
                     </p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
@@ -863,6 +851,9 @@ export function CreateCustomAgentModal({
 }
 
 function TestAgentModal({ agent, onClose }: { agent: CustomAgent; onClose: () => void }) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('test-agent', true)
+
   const t = useTranslations('agents.customAgents')
   // White-label canonical: fallback do nome no título do modal de teste.
   const { persona: aiPersona } = useAiPersona()

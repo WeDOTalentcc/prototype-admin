@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import React, { useMemo } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
@@ -29,6 +30,9 @@ const numInput = "h-10 w-full rounded-md border border-lia-border-subtle bg-lia-
 const sectionTitle = "text-xs font-semibold uppercase tracking-wide text-lia-text-tertiary"
 
 export function VariableCompFormModal({ open, onOpenChange, editing, setEditing, isSaving, onSave }: VariableCompFormModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('variable-comp-form', open)
+
   // Hooks SEMPRE no topo (rules-of-hooks), antes de qualquer early return.
   const { data: bands = [] } = useSalaryBands()
   const { departments, loading: deptsLoading } = useDepartmentsList()

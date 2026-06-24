@@ -544,6 +544,10 @@ class WSIInterviewNodes:
                     {"candidate_response": masked_response},
                     context="wsi_candidate_response",
                     company_id=str(state.candidate_profile.get("company_id", "")),
+                    affirmative_criterion=(
+                        state.job_requirements.get("affirmative_criteria_primary")
+                        if state.job_requirements.get("is_affirmative") else None
+                    ),
                 )
                 if _fg_resp.has_warnings:
                     state.log_step("validate_response", {

@@ -31,6 +31,7 @@ async function fetchDailyDigest(
   const url = `/api/backend-proxy/agent-monitoring/daily-digest?since_hours=${sinceHours}&limit=${limit}`
   const res = await fetch(url, {
     headers: token ? { Authorization: `Bearer ${token}` } : {},
+    signal: AbortSignal.timeout(8_000),
   })
   if (!res.ok) {
     throw new Error(`Failed to fetch daily digest: ${res.status}`)

@@ -3,7 +3,7 @@
 Provides a single entry point used by the recruiter_assistant chat tool
 ``assistant_track_goals``. Aggregates real recruiting goals/quotas from
 the canonical ``goals`` table (see ``lia_models.goal.Goal`` and
-``app.domains.goals.repositories.goals_repository.GoalsRepository``) and
+``app.repositories.goals_repository.GoalsRepository``) and
 returns a structured progress payload (totals, on-track / at-risk /
 achieved counts, per-goal progress) for the chat surface to consume.
 """
@@ -254,7 +254,7 @@ class GoalService:
         # Imported lazily so the module remains importable in environments
         # (e.g. unit tests) where the database stack is not configured.
         from app.core.database import AsyncSessionLocal
-        from app.domains.goals.repositories.goals_repository import (
+        from app.repositories.goals_repository import (
             GoalsRepository,
         )
 

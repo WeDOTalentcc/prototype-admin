@@ -19,6 +19,7 @@ from app.shared.services.ml_feedback_service import FeedbackSignal, MLFeedbackSe
 from app.domains.analytics.services.ml_feedback_service import get_ml_feedback_service
 from app.shared.tenant_guard import get_verified_company_id
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
@@ -92,4 +93,4 @@ _company_gate: str = Depends(require_company_id)) -> dict:
         raise
     except Exception as exc:
         logger.error("ml-feedback/weights erro: %s", exc)
-        raise HTTPException(status_code=500, detail="Erro ao buscar pesos adaptativos")
+        raise LIAError(message="Erro ao buscar pesos adaptativos")

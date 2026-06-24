@@ -44,7 +44,7 @@ from app.domains.cv_screening.tools.candidate_tools import add_candidate_to_vaca
 from app.domains.cv_screening.tools.cv_upload_tool import (
     parse_and_create_candidate as _parse_and_create_candidate_primitive,
 )
-from app.domains.job_management.services.jd_enrichment_service import JdEnrichmentService
+from app.domains.job_management.services.jd_enrichment_service import JobManagementJdEnrichmentService
 from app.domains.sourcing.services.pearch_service import PearchService
 
 logger = logging.getLogger(__name__)
@@ -986,7 +986,7 @@ async def handle_add_to_vacancy(
 
 async def _enrich_and_persist_jd(company_id: str, vacancy_id: str) -> Any:
     """Open a tenant-scoped session and REUSE the canonical WSI primitive
-    ``JdEnrichmentService.enrich_and_persist_vacancy``.
+    ``JobManagementJdEnrichmentService.enrich_and_persist_vacancy``.
 
     The primitive embeds the WSI minimums gate (9 técnicas + 5 comportamentais)
     and fail-alto on a missing/invalid vacancy — this wrapper never re-implements
@@ -995,7 +995,7 @@ async def _enrich_and_persist_jd(company_id: str, vacancy_id: str) -> Any:
     from lia_config.database import AsyncSessionLocal
 
     async with AsyncSessionLocal() as session:
-        return await JdEnrichmentService().enrich_and_persist_vacancy(
+        return await JobManagementJdEnrichmentService().enrich_and_persist_vacancy(
             job_vacancy_id=str(vacancy_id),
             company_id=str(company_id),
             db=session,

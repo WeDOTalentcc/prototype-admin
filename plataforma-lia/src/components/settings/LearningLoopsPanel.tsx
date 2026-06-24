@@ -11,7 +11,8 @@
 import React, { useState, useEffect, useCallback } from "react"
 import { Brain, BookOpen, BarChart2, FileText, AlertCircle, X, Loader2 } from "lucide-react"
 import { textStyles } from "@/lib/design-tokens"
-import { HubLoadingState } from "./_shared"
+import { Button } from "@/components/ui/button"
+import { HubLoadingState, StatusBadge } from "./_shared"
 import useCompanyId from "@/hooks/company/useCompanyId"
 import { notifyChatOfSettingsUpdate } from "@/lib/api/settings-notify"
 
@@ -155,49 +156,17 @@ function DisclosureModal({
           {text}
         </p>
         <div className="flex justify-end gap-3">
-          <button
-            onClick={onCancel}
-            className="px-4 py-2 rounded-lg text-sm font-medium text-lia-text-secondary hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-elevated border border-lia-border-subtle transition-colors"
-          >
+          <Button variant="outline" onClick={onCancel}>
             Cancelar
-          </button>
-          <button
-            onClick={onConfirm}
-            className="px-4 py-2 rounded-lg text-sm font-medium bg-lia-btn-primary-bg text-lia-btn-primary-text hover:opacity-90 transition-opacity"
-          >
+          </Button>
+          <Button onClick={onConfirm}>
             Confirmo — Ativar
-          </button>
+          </Button>
         </div>
       </div>
     </div>
   )
 }
-
-function ToggleBadge({ type }: { type: "gate" | "prompt" }) {
-  const config = {
-    gate: {
-      label: "Gate",
-      title:
-        "Gate de funcionalidade — quando desativado, a IA não pode usar este recurso (fail-closed).",
-      className: "bg-amber-50 text-amber-700 border border-amber-200",
-    },
-    prompt: {
-      label: "Prompt",
-      title: "Injeção em prompt — quando ativado, este campo é incluído no contexto da IA.",
-      className: "bg-blue-50 text-blue-700 border border-blue-200",
-    },
-  }
-  const c = config[type]
-  return (
-    <span
-      title={c.title}
-      className={`inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium cursor-help ${c.className}`}
-    >
-      {c.label}
-    </span>
-  )
-}
-
 
 function ToggleCard({
   def,
@@ -226,7 +195,7 @@ function ToggleCard({
         <div className="min-w-0">
           <div className="flex items-center gap-1.5">
             <p className={`${textStyles.label} text-lia-text-primary`}>{def.label}</p>
-            <ToggleBadge type="gate" />
+            <StatusBadge active={value} title="Recurso de aprendizado — quando inativo, a IA não usa este mecanismo (fail-closed)." />
           </div>
           <p className={`${textStyles.description} text-lia-text-tertiary mt-0.5 leading-relaxed`}>
             {def.description}
@@ -363,7 +332,7 @@ export function LearningLoopsPanel() {
             <div className="space-y-1 min-w-0">
               <h3 className={textStyles.h3}>{MASTER_DEF.label}</h3>
               <p className="text-sm text-lia-text-secondary dark:text-lia-text-secondary">
-                Configure quais mecanismos de aprendizado automático a LIA usa para melhorar sugestões ao longo do tempo.
+                Configure quais mecanismos de aprendizado automático a IA usa para melhorar sugestões ao longo do tempo.
               </p>
               <p className="text-xs text-lia-text-secondary dark:text-lia-text-secondary">
                 {MASTER_DEF.description}
@@ -385,7 +354,7 @@ export function LearningLoopsPanel() {
             aria-live="polite"
             data-testid="learning-loops-backend-unavailable"
           >
-            <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+            <AlertCircle className="w-5 h-5 text-status-warning shrink-0 mt-0.5" />
             <p className="text-sm text-status-warning">
               Não foi possível carregar configurações salvas. Exibindo defaults da plataforma — recarregue em alguns instantes.
             </p>
@@ -393,16 +362,15 @@ export function LearningLoopsPanel() {
         )}
 
         {error && (
-          <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
-            <AlertCircle className="w-5 h-5 text-red-600 shrink-0" />
-            <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
+          <div className="flex items-center gap-2 p-3 bg-status-error/10 border border-status-error/30 rounded-xl">
+            <AlertCircle className="w-5 h-5 text-status-error shrink-0" />
+            <p className="text-sm text-status-error">{error}</p>
           </div>
         )}
 
-        <div className="rounded-md bg-gray-50 border border-gray-100 px-3 py-2 mb-4 text-xs text-gray-500">
-          <ToggleBadge type="gate" />{" "}
-          funcionalidade desativada completamente quando desligado.{" "}
-          A IA não pode usar este recurso.
+        <div className="rounded-md bg-lia-bg-secondary border border-lia-border-subtle px-3 py-2 mb-4 text-xs text-lia-text-tertiary">
+          <span className="font-medium text-lia-text-secondary">Inativo</span> desliga a
+          funcionalidade completamente — a IA não pode usar este recurso (fail-closed).
         </div>
 
         <div className={`space-y-2 ${isLoading ? "pointer-events-none" : ""}`}>

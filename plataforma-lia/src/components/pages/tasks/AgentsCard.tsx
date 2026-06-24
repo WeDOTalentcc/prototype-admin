@@ -141,7 +141,7 @@ function AgentRow({ item, onOpenDecisionTree, t }: AgentRowProps) {
               <Chip
                 density="relaxed"
                 variant="neutral"
-                className="border-transparent bg-wedo-cyan/15 text-wedo-cyan-dark dark:text-wedo-cyan font-medium"
+                className="border-transparent bg-wedo-cyan/15 text-wedo-cyan-text dark:text-wedo-cyan font-medium"
                 aria-label={t("pendingApprovals", { count: pending })}
               >
                 {pendingBadge(pending)}
@@ -196,7 +196,7 @@ export function AgentsCard({ onOpenDecisionTree }: AgentsCardProps) {
           </div>
           <Link
             href="/agent-studio?tab=control-room"
-            className="text-xs text-wedo-cyan-dark dark:text-wedo-cyan hover:underline transition-colors motion-reduce:transition-none"
+            className="text-xs text-lia-text-muted dark:text-wedo-cyan hover:underline transition-colors motion-reduce:transition-none"
           >
             {t("card.viewAll")}
           </Link>
@@ -241,7 +241,7 @@ export function AgentsCard({ onOpenDecisionTree }: AgentsCardProps) {
             <div className="flex flex-col items-center gap-2 py-6 text-center">
               <div className="w-10 h-10 rounded-full bg-wedo-cyan/10 flex items-center justify-center">
                 <Brain
-                  className="w-5 h-5 text-wedo-cyan"
+                  className="w-5 h-5 text-wedo-cyan-text"
                   aria-hidden="true"
                 />
               </div>
@@ -253,7 +253,7 @@ export function AgentsCard({ onOpenDecisionTree }: AgentsCardProps) {
               </p>
               <Link
                 href="/agent-studio"
-                className="mt-1 text-xs font-medium text-wedo-cyan-dark dark:text-wedo-cyan hover:underline"
+                className="mt-1 text-xs font-medium text-lia-text-secondary dark:text-wedo-cyan hover:underline"
               >
                 {t("card.empty.cta")} →
               </Link>

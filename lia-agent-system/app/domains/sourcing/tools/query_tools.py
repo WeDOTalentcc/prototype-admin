@@ -15,9 +15,11 @@ from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Any, Optional
 from uuid import UUID
 
+from app.shared.tool_guards import validate_uuid_params
 
 from app.tools.registry import ToolDefinition, tool_registry
 from app.tools.context_helpers import require_company_id_from_context, normalize_wrapper_kwargs
+from app.shared.tool_handler import tool_handler
 
 if TYPE_CHECKING:
     from app.tools.executor import ToolExecutionContext
@@ -30,6 +32,56 @@ def _extract_context(kwargs: dict[str, Any]) -> Optional["ToolExecutionContext"]
     return kwargs.pop("_context", None)
 
 
+def _format_search_candidates_result(candidates_list: list, applied_filters: dict) -> dict:
+    """P0.2 (autocorrecao 0-resultados): formata resultado de search_candidates.
+
+    Em 0-resultados, anexa sinal ESTRUTURADO de relaxamento via
+    build_empty_result_guidance (produtor unico, reuso) -> a LIA relaxa 1 filtro e
+    oferece opcoes, nunca beco sem saida (REGRA 4). Funcao PURA -> testavel sem DB.
+    """
+    if not candidates_list:
+        from app.orchestrator.context.empty_result_guidance import (
+            build_empty_result_guidance,
+        )
+        g = build_empty_result_guidance("candidato", applied_filters)
+        return {
+            "success": True,
+            "message": g.get("guidance")
+            or "Nenhum candidato encontrado com esses criterios.",
+            "data": {"total": 0, "candidates": [], **g},
+        }
+    def _normalize(c: dict) -> dict:
+        return {
+            "id": str(c.get("id") or c.get("candidate_id") or ""),
+            "name": c.get("name") or c.get("full_name") or "",
+            "currentTitle": c.get("current_title") or c.get("position") or c.get("title"),
+            "matchScore": c.get("match_score") or c.get("score"),
+        }
+
+    return {
+        "success": True,
+        "message": f"✅ Encontrados {len(candidates_list)} candidatos.",
+        "data": {
+            "total": len(candidates_list),
+            "candidates": candidates_list,
+            "filters_applied": {
+                k: v for k, v in (applied_filters or {}).items() if v not in (None, "", [], {})
+            },
+            # Response blocks para o FE renderizar CandidateResultCard
+            "response_blocks": [
+                {
+                    "type": "search_candidates_result",
+                    "data": {
+                        "candidates": [_normalize(c) for c in candidates_list[:20]],
+                        "total_count": len(candidates_list),
+                    },
+                }
+            ],
+        },
+    }
+
+
+@tool_handler("sourcing")
 async def search_candidates(
     skills: list[str] | None = None,
     min_experience_years: int | None = None,
@@ -64,6 +116,11 @@ async def search_candidates(
         List of matching candidates with their details
     """
     company_id = require_company_id_from_context(kwargs, "search_candidates")
+
+    if in_vacancy_id:
+        _err = validate_uuid_params(in_vacancy_id=in_vacancy_id)
+        if _err:
+            return _err
     
     logger.info(f"🔍 Searching candidates with filters (company: {company_id})")
     
@@ -87,7 +144,7 @@ async def search_candidates(
                 conditions.append(Candidate.seniority_level == seniority)
             
             if location:
-                conditions.append(Candidate.location.ilike(f"%{location}%"))
+                conditions.append(Candidate.location_city.ilike(f"%{location}%"))
             
             if min_score is not None and hasattr(Candidate, 'lia_score'):
                 conditions.append(Candidate.lia_score >= min_score)
@@ -127,7 +184,7 @@ async def search_candidates(
                     c for c in candidates 
                     if any(
                         skill.lower() in skills_lower 
-                        for skill in (getattr(c, 'skills', []) or [])
+                        for skill in (getattr(c, 'technical_skills', []) or [])
                     )
                 ]
             
@@ -155,26 +212,20 @@ async def search_candidates(
                     "lia_score": getattr(c, 'lia_score', None),
                     "wsi_score": getattr(c, 'wsi_score', None),
                     "years_experience": getattr(c, 'years_experience', None),
-                    "skills": getattr(c, 'skills', []) or [],
+                    "skills": getattr(c, 'technical_skills', []) or [],
                     "available_immediately": getattr(c, 'available_immediately', None),
                 }
                 candidates_list.append(candidate_data)
             
-            return {
-                "success": True,
-                "message": f"✅ Encontrados {len(candidates_list)} candidatos.",
-                "data": {
-                    "total": len(candidates_list),
-                    "candidates": candidates_list,
-                    "filters_applied": {
-                        "skills": skills,
-                        "seniority": seniority,
-                        "min_score": min_score,
-                        "location": location,
-                        "status": status
-                    }
-                }
-            }
+            return _format_search_candidates_result(candidates_list, {
+                "skills": skills,
+                "seniority": seniority,
+                "min_score": min_score,
+                "location": location,
+                "status": status,
+                "min_experience_years": min_experience_years,
+                "language": language,
+            })
             
     except Exception as e:
         logger.error(f"❌ Error searching candidates: {e}", exc_info=True)
@@ -185,6 +236,7 @@ async def search_candidates(
         }
 
 
+@tool_handler("sourcing")
 async def rank_candidates(
     vacancy_id: str | None = None,
     candidate_ids: list[str] | None = None,
@@ -205,6 +257,16 @@ async def rank_candidates(
         Ranked list of candidates with WRF scores
     """
     company_id = require_company_id_from_context(kwargs, "rank_candidates")
+
+    if vacancy_id:
+        _err = validate_uuid_params(vacancy_id=vacancy_id)
+        if _err:
+            return _err
+    if candidate_ids:
+        for _cid in candidate_ids:
+            _err = validate_uuid_params(candidate_id=_cid)
+            if _err:
+                return _err
 
     logger.info(f"🏆 Ranking candidates with WRF (company: {company_id}, level: {qualification_level})")
 
@@ -258,7 +320,7 @@ async def rank_candidates(
                     "status": getattr(c, 'status', None),
                     "lia_score": lia_score,
                     "wsi_score": getattr(c, 'wsi_score', None),
-                    "skills": getattr(c, 'skills', []) or [],
+                    "skills": getattr(c, 'technical_skills', []) or [],
                     "es_rank": es_rank,
                     "pgv_rank": pgv_rank,
                 })
@@ -338,6 +400,7 @@ async def rank_candidates(
         }
 
 
+@tool_handler("sourcing")
 async def get_candidate_details(
     candidate_id: str,
     include_vacancies: bool = True,
@@ -356,6 +419,10 @@ async def get_candidate_details(
         Detailed candidate information
     """
     company_id = require_company_id_from_context(kwargs, "get_candidate_details")
+
+    _err = validate_uuid_params(candidate_id=candidate_id)
+    if _err:
+        return _err
     
     logger.info(f"📋 Getting candidate details: {candidate_id} (company: {company_id})")
     
@@ -440,6 +507,7 @@ async def get_candidate_details(
         }
 
 
+@tool_handler("sourcing")
 async def get_candidate_stats(
     job_id: str | None = None,
     period: str | None = "month",
@@ -456,6 +524,11 @@ async def get_candidate_stats(
         Candidate statistics including quality metrics, distribution
     """
     company_id = require_company_id_from_context(kwargs, "get_candidate_stats")
+
+    if job_id:
+        _err = validate_uuid_params(job_id=job_id)
+        if _err:
+            return _err
     
     logger.info(f"📊 Getting candidate stats (company: {company_id})")
     
@@ -505,7 +578,7 @@ async def get_candidate_stats(
             
             skills_count = {}
             for c in candidates:
-                for skill in (getattr(c, 'skills', []) or []):
+                for skill in (getattr(c, 'technical_skills', []) or []):
                     skills_count[skill] = skills_count.get(skill, 0) + 1
             
             top_skills = sorted(skills_count.items(), key=lambda x: x[1], reverse=True)[:10]
@@ -543,6 +616,7 @@ async def get_candidate_stats(
         }
 
 
+@tool_handler("sourcing")
 async def get_candidate_history(
     candidate_id: str | None = None,
     job_id: str | None = None,
@@ -559,6 +633,15 @@ async def get_candidate_history(
         History metrics including reapplication rates and process counts
     """
     company_id = require_company_id_from_context(kwargs, "get_candidate_history")
+
+    if candidate_id:
+        _err = validate_uuid_params(candidate_id=candidate_id)
+        if _err:
+            return _err
+    if job_id:
+        _err = validate_uuid_params(job_id=job_id)
+        if _err:
+            return _err
     
     logger.info(f"📜 Getting candidate history (company: {company_id})")
     
@@ -670,6 +753,7 @@ async def get_candidate_history(
         }
 
 
+@tool_handler("sourcing")
 async def get_talent_quality(
     period: str = "month",
     min_score: float | None = None,
@@ -781,6 +865,7 @@ async def get_talent_quality(
         }
 
 
+@tool_handler("sourcing")
 async def get_talent_engagement(
     period: str = "month",
     **kwargs
@@ -821,7 +906,7 @@ async def get_talent_engagement(
             
             contacted_statuses = {"contacted", "outreach_sent", "in_contact"}
             responded_statuses = {"in_process", "screening", "interview", "responded", "interested"}
-            in_process_stages = {"Triagem", "Entrevista RH", "Entrevista Técnica", "Entrevista Final", "Oferta", "Contratado"}
+            in_process_stages = {"Triagem", "Entrevista RH", "Entrevista Técnica", "Entrevista Final", "Oferta", "Contratado", "hired"}
             
             contacted_count = 0
             responded_count = 0
@@ -870,6 +955,7 @@ async def get_talent_engagement(
         }
 
 
+@tool_handler("sourcing")
 async def get_talent_availability(
     **kwargs
 ) -> dict[str, Any]:
@@ -970,6 +1056,7 @@ async def get_talent_availability(
         }
 
 
+@tool_handler("sourcing")
 async def get_diversity_metrics(
     job_id: str | None = None,
     period: str = "month",
@@ -1087,6 +1174,7 @@ async def get_diversity_metrics(
         }
 
 
+@tool_handler("sourcing")
 async def get_market_benchmarks(
     job_title: str | None = None,
     industry: str | None = None,
@@ -1130,7 +1218,7 @@ async def get_market_benchmarks(
             )
             jobs = jobs_result.scalars().all()
             
-            closed_jobs = [j for j in jobs if j.status == "Fechada" and j.closed_at]
+            closed_jobs = [j for j in jobs if j.status == "Concluída" and j.closed_at]
             
             if closed_jobs:
                 ttf_values = [(j.closed_at - j.created_at).days for j in closed_jobs if j.created_at]
@@ -1360,7 +1448,7 @@ def register_sourcing_query_tools() -> None:
         parameters_schema={
             "type": "object",
             "properties": {
-                "candidate_id": {"type": "string", "description": "UUID do candidato"},
+                "candidate_id": {"type": "string", "description": "UUID do candidato - use o campo id retornado por search_candidates. Nunca use o nome como ID."},
                 "include_vacancies": {"type": "boolean", "default": True, "description": "Incluir vagas do candidato"},
                 "include_evaluations": {"type": "boolean", "default": True, "description": "Incluir avaliações WSI"}
             },
@@ -1376,7 +1464,7 @@ def register_sourcing_query_tools() -> None:
         parameters_schema={
             "type": "object",
             "properties": {
-                "job_id": {"type": "string", "description": "UUID da vaga para filtrar candidatos"},
+                "job_id": {"type": "string", "description": "UUID da vaga para filtrar candidatos - use o campo id retornado por search_jobs. Nunca use o titulo como ID."},
                 "period": {"type": "string", "enum": ["week", "month", "quarter"], "default": "month", "description": "Período de análise"}
             }
         },
@@ -1390,8 +1478,8 @@ def register_sourcing_query_tools() -> None:
         parameters_schema={
             "type": "object",
             "properties": {
-                "candidate_id": {"type": "string", "description": "UUID do candidato para ver histórico individual (opcional)"},
-                "job_id": {"type": "string", "description": "UUID da vaga para analisar histórico dos candidatos dessa vaga (opcional)"}
+                "candidate_id": {"type": "string", "description": "UUID do candidato para ver historico (opcional) - use o campo id retornado por search_candidates. Nunca use o nome como ID."},
+                "job_id": {"type": "string", "description": "UUID da vaga para analisar historico (opcional) - use o campo id retornado por search_jobs. Nunca use o titulo como ID."}
             }
         },
         handler=_wrap_get_candidate_history,
@@ -1442,7 +1530,7 @@ def register_sourcing_query_tools() -> None:
         parameters_schema={
             "type": "object",
             "properties": {
-                "job_id": {"type": "string", "description": "UUID da vaga para filtrar candidatos (opcional)"},
+                "job_id": {"type": "string", "description": "UUID da vaga para filtrar candidatos (opcional) - use o campo id retornado por search_jobs. Nunca use o titulo como ID."},
                 "period": {"type": "string", "enum": ["month", "quarter", "year"], "default": "month", "description": "Período de análise"}
             }
         },

@@ -10,7 +10,7 @@ export async function generateComparePDFBlob(
   doc.setFont("helvetica", "bold")
   doc.setFontSize(18)
   doc.setTextColor(17, 24, 39)
-  doc.text("Comparativo de Vagas - WedoTalent", 14, 20)
+  doc.text("Comparativo de Vagas - WeDOTalent", 14, 20)
 
   doc.setFont("helvetica", "normal")
   doc.setFontSize(10)
@@ -41,7 +41,7 @@ export async function generateComparePDFBlob(
     doc.setFont("helvetica", "bold")
     doc.setFontSize(12)
     doc.setTextColor(17, 24, 39)
-    doc.text("Análise LIA", 14, yPos)
+    doc.text("Análise de Compatibilidade", 14, yPos)
     yPos += 8
 
     doc.setFont("helvetica", "normal")
@@ -144,7 +144,7 @@ export async function generateComparePDFBlob(
 
   doc.setFontSize(8)
   doc.setTextColor(156, 163, 175)
-  doc.text("WedoTalent - Plataforma LIA | Relatório gerado automaticamente", 14, 200)
+  doc.text("WeDOTalent | Relatório gerado automaticamente", 14, 200)
 
   return doc.output("blob")
 }

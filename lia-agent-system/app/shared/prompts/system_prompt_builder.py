@@ -169,6 +169,7 @@ class SystemPromptBuilder:
     def build(
         *,
         agent_type: str = "orchestrator",
+        company_id: str | None = None,
         tenant_context_snippet: str = "",
         user_name: str = "",
         user_role: str = "",
@@ -180,6 +181,7 @@ class SystemPromptBuilder:
         intent: str = "",
         entities: dict[str, Any] | None = None,
         extra_instructions: str = "",
+        learned_examples: str = "",
         ai_persona: dict[str, str] | None = None,
     ) -> str:
         """Build the full system prompt.
@@ -290,8 +292,69 @@ class SystemPromptBuilder:
                 "3. NÃO emita múltiplos markers no mesmo turn.",
                 "4. Use SEMPRE os identifiers canonical exatos (vagas, "
                 "funil_talentos, configuracoes — NÃO traduza).",
+                '5. Quando o pedido e EXPLICITO de navegar (me leve, abra, va '
+                'para, abrir a vaga X), navegue DIRETO incluindo o marker -- '
+                'NAO pergunte se pode levar nem peca confirmacao. Voce ja tem '
+                'essa capability; perguntar e redundante quando o usuario ja '
+                'pediu explicitamente.',
+                '6. Para abrir VAGA ou CANDIDATO especifico, use a forma COM '
+                'id: [NAVIGATE:vaga_detalhe:<id>] ou '
+                '[NAVIGATE:candidato_detalhe:<id>] -- com o id EXATO do '
+                'contexto/hint (nunca invente um id). Ex: abra a vaga de '
+                'Diretor Juridico (id no hint) -> Abrindo a vaga! '
+                '[NAVIGATE:vaga_detalhe:<id-exato>].',
+                '7. Para abrir uma ABA ou SECAO especifica, acrescente '
+                'query ao marker com ?chave=valor (e &chave2=valor2 p/ '
+                'multiplas). Ex: configuracoes na secao de beneficios -> '
+                '[NAVIGATE:configuracoes?section=beneficios]; editar a '
+                'descricao de uma vaga -> '
+                '[NAVIGATE:vaga_detalhe:<id>?tab=edit&section=descricao].',
+                '8. NUNCA OFERECA navegar nem pergunte "posso te levar para '
+                'X?" / "quer que eu abra Y?" quando o usuario NAO pediu para '
+                'ir. Oferta de navegacao nao-solicitada e intrusiva -- a '
+                'decisao de trocar de tela e do usuario, nao sua. Responda '
+                'INLINE e pare.',
+                '9. Pergunta de DADOS ("quais vagas estao abertas?", "quem '
+                'sao os candidatos?", "qual o score do fulano?") NAO e pedido '
+                'de navegacao: responda com os dados inline, SEM [NAVIGATE] e '
+                'SEM oferecer para levar a outra tela.',
+                "",
+                "Exemplo (NAO navegar, NAO oferecer):",
+                'User: "quais vagas estao abertas?"',
+                'Voce: "Voce tem 6 vagas ativas: [lista inline]." (sem '
+                '[NAVIGATE], sem "quer que eu te leve pra vagas?")',
             ])
             context_parts.append("\n".join(nav_lines))
+            # B4 (2026-06-06): seção de telas/modais DERIVADA do capability_map
+            # (DRY — não hand-maintain). A LIA tem a tool open_ui p/ abrir
+            # modais (display) ou navegar pro surface das ações.
+            from app.shared.services.capability_map_service import (
+                CapabilityMapService,
+            )
+            _caps = CapabilityMapService.load()
+            _modal_caps = [(i, c) for i, c in _caps.items() if c.modal_id]
+            _nav_caps = [
+                (i, c) for i, c in _caps.items()
+                if c.navigate_page and not c.modal_id
+            ]
+            if _modal_caps or _nav_caps:
+                ui_lines = [
+                    "### Capabilities — Abrir telas e modais",
+                    "Use a tool **open_ui(capability, entity_ids)** quando o "
+                    "usuário pedir para ABRIR/VER algo. open_ui valida e abre "
+                    "o modal (display) OU navega pro surface da ação. Passe os "
+                    "ids do contexto (candidate_id/job_id) — NUNCA invente.",
+                    "",
+                    "Abrem MODAL (visualização):",
+                ]
+                for intent, _c in _modal_caps:
+                    ui_lines.append(f"- `{intent}`")
+                ui_lines.append("")
+                ui_lines.append("Levam ao SURFACE (ação acontece na tela, com confirmação):")
+                for intent, _c in _nav_caps:
+                    _hint = " (precisa confirmação)" if _c.requires_confirmation else ""
+                    ui_lines.append(f"- `{intent}`{_hint}")
+                context_parts.append("\n".join(ui_lines))
         except Exception as _nav_exc:
             import logging as _log
             _log.getLogger(__name__).error(
@@ -362,6 +425,10 @@ class SystemPromptBuilder:
                 "- \"fecha a vaga de Dev Backend\" → close_job",
                 "- \"agenda entrevista com fulano amanhã 14h\" → schedule_interview",
                 "- \"como está o funil dessa vaga?\" → get_vacancy_funnel",
+                "- \"quais políticas de contratação temos?\" → delegate_to_policy",
+                "- \"configura os benefícios / cultura da empresa\" → delegate_to_company_settings",
+                "- \"importa as candidaturas do ATS\" → delegate_to_ats_integration",
+                "- \"o que a LIA fez automaticamente?\" → delegate_to_autonomous",
                 "",
                 "REGRAS:",
                 "1. Quando o usuário pedir uma ação que mapeia para a lista "
@@ -373,6 +440,14 @@ class SystemPromptBuilder:
                 "posso te ajudar com X, Y, Z\".",
                 "4. SEMPRE confirme antes de ações destrutivas "
                 "(close_job, reject_candidate, bulk operations).",
+                "5. Pergunta de CONSULTA/RESUMO sobre um DOMÍNIO "
+                "(políticas de contratação, configuração da empresa, "
+                "candidatos, pipeline, sourcing, analytics, ATS...) → "
+                "DELEGUE ao delegate_to_<domínio> e RESPONDA INLINE com os "
+                "dados que ele retornar. NUNCA deflecte com \"vá para "
+                "Configurações\" nem use [NAVIGATE] para RESPONDER uma "
+                "pergunta — navegação é APENAS quando o usuário pede "
+                "explicitamente para IR/ABRIR uma tela.",
             ])
             context_parts.append("\n".join(capability_lines))
         except Exception as _cap_exc:
@@ -382,6 +457,34 @@ class SystemPromptBuilder:
             _log.getLogger(__name__).error(
                 "[Sprint 3 G6] failed to derive capabilities from registry: %s",
                 _cap_exc,
+                exc_info=True,
+            )
+
+        # ADR-008: single source of truth for the THREE job creation modes
+        # (do zero / template / vaga existente). Registry-derived block shared
+        # verbatim with WizardOrchestrator + the meta-question helper, so no
+        # surface can drift into a contradictory self-knowledge answer.
+        try:
+            from app.shared.capabilities import (
+                get_tenant_allowed_creation_actions,
+                render_creation_modes_block,
+            )
+            # Task #1324: tailor the claimed creation modes to what THIS tenant is
+            # permitted to use (derived from tool_permissions.yaml). None when no
+            # company_id → conservative all-modes default (legacy callers).
+            _allowed = (
+                get_tenant_allowed_creation_actions(company_id)
+                if company_id
+                else None
+            )
+            modes_block = render_creation_modes_block(allowed_actions=_allowed)
+            if modes_block and modes_block.strip():
+                context_parts.append(modes_block)
+        except Exception as _modes_exc:
+            import logging as _log
+            _log.getLogger(__name__).error(
+                "[ADR-008] failed to render creation modes block: %s",
+                _modes_exc,
                 exc_info=True,
             )
 
@@ -434,6 +537,13 @@ class SystemPromptBuilder:
 
         if extra_instructions:
             sections.append(f"\n## Instruções Adicionais\n{extra_instructions}")
+
+        # Task #1297 — feedback learning loop: injeta exemplos de respostas
+        # boas/ruins aprendidos do feedback real do tenant (👍/👎/correção).
+        # Append-only, escopado por company_id, fail-open (vazio = sem seção).
+        # Fecha o gap "padrões aprendidos só consumidos pelo wizard".
+        if learned_examples:
+            sections.append(learned_examples)
 
         return "\n".join(sections)
 

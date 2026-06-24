@@ -1,40 +1,43 @@
-import React, { useEffect, useState } from "react"
-import { describe, it, expect, beforeEach, vi } from "vitest"
+import React, { useCallback, useEffect, useRef, useState } from "react"
+import { describe, it, expect, beforeEach } from "vitest"
 import { render, screen, fireEvent, act } from "@testing-library/react"
 import {
-  FLOATING_POSITION_STORAGE_KEY,
+  ARROW_STEP,
+  ARROW_STEP_LARGE,
+  FLOATING_DRAG_THRESHOLD,
   FLOATING_RESET_EVENT,
-  BUBBLE_RESET_EVENT,
-  getUserScopedKey,
-  readPersistedFloatingPosition,
+  FLOATING_WIDTH,
+  FLOATING_HEIGHT,
+  FLOATING_VIEWPORT_MARGIN,
+  clampFloatingPosition,
+  defaultFloatingPosition,
   type Point,
 } from "../floating-position"
 
-const USER_ID = "u-floating-1"
-const SCOPED_KEY = getUserScopedKey(FLOATING_POSITION_STORAGE_KEY, USER_ID)
-
 /**
- * Mirror of the persistence + reset wiring inside UnifiedChat (floating mode).
- * Lets us exercise the user-scoped storage flow and the reset event without
- * rendering UnifiedChat's full tree (auth store, contexts, ws, etc).
+ * Task #1291 — mirror of the floating-window drag wiring inside UnifiedChat.
+ * The contract under test:
+ *  - position lives ONLY in component state (ephemeral, never localStorage)
+ *  - dragging the header moves the window (after a small threshold)
+ *  - the position is clamped inside the viewport
+ *  - the "back to corner" button (and the global reset event) dock it again
+ *  - a reload (unmount + remount) always restarts at the default corner
+ *  - arrow keys move the window (accessibility)
+ *
+ * We replicate the handlers here (rather than mount the full UnifiedChat tree
+ * with its auth store / websocket / contexts) so the test exercises the exact
+ * pointer + keyboard + reset logic in isolation.
  */
-function FloatingPositionHarness({ userId = USER_ID }: { userId?: string }) {
-  const [position, setPosition] = useState<Point | null>(() => {
-    const viewport = { width: window.innerWidth, height: window.innerHeight }
-    const scoped = readPersistedFloatingPosition(localStorage, viewport, getUserScopedKey(FLOATING_POSITION_STORAGE_KEY, userId))
-    if (scoped) return scoped
-    return readPersistedFloatingPosition(localStorage, viewport, FLOATING_POSITION_STORAGE_KEY)
-  })
-
-  useEffect(() => {
-    const key = getUserScopedKey(FLOATING_POSITION_STORAGE_KEY, userId)
-    if (position) {
-      localStorage.setItem(key, JSON.stringify(position))
-    } else {
-      localStorage.removeItem(key)
-    }
-    localStorage.removeItem(FLOATING_POSITION_STORAGE_KEY)
-  }, [position, userId])
+function FloatingDragHarness() {
+  const [position, setPosition] = useState<Point | null>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const dragRef = useRef<{
+    startX: number
+    startY: number
+    baseX: number
+    baseY: number
+    moved: boolean
+  } | null>(null)
 
   useEffect(() => {
     const handleReset = () => setPosition(null)
@@ -42,18 +45,80 @@ function FloatingPositionHarness({ userId = USER_ID }: { userId?: string }) {
     return () => window.removeEventListener(FLOATING_RESET_EVENT, handleReset)
   }, [])
 
+  const handlePointerDown = useCallback((e: React.PointerEvent) => {
+    if ((e.target as HTMLElement).closest("button, input")) return
+    const rect = containerRef.current?.getBoundingClientRect()
+    if (!rect) return
+    dragRef.current = {
+      startX: e.clientX,
+      startY: e.clientY,
+      baseX: rect.left,
+      baseY: rect.top,
+      moved: false,
+    }
+    const handleMove = (ev: PointerEvent) => {
+      const drag = dragRef.current
+      if (!drag) return
+      const dx = ev.clientX - drag.startX
+      const dy = ev.clientY - drag.startY
+      if (
+        !drag.moved &&
+        (Math.abs(dx) > FLOATING_DRAG_THRESHOLD ||
+          Math.abs(dy) > FLOATING_DRAG_THRESHOLD)
+      ) {
+        drag.moved = true
+      }
+      if (!drag.moved) return
+      setPosition(clampFloatingPosition({ x: drag.baseX + dx, y: drag.baseY + dy }))
+    }
+    const handleUp = () => {
+      dragRef.current = null
+      document.removeEventListener("pointermove", handleMove)
+      document.removeEventListener("pointerup", handleUp)
+    }
+    document.addEventListener("pointermove", handleMove)
+    document.addEventListener("pointerup", handleUp)
+  }, [])
+
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    const arrowMap: Record<string, [number, number]> = {
+      ArrowUp: [0, -1],
+      ArrowDown: [0, 1],
+      ArrowLeft: [-1, 0],
+      ArrowRight: [1, 0],
+    }
+    const delta = arrowMap[e.key]
+    if (!delta) return
+    e.preventDefault()
+    const step = e.shiftKey ? ARROW_STEP_LARGE : ARROW_STEP
+    setPosition((prev) => {
+      const base =
+        prev ??
+        defaultFloatingPosition({ width: window.innerWidth, height: window.innerHeight })
+      return clampFloatingPosition({ x: base.x + delta[0] * step, y: base.y + delta[1] * step })
+    })
+  }, [])
+
   return (
-    <div data-testid="floating" data-x={position?.x ?? ""} data-y={position?.y ?? ""}>
-      <button data-testid="move" onClick={() => setPosition({ x: 222, y: 200 })}>move</button>
-      <button
-        data-testid="reset"
-        onClick={() => {
-          setPosition(null)
-          window.dispatchEvent(new CustomEvent(BUBBLE_RESET_EVENT))
-        }}
+    <div
+      ref={containerRef}
+      data-testid="floating"
+      data-x={position?.x ?? ""}
+      data-y={position?.y ?? ""}
+    >
+      <div
+        data-testid="floating-drag-handle"
+        tabIndex={0}
+        onPointerDown={handlePointerDown}
+        onKeyDown={handleKeyDown}
       >
-        reset
-      </button>
+        <button
+          data-testid="floating-reset-button"
+          onClick={() => setPosition(null)}
+        >
+          corner
+        </button>
+      </div>
     </div>
   )
 }
@@ -64,62 +129,112 @@ beforeEach(() => {
   Object.defineProperty(window, "innerHeight", { value: 800, configurable: true })
 })
 
-describe("UnifiedChat floating position — persistence flow", () => {
-  it("persists a moved position to the user-scoped key and clears the legacy key", () => {
-    localStorage.setItem(FLOATING_POSITION_STORAGE_KEY, JSON.stringify({ x: 10, y: 10 }))
-    render(<FloatingPositionHarness />)
-    fireEvent.click(screen.getByTestId("move"))
-    expect(JSON.parse(localStorage.getItem(SCOPED_KEY) ?? "null")).toEqual({ x: 222, y: 200 })
-    expect(localStorage.getItem(FLOATING_POSITION_STORAGE_KEY)).toBeNull()
-  })
-
-  it("restores the saved position after a reload", () => {
-    const { unmount } = render(<FloatingPositionHarness />)
-    fireEvent.click(screen.getByTestId("move"))
-    unmount()
-    render(<FloatingPositionHarness />)
+describe("UnifiedChat floating window — drag", () => {
+  it("moves the window when the header is dragged past the threshold", () => {
+    render(<FloatingDragHarness />)
+    const handle = screen.getByTestId("floating-drag-handle")
+    fireEvent.pointerDown(handle, { clientX: 0, clientY: 0, button: 0 })
+    fireEvent.pointerMove(document, { clientX: 222, clientY: 200 })
+    fireEvent.pointerUp(document)
     const el = screen.getByTestId("floating")
     expect(el.dataset.x).toBe("222")
     expect(el.dataset.y).toBe("200")
   })
 
-  it("loads the legacy unscoped value on first mount, then migrates it to the scoped key", () => {
-    localStorage.setItem(FLOATING_POSITION_STORAGE_KEY, JSON.stringify({ x: 77, y: 88 }))
-    render(<FloatingPositionHarness />)
-    const el = screen.getByTestId("floating")
-    expect(el.dataset.x).toBe("77")
-    expect(el.dataset.y).toBe("88")
-    // The persistence effect runs on mount and should have migrated the value
-    expect(JSON.parse(localStorage.getItem(SCOPED_KEY) ?? "null")).toEqual({ x: 77, y: 88 })
-    expect(localStorage.getItem(FLOATING_POSITION_STORAGE_KEY)).toBeNull()
-  })
-})
-
-describe("UnifiedChat floating position — reset durability", () => {
-  it("reset clears both the scoped and the legacy key, so a reload stays at default", () => {
-    // Pre-existing legacy data
-    localStorage.setItem(FLOATING_POSITION_STORAGE_KEY, JSON.stringify({ x: 100, y: 100 }))
-    const { unmount } = render(<FloatingPositionHarness />)
-    fireEvent.click(screen.getByTestId("reset"))
-    expect(localStorage.getItem(SCOPED_KEY)).toBeNull()
-    expect(localStorage.getItem(FLOATING_POSITION_STORAGE_KEY)).toBeNull()
-    unmount()
-    // Reload — should mount at default (null position)
-    render(<FloatingPositionHarness />)
+  it("does not move on a tiny pointer movement under the threshold", () => {
+    render(<FloatingDragHarness />)
+    const handle = screen.getByTestId("floating-drag-handle")
+    fireEvent.pointerDown(handle, { clientX: 0, clientY: 0, button: 0 })
+    fireEvent.pointerMove(document, { clientX: 2, clientY: 2 })
+    fireEvent.pointerUp(document)
     const el = screen.getByTestId("floating")
     expect(el.dataset.x).toBe("")
     expect(el.dataset.y).toBe("")
   })
 
-  it("reacts to the global FLOATING_RESET_EVENT", () => {
-    render(<FloatingPositionHarness />)
-    fireEvent.click(screen.getByTestId("move"))
+  it("clamps the dragged position inside the viewport", () => {
+    render(<FloatingDragHarness />)
+    const handle = screen.getByTestId("floating-drag-handle")
+    fireEvent.pointerDown(handle, { clientX: 0, clientY: 0, button: 0 })
+    fireEvent.pointerMove(document, { clientX: 99999, clientY: 99999 })
+    fireEvent.pointerUp(document)
+    const el = screen.getByTestId("floating")
+    expect(el.dataset.x).toBe(String(1280 - FLOATING_WIDTH))
+    expect(el.dataset.y).toBe(String(800 - FLOATING_HEIGHT))
+  })
+
+  it("never persists the dragged position to localStorage", () => {
+    render(<FloatingDragHarness />)
+    const handle = screen.getByTestId("floating-drag-handle")
+    fireEvent.pointerDown(handle, { clientX: 0, clientY: 0, button: 0 })
+    fireEvent.pointerMove(document, { clientX: 222, clientY: 200 })
+    fireEvent.pointerUp(document)
+    expect(localStorage.length).toBe(0)
+  })
+})
+
+describe("UnifiedChat floating window — back to corner", () => {
+  it("docks the window via the reset button", () => {
+    render(<FloatingDragHarness />)
+    const handle = screen.getByTestId("floating-drag-handle")
+    fireEvent.pointerDown(handle, { clientX: 0, clientY: 0, button: 0 })
+    fireEvent.pointerMove(document, { clientX: 222, clientY: 200 })
+    fireEvent.pointerUp(document)
+    fireEvent.click(screen.getByTestId("floating-reset-button"))
+    const el = screen.getByTestId("floating")
+    expect(el.dataset.x).toBe("")
+    expect(el.dataset.y).toBe("")
+  })
+
+  it("docks the window when the global FLOATING_RESET_EVENT fires", () => {
+    render(<FloatingDragHarness />)
+    const handle = screen.getByTestId("floating-drag-handle")
+    fireEvent.pointerDown(handle, { clientX: 0, clientY: 0, button: 0 })
+    fireEvent.pointerMove(document, { clientX: 222, clientY: 200 })
+    fireEvent.pointerUp(document)
     act(() => {
       window.dispatchEvent(new CustomEvent(FLOATING_RESET_EVENT))
     })
     const el = screen.getByTestId("floating")
     expect(el.dataset.x).toBe("")
     expect(el.dataset.y).toBe("")
-    expect(localStorage.getItem(SCOPED_KEY)).toBeNull()
+  })
+})
+
+describe("UnifiedChat floating window — reload resets to default", () => {
+  it("restarts at the default corner after a remount (no persistence)", () => {
+    const { unmount } = render(<FloatingDragHarness />)
+    const handle = screen.getByTestId("floating-drag-handle")
+    fireEvent.pointerDown(handle, { clientX: 0, clientY: 0, button: 0 })
+    fireEvent.pointerMove(document, { clientX: 222, clientY: 200 })
+    fireEvent.pointerUp(document)
+    unmount()
+    render(<FloatingDragHarness />)
+    const el = screen.getByTestId("floating")
+    expect(el.dataset.x).toBe("")
+    expect(el.dataset.y).toBe("")
+    expect(localStorage.length).toBe(0)
+  })
+})
+
+describe("UnifiedChat floating window — keyboard accessibility", () => {
+  it("moves the window with arrow keys from the default corner", () => {
+    render(<FloatingDragHarness />)
+    const handle = screen.getByTestId("floating-drag-handle")
+    fireEvent.keyDown(handle, { key: "ArrowLeft" })
+    const el = screen.getByTestId("floating")
+    const defaultX = 1280 - FLOATING_WIDTH - FLOATING_VIEWPORT_MARGIN
+    const defaultY = 800 - FLOATING_HEIGHT - FLOATING_VIEWPORT_MARGIN
+    expect(el.dataset.x).toBe(String(defaultX - ARROW_STEP))
+    expect(el.dataset.y).toBe(String(defaultY))
+  })
+
+  it("uses a larger step when Shift is held", () => {
+    render(<FloatingDragHarness />)
+    const handle = screen.getByTestId("floating-drag-handle")
+    fireEvent.keyDown(handle, { key: "ArrowUp", shiftKey: true })
+    const el = screen.getByTestId("floating")
+    const defaultY = 800 - FLOATING_HEIGHT - FLOATING_VIEWPORT_MARGIN
+    expect(el.dataset.y).toBe(String(defaultY - ARROW_STEP_LARGE))
   })
 })

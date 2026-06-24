@@ -89,6 +89,7 @@ export interface CandidatesPageModalsProps {
   // Unified Communication Modal
   unifiedModalOpen: boolean
   unifiedModalCandidate: Candidate | null
+  unifiedModalSelectedCandidates: Array<{ id: string; name: string; email?: string; phone?: string; avatar?: string }>
   unifiedModalType: CommunicationType
   lastSearchQuery: string
   handleUnifiedModalClose: () => void
@@ -153,6 +154,12 @@ export interface CandidatesPageModalsProps {
   setShowSendEmailModal: (v: boolean) => void
   emailCandidateSelected: Candidate | null
   setEmailCandidateSelected: (v: Candidate | null) => void
+
+  // Schedule Message Modal (GAP-07-007)
+  showScheduleMessageModal: boolean
+  setShowScheduleMessageModal: (v: boolean) => void
+  scheduleMessageCandidate: Candidate | null
+  setScheduleMessageCandidate: (v: Candidate | null) => void
 
   // Reveal Contact Modal
   showRevealModal: boolean

@@ -12,6 +12,7 @@ E endpoints autenticados para o recrutador/agente criar links:
   POST /scheduling/link                  — cria link e envia ao candidato
 """
 import logging
+from app.shared.errors import LIAInternalError
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -214,7 +215,8 @@ async def create_scheduling_link(
                     "Ative em Configuracoes > Politicas de Recrutamento > "
                     "Auto-agendamento, ou agende manualmente."
                 ),
-                "ui_action": "enable_self_scheduling",
+                "ui_action": "settings_open_tab",
+                "ui_action_params": {"section": "auto_agendamento"},
             },
         )
 
@@ -242,9 +244,6 @@ async def create_scheduling_link(
     )
 
     if not result.get("success"):
-        raise HTTPException(
-            status_code=500,
-            detail=result.get("error", "Erro ao criar link de agendamento"),
-        )
+        raise LIAInternalError(result.get("error", "Erro ao criar link de agendamento"))
 
     return result

@@ -5,6 +5,7 @@ company_compensation_components: CRUD item-centric + escopo granular (contrato,
 departamento, area, filial/CNPJ) + vigencia. company_id SEMPRE do JWT.
 GET /map devolve {nivel: faixa-base} p/ o preview de R$ da verba.
 """
+from app.middleware.request_id import get_correlation_id
 import logging
 import uuid as _uuid_module
 from datetime import date
@@ -18,6 +19,7 @@ from app.auth.models import User
 from app.core.database import get_db, get_tenant_db
 from app.domains.company.repositories.salary_band_repository import SalaryBandRepository
 from app.shared.security.require_company_id import require_company_id_strict_match
+from app.shared.errors import LIAError
 from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
@@ -118,7 +120,7 @@ async def _audit(current_user, company_id, target_id, operation):
     try:
         from app.shared.compliance.audit_service import AuditService as _AS
         await _AS().log_action(
-            trace_id=str(_uuid_module.uuid4()),
+            trace_id=get_correlation_id(),
             company_id=str(company_id),
             action_type="salary_bands_update",
             actor=getattr(current_user, "email", None) or getattr(current_user, "id", "unknown"),
@@ -146,7 +148,7 @@ async def get_band_map(
         return await repo.get_band_map(eff)
     except Exception as e:
         logger.error(f"Error building salary band map: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/resolve", response_model=SalaryBandResponse | None)
@@ -179,7 +181,7 @@ async def resolve_band(
         return _to_response(b) if b else None
     except Exception as e:
         logger.error(f"Error resolving salary band: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/", response_model=list[SalaryBandResponse])
@@ -199,7 +201,7 @@ async def list_salary_bands(
         return [_to_response(b) for b in bands]
     except Exception as e:
         logger.error(f"Error listing salary bands: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/", response_model=SalaryBandResponse)
@@ -223,7 +225,7 @@ async def create_salary_band(
     except Exception as e:
         await db.rollback()
         logger.error(f"Error creating salary band: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.put("/{band_id}", response_model=SalaryBandResponse)
@@ -250,7 +252,7 @@ async def update_salary_band(
     except Exception as e:
         await db.rollback()
         logger.error(f"Error updating salary band: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.delete("/{band_id}", response_model=None)
@@ -274,7 +276,7 @@ async def delete_salary_band(
     except Exception as e:
         await db.rollback()
         logger.error(f"Error deleting salary band: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/seed-defaults", response_model=list[SalaryBandResponse])
@@ -294,4 +296,4 @@ async def seed_defaults(
     except Exception as e:
         await db.rollback()
         logger.error(f"Error seeding salary bands: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")

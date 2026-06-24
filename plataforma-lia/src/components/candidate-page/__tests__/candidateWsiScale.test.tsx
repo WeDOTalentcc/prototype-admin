@@ -9,6 +9,7 @@
 import { describe, it, expect } from 'vitest'
 import { execSync } from 'child_process'
 import path from 'path'
+import { WSI_VISUAL_3TIER } from '@/lib/wsi/visual'
 
 // Extract getScoreColor logic — test pure thresholds without rendering full component
 const getScoreColor = (score: number): string => {
@@ -24,14 +25,14 @@ describe('WSI 0-10 scale — getScoreColor canonical thresholds (F2.b sensor)', 
     expect(getScoreColor(8.2)).toBe('text-status-success')
   })
 
-  it('score ≥ 6.0 e < 7.5 → wedo-orange (amarelo)', () => {
-    expect(getScoreColor(6.0)).toBe('text-wedo-orange')
-    expect(getScoreColor(7.4)).toBe('text-wedo-orange')
+  it('score ≥ WSI yellow e < green tier → wedo-orange (amarelo)', () => {
+    expect(getScoreColor(WSI_VISUAL_3TIER.yellow)).toBe('text-wedo-orange')
+    expect(getScoreColor(WSI_VISUAL_3TIER.green - 0.1)).toBe('text-wedo-orange')
     expect(getScoreColor(6.5)).toBe('text-wedo-orange')
   })
 
-  it('score < 6.0 → status-error (vermelho)', () => {
-    expect(getScoreColor(5.9)).toBe('text-status-error')
+  it('score < WSI yellow tier → status-error (vermelho)', () => {
+    expect(getScoreColor(WSI_VISUAL_3TIER.yellow - 0.1)).toBe('text-status-error')
     expect(getScoreColor(0)).toBe('text-status-error')
     expect(getScoreColor(3)).toBe('text-status-error')
   })

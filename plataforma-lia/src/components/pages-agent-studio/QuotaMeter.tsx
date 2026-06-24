@@ -136,16 +136,16 @@ export function QuotaMeter({ compact = true, className, defaultOpen = false }: Q
         <div className="flex items-center gap-3 min-w-0">
           <span className="text-[11px] text-lia-text-secondary truncate">
             {hasAnyLimit
-              ? t("collapsed.summary", { percent: summaryPercent })
+              ? t("collapsed.summary", { percent: String(summaryPercent) })
               : t("collapsed.noLimit")}
           </span>
-          <span className="text-[10px] text-lia-text-disabled hidden sm:inline">
+          <span className="text-[10px] text-lia-text-muted hidden sm:inline">
             {t("plan", { plan: data.plan_code })}
           </span>
         </div>
         <ChevronDown
           className={cn(
-            "w-4 h-4 text-lia-text-disabled flex-shrink-0 transition-transform",
+            "w-4 h-4 text-lia-text-muted flex-shrink-0 transition-transform",
             "group-data-[state=open]:rotate-180",
           )}
           aria-hidden="true"

@@ -12,13 +12,14 @@ CRITICAL: Toggles control AI DATA CONSUMPTION only, not UI visibility.
 - When is_active=False, agents use fallback strategies (job history, benchmarks)
 """
 import logging
+import time
 from dataclasses import dataclass, field
 from enum import Enum, StrEnum
 from typing import Any
 from uuid import UUID
 
 from app.domains.cv_screening.repositories.lia_field_config_repository import LiaFieldConfigRepository
-from sqlalchemy import select
+from sqlalchemy import inspect as sa_inspect, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from lia_models.company import CompanyProfile
@@ -31,10 +32,27 @@ from lia_models.lia_field_toggles import (
 
 logger = logging.getLogger(__name__)
 
+# ---------------------------------------------------------------------------
+# Module-level TTL cache — same pattern as TenantContextService.
+# Key: (company_id, None) — only cached when job_context is None so that
+# per-job department inheritance is always fresh.
+# ---------------------------------------------------------------------------
+_lia_field_config_cache: dict[tuple, tuple] = {}
+_LIA_FIELD_CONFIG_TTL = 60.0  # seconds
+
+
+def invalidate_lia_field_config_cache(company_id: str) -> None:
+    """Remove all cache entries for a tenant (call after settings save)."""
+    keys_to_del = [k for k in list(_lia_field_config_cache) if k[0] == company_id]
+    for k in keys_to_del:
+        _lia_field_config_cache.pop(k, None)
+
+
 
 class DataSource(StrEnum):
     """Source of data used by AI agents."""
     COMPANY_CONFIG = "company_config"
+    DEPARTMENT_CONFIG = "department_config"
     JOB_HISTORY = "job_history"
     MARKET_BENCHMARK = "market_benchmark"
     ROLE_INFERENCE = "role_inference"
@@ -158,6 +176,11 @@ FIELD_LABELS = {
     "headcount_planning": "Planejamento Headcount",
     "leadership_style": "Estilo de Liderança",
     "team_dynamics": "Dinâmica de Equipe",
+    "variable_compensation": "Remuneração Variável",
+    "compensation_policies": "Políticas de Remuneração",
+    "company_description": "Descrição da Empresa",
+    "headquarters": "Sede da Empresa",
+    "policy_instructions": "Instruções de Política",
 }
 
 
@@ -191,6 +214,20 @@ class LiaFieldConfigService:
         Returns:
             LiaFieldConfigResult with all field configs, contexts, and prompt
         """
+        # Cache lookup — only cache when job_context is None (per-department
+        # configs vary; same bypass pattern as TenantContextService).
+        _cache_key = (company_id, None)
+        if job_context is None:
+            _cached = _lia_field_config_cache.get(_cache_key)
+            if _cached is not None:
+                _result, _ts = _cached
+                if time.time() - _ts < _LIA_FIELD_CONFIG_TTL:
+                    logger.debug(
+                        "[LiaFieldConfigService] cache hit company=%s age=%.1fs",
+                        company_id, time.time() - _ts,
+                    )
+                    return _result
+
         try:
             company_uuid = UUID(company_id)
         except ValueError:
@@ -199,7 +236,11 @@ class LiaFieldConfigService:
         
         toggles = await self._load_toggles(company_uuid)
         company_profile = await self._load_company_profile(company_uuid)
+        culture_profile = await self._load_culture_profile(company_uuid)
+        department_profile = await self._load_department(company_uuid, job_context)
         job_history = await self._load_job_history(company_id)
+        hiring_policy = await self._load_hiring_policy(company_uuid)
+        self._current_hiring_policy = hiring_policy
         
         all_fields: dict[str, FieldConfig] = {}
         active_fields: dict[str, FieldConfig] = {}
@@ -217,14 +258,19 @@ class LiaFieldConfigService:
             
             fallback_strategies = FIELD_FALLBACK_CONFIG.get(field_key, ["skip"])
             
-            company_value = self._get_company_value(field_key, company_profile)
+            company_value = self._get_company_value(field_key, company_profile, culture_profile)
+            # Cadeia de heranca: departamento.defaults vence o valor da empresa.
+            dept_value = self._get_department_value(field_key, department_profile)
+            value_from_dept = dept_value is not None
+            if value_from_dept:
+                company_value = dept_value
             
             fallback_value = None
             data_source = DataSource.NOT_AVAILABLE
             confidence = 0.0
             
             if is_active and company_value is not None:
-                data_source = DataSource.COMPANY_CONFIG
+                data_source = DataSource.DEPARTMENT_CONFIG if value_from_dept else DataSource.COMPANY_CONFIG
                 confidence = 1.0
             elif not is_active:
                 fallback_value, data_source, confidence = self._resolve_fallback(
@@ -269,7 +315,7 @@ class LiaFieldConfigService:
         context_prompt = self._build_context_prompt(field_contexts, job_context)
         data_quality_score = self._calculate_data_quality(field_contexts)
         
-        return LiaFieldConfigResult(
+        result = LiaFieldConfigResult(
             company_id=company_id,
             active_fields=active_fields,
             inactive_fields=inactive_fields,
@@ -278,6 +324,12 @@ class LiaFieldConfigService:
             context_prompt=context_prompt,
             data_quality_score=data_quality_score
         )
+
+        # Store in cache only when job_context is None (stable per-tenant config).
+        if job_context is None:
+            _lia_field_config_cache[_cache_key] = (result, time.time())
+
+        return result
     
     async def _load_toggles(self, company_uuid: UUID) -> dict[str, LiaFieldToggle]:
         """Load all field toggles for a company."""
@@ -287,7 +339,50 @@ class LiaFieldConfigService:
     async def _load_company_profile(self, company_uuid: UUID) -> CompanyProfile | None:
         """Load company profile data."""
         return await LiaFieldConfigRepository(self.db).get_company_profile(company_uuid)
+
+    async def _load_culture_profile(self, company_uuid: UUID):
+        """Load CompanyCultureProfile — home of the narrative fields. FASE 0."""
+        return await LiaFieldConfigRepository(self.db).get_culture_profile(company_uuid)
+
+    async def _load_department(self, company_uuid: UUID, job_context: dict[str, Any] | None):
+        """Carrega o Department (por nome exato) p/ defaults por-departamento.
+        Cadeia de heranca: departamento > empresa. FASE 1 (audit 2026-06-06)."""
+        dept_name = (job_context or {}).get("department") if job_context else None
+        if not dept_name:
+            return None
+        return await LiaFieldConfigRepository(self.db).get_department_by_name(
+            company_uuid, str(dept_name)
+        )
+
+    def _get_department_value(self, field_key: str, department: Any) -> Any:
+        """Le um default por-departamento de Department.defaults (JSONB). Retorna
+        None se ausente/vazio (entao o valor da empresa e usado). FASE 1."""
+        if department is None:
+            return None
+        defaults = getattr(department, "defaults", None) or {}
+        if not isinstance(defaults, dict):
+            return None
+        val = defaults.get(field_key)
+        return val if val else None
     
+    async def _load_hiring_policy(self, company_uuid):
+        """Carrega CompanyHiringPolicy para injetar policy_instructions no contexto IA."""
+        try:
+            from app.models.company_hiring_policy import CompanyHiringPolicy as _HP
+            from sqlalchemy import select as _sel
+            result = await self.db.execute(
+                _sel(_HP).where(_HP.company_id == str(company_uuid))
+            )
+            return result.scalars().first()
+        except Exception as e:
+            logger.warning(
+                "[LiaFieldConfigService] _load_hiring_policy failed for company=%s: %s",
+                company_uuid,
+                e,
+                exc_info=True,
+            )
+            return None
+
     async def _load_job_history(self, company_id: str, limit: int = 20) -> list[dict[str, Any]]:
         """Load recent job history for pattern analysis."""
         jobs = await LiaFieldConfigRepository(self.db).list_recent_jobs_for_company(
@@ -311,36 +406,139 @@ class LiaFieldConfigService:
             for j in jobs
         ]
     
-    def _get_company_value(self, field_key: str, profile: CompanyProfile | None) -> Any:
-        """Extract company value for a field from profile."""
-        if not profile:
+    def _get_company_value(self, field_key: str, profile: CompanyProfile | None, culture: Any = None) -> Any:
+        """Extract company value for a field from profile (+ culture profile).
+
+        Narrative fields (mission/vision/values/tech_stack/leadership_style/...)
+        live on CompanyCultureProfile, which has NO relationship from
+        CompanyProfile; they are read from ``culture`` here so the
+        recruiter-configured values actually reach the prompt (FASE 0 ghost fix,
+        audit 2026-06-06). CompanyProfile remains the primary source; culture is
+        the secondary source for fields CompanyProfile lacks or leaves empty.
+        """
+        if profile is None and culture is None:
             return None
         
         if hasattr(profile, field_key):
+            # Defense-in-depth (canonical-fix REGRA 4): never trigger an async
+            # lazy-load from here. If field_key maps to an ORM relationship that
+            # was NOT eager-loaded by the repository, getattr would emit IO
+            # outside the greenlet -> MissingGreenlet, which the caller swallows
+            # and silently empties the company context. Return None gracefully
+            # so a future relationship that misses the selectinload degrades
+            # honestly (skips that field) instead of nuking the whole context.
+            try:
+                unloaded = sa_inspect(profile).unloaded
+            except Exception:
+                unloaded = set()
+            if field_key in unloaded:
+                logger.warning(
+                    "[lia_field_config] relationship %r is unloaded for company "
+                    "profile; add selectinload(%s) to "
+                    "LiaFieldConfigRepository.get_company_profile to surface it. "
+                    "Skipping to avoid lazy-load MissingGreenlet.",
+                    field_key, field_key,
+                )
+                return None
             return getattr(profile, field_key)
         
-        if profile.additional_data and field_key in profile.additional_data:
+        if profile is not None and profile.additional_data and field_key in profile.additional_data:
             return profile.additional_data[field_key]
         
+        # Computed / cross-table fields — handled before field_mapping lookup
+        if field_key == "headquarters":
+            city = getattr(profile, "headquarters_city", None) if profile else None
+            state_val = getattr(profile, "headquarters_state", None) if profile else None
+            parts = [p for p in [city, state_val] if p]
+            return ", ".join(parts) if parts else None
+
+        if field_key == "policy_instructions":
+            hp = getattr(self, "_current_hiring_policy", None)
+            if hp is None:
+                return None
+            pi = getattr(hp, "policy_instructions", None) or {}
+            if not pi or not isinstance(pi, dict):
+                return None
+            lines = [f"- {k}: {v}" for k, v in pi.items() if v]
+            return "\n".join(lines) if lines else None
+
         field_mapping = {
-            "trade_name": "trade_name",
+            "trade_name": "trading_name",
             "industry": "industry",
             "website": "website",
             "linkedin_url": "linkedin_url",
             "company_size": "company_size",
             "employee_count": "employee_count",
+            "company_description": "description",
             "mission": "mission",
             "vision": "vision",
             "values": "values",
         }
         
-        if field_key in field_mapping:
+        if profile is not None and field_key in field_mapping:
             attr = field_mapping[field_key]
             if hasattr(profile, attr):
-                return getattr(profile, attr)
+                val = getattr(profile, attr)
+                if val:
+                    return val
+
+        # FASE 0 (audit 2026-06-06): narrative fields live on
+        # CompanyCultureProfile (no relationship from CompanyProfile). Resolve
+        # them here so the recruiter-configured values reach the prompt.
+        culture_val = self._get_culture_value(field_key, culture)
+        if culture_val is not None:
+            return culture_val
         
         return None
     
+    def _get_culture_value(self, field_key: str, culture: Any) -> Any:
+        """Read a narrative field from CompanyCultureProfile. Returns None for
+        absent/empty values so empty fields are never emitted. FASE 0."""
+        if culture is None:
+            return None
+        culture_map = {
+            "company_description": "description",
+            "mission": "mission",
+            "vision": "vision",
+            "values": "values",
+            "evp_bullets": "evp_bullets",
+            "core_competencies": "core_competencies",
+            # behavioral_competencies tem coluna propria (decisao Paulo E2:
+            # fonte DISTINTA de core_competencies, audit 2026-06-06).
+            "behavioral_competencies": "behavioral_competencies",
+            "locations": "locations",
+            "work_model": "work_model",
+            "growth_opportunities": "growth_opportunities",
+            "team_dynamics": "team_dynamics",
+            "leadership_style": "leadership_style",
+            "dei_initiatives": "dei_initiatives",
+            "sustainability": "sustainability",
+            "social_impact": "social_impact",
+            "tech_stack": "tech_stack",
+            "engineering_culture": "engineering_culture",
+            "default_languages": "default_languages",
+        }
+        if field_key in culture_map:
+            val = getattr(culture, culture_map[field_key], None)
+            return val if val else None
+        if field_key == "company_big_five":
+            # Only emit when the culture profile was actually approved — avoid
+            # broadcasting the 50/50 placeholder default as if it were real.
+            if not getattr(culture, "is_approved", False):
+                return None
+            o = getattr(culture, "openness_score", None)
+            c = getattr(culture, "conscientiousness_score", None)
+            e = getattr(culture, "extraversion_score", None)
+            a = getattr(culture, "agreeableness_score", None)
+            s = getattr(culture, "stability_score", None)
+            if all(v is None for v in (o, c, e, a, s)):
+                return None
+            return (
+                f"Abertura {o}, Conscienciosidade {c}, Extroversao {e}, "
+                f"Amabilidade {a}, Estabilidade {s} (escala 0-100)"
+            )
+        return None
+
     def _resolve_fallback(
         self,
         field_key: str,
@@ -509,6 +707,7 @@ class LiaFieldConfigService:
         """Generate human-readable explanation of data source."""
         explanations = {
             DataSource.COMPANY_CONFIG: "Configurado pela empresa nas Configurações",
+            DataSource.DEPARTMENT_CONFIG: "Configurado para o departamento desta vaga",
             DataSource.JOB_HISTORY: "Baseado no histórico de vagas da empresa",
             DataSource.MARKET_BENCHMARK: "Benchmark de mercado para o setor/função",
             DataSource.ROLE_INFERENCE: "Inferido a partir do título e senioridade",
@@ -601,6 +800,13 @@ class LiaFieldConfigService:
             if isinstance(value[0], dict):
                 items = [str(v.get("competency", v.get("name", str(v)))) for v in value[:5]]
                 return ", ".join(items) + ("..." if len(value) > 5 else "")
+            # ORM rows (e.g. Department/Benefit relationships) expose a `name`
+            # attribute; render that instead of the useless object repr that
+            # would otherwise leak `<...Department object at 0x...>` into the
+            # LLM prompt now that the relationships are eagerly loaded.
+            if hasattr(value[0], "name"):
+                items = [str(getattr(v, "name", str(v))) for v in value[:10]]
+                return ", ".join(items) + ("..." if len(value) > 10 else "")
             return ", ".join(str(v) for v in value[:10]) + ("..." if len(value) > 10 else "")
         if isinstance(value, dict):
             if "min" in value and "max" in value:

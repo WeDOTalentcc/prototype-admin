@@ -276,6 +276,78 @@ async def _wrap_request_approval(**kwargs: Any) -> dict[str, Any]:
         return {"is_error": True, "error": str(e)}
 
 
+
+@tool_handler("wizard")
+async def _wrap_request_business_approval(**kwargs: Any) -> dict[str, Any]:
+    """Sprint 1 (2026-06-21) — solicitar aprovacao de negocio para publicar vaga.
+
+    Distinto de request_approval (WSI interno, aprovacao de perguntas de triagem).
+    Este tool aciona o fluxo de aprovacao de negocio: cria ApprovalRequest rows,
+    seta approval_requested_at, envia email para aprovador nivel 1.
+
+    Guide (computacional): unico ponto de chamada de trigger_approval_if_required
+    no contexto do wizard. Segue canonical fix produtor.
+
+    Stage allowlist: review, publish (STAGE_TOOLS abaixo).
+    Multi-tenancy: company_id vem do ContextVar JWT via @tool_handler — NUNCA
+    declarado no schema LLM (REGRA 2 Pydantic Conventions canonical).
+    """
+    vacancy_id = kwargs.get("vacancy_id")
+    company_id = kwargs.get("company_id")
+
+    job = await _load_vacancy_or_error(vacancy_id, company_id)
+    if isinstance(job, dict):
+        return job
+
+    try:
+        from app.domains.job_creation.services.approval_trigger_service import (
+            trigger_approval_if_required,
+        )
+        from app.core.database import AsyncSessionLocal
+
+        requested_by_email = kwargs.get("user_email", f"wizard:{company_id}")
+        requested_by_name = kwargs.get("user_name", "Recrutador")
+
+        async with AsyncSessionLocal() as db:
+            # Sync job to this session for stamp
+            from sqlalchemy import select
+            from lia_models.job_vacancy import JobVacancy
+            from uuid import UUID
+            result = await db.execute(
+                select(JobVacancy).where(JobVacancy.id == UUID(str(job.id)))
+            )
+            job_in_session = result.scalar_one_or_none()
+            if not job_in_session:
+                return {"is_error": True, "error": "Vaga nao encontrada na sessao"}
+
+            approvals = await trigger_approval_if_required(
+                job_in_session,
+                requested_by_name=requested_by_name,
+                requested_by_email=requested_by_email,
+                db=db,
+            )
+            await db.commit()
+
+        if not approvals:
+            return {
+                "is_error": False,
+                "vacancy_id": str(vacancy_id),
+                "approvals_created": 0,
+                "message": "Nenhum aprovador configurado. Vaga pode ser publicada diretamente.",
+            }
+
+        return {
+            "is_error": False,
+            "vacancy_id": str(vacancy_id),
+            "approvals_created": len(approvals),
+            "approval_status": "pendente",
+            "message": f"Aprovacao solicitada para {len(approvals)} aprovador(es). Aguardando aprovacao antes de publicar.",
+        }
+    except Exception as e:
+        logger.error(f"[wizard_tools] request_business_approval error: {e}", exc_info=True)
+        return {"is_error": True, "error": str(e)}
+
+
 @tool_handler("wizard")
 async def _wrap_publish_vacancy(**kwargs: Any) -> dict[str, Any]:
     """Phase E — publish (status -> Ativa) or unpublish (clear flags) a vacancy."""
@@ -856,6 +928,22 @@ TOOL_DEFINITIONS.append(
         function=_wrap_request_approval,
     )
 )
+TOOL_DEFINITIONS.append(
+    ToolDefinition(
+        name="request_business_approval",
+        description="Solicita aprovacao de negocio para publicar a vaga. Use quando o recrutador indicar que a vaga precisa de aprovacao de um gestor ou diretor antes de ser publicada. Cria ApprovalRequest e notifica aprovadores configurados. Distinto de request_approval (que e aprovacao interna WSI de perguntas de triagem).",
+        parameters={
+            "type": "object",
+            "properties": {
+                "vacancy_id": {"type": "string", "description": "ID da vaga (UUID)"},
+            },
+            "required": ["vacancy_id"],
+        },
+        output_schema=ToolOutput,
+        function=_wrap_request_business_approval,
+    )
+)
+
 TOOL_DEFINITIONS.append(
     ToolDefinition(
         name="publish_vacancy",
@@ -1616,10 +1704,6 @@ TOOL_DEFINITIONS.append(
         parameters={
             "type": "object",
             "properties": {
-                "company_id": {
-                    "type": "string",
-                    "description": "ID da empresa (obrigatorio, vem do contexto JWT)",
-                },
                 "vacancy_id": {
                     "type": "string",
                     "description": "ID da vaga (UUID). Obrigatorio para persistir.",
@@ -1645,12 +1729,288 @@ TOOL_DEFINITIONS.append(
                     "description": "Lista de competencias comportamentais a remover (match por nome, case-insensitive)",
                 },
             },
-            "required": ["company_id"],
+            "required": ["vacancy_id"],
         },
         output_schema=ToolOutput,
         function=_wrap_update_competencies,
     )
 )
+
+
+
+# === list_job_creation_sources (create-from-source agentic flow) ============
+# Recrutador: "criar vaga a partir de um modelo/vaga existente". A LIA usa
+# esta tool para listar as fontes candidatas (vagas existentes + arquetipos)
+# e desambiguar conversacionalmente. Requisito firme (Paulo): TODO item de
+# vaga inclui o ID e o recrutador (e gestor) para o recrutador identificar.
+@tool_handler("wizard")
+async def _wrap_list_job_creation_sources(**kwargs: Any) -> dict[str, Any]:
+    """Lista fontes para criar uma nova vaga: vagas existentes + arquetipos.
+
+    Multi-tenancy: company_id vem do ContextVar JWT (@tool_handler). NUNCA do
+    payload da LLM. Reusa repositorios canonical (ADR-001: zero SQL inline).
+
+    Cada item de vaga carrega obrigatoriamente id + recruiter (+ gestor) para
+    o recrutador desambiguar qual vaga clonar.
+    """
+    from app.core.database import AsyncSessionLocal
+    from app.domains.job_management.repositories.job_vacancy_crud_repository import (
+        JobVacancyCRUDRepository,
+    )
+    from app.domains.job_management.services.job_template_service import (
+        JobTemplateService,
+    )
+
+    company_id = kwargs.get("company_id")
+    if not company_id:
+        return {
+            "success": False,
+            "needs_manual_review": True,
+            "message": "company_id ausente do contexto JWT — operação bloqueada.",
+        }
+
+    query = (kwargs.get("query") or "").strip()
+
+    sources: list[dict[str, Any]] = []
+
+    async with AsyncSessionLocal() as db:
+        vac_repo = JobVacancyCRUDRepository(db)
+
+        # ── Vagas existentes ──────────────────────────────────────────────
+        if query:
+            # search_for_summary_by_criteria casa por título (cargo) E gestor.
+            vacancy_rows = await vac_repo.search_for_summary_by_criteria(
+                company_id=company_id,
+                criteria={"cargo": query, "gestor": query},
+                limit=10,
+            )
+            if not vacancy_rows:
+                # Sem match no cargo+gestor combinado: tenta só por gestor
+                # (recrutador pode ter digitado apenas o nome do gestor).
+                vacancy_rows = await vac_repo.search_for_summary_by_criteria(
+                    company_id=company_id,
+                    criteria={"gestor": query},
+                    limit=10,
+                )
+        else:
+            vacancy_rows = await vac_repo.list_vacancies(
+                company_id=company_id, limit=10
+            )
+
+        for v in vacancy_rows:
+            sources.append({
+                "type": "vacancy",
+                "id": str(v.id),
+                "job_id": v.job_id,
+                "title": v.title,
+                "recruiter": v.recruiter,
+                "manager": v.manager,
+                "department": v.department,
+                "status": v.status,
+            })
+
+        # ── Arquetipos (templates de vaga) ────────────────────────────────
+        template_company_id = None
+        try:
+            template_company_id = (
+                uuid.UUID(company_id) if isinstance(company_id, str) else company_id
+            )
+        except (ValueError, TypeError):
+            template_company_id = None
+
+        templates = await JobTemplateService(db).get_templates(
+            company_id=template_company_id,
+            include_system=True,
+            limit=8,
+        )
+
+    if query:
+        q_lower = query.lower()
+        templates = [
+            t for t in templates if q_lower in (t.title or "").lower()
+        ] or templates
+
+    for t in templates:
+        sources.append({
+            "type": "template",
+            "id": str(t.id),
+            "title": t.title,
+            "seniority": t.seniority,
+            "category": t.category,
+            "is_system": t.is_system,
+        })
+
+    n_vac = sum(1 for s in sources if s["type"] == "vacancy")
+    n_tpl = sum(1 for s in sources if s["type"] == "template")
+    return {
+        "success": True,
+        "data": {"sources": sources, "query": query or None},
+        "message": (
+            f"{len(sources)} fontes (vagas + arquétipos): "
+            f"{n_vac} vaga(s) + {n_tpl} arquétipo(s)."
+        ),
+    }
+
+
+TOOL_DEFINITIONS.append(
+    ToolDefinition(
+        name="list_job_creation_sources",
+        description=(
+            "Lista fontes para criar uma nova vaga a partir de algo existente: "
+            "vagas já criadas na empresa + arquétipos (templates) do catálogo. "
+            "Use quando o recrutador pedir para criar vaga 'a partir de um "
+            "modelo', 'igual a vaga X', 'baseada na vaga do gestor Y'. Cada "
+            "vaga retornada inclui id, recrutador e gestor para desambiguação."
+        ),
+        parameters={
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": (
+                        "Termo livre: cargo, título da vaga, ou nome do gestor. "
+                        "Opcional — sem termo retorna as fontes mais recentes."
+                    ),
+                },
+            },
+            "required": [],
+        },
+        output_schema=ToolOutput,
+        function=_wrap_list_job_creation_sources,
+    )
+)
+
+
+
+# === start_creation_from_source (create-from-source agentic glue) ===========
+# Decisao Paulo (Opcao A, camada A2): o recruiter_copilot conduz a
+# identificacao da fonte via list_job_creation_sources e, ao recrutador
+# escolher, chama esta tool com o id. Ela EMITE a diretiva canonical
+# (ui_action='start_wizard_seeded') que semeia uma sessao FRESH do wizard via
+# WizardSessionService.seed_initial_state (context["seed_source"]).
+#
+# Multi-tenancy: company_id vem do ContextVar JWT (@tool_handler). NUNCA do
+# payload da LLM. Audit canonical (create-canonical-agent / ACH-026) registra a
+# acao significativa.
+#
+# WIRING (seam): a tool nao starta a sessao sozinha — ela carece do
+# session_id/thread_id do chat (o exec_context do agentic loop so propaga
+# user_id + company_id). Ela retorna a DIRETIVA; o caller (orchestrator) e quem
+# chama process_message com seed_source no context. Ver relatorio do handoff.
+@tool_handler("wizard")
+async def _wrap_start_creation_from_source(**kwargs: Any) -> dict[str, Any]:
+    """Inicia a criacao de uma vaga a partir de uma fonte (template | vacancy).
+
+    - ``source_type='template'`` -> emite a diretiva ``start_wizard_seeded`` com
+      ``seed_source={type:'template', id:<source_id>}``. O produtor canonical
+      (``seed_initial_state``) ja sabe semear o state fresh a partir de template.
+    - ``source_type='vacancy'`` -> producer ainda NAO wired. Retorna mensagem
+      honesta (sem fabricar) e oferece o caminho de template (CLAUDE.md REGRA 4
+      anti-silent-fallback + proveniencia honesta).
+
+    Multi-tenancy: company_id do ContextVar JWT (@tool_handler), nunca do payload.
+    """
+    company_id = kwargs.get("company_id")
+    if not company_id:
+        return {
+            "success": False,
+            "needs_manual_review": True,
+            "message": "company_id ausente do contexto JWT — operação bloqueada.",
+        }
+
+    source_type = (kwargs.get("source_type") or "").strip().lower()
+    source_id = (kwargs.get("source_id") or "").strip()
+
+    if source_type not in ("template", "vacancy"):
+        return {
+            "success": False,
+            "message": (
+                "source_type inválido. Use 'template' (arquétipo) ou 'vacancy' "
+                "(vaga existente). Liste as fontes com list_job_creation_sources."
+            ),
+        }
+    if not source_id:
+        return {
+            "success": False,
+            "message": (
+                "source_id ausente. Liste as fontes com "
+                "list_job_creation_sources e escolha o id desejado."
+            ),
+        }
+
+    # Audit canonical da acao significativa (ACH-026). Fire-and-forget,
+    # fail-open: nunca bloqueia a UX por falha de telemetria.
+    try:
+        import asyncio as _asyncio
+
+        from app.shared.compliance.audit_service import AuditService
+
+        _asyncio.create_task(AuditService().log_decision(  # AUDIT-NO-DEMO: job creation glue (sem decisao de candidato; LGPD Art.20 N/A)
+            company_id=str(company_id),
+            agent_name="wizard:start_creation_from_source",
+            decision_type="wizard_create_from_source",
+            action="start_creation_from_source",
+            decision=f"seed_{source_type}",
+            reasoning=[
+                f"source_type={source_type}",
+                f"source_id={source_id}",
+            ],
+            criteria_used=["create_from_source", f"source:{source_type}"],
+        ))
+    except Exception as _audit_exc:  # noqa: BLE001
+        logger.debug(
+            "[start_creation_from_source] audit skipped: %s", _audit_exc,
+        )
+
+    # template | vacancy -> diretiva canonical que semeia uma sessao FRESH do
+    # wizard. O produtor (seed_initial_state) sabe semear AMBOS: template (PR-A)
+    # e vacancy (PR-B1 — intake + salario needs_review + JD text; reuso rico
+    # WSI/competencias vem no PR-B2). Fecha o ghost: a tool oferecia vaga e antes
+    # retornava "chega em breve" (beco sem saida).
+    return {
+        "success": True,
+        "data": {
+            "ui_action": "start_wizard_seeded",
+            "seed_source": {"type": source_type, "id": source_id},
+        },
+        "message": (
+            "Pronto — vou abrir o assistente de criação já partindo desse "
+            "arquétipo. Me confirme o título e seguimos."
+        ),
+    }
+
+
+TOOL_DEFINITIONS.append(
+    ToolDefinition(
+        name="start_creation_from_source",
+        description=(
+            "Inicia a criação de uma NOVA vaga a partir de uma fonte escolhida "
+            "pelo recrutador: um arquétipo (template) ou uma vaga existente. "
+            "Use DEPOIS de list_job_creation_sources, quando o recrutador "
+            "indicar qual fonte usar (pelo id). 'template' abre o assistente já "
+            "semeado; 'vacancy' ainda não está disponível (avise honestamente "
+            "e ofereça um arquétipo)."
+        ),
+        parameters={
+            "type": "object",
+            "properties": {
+                "source_type": {
+                    "type": "string",
+                    "enum": ["template", "vacancy"],
+                    "description": "Tipo da fonte: 'template' (arquétipo) ou 'vacancy' (vaga existente).",
+                },
+                "source_id": {
+                    "type": "string",
+                    "description": "id da fonte escolhida (vindo de list_job_creation_sources).",
+                },
+            },
+            "required": ["source_type", "source_id"],
+        },
+        output_schema=ToolOutput,
+        function=_wrap_start_creation_from_source,
+    )
+)
+
 
 _TOOL_MAP: dict[str, ToolDefinition] = {t.name: t for t in TOOL_DEFINITIONS}
 
@@ -1678,14 +2038,14 @@ _TOOL_MAP: dict[str, ToolDefinition] = {t.name: t for t in TOOL_DEFINITIONS}
 # --------------------------------------------------------------------------
 STAGE_TOOLS: dict[str, list[str]] = {
     # Creation stages (alinhados com WizardStage Literal canonical):
-    "intake": ["validate_job_requirements", "validate_job_fields", "get_job_suggestions", "get_company_config", "save_job_draft", "check_job_draft_health", "suggest_pipeline_stage_templates", "apply_pipeline_stage_template_to_vacancy", "create_custom_pipeline_stage_template"],
+    "intake": ["list_job_creation_sources", "start_creation_from_source", "validate_job_requirements", "validate_job_fields", "get_job_suggestions", "get_company_config", "save_job_draft", "check_job_draft_health", "suggest_pipeline_stage_templates", "apply_pipeline_stage_template_to_vacancy", "create_custom_pipeline_stage_template"],
     "jd_enrichment": ["generate_enriched_jd", "get_job_suggestions", "get_company_config", "save_job_draft", "check_job_draft_health"],
     "pipeline_template": ["suggest_pipeline_stage_templates", "apply_pipeline_stage_template_to_vacancy", "create_custom_pipeline_stage_template"],
     "salary": ["get_salary_benchmarks", "search_salary_benchmark", "validate_job_fields", "save_job_draft", "check_job_draft_health"],
     "competency": ["validate_job_requirements", "get_job_suggestions", "validate_job_fields", "save_job_draft", "suggest_eligibility_templates", "apply_eligibility_template_to_vacancy", "create_custom_eligibility_template", "update_competencies"],
     "wsi_questions": ["validate_job_requirements", "validate_job_fields", "save_job_draft", "generate_screening_questions", "suggest_eligibility_templates", "apply_eligibility_template_to_vacancy", "create_custom_eligibility_template"],
-    "review": ["validate_job_requirements", "save_job_draft", "validate_job_fields", "check_job_draft_health", "generate_report", "publish_vacancy", "change_vacancy_status", "suggest_pipeline_stage_templates", "apply_pipeline_stage_template_to_vacancy", "create_custom_pipeline_stage_template"],
-    "publish": ["validate_job_requirements", "save_job_draft", "validate_job_fields", "check_job_draft_health", "generate_report", "publish_vacancy", "change_vacancy_status", "suggest_pipeline_stage_templates", "apply_pipeline_stage_template_to_vacancy", "create_custom_pipeline_stage_template"],
+    "review": ["validate_job_requirements", "save_job_draft", "validate_job_fields", "check_job_draft_health", "generate_report", "publish_vacancy", "change_vacancy_status", "suggest_pipeline_stage_templates", "apply_pipeline_stage_template_to_vacancy", "create_custom_pipeline_stage_template", "request_business_approval"],
+    "publish": ["validate_job_requirements", "save_job_draft", "validate_job_fields", "check_job_draft_health", "generate_report", "publish_vacancy", "change_vacancy_status", "suggest_pipeline_stage_templates", "apply_pipeline_stage_template_to_vacancy", "create_custom_pipeline_stage_template", "request_business_approval"],
     # Phase E -- vacancy lifecycle stages (Recrutar > Vagas rail).
     # Stage names match _classify_job_lifecycle_stage in
     # app/api/v1/job_vacancies/analytics.py.
@@ -1694,6 +2054,8 @@ STAGE_TOOLS: dict[str, list[str]] = {
     "aguardando_aprovacao": ["dispatch_screening"],
     "publicada": ["publish_vacancy", "change_vacancy_status"],
     "ao_vivo": ["change_vacancy_status", "publish_vacancy"],
+    # Phase E — closed vacancy (encerrada): reactivate, duplicate, or get info
+    "encerrada": ["change_vacancy_status", "duplicate_job", "reopen_job", "generate_report"],
 }
 
 

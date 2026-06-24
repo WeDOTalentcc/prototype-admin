@@ -31,7 +31,7 @@ const TASK_ICONS: Record<string, React.ElementType> = {
 
 const STATUS_COLORS = {
   queued: "text-lia-text-tertiary",
-  running: "text-wedo-cyan",
+  running: "text-lia-text-secondary",
   completed: "text-status-success",
   failed: "text-status-error",
 }
@@ -67,7 +67,7 @@ export function BackgroundAgentsStatus({ tasks, onViewResult, className }: Backg
           <span className="font-medium">
             Agentes em Background
             {runningCount > 0 && (
-              <span className="ml-1 text-wedo-cyan">({runningCount} ativo{runningCount > 1 ? "s" : ""})</span>
+              <span className="ml-1 text-wedo-cyan-text">({runningCount} ativo{runningCount > 1 ? "s" : ""})</span>
             )}
             {runningCount === 0 && completedCount > 0 && (
               <span className="ml-1 text-status-success">({completedCount} concluído{completedCount > 1 ? "s" : ""})</span>
@@ -102,21 +102,21 @@ export function BackgroundAgentsStatus({ tasks, onViewResult, className }: Backg
                     </div>
                   )}
                   {task.message && (
-                    <p className="text-[10px] text-lia-text-disabled mt-0.5 truncate">{task.message}</p>
+                    <p className="text-[10px] text-lia-text-muted mt-0.5 truncate">{task.message}</p>
                   )}
                 </div>
                 {(task.status === "running" || task.status === "queued") && (
                   <Loader2
                     className={cn(
                       "w-3 h-3 animate-spin flex-shrink-0",
-                      task.status === "queued" ? "text-lia-text-tertiary" : "text-wedo-cyan",
+                      task.status === "queued" ? "text-lia-text-tertiary" : "text-wedo-cyan-text",
                     )}
                   />
                 )}
                 {task.status === "completed" && (
                   <button
                     onClick={() => onViewResult?.(task)}
-                    className="flex items-center gap-1 text-[10px] text-wedo-cyan hover:underline flex-shrink-0"
+                    className="flex items-center gap-1 text-[10px] text-lia-text-muted hover:underline flex-shrink-0"
                   >
                     <CheckCircle2 className="w-3 h-3" />
                     Ver

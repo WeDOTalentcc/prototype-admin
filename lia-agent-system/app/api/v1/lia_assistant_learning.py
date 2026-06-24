@@ -19,6 +19,7 @@ from app.core.database import get_db
 from app.shared.services.learning_hub_service import learning_hub_service
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+from app.shared.errors import LIAError
 
 logger = logging.getLogger(__name__)
 
@@ -225,7 +226,7 @@ company_id: str = Depends(require_company_id)) -> SkillConfirmationResponse:
         raise
     except Exception as e:
         logger.error(f"Error confirming skill: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/learning/confirm-responsibility", response_model=ResponsibilityConfirmationResponse)
@@ -266,7 +267,7 @@ company_id: str = Depends(require_company_id)) -> ResponsibilityConfirmationResp
         raise
     except Exception as e:
         logger.error(f"Error confirming responsibility: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/learning/context", response_model=LearningContextResponse)
@@ -293,7 +294,7 @@ company_id: str = Depends(require_company_id)) -> LearningContextResponse:
         raise
     except Exception as e:
         logger.error(f"Error getting learning context: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/learning/job-outcome", response_model=JobOutcomeResponse)
@@ -342,7 +343,7 @@ company_id: str = Depends(require_company_id)) -> JobOutcomeResponse:
         raise
     except Exception as e:
         logger.error(f"Error recording job outcome: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/learning/outcome-insights", response_model=OutcomeInsightsResponse)
@@ -375,7 +376,7 @@ company_id: str = Depends(require_company_id)) -> OutcomeInsightsResponse:
         raise
     except Exception as e:
         logger.error(f"Error getting outcome insights: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/learning/stage-feedback", response_model=StageFeedbackResponse)
@@ -418,7 +419,7 @@ company_id: str = Depends(require_company_id)) -> StageFeedbackResponse:
         raise
     except Exception as e:
         logger.error(f"Error recording stage feedback: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/learning/dashboard", response_model=LearningDashboardResponse)
@@ -445,7 +446,7 @@ company_id: str = Depends(require_company_id)) -> LearningDashboardResponse:
         raise
     except Exception as e:
         logger.error(f"Error getting learning dashboard: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/learning/skills-deduplicated", response_model=SkillsDeduplicatedResponse)
@@ -467,4 +468,4 @@ company_id: str = Depends(require_company_id)) -> SkillsDeduplicatedResponse:
         raise
     except Exception as e:
         logger.error(f"Error getting deduplicated skills: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")

@@ -106,3 +106,29 @@ class SearchFeedbackRepository:
             .order_by(SearchFeedback.created_at.desc())
         )
         return list(result.scalars().all())
+
+    async def get_disliked_candidate_ids(
+        self,
+        *,
+        company_id: str,
+        search_fingerprint: str,
+    ) -> list[str]:
+        """Retorna candidate_ids com dislike para este fingerprint de busca.
+
+        Usado pelo endpoint /candidates/refine para auto-construir docid_blacklist
+        e impedir que candidatos rejeitados reapareçam ao paginar (Carregar Mais).
+        Multi-tenancy: filtrado por company_id (defense-in-depth além do RLS).
+        """
+        stmt = (
+            select(SearchFeedback.candidate_id)
+            .where(
+                and_(
+                    SearchFeedback.company_id == company_id,
+                    SearchFeedback.search_fingerprint == search_fingerprint,
+                    SearchFeedback.feedback_type == "dislike",
+                )
+            )
+            .distinct()
+        )
+        result = await self.db.execute(stmt)
+        return [str(row) for row in result.scalars().all()]

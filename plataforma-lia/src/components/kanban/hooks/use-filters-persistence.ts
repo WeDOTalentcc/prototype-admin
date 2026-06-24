@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { setLiaFilters } from '@/lib/lia-context-store'
+import { kanbanFiltersToLia } from '@/lib/lia-context-utils'
 import { useUIPreferencesStore } from '@/stores/ui-preferences-store'
 
 export interface KanbanFiltersPersisted {
@@ -76,6 +78,9 @@ export function useFiltersPersistence(
     setFiltersState(prev => {
       const newFilters = { ...prev, ...partial }
       saveFilters(newFilters)
+      // P0-2 (2026-06-18): keep LIA aware of active filters
+      const liaFilters = kanbanFiltersToLia(newFilters)
+      setLiaFilters(liaFilters.length ? liaFilters : null)
       return newFilters
     })
   }, [saveFilters])
@@ -110,6 +115,7 @@ export function useFiltersPersistence(
 
   const resetFilters = useCallback(() => {
     setFiltersState(DEFAULT_FILTERS)
+    setLiaFilters(null)  // P0-2: clear filters from LIA context
     if (enabled) {
       removeKanbanFilters(fullStorageKey)
     }

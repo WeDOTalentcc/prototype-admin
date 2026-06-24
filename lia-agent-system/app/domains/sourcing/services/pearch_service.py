@@ -2,13 +2,14 @@
 Pearch AI integration service for candidate search (API v2).
 Based on https://apidocs.pearch.ai/reference/post_v2-search
 """
+import asyncio
 import logging
 import os
 from datetime import datetime
 from typing import Any
 
 import httpx
-from sqlalchemy import func, or_, select
+from sqlalchemy import and_, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from tenacity import retry, stop_after_attempt, wait_exponential
 
@@ -40,6 +41,17 @@ logger = logging.getLogger(__name__)
 
 # G-12: TTL do cache de busca Pearch (sem PII de contato). Default 15min.
 SEARCH_CACHE_TTL = int(os.environ.get("PEARCH_SEARCH_CACHE_TTL", "900"))
+
+
+# P1-11: deadline interno da chamada Pearch (caminho non-email). Menor que o
+# deadline da rota (SEARCH_CANDIDATES_DEADLINE_SECONDS) para que um Pearch lento
+# vire um TimeoutError CAPTURADO aqui (preservando os candidatos LOCAIS ja
+# encontrados) em vez de estourar o deadline da rota e cancelar a coroutine
+# inteira (que zerava ate os locais).
+# BUG-PEARCH-TIMEOUT (2026-06-09): API Pearch v2 /v2/search leva ~26s em prod
+# (retrieval 14s + scoring 5s + insights 4s). Deadline anterior (12s) cancelava
+# TODAS as buscas globais silenciosamente. Elevado para 35s.
+_PEARCH_CALL_DEADLINE_SECONDS = float(os.getenv("PEARCH_CALL_DEADLINE_SECONDS", "35.0"))
 
 
 def _profile_has_email(profile: Any) -> bool:
@@ -369,7 +381,10 @@ class PearchService:
                     pass
                 return _blocked
         except Exception as _fg_exc:
-            logger.debug("[PearchService] FairnessGuard check skipped: %s", _fg_exc)
+            logger.error(
+                "[PearchService] FairnessGuard check FAILED (pearch query proceeding without fairness verification): %s",
+                _fg_exc, exc_info=True,
+            )
 
         company_id = company_id or getattr(request, "company_id", None)
 
@@ -962,6 +977,12 @@ class PearchService:
             stmt = stmt.where(Candidate.email.isnot(None))
         if require_phone:
             stmt = stmt.where(Candidate.phone.isnot(None))
+
+        # P0-1: filtros estruturados derivados do LLM (industries, funding,
+        # countries, tags, tiers, timezones) sao SOFT (drop-if-zero), NAO gate
+        # eliminatorio. Coletados aqui e aplicados no bloco de execucao; se
+        # zerarem o conjunto, sao descartados (degradacao graciosa).
+        _structured_conditions = []
         
         # Filtro por industries (via experiências) - case-insensitive overlap with synonym expansion
         if industries and len(industries) > 0:
@@ -981,7 +1002,7 @@ class PearchService:
                 )
                 .distinct()
             )
-            stmt = stmt.where(Candidate.id.in_(industry_subq))
+            _structured_conditions.append(Candidate.id.in_(industry_subq))
         
         # Filter by funding stages (via experiences table)
         if funding_stages and len(funding_stages) > 0:
@@ -993,7 +1014,7 @@ class PearchService:
                 )
                 .distinct()
             )
-            stmt = stmt.where(Candidate.id.in_(funding_subq))
+            _structured_conditions.append(Candidate.id.in_(funding_subq))
         
         # Filter by company HQ countries (via experiences table)
         if company_hq_countries and len(company_hq_countries) > 0:
@@ -1005,7 +1026,7 @@ class PearchService:
                 )
                 .distinct()
             )
-            stmt = stmt.where(Candidate.id.in_(hq_country_subq))
+            _structured_conditions.append(Candidate.id.in_(hq_country_subq))
         
         # Filter by company tags (via experiences table) - overlap with array
         if company_tags and len(company_tags) > 0:
@@ -1017,7 +1038,7 @@ class PearchService:
                 )
                 .distinct()
             )
-            stmt = stmt.where(Candidate.id.in_(tags_subq))
+            _structured_conditions.append(Candidate.id.in_(tags_subq))
         
         # Filter by institution tiers (via education table)
         if institution_tiers and len(institution_tiers) > 0:
@@ -1029,7 +1050,7 @@ class PearchService:
                 )
                 .distinct()
             )
-            stmt = stmt.where(Candidate.id.in_(tier_subq))
+            _structured_conditions.append(Candidate.id.in_(tier_subq))
         
         # Filter by institution countries (via education table)
         if institution_countries and len(institution_countries) > 0:
@@ -1041,7 +1062,7 @@ class PearchService:
                 )
                 .distinct()
             )
-            stmt = stmt.where(Candidate.id.in_(inst_country_subq))
+            _structured_conditions.append(Candidate.id.in_(inst_country_subq))
         
         # Filter by institution ranking (max threshold - lower is better)
         if institution_ranking_max is not None:
@@ -1053,24 +1074,37 @@ class PearchService:
                 )
                 .distinct()
             )
-            stmt = stmt.where(Candidate.id.in_(ranking_subq))
+            _structured_conditions.append(Candidate.id.in_(ranking_subq))
         
         # Filter by timezones (exact match or IN list on candidates table)
         if timezones and len(timezones) > 0:
             timezones_lower = [tz.lower() for tz in timezones]
-            stmt = stmt.where(func.lower(Candidate.timezone).in_(timezones_lower))
+            _structured_conditions.append(func.lower(Candidate.timezone).in_(timezones_lower))
         
         # Filter by timezone pattern (ILIKE match on candidates table)
         if timezone_pattern:
-            stmt = stmt.where(Candidate.timezone.ilike(f"%{timezone_pattern}%"))
+            _structured_conditions.append(Candidate.timezone.ilike(f"%{timezone_pattern}%"))
         
         stmt = stmt.order_by(
             Candidate.lia_score.desc().nullsfirst(),
             Candidate.created_at.desc()
         ).limit(limit)
         
-        result = await db.execute(stmt)
-        candidates = result.scalars().all()
+        if _structured_conditions:
+            strict_stmt = stmt.where(and_(*_structured_conditions))
+            result = await db.execute(strict_stmt)
+            candidates = result.scalars().all()
+            if not candidates:
+                logger.warning(
+                    "[search_local] filtros estruturados (%d) zeraram a busca '%s' "
+                    "— degradando para text-only (filtros tratados como soft, P0-1)",
+                    len(_structured_conditions), query,
+                )
+                result = await db.execute(stmt)
+                candidates = result.scalars().all()
+        else:
+            result = await db.execute(stmt)
+            candidates = result.scalars().all()
         
         # Convert to CandidateProfile
         profiles = []
@@ -1423,11 +1457,13 @@ class PearchService:
             try:
                 if request.require_emails:
                     # Task #1219 — modo "Híbrida com email": loop de completude.
-                    # Alvo combinado = pearch_limit. O pool local (já filtrado a
-                    # quem tem email) conta para o alvo; a Pearch completa o
-                    # restante percorrendo páginas adicionais até atingir o alvo
-                    # ou esgotar fontes (guardrails: deadline interno + max_pages).
-                    _target = max(0, request.pearch_limit - len(local_candidates))
+                    # BUG-PEARCH-TARGET (2026-06-09): _target subtraía os candidatos
+                    # locais do limite Pearch. Em buscas híbridas onde local já retorna
+                    # >= pearch_limit candidatos com email, _target ficava 0 → Pearch
+                    # nunca era chamado → zero candidatos globais. Correto: Pearch busca
+                    # sua própria cota (additive, não cota combinada). O dedup trata
+                    # sobreposições. Mantemos pearch_limit como teto do loop de email.
+                    _target = request.pearch_limit
                     pearch_candidates, _loop_diag = await self._accumulate_pearch_with_emails(
                         base_request=pearch_request,
                         target=_target,
@@ -1440,7 +1476,10 @@ class PearchService:
                     if _loop_diag.get("error_message"):
                         warning_message = _loop_diag["error_message"]
                 else:
-                    pearch_response = await self.search_candidates(pearch_request)
+                    pearch_response = await asyncio.wait_for(
+                        self.search_candidates(pearch_request),
+                        timeout=_PEARCH_CALL_DEADLINE_SECONDS,
+                    )
                     pearch_candidates = pearch_response.get_candidates()
                     pearch_candidates = self._dedup_pearch_against_local(local_candidates, pearch_candidates)
                     pearch_credits_remaining = pearch_response.credits_remaining

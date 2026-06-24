@@ -13,6 +13,7 @@ from app.core.celery_app import celery_app
 from app.schemas.async_job import AsyncJobResponse, AsyncJobStatusResponse
 from fastapi import Depends
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 from app.shared.types import WeDoBaseModel
 from typing import Annotated
 from fastapi import Path
@@ -67,7 +68,7 @@ async def run_triagem_batch(req: TriagemBatchRequest, company_id: str = Depends(
         raise
     except Exception as exc:
         logger.error("Falha ao enfileirar triagem: %s", exc)
-        raise HTTPException(status_code=500, detail="Erro ao enfileirar triagem")
+        raise LIAError(message="Erro ao enfileirar triagem")
 
 
 # ---------------------------------------------------------------------------
@@ -101,7 +102,7 @@ async def start_wsi_interview(req: WSIInterviewRequest, company_id: str = Depend
         raise
     except Exception as exc:
         logger.error("Falha ao enfileirar WSI interview: %s", exc)
-        raise HTTPException(status_code=500, detail="Erro ao iniciar entrevista WSI")
+        raise LIAError(message="Erro ao iniciar entrevista WSI")
 
 
 # ---------------------------------------------------------------------------
@@ -134,7 +135,7 @@ async def search_candidates_async(req: SourcingSearchRequest, company_id: str = 
         raise
     except Exception as exc:
         logger.error("Falha ao enfileirar sourcing search: %s", exc)
-        raise HTTPException(status_code=500, detail="Erro ao enfileirar busca de candidatos")
+        raise LIAError(message="Erro ao enfileirar busca de candidatos")
 
 
 # ---------------------------------------------------------------------------
@@ -171,7 +172,7 @@ async def send_bulk_email(req: BulkEmailRequest, company_id: str = Depends(requi
         raise
     except Exception as exc:
         logger.error("Falha ao enfileirar bulk email: %s", exc)
-        raise HTTPException(status_code=500, detail="Erro ao enfileirar envio de emails")
+        raise LIAError(message="Erro ao enfileirar envio de emails")
 
 
 # ---------------------------------------------------------------------------

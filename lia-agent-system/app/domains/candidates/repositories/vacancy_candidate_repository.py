@@ -45,13 +45,14 @@ class VacancyCandidateRepository:
         except (ValueError, TypeError):
             return None
 
-        # TENANT-EXEMPT: dynamic builder — VacancyCandidate.company_id == company_id
-        # é appended conditionally below quando company_id passado.
+        # TENANT-EXEMPT: dynamic builder — genuinely optional (e.g. candidate
+        # comparison service). `is not None` prevents empty-string bypass while
+        # preserving None=absent semantic.
         query = select(VacancyCandidate).where(
             VacancyCandidate.vacancy_id == vacancy_uuid,
             VacancyCandidate.candidate_id == candidate_uuid,
         )
-        if company_id:
+        if company_id is not None:
             query = query.where(VacancyCandidate.company_id == company_id)
         result = await self.db.execute(query)
         return result.scalar_one_or_none()
@@ -59,26 +60,25 @@ class VacancyCandidateRepository:
     async def get_most_recent_for_candidate(
         self,
         candidate_id: str | UUID,
-        company_id: str | None = None,
+        company_id: str,
     ) -> VacancyCandidate | None:
         """Get most recent VacancyCandidate for candidate.
 
-        Multi-tenancy defense-in-depth via company_id filter (REGRA ZERO + B.1).
+        Multi-tenancy: company_id is the ONLY tenant guard (no vacancy_id in
+        query). Fail-closed via _require_company_id — raises if absent/empty.
         """
-        # TENANT-EXEMPT: dynamic builder — VacancyCandidate.company_id == company_id
-        # é appended conditionally below quando company_id passado.
+        cid = self._require_company_id(company_id)
         query = (
             select(VacancyCandidate)
             .where(
                 VacancyCandidate.candidate_id == (
                     uuid.UUID(str(candidate_id)) if isinstance(candidate_id, str) else candidate_id
-                )
+                ),
+                VacancyCandidate.company_id == cid,
             )
             .order_by(VacancyCandidate.updated_at.desc())
             .limit(1)
         )
-        if company_id:
-            query = query.where(VacancyCandidate.company_id == company_id)
         result = await self.db.execute(query)
         return result.scalar_one_or_none()
 
@@ -86,14 +86,16 @@ class VacancyCandidateRepository:
         self,
         candidate_id: str,
         job_vacancy_id: str | None,
-        company_id: str | None = None,
+        company_id: str,
     ) -> VacancyCandidate | None:
         """
         Find VacancyCandidate by candidate + optional job.
         Falls back to most-recent if job_vacancy_id is None or invalid UUID.
 
-        Multi-tenancy defense-in-depth via company_id filter (REGRA ZERO + B.1).
+        Multi-tenancy: company_id required (fail-closed). Cascades to
+        get_most_recent_for_candidate which also enforces fail-closed.
         """
+        self._require_company_id(company_id)
         if job_vacancy_id:
             try:
                 vacancy_uuid = uuid.UUID(str(job_vacancy_id))
@@ -111,6 +113,7 @@ class VacancyCandidateRepository:
         )
 
     async def update(self, vacancy_candidate: VacancyCandidate) -> VacancyCandidate:
+        self.db.add(vacancy_candidate)
         await self.db.commit()
         await self.db.refresh(vacancy_candidate)
         return vacancy_candidate
@@ -136,6 +139,29 @@ class VacancyCandidateRepository:
         )
         return result.scalar_one_or_none()
 
+    async def mark_eligibility_rejected(
+        self,
+        candidate_id: str | UUID,
+        vacancy_id: str | UUID,
+        company_id: str | UUID,
+        reason: str = "eligibility_failed",
+    ) -> bool:
+        """Talent pool: marca o VacancyCandidate como rejected quando o candidato
+        reprova pergunta eliminatoria de elegibilidade. Idempotente."""
+        vc = await self.get_by_vacancy_candidate_and_company(
+            vacancy_id, candidate_id, company_id
+        )
+        if not vc:
+            return False
+        if vc.status == "rejected":
+            return True
+        vc.previous_status = vc.status
+        vc.status = "rejected"
+        _note = f"[elegibilidade] reprovado em pergunta eliminatoria ({reason})"
+        vc.notes = f"{vc.notes}\n{_note}".strip() if vc.notes else _note
+        await self.update(vc)
+        return True
+
     async def list_awaiting_screening_for_vacancy(
         self,
         vacancy_id: str | UUID,
@@ -150,8 +176,8 @@ class VacancyCandidateRepository:
         """
         from sqlalchemy import and_
 
-        # TENANT-EXEMPT: dynamic builder — VacancyCandidate.company_id == company_id
-        # é appended conditionally below quando company_id passado.
+        # TENANT-EXEMPT: dynamic builder — genuinely optional. `is not None`
+        # prevents empty-string bypass while preserving None=absent semantic.
         query = (
             select(VacancyCandidate)
             .where(
@@ -166,7 +192,7 @@ class VacancyCandidateRepository:
             )
             .limit(limit)
         )
-        if company_id:
+        if company_id is not None:
             query = query.where(VacancyCandidate.company_id == company_id)
         result = await self.db.execute(query)
         return list(result.scalars().all())
@@ -236,6 +262,56 @@ class VacancyCandidateRepository:
                 "company_id is required (multi-tenancy invariant fail-closed)"
             )
         return company_id
+
+    async def list_candidate_ids_for_vacancy(
+        self, vacancy_id: str, company_id: str
+    ) -> list[str]:
+        """P0-1: candidate_ids vinculados a uma vaga (company-scoped, fail-closed).
+
+        Usado para escopar list_candidates por vaga (board do Kanban) reusando o
+        path `ids=` existente — board e candidates_count passam a ler a MESMA
+        fonte canônica (vacancy_candidates). Vaga sem links → lista vazia.
+        """
+        from sqlalchemy import text as sa_text
+        cid = self._require_company_id(company_id)
+        rows = await self.db.execute(
+            sa_text(
+                """
+                SELECT vc.candidate_id
+                FROM vacancy_candidates vc
+                WHERE vc.vacancy_id::text = :vid AND vc.company_id = :cid
+                ORDER BY vc.lia_score DESC NULLS LAST, vc.created_at DESC
+                """
+            ),
+            {"vid": vacancy_id, "cid": cid},
+        )
+        return [str(r[0]) for r in rows.fetchall()]
+
+    async def list_vc_map_for_vacancy(
+        self, vacancy_id: str, company_id: str
+    ) -> dict[str, dict]:
+        """Returns {candidate_id: {vc_id, match_score}} for all vacancy_candidates.
+
+        2.6: inclui match_score (vacancy_candidates.lia_score) para que o endpoint
+        de listagem de candidatos possa expor o score canônico por-vaga.
+        """
+        from sqlalchemy import text as sa_text
+        cid = self._require_company_id(company_id)
+        rows = await self.db.execute(
+            sa_text(
+                """
+                SELECT vc.candidate_id::text, vc.id::text, vc.lia_score, vc.source
+                FROM vacancy_candidates vc
+                WHERE vc.vacancy_id::text = :vid AND vc.company_id = :cid
+                ORDER BY vc.updated_at DESC
+                """
+            ),
+            {"vid": vacancy_id, "cid": cid},
+        )
+        return {
+            str(r[0]): {"vc_id": str(r[1]), "match_score": r[2], "vc_source": r[3]}
+            for r in rows.fetchall()
+        }
 
     async def list_for_talent_funnel(
         self,
@@ -363,6 +439,75 @@ class VacancyCandidateRepository:
             {"mp": match_percentage, "cid": candidate_id, "vid": vacancy_id},
         )
         await self.db.commit()
+
+    async def create_sourced(
+        self,
+        vacancy_id: str,
+        candidate_id: str,
+        company_id: str,
+        lia_score: float | None = None,
+        status: str = "sourced",
+        stage: str = "initial",
+        source: str = "local",
+        origin: str = "pipeline",
+    ) -> bool:
+        """P1-4: cria VacancyCandidate para candidato sourced automaticamente.
+        Usa ON CONFLICT DO NOTHING para ser idempotente (UniqueConstraint vacancy+candidate).
+        Multi-tenancy: company_id obrigatorio, fail-closed.
+        Retorna True se criou, False se ja existia."""
+        from sqlalchemy import text as sa_text
+        cid = self._require_company_id(company_id)
+        result = await self.db.execute(
+            sa_text("""
+                INSERT INTO vacancy_candidates
+                    (id, vacancy_id, candidate_id, company_id, status, stage,
+                     source, origin, lia_score, created_at, updated_at)
+                VALUES
+                    (gen_random_uuid(), :vacancy_id::uuid, :candidate_id::uuid,
+                     :company_id, :status, :stage, :source, :origin, :lia_score,
+                     NOW(), NOW())
+                ON CONFLICT (vacancy_id, candidate_id) DO NOTHING
+            """),
+            {
+                "vacancy_id": str(vacancy_id),
+                "candidate_id": str(candidate_id),
+                "company_id": cid,
+                "status": status,
+                "stage": stage,
+                "source": source,
+                "origin": origin,
+                "lia_score": lia_score,
+            },
+        )
+        return result.rowcount == 1
+
+    async def update_wsi_lia_score(
+        self,
+        candidate_id: str,
+        vacancy_id: str,
+        company_id: str,
+        lia_score: float,
+    ) -> int:
+        """P0-1: atualiza lia_score em vacancy_candidates após triagem WSI.
+
+        Multi-tenancy: company_id required, fail-closed via _require_company_id.
+        Retorna rowcount: 1 = atualizado, 0 = VacancyCandidate não encontrado.
+        Conversão de escala: wsi_final_score (0-10) × 10 = lia_score (0-100) — feita pelo caller.
+        """
+        from sqlalchemy import text as sa_text
+        cid = self._require_company_id(company_id)
+        result = await self.db.execute(
+            sa_text("""
+                UPDATE vacancy_candidates
+                SET lia_score = :score,
+                    updated_at = NOW()
+                WHERE candidate_id::text = :cid
+                  AND vacancy_id::text = :vid
+                  AND company_id = :company_id
+            """),
+            {"score": lia_score, "cid": candidate_id, "vid": vacancy_id, "company_id": cid},
+        )
+        return result.rowcount
 
     async def get_pool_benchmarks(
         self,
@@ -586,6 +731,171 @@ class VacancyCandidateRepository:
             else:
                 counts["pending"] += 1
         return counts
+
+
+    async def get_cv_score(
+        self,
+        vacancy_id: str,
+        candidate_id: str,
+        company_id: str,
+    ) -> float | None:
+        """Lê cv_score atual da VacancyCandidate row. None se não existe. Fail-closed."""
+        cid = self._require_company_id(company_id)
+        result = await self.db.execute(
+            sa_text("""
+                SELECT cv_score FROM vacancy_candidates
+                WHERE vacancy_id::text = :vid
+                  AND candidate_id::text = :cid
+                  AND company_id = :company_id
+                LIMIT 1
+            """),
+            {"vid": str(vacancy_id), "cid": str(candidate_id), "company_id": cid},
+        )
+        row = result.first()
+        if row is None:
+            return None
+        return row[0]  # cv_score (float or None)
+
+    async def update_score_breakdown(
+        self,
+        vacancy_id: str,
+        candidate_id: str,
+        company_id: str,
+        lia_score: float,
+        ai_analysis: dict,
+        screening_completed_at: str | None = None,
+    ) -> int:
+        """Persiste lia_score + ai_analysis (score_breakdown) pós-ranking canônico (2.3).
+
+        ai_analysis: dict com score_breakdown do RankingScoreBreakdown.to_dict().
+        screening_completed_at: ISO datetime string (opcional).
+        """
+        import json as _json
+        cid = self._require_company_id(company_id)
+        result = await self.db.execute(
+            sa_text("""
+                UPDATE vacancy_candidates
+                SET lia_score = :score,
+                    ai_analysis = :ai_analysis::jsonb,
+                    screening_completed_at = COALESCE(:screened_at::timestamp, screening_completed_at),
+                    updated_at = NOW()
+                WHERE vacancy_id::text = :vid
+                  AND candidate_id::text = :cid
+                  AND company_id = :company_id
+            """),
+            {
+                "score": lia_score,
+                "ai_analysis": _json.dumps(ai_analysis),
+                "screened_at": screening_completed_at,
+                "vid": str(vacancy_id),
+                "cid": str(candidate_id),
+                "company_id": cid,
+            },
+        )
+        return result.rowcount
+
+
+    async def update_qualification_matrix(
+        self,
+        vacancy_id: str,
+        candidate_id: str,
+        company_id: str,
+        qualification_matrix: dict,
+    ) -> int:
+        """3.2: JSONB merge — persiste qualification_matrix em ai_analysis."""
+        import json as _json
+        from sqlalchemy import text as sa_text
+        cid = self._require_company_id(company_id)
+        result = await self.db.execute(
+            sa_text("""
+                UPDATE vacancy_candidates
+                SET ai_analysis = COALESCE(ai_analysis, '{}'::jsonb)
+                                  || jsonb_build_object('qualification_matrix', :qm::jsonb),
+                    updated_at = NOW()
+                WHERE vacancy_id::text = :vid
+                  AND candidate_id::text = :cid
+                  AND company_id = :company_id
+            """),
+            {
+                "qm": _json.dumps(qualification_matrix),
+                "vid": str(vacancy_id),
+                "cid": str(candidate_id),
+                "company_id": cid,
+            },
+        )
+        return result.rowcount
+
+
+    async def update_screening_score(
+        self,
+        candidate_id: str,
+        vacancy_id: str,
+        company_id: str,
+        cv_score: float,
+        cv_fit_score: float,
+        sub_status: str,
+        ai_analysis_patch: dict | None = None,
+    ) -> int:
+        """Atualiza pontuação de triagem de CV em vacancy_candidates.
+
+        Multi-tenancy: company_id required, fail-closed via _require_company_id.
+        Retorna rowcount: 1 = atualizado, 0 = não encontrado.
+        """
+        from sqlalchemy import text as sa_text
+        from datetime import datetime, timezone
+        import json
+        cid = self._require_company_id(company_id)
+
+        result = await self.db.execute(
+            sa_text("""
+                SELECT id, ai_analysis
+                FROM vacancy_candidates
+                WHERE candidate_id::text = :cid
+                  AND vacancy_id::text = :vid
+                  AND company_id = :company_id
+                LIMIT 1
+            """),
+            {"cid": candidate_id, "vid": vacancy_id, "company_id": cid},
+        )
+        row = result.mappings().first()
+        if not row:
+            return 0
+
+        current_analysis = dict(row["ai_analysis"] or {})
+        if ai_analysis_patch:
+            current_analysis.update(ai_analysis_patch)
+        current_analysis["cv_screening"] = {
+            "rubric_score": cv_score,
+            "cv_fit_score": cv_fit_score,
+            "sub_status": sub_status,
+            "evaluated_at": datetime.now(timezone.utc).isoformat(),
+            "note": "WSI completo requer triagem conversacional",
+        }
+
+        update_result = await self.db.execute(
+            sa_text("""
+                UPDATE vacancy_candidates
+                SET cv_score = :cv_score,
+                    cv_fit_score = :cv_fit_score,
+                    sub_status = :sub_status,
+                    screening_completed_at = NOW(),
+                    ai_analysis = :ai_analysis,
+                    updated_at = NOW()
+                WHERE candidate_id::text = :cid
+                  AND vacancy_id::text = :vid
+                  AND company_id = :company_id
+            """),
+            {
+                "cv_score": cv_score,
+                "cv_fit_score": cv_fit_score,
+                "sub_status": sub_status,
+                "ai_analysis": json.dumps(current_analysis),
+                "cid": candidate_id,
+                "vid": vacancy_id,
+                "company_id": cid,
+            },
+        )
+        return update_result.rowcount
 
 
 def _is_uuid(value: str) -> bool:

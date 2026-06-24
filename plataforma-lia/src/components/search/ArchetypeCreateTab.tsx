@@ -6,6 +6,7 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { useAiPersona } from "@/hooks/company/use-ai-persona"
 
 export interface JobSearchResult {
   id: string
@@ -47,6 +48,8 @@ export function ArchetypeCreateTab({
   onCreateArchetypeFromDescription,
   onSearchJobsForArchetype,
 }: ArchetypeCreateTabProps) {
+  const { persona } = useAiPersona()
+  const personaName = persona?.name ?? "IA"
   return (
     <div className="space-y-3">
       <div className="flex gap-2">
@@ -197,7 +200,7 @@ function CreateFromJob({
                       </span>
                       {job.department && (
                         <>
-                          <span className="text-micro text-lia-text-disabled">
+                          <span className="text-micro text-lia-text-muted">
                             •
                           </span>
                           <span className="text-micro text-lia-text-tertiary">
@@ -207,7 +210,7 @@ function CreateFromJob({
                       )}
                       {job.seniority_level && (
                         <>
-                          <span className="text-micro text-lia-text-disabled">
+                          <span className="text-micro text-lia-text-muted">
                             •
                           </span>
                           <span className="text-micro text-lia-text-tertiary">
@@ -268,6 +271,8 @@ function CreateFromDescription({
   isCreatingArchetype,
   onCreateArchetypeFromDescription,
 }: CreateFromDescriptionProps) {
+  const { persona } = useAiPersona()
+  const personaName = persona?.name ?? "LIA"
   return (
     <div className="space-y-2">
       <p className="text-xs text-lia-text-secondary">
@@ -294,7 +299,7 @@ function CreateFromDescription({
         ) : (
           <>
             <Brain className="w-4 h-4 mr-1 text-wedo-cyan" />
-            Criar Arquétipo com LIA
+            {`Criar Arquétipo com ${personaName}`}
           </>
         )}
       </Button>
@@ -303,7 +308,7 @@ function CreateFromDescription({
         <div className="flex items-start gap-2">
           <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-lia-text-primary" />
           <p className="text-xs text-lia-text-primary">
-            <strong>Dica:</strong> Descreva o perfil ideal e a LIA vai extrair automaticamente cargo,
+            <strong>Dica:</strong> Descreva o perfil ideal e `a ${personaName} vai extrair automaticamente` cargo,
             senioridade e skills para criar o arquétipo.
           </p>
         </div>

@@ -41,6 +41,21 @@ from lia_config.config import settings
 _celery_log = logging.getLogger(__name__)
 
 
+def _fix_redis_ssl_url(url: str) -> str:
+    """Adiciona ssl_cert_reqs=CERT_NONE a URLs rediss:// que não possuem o parâmetro.
+
+    Celery/kombu ≥5.x exige ssl_cert_reqs explícito em URLs rediss://.
+    Upstash e outros Redis TLS gerenciados não incluem o parâmetro por padrão,
+    causando ValueError na inicialização do beat/worker.
+    CERT_NONE é seguro aqui porque a criptografia TLS já está activa — apenas
+    dispensamos a verificação do certificado do servidor (adequado para Upstash).
+    """
+    if url and url.startswith("rediss://") and "ssl_cert_reqs" not in url:
+        sep = "&" if "?" in url else "?"
+        url = f"{url}{sep}ssl_cert_reqs=CERT_NONE"
+    return url
+
+
 def _get_celery_broker_url() -> str:
     """Retorna broker URL para o Celery a partir de BROKER_BACKEND.
 
@@ -57,7 +72,7 @@ def _get_celery_broker_url() -> str:
     # Override explícito — qualquer URL direta (máxima precedência)
     explicit = os.getenv("CELERY_BROKER_URL") or getattr(settings, "CELERY_BROKER_URL", None)
     if explicit:
-        return explicit
+        return _fix_redis_ssl_url(explicit)
 
     # Derivar URL a partir de BROKER_BACKEND (variável única de controle).
     # Lê diretamente do env var para que mudanças de runtime sejam refletidas.
@@ -66,7 +81,7 @@ def _get_celery_broker_url() -> str:
     backend = backend.lower().strip()
 
     if backend == "redis":
-        return settings.REDIS_URL
+        return _fix_redis_ssl_url(settings.REDIS_URL)
     elif backend == "rabbitmq":
         return settings.RABBITMQ_URL
     elif backend == "pubsub":
@@ -78,12 +93,12 @@ def _get_celery_broker_url() -> str:
             "Usando REDIS_URL como fallback temporário. "
             "Ver: docs/infra/gcp-migration-guide.md"
         )
-        return settings.REDIS_URL  # Fallback seguro — não quebra o worker
+        return _fix_redis_ssl_url(settings.REDIS_URL)  # Fallback seguro — não quebra o worker
     else:
         _celery_log.warning(
             "[celery_app] BROKER_BACKEND='%s' desconhecido. Usando redis (REDIS_URL).", backend
         )
-        return settings.REDIS_URL
+        return _fix_redis_ssl_url(settings.REDIS_URL)
 
 
 def _get_celery_result_backend() -> str:
@@ -100,8 +115,8 @@ def _get_celery_result_backend() -> str:
     """
     explicit = os.getenv("CELERY_RESULT_BACKEND") or getattr(settings, "CELERY_RESULT_BACKEND", None)
     if explicit:
-        return explicit
-    return settings.REDIS_URL
+        return _fix_redis_ssl_url(explicit)
+    return _fix_redis_ssl_url(settings.REDIS_URL)
 
 
 class LIATask(Task):
@@ -368,6 +383,12 @@ celery_app.conf.update(
             "schedule": crontab(minute=0),  # todo início de hora
             "options": {"expires": 3500},
         },
+        # GAP-07-001: process_queued_messages NÃO tinha caller — emails QUEUED ficavam presos
+        "communication-process-queued": {
+            "task": "communication.process_queued_messages",
+            "schedule": crontab(minute="*/5"),  # a cada 5 min
+            "options": {"expires": 280, "queue": "onboarding_low"},
+        },
         # Triagem WSI abandonada — a cada 4h (Gap B)
         "wsi-abandoned-check": {
             "task": "wsi.check_abandoned",
@@ -401,6 +422,13 @@ celery_app.conf.update(
             "task": "data.retention.run",
             "schedule": crontab(day_of_month=1, hour=2, minute=0),
             "options": {"expires": 7200},
+        },
+        # Phase 3b — Expurgo mensal de gravações de áudio (LGPD Art. 16)
+        # 1º de cada mês 05:00 UTC = 02:00 BRT. Após data-retention-monthly (02h UTC).
+        "expurgo-gravacoes-mensal": {
+            "task": "expurgo_gravacoes_audio",
+            "schedule": crontab(0, 5, day_of_month=1),  # 05:00 UTC = 02:00 BRT
+            "options": {"expires": 7200, "queue": "onboarding_low"},
         },
         # E4 — Hot-Reload de Agentes: verificar agents_registry.yaml a cada minuto
         "agent-registry-hot-reload": {

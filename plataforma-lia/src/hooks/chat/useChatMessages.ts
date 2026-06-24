@@ -1,4 +1,5 @@
 "use client";
+import type { ResponseBlock } from "@/types/rrp-blocks";
 
 /**
  * useChatMessages — Conversation init, history loading, message sending, and approval.
@@ -18,6 +19,7 @@ import { formatMessageTime, maskPII } from "./lia-chat-connection-types";
 
 import type { TransportMode } from "./lia-chat-connection-types";
 import { routeToCanonicalPage, CANONICAL_PAGES } from "@/lib/canonical-pages";
+import { getLiaContextSnapshot } from "@/lib/lia-context-store";
 
 export interface UseChatMessagesOptions {
   sessionId: string;
@@ -36,6 +38,8 @@ export interface UseChatMessagesOptions {
     domain?: string,
     context?: Record<string, unknown>,
     conversationId?: string | null,
+    // 0.3a: callback de fallback SSE->REST ao esgotar retries.
+    onExhausted?: () => void,
   ) => void;
   /** Task #383 (F2): tick contador de eventos WS — usado pelo watchdog que cai
    *  pra REST quando o `wsSend` é aceito mas nenhum evento chega de volta. */
@@ -93,7 +97,15 @@ export function useChatMessages({
   const [isCreating, setIsCreating] = useState(false);
   const [isFetchingHistory, setIsFetchingHistory] = useState(false);
 
-  const onCompleteRef = { current: onMessageComplete };
+  // AUD-4 1b-c: ultima mensagem do usuario, p/ o replay de aprovacao HITL
+  // (sendApproval re-envia ela com approve_pending_id no transporte SSE).
+  const lastUserMessageRef = useRef<string>("");
+
+  // BUG-1 fix: useRef keeps callback stable across re-renders (object literal creates stale closure)
+  const onCompleteRef = useRef(onMessageComplete);
+  useEffect(() => {
+    onCompleteRef.current = onMessageComplete;
+  }, [onMessageComplete]);
 
   // Sync conversationId from WS events
   useEffect(() => {
@@ -136,7 +148,9 @@ export function useChatMessages({
           if (jobData.title) ctx.job_title = jobData.title;
           if (jobData.company_id) ctx.company_id = jobData.company_id;
           ctx.job_context = jobData;
-        } catch {}
+        } catch (error) {
+          console.warn("[useChatMessages] Failed to parse job context from DOM attribute", error)
+        }
       }
 
       const candidatesEl = document.querySelector("[data-candidates-context]");
@@ -148,9 +162,13 @@ export function useChatMessages({
           if (Array.isArray(candidatesData) && candidatesData.length > 0) {
             ctx.candidates = candidatesData;
           }
-        } catch {}
+        } catch (error) {
+          console.warn("[useChatMessages] Failed to parse candidates context from DOM attribute", error)
+        }
       }
     } catch {}
+    // GAP-02-001: merge pagination + modal state from lia-context-store
+    Object.assign(ctx, getLiaContextSnapshot());
     return ctx;
   }, []);
 
@@ -299,20 +317,31 @@ export function useChatMessages({
             typeof dataRec.ui_action_params === "object"
               ? (dataRec.ui_action_params as Record<string, unknown>)
               : undefined;
+          const _rbRaw =
+            dataRec.response_blocks ??
+            (dataRec.message_metadata as Record<string, unknown> | undefined)
+              ?.response_blocks;
+          const responseBlocks = Array.isArray(_rbRaw)
+            ? (_rbRaw as ResponseBlock[])
+            : undefined;
           const extras =
-            uiAction || uiActionParams
-              ? { ui_action: uiAction, ui_action_params: uiActionParams }
+            uiAction || uiActionParams || responseBlocks
+              ? {
+                  ui_action: uiAction,
+                  ui_action_params: uiActionParams,
+                  response_blocks: responseBlocks,
+                }
               : undefined;
           onCompleteRef.current?.(data.content, undefined, extras);
         } else if (!pendingAction?.awaiting_confirmation) {
           // JSON 2xx mas sem `content` e sem outro caminho de UI — antes desta
           // correção (Task #377) o spinner sumia e nenhuma bolha aparecia.
           onCompleteRef.current?.(
-            "A LIA não retornou uma resposta. Tente novamente.",
+            "A IA não retornou uma resposta. Tente novamente.",
           );
         }
       } catch {
-        onCompleteRef.current?.("Erro ao conectar com a LIA. Tente novamente.");
+        onCompleteRef.current?.("Erro ao conectar com a IA. Tente novamente.");
       } finally {
         // No caminho WS, o indicador é desligado pelo evento "message" do socket.
         // Aqui (REST) precisamos garantir que ele desliga ao final.
@@ -349,6 +378,7 @@ export function useChatMessages({
       // feito pelo evento "thinking", mas em REST/SSE (e até a primeira resposta
       // do WS chegar) o indicador ficava invisível, dando sensação de chat morto.
       setIsThinking?.(true);
+      lastUserMessageRef.current = content;
       const context: Record<string, unknown> = scope ? { scope } : {};
       if (conversationId) {
         context.conversation_id = conversationId;
@@ -369,6 +399,25 @@ export function useChatMessages({
       const pageContext = getPageContext();
       Object.assign(context, pageContext);
 
+      // SSE-e2e Fase C (2026-06-04): atrás da flag NEXT_PUBLIC_CHAT_TRANSPORT=sse,
+      // roteia o turno por SSE ponta-a-ponta (POST /chat/{id}/stream) para tokens +
+      // tool_started/finished ao vivo. Flag ausente/off = comportamento atual
+      // (WS/REST) 100% intocado. Reversível removendo a flag no Secret.
+      if (process.env.NEXT_PUBLIC_CHAT_TRANSPORT === "sse") {
+        sendMessageViaSSE(
+          sessionId,
+          content,
+          domain || "recruiter_assistant",
+          context,
+          conversationId,
+          // 0.3a: fallback de transporte — esgotou SSE, reenvia via REST.
+          () => {
+            void sendViaRest(content, domain || "recruiter_assistant", context);
+          },
+        );
+        return;
+      }
+
       if (isConnected && transportMode === "ws") {
         // Task #383 (F2): tira snapshot do tick ANTES do send. Se nenhum evento
         // WS chegar dentro do timeout, caímos pro REST + bolha de aviso.
@@ -388,7 +437,7 @@ export function useChatMessages({
           if (!wsEventTickRef || wsEventTickRef.current !== tickAtSend) return;
           // Caso contrário: o WS engoliu o send. Avisa o usuário e reenvia REST.
           onCompleteRef.current?.(
-            "Conexão instável com a LIA. Tentando novamente...",
+            "Conexão instável com a IA. Tentando novamente...",
           );
           void sendViaRest(content, domain, context);
         }, timeoutMs);
@@ -402,6 +451,10 @@ export function useChatMessages({
           domain || "recruiter_assistant",
           context,
           conversationId,
+          // 0.3a: fallback de transporte — esgotou SSE, reenvia via REST.
+          () => {
+            void sendViaRest(content, domain || "recruiter_assistant", context);
+          },
         );
         return;
       }
@@ -430,17 +483,56 @@ export function useChatMessages({
       const pending = hitlRef.current;
       if (!pending) return;
       hitlRef.current = null;
+      setHitlPending(null);
+
+      // AUD-4 1b-c: no transporte SSE, aprovar = re-enviar a mensagem original
+      // COM approve_pending_id -> o backend valida o pending desta sessao,
+      // libera o gate (set_hitl_approved) e a tool re-chamada executa. Rejeitar
+      // = registrar no /chat/action (audit), sem replay. WS mantem o sendRaw.
+      if (process.env.NEXT_PUBLIC_CHAT_TRANSPORT === "sse") {
+        if (approved) {
+          const original =
+            lastUserMessageRef.current || pending.description || "Confirmo.";
+          sendMessageViaSSE(
+            sessionId,
+            original,
+            "recruiter_assistant",
+            { ...getPageContext(), approve_pending_id: pending.pendingId },
+            conversationId,
+          );
+        } else {
+          void fetch(`/api/backend-proxy/chat/${sessionId}/action`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              type: "approval_response",
+              approved: false,
+              pending_id: pending.pendingId,
+              thread_id: pending.threadId,
+              session_id: sessionId,
+            }),
+          }).catch(() => {});
+        }
+        return;
+      }
+
+      // WS (transporte legado): protocolo approval_response via sendRaw.
       sendRaw({
         type: "approval_response",
         approved,
         thread_id: pending.threadId,
         pending_id: pending.pendingId,
       });
-      if (!approved) {
-        setHitlPending(null);
-      }
     },
-    [sendRaw, hitlRef, setHitlPending],
+    [
+      sendRaw,
+      hitlRef,
+      setHitlPending,
+      sessionId,
+      conversationId,
+      getPageContext,
+      sendMessageViaSSE,
+    ],
   );
 
   const initConversation = useCallback(
@@ -494,12 +586,29 @@ export function useChatMessages({
       const myToken = ++loadHistoryTokenRef.current;
       setIsFetchingHistory(true);
       try {
-        const res = await fetch(
-          `/api/backend-proxy/conversations/${id}?include_messages=true&message_limit=50`,
-        );
-        if (!res.ok) return [];
+        // Run messages + feedback in parallel — both are needed to restore full
+        // conversation state. Feedback is best-effort; we still return messages
+        // if the feedback call fails.
+        // BUG-8 fix: AbortSignal.timeout requires Chrome 103+/Safari 16+/Firefox 100+
+        const _abortTimeout = (ms: number): AbortSignal => {
+          if (typeof AbortSignal.timeout === "function") return AbortSignal.timeout(ms);
+          const ctrl = new AbortController();
+          setTimeout(() => ctrl.abort(), ms);
+          return ctrl.signal;
+        };
+        const [res, fbResRaw] = await Promise.allSettled([
+          fetch(
+            `/api/backend-proxy/conversations/${id}?include_messages=true&message_limit=50`,
+            { signal: _abortTimeout(12_000) },
+          ),
+          fetch(
+            `/api/backend-proxy/lia/feedback/by-conversation/${encodeURIComponent(id)}`,
+            { credentials: "include", signal: _abortTimeout(8_000) },
+          ),
+        ]);
+        if (res.status === "rejected" || !res.value.ok) return [];
         if (loadHistoryTokenRef.current !== myToken) return [];
-        const data = (await res.json()) as {
+        const data = (await res.value.json()) as {
           messages?: Array<{
             id: string;
             role: string;
@@ -514,15 +623,10 @@ export function useChatMessages({
           timestamp: formatMessageTime(m.created_at),
         }));
 
-        // Task #570 (audit gap F3): hydrate persisted thumbs/feedback so the
-        // UI restores per-message state across refreshes. Best-effort — if the
-        // feedback endpoint is unreachable we still return the messages.
+        // Hydrate feedback from parallel call result
         try {
-          const fbRes = await fetch(
-            `/api/backend-proxy/lia/feedback/by-conversation/${encodeURIComponent(id)}`,
-            { credentials: "include" },
-          );
-          if (fbRes.ok && loadHistoryTokenRef.current === myToken) {
+          const fbRes = fbResRaw.status === "fulfilled" ? fbResRaw.value : null;
+          if (fbRes && fbRes.ok && loadHistoryTokenRef.current === myToken) {
             const fbData = (await fbRes.json()) as {
               items?: Array<{
                 message_id: string;

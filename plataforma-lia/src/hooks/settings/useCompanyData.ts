@@ -67,8 +67,11 @@ async function fetchCultureProfile(companyId: string) {
   return data && data.notFound ? null : data;
 }
 
-async function fetchDepartments(): Promise<Department[]> {
-  const res = await fetch("/api/backend-proxy/company/departments");
+async function fetchDepartments(companyId?: string): Promise<Department[]> {
+  const url = companyId
+    ? `/api/backend-proxy/company/departments?company_id=${encodeURIComponent(companyId)}`
+    : "/api/backend-proxy/company/departments";
+  const res = await fetch(url);
   if (!res.ok) return [];
   const data = await res.json();
   if (!Array.isArray(data)) return [];
@@ -95,8 +98,11 @@ async function fetchDepartments(): Promise<Department[]> {
   }));
 }
 
-async function fetchApprovers(): Promise<Approver[]> {
-  const res = await fetch("/api/backend-proxy/company/approvers");
+async function fetchApprovers(companyId?: string): Promise<Approver[]> {
+  const url = companyId
+    ? `/api/backend-proxy/company/approvers?company_id=${encodeURIComponent(companyId)}`
+    : "/api/backend-proxy/company/approvers";
+  const res = await fetch(url);
   if (!res.ok) return [];
   const data = await res.json();
   if (!Array.isArray(data)) return [];
@@ -233,14 +239,16 @@ export function useCompanyData(): UseCompanyDataResult {
   });
 
   const { data: departmentsData, isLoading: departmentsLoading } = useQuery({
-    queryKey: ["company-departments"],
-    queryFn: fetchDepartments,
+    queryKey: ["company-departments", apiCompanyId],
+    queryFn: () => fetchDepartments(apiCompanyId ?? undefined),
+    enabled: !!apiCompanyId,
     staleTime: 60_000,
   });
 
   const { data: approversData, isLoading: approversLoading } = useQuery({
-    queryKey: ["company-approvers"],
-    queryFn: fetchApprovers,
+    queryKey: ["company-approvers", apiCompanyId],
+    queryFn: () => fetchApprovers(apiCompanyId ?? undefined),
+    enabled: !!apiCompanyId,
     staleTime: 60_000,
   });
 
@@ -436,7 +444,7 @@ export function useCompanyData(): UseCompanyDataResult {
     if (progress < 15) return "Conectando...";
     if (progress < 35) return "Descobrindo páginas...";
     if (progress < 60) return "Lendo conteúdo...";
-    if (progress < 95) return "LIA analisando...";
+    if (progress < 95) return "Analisando...";
     return "Concluído!";
   };
 
@@ -532,13 +540,13 @@ export function useCompanyData(): UseCompanyDataResult {
       setLiaAnalysisProgress(100);
       setLiaAnalysisStep("Concluido!");
       setHasCultureProfile(true);
-      setSuccessMessage("Analise LIA concluida com sucesso! Campos preenchidos automaticamente.");
+      setSuccessMessage("Análise concluída com sucesso! Campos preenchidos automaticamente.");
       setTimeout(() => setSuccessMessage(null), 4000);
       setTimeout(() => { setLiaAnalysisProgress(0); setLiaAnalysisStep(null); }, 2000);
     } catch (err) {
       setLiaAnalysisProgress(0);
       setLiaAnalysisStep(null);
-      setError(err instanceof Error ? err.message : "Erro ao analisar com LIA. Verifique a URL e tente novamente.");
+      setError(err instanceof Error ? err.message : "Erro ao analisar. Verifique a URL e tente novamente.");
       setTimeout(() => setError(null), 5000);
     } finally {
       if (progressInterval) clearInterval(progressInterval);

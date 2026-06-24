@@ -43,7 +43,7 @@ export async function listJobVacancies(status?: string, skip: number = 0, limit:
   const response = await fetchWithRetry(
     url,
     { headers: getAuthHeaders() },
-    { timeoutMs: 15000 },
+    { timeoutMs: 20000, attempts: 1 },
   )
 
   if (!response.ok) {
@@ -675,3 +675,45 @@ export async function updateJobOutcome(params: {
     return { success: false, error: String(error) }
   }
 }
+
+// ---------------------------------------------------------------------------
+// bulk archive / unarchive — arquivamento em lote de vagas
+// ---------------------------------------------------------------------------
+
+export interface BulkJobActionRequest {
+  job_ids: string[]
+}
+
+export interface BulkJobActionResponse {
+  total_requested: number
+  successful: number
+  failed: number
+  errors: Array<{ job_id: string; error_message: string }>
+}
+
+export async function archiveJobs(jobIds: string[]): Promise<BulkJobActionResponse> {
+  const response = await fetch("/api/backend-proxy/job-vacancies/bulk/archive", {
+    method: "POST",
+    headers: { ...getAuthHeaders(), "Content-Type": "application/json" },
+    body: JSON.stringify({ job_ids: jobIds } satisfies BulkJobActionRequest),
+  })
+  const payload = (await response.json().catch(() => ({}))) as BulkJobActionResponse
+  if (!response.ok) {
+    throw new Error((payload as unknown as Record<string, unknown>)?.detail as string || response.statusText || "Falha ao arquivar vagas")
+  }
+  return payload
+}
+
+export async function unarchiveJobs(jobIds: string[]): Promise<BulkJobActionResponse> {
+  const response = await fetch("/api/backend-proxy/job-vacancies/bulk/unarchive", {
+    method: "POST",
+    headers: { ...getAuthHeaders(), "Content-Type": "application/json" },
+    body: JSON.stringify({ job_ids: jobIds } satisfies BulkJobActionRequest),
+  })
+  const payload = (await response.json().catch(() => ({}))) as BulkJobActionResponse
+  if (!response.ok) {
+    throw new Error((payload as unknown as Record<string, unknown>)?.detail as string || response.statusText || "Falha ao desarquivar vagas")
+  }
+  return payload
+}
+

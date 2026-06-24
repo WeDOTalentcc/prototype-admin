@@ -76,7 +76,7 @@ class ConsumptionTrackingService:
             pipeline_id=_UUID(pipeline_id) if pipeline_id else None,
             actor_id=actor_id,
             search_session_id=search_session_id,
-            credits_consumed=0,
+            credits_consumed=1,  # 1 WeDOTalent credit per Apify enrichment
             cost_usd=cost_usd,
             cost_brl=round(cost_usd * rate, 4),
             exchange_rate=rate,

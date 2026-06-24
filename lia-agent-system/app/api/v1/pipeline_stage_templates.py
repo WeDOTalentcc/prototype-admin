@@ -13,6 +13,7 @@ Permissoes (decisao C Paulo 2026-05-20):
 from __future__ import annotations
 
 import logging
+from app.shared.errors import LIAInternalError
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -128,7 +129,7 @@ async def create_template(
     except Exception as e:
         await db.rollback()
         logger.exception("Failed to create pipeline stage template")
-        raise HTTPException(500, detail=f"Falha ao criar template: {e}")
+        raise LIAInternalError(f"Falha ao criar template: {e}")
 
 
 @router.put(
@@ -169,7 +170,7 @@ async def update_template(
     except Exception as e:
         await db.rollback()
         logger.exception("Failed to update pipeline stage template")
-        raise HTTPException(500, detail=f"Falha ao atualizar template: {e}")
+        raise LIAInternalError(f"Falha ao atualizar template: {e}")
 
 
 @router.delete(
@@ -240,4 +241,4 @@ async def customize_master(
     except Exception as e:
         await db.rollback()
         logger.exception("Failed to customize master pipeline stage template")
-        raise HTTPException(500, detail=f"Falha ao customizar master: {e}")
+        raise LIAInternalError(f"Falha ao customizar master: {e}")

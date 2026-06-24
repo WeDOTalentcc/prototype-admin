@@ -51,7 +51,7 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
               </div>
               <div>
                 <h2 className="text-xl font-semibold">{t('testLibrary.title')}</h2>
-                <p className="text-wedo-purple text-sm">{t('testLibrary.subtitle')}</p>
+                <p className="text-lia-text-muted text-sm">{t('testLibrary.subtitle')}</p>
               </div>
             </div>
             <button
@@ -75,7 +75,7 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
                 { icon: <Target className="w-4 h-4" />, label: t('testLibrary.catMarketingSales'), count: 20, color: 'text-lia-text-primary' },
                 { icon: <Building className="w-4 h-4" />, label: t('testLibrary.catAdministrative'), count: 10, color: 'text-lia-text-secondary' },
                 { icon: <Globe className="w-4 h-4" />, label: t('testLibrary.catLanguages'), count: 8, color: 'text-lia-text-primary' },
-                { icon: <Brain className="w-4 h-4 text-wedo-cyan" />, label: t('testLibrary.catSoftSkills'), count: 14, color: 'text-lia-text-primary' }
+                { icon: <Brain className="w-4 h-4 text-wedo-cyan-text" />, label: t('testLibrary.catSoftSkills'), count: 14, color: 'text-lia-text-primary' }
               ].map((category) => (
                 <button
                   key={category.label}
@@ -128,7 +128,7 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
                 {t('testLibrary.designUXTests')}
               </h3>
               <p className="text-sm text-lia-text-secondary">
-                {t('testLibrary.testsAvailableApproval', { count: 18, percent: 85 })}
+                {t('testLibrary.testsAvailableApproval', { count: 18, percent: "85" })}
               </p>
             </div>
 
@@ -511,7 +511,7 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
               </span>
               <span className="flex items-center gap-1">
                 <TrendingUp className="w-3 h-3" />
-                {t('testLibrary.successRateFooter', { percent: 87 })}
+                {t('testLibrary.successRateFooter', { percent: "87" })}
               </span>
             </div>
             <div className="flex gap-2">

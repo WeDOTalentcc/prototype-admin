@@ -137,7 +137,7 @@ export function KanbanColumnConfigPanel({
                     {CATEGORY_KEYS[category] ? t(CATEGORY_KEYS[category]) : category}
                   </h4>
                   <span
-                    className={`text-micro px-2 py-0.5 rounded-full ${visibleCount > 0 ? 'bg-lia-btn-primary-bg/10 text-lia-text-primary' : 'bg-lia-interactive-active text-lia-text-disabled'}`}
+                    className={`text-micro px-2 py-0.5 rounded-full ${visibleCount > 0 ? 'bg-lia-btn-primary-bg/10 text-lia-text-primary' : 'bg-lia-interactive-active text-lia-text-muted'}`}
                   >
                     {visibleCount}/{columns.length}
                   </span>

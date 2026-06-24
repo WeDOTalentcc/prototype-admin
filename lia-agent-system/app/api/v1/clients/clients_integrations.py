@@ -18,6 +18,7 @@ from ._shared import (
 )
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+from app.shared.errors import LIAError
 
 router = APIRouter()
 
@@ -66,7 +67,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error listing integrations: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to list integrations: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/{client_id}/integrations", status_code=201, summary="Add integration", response_model=None)
@@ -104,7 +105,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error adding integration: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to add integration: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.put("/{client_id}/integrations/{integration_id}", summary="Update integration", response_model=None)
@@ -148,7 +149,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error updating integration: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to update integration: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.delete("/{client_id}/integrations/{integration_id}", summary="Remove integration", response_model=None)
@@ -179,7 +180,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error removing integration: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to remove integration: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/{client_id}/integrations/{integration_id}/sync", summary="Sync integration", response_model=None)
@@ -219,7 +220,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error syncing integration: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to sync integration: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/{client_id}/integrations/sync-all", summary="Sync all integrations", response_model=None)
@@ -254,4 +255,4 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error syncing all integrations: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to sync integrations: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")

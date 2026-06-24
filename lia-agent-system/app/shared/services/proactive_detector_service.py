@@ -16,10 +16,22 @@ candidato-especificas).
 DETECTORS:
 - CompanyProfileCompletionDetector - profile_completion_percentage < 80
 - DSROverdueDetector              - sla_deadline em < 24h e status pending
-- CandidateStaleDetector          - 7+ dias sem feedback no candidato
+- CandidateStaleDetector          - 5+ dias sem feedback no candidato
 - WorkforcePlanStaleDetector      - last_updated > 30 dias atras
-- AICreditsLowDetector            - balance < 20% do plano contratado
-- PipelineStuckDetector           - vagas em screening > 14 dias
+- AICreditsLowDetector            - balance < 20% (+ forecast de esgotamento)
+- PipelineStuckDetector           - vagas em screening > 10 dias
+- ConversionRateLowDetector       - taxa contratados/total abaixo do threshold
+- SlaNearExpirationDetector       - >= threshold% do SLA (RecruitmentStage.sla_hours)
+- InterviewNotConfirmedDetector   - entrevista proxima com confirmation pending
+- FeedbackPendingDetector         - entrevista realizada sem feedback
+- OffersPendingLongDetector       - proposta enviada sem resposta ha N horas
+- TasksOverdueDetector            - N+ tarefas pendentes alem do prazo
+- EmailDeliveryLowDetector        - taxa de entrega de email < threshold (MessageQueue)
+- IdealCandidateFoundDetector     - candidato com match >= threshold recente
+- AtsSyncFailedDetector           - N+ jobs de sync ATS FAILED recentes
+
+Task #1296 fechou as 9 regras orfas do catalogo (matriz 15/15 em
+docs/runbooks/alert-config-single-source.md).
 
 PER-TENANT THRESHOLDS (Wave 2 P0.A1+A2 fix, 2026-05-22):
 ========================================================
@@ -81,6 +93,14 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
+# Fonte-única-da-verdade de defaults + helper de canais (Task #1295). Tanto os
+# defaults do detector quanto o MonitoringLoop derivam deste registro, que
+# espelha 1-1 o catálogo da UI (DEFAULT_ALERT_PREFERENCES).
+from app.shared.services.alert_config_resolver import (  # noqa: E402
+    ALERT_CONFIG_DEFAULTS,
+    channels_to_list,
+)
+
 
 # ---------------------------------------------------------------------------
 # Severity normalization
@@ -118,6 +138,16 @@ _DETECTOR_ALERT_TYPE_MAP: dict[str, str] = {
     "workforce_plan_stale": "workforce_plan_stale",
     "ai_credits_low": "credits_low",
     "pipeline_stuck": "candidates_stagnant",
+    # Task #1296 — 9 regras órfãs do catálogo ganharam detector canônico.
+    "conversion_rate_low": "conversion_rate_low",
+    "sla_near_expiration": "sla_near_expiration",
+    "interview_not_confirmed": "interview_not_confirmed",
+    "feedback_pending": "feedback_pending",
+    "offers_pending_long": "offers_pending_long",
+    "tasks_overdue": "tasks_overdue",
+    "email_delivery_low": "email_delivery_low",
+    "ideal_candidate_found": "ideal_candidate_found",
+    "ats_sync_failed": "ats_sync_failed",
 }
 
 
@@ -140,27 +170,31 @@ class TenantThresholdOverride:
 
 
 # Per-detector default override quando tenant nao tem AlertPreference row.
-# Threshold semantica deve bater com classe constant correspondente.
-_DEFAULT_TENANT_OVERRIDE: dict[str, TenantThresholdOverride] = {
-    "company_profile_completion": TenantThresholdOverride(
-        is_enabled=True, threshold=80, cooldown_hours=24 * 7
-    ),
-    "dsr_overdue": TenantThresholdOverride(
-        is_enabled=True, threshold=24, cooldown_hours=12
-    ),
-    "candidate_stale": TenantThresholdOverride(
-        is_enabled=True, threshold=7, cooldown_hours=24
-    ),
-    "workforce_plan_stale": TenantThresholdOverride(
-        is_enabled=True, threshold=30, cooldown_hours=24 * 14
-    ),
-    "ai_credits_low": TenantThresholdOverride(
-        is_enabled=True, threshold=20, cooldown_hours=12
-    ),
-    "pipeline_stuck": TenantThresholdOverride(
-        is_enabled=True, threshold=14, cooldown_hours=24 * 3
-    ),
-}
+#
+# Task #1295: derivado da fonte-única-da-verdade ALERT_CONFIG_DEFAULTS (que
+# espelha o catálogo da UI) via _DETECTOR_ALERT_TYPE_MAP. Antes os valores eram
+# literais e divergiam da UI (candidate_stale=7 vs 5, pipeline_stuck=14 vs 10).
+# O sentinel test_alert_config_single_source trava qualquer drift futuro.
+def _build_default_tenant_overrides() -> dict[str, TenantThresholdOverride]:
+    out: dict[str, TenantThresholdOverride] = {}
+    for detector_name, alert_type in _DETECTOR_ALERT_TYPE_MAP.items():
+        d = ALERT_CONFIG_DEFAULTS.get(alert_type)
+        if d is None:
+            out[detector_name] = TenantThresholdOverride()
+            continue
+        out[detector_name] = TenantThresholdOverride(
+            is_enabled=d.is_enabled,
+            threshold=d.threshold,
+            cooldown_hours=d.cooldown_hours,
+            channels=dict(d.channels),
+            source="default",
+        )
+    return out
+
+
+_DEFAULT_TENANT_OVERRIDE: dict[str, TenantThresholdOverride] = (
+    _build_default_tenant_overrides()
+)
 
 
 def _emit_threshold_source_metric(alert_type: str, source: str) -> None:
@@ -443,14 +477,14 @@ class CandidateStaleDetector(BaseDetector):
     """Trigger quando candidato esta N+ dias sem feedback / mudanca de estagio.
 
     Per-tenant override (AlertPreference.alert_type='candidate_no_interaction'):
-    - threshold: dias sem update para considerar stale (default 7)
+    - threshold: dias sem update para considerar stale (default 5, espelha UI)
     - cooldown_hours: dedup gate (default 24)
     """
 
     name = "candidate_stale"
     severity = "medium"
 
-    STALE_DAYS = 7
+    STALE_DAYS = 5
     BATCH_SIZE = 50
 
     async def detect(self, db, company_id, override=None):
@@ -645,15 +679,17 @@ class AICreditsLowDetector(BaseDetector):
             logger.warning("AICreditsLowDetector import failed: %s", exc)
             return []
 
-        try:
-            company_uuid = UUID(company_id)
-        except (ValueError, TypeError, AttributeError):
+        # AiCreditsBalance.company_id é String(64) (Python-owned table) — filtrar
+        # como string canônica. Converter p/ UUID quebrava o operador varchar=uuid
+        # no Postgres, caía no except e o detector NUNCA disparava (matava também
+        # o forecast preditivo). Ver libs/models/lia_models/ai_consumption.py.
+        if not isinstance(company_id, str) or not company_id:
             return []
 
         try:
             result = await db.execute(
                 select(AiCreditsBalance).where(
-                    AiCreditsBalance.company_id == company_uuid
+                    AiCreditsBalance.company_id == company_id
                 )
             )
             balance = result.scalar_one_or_none()
@@ -684,6 +720,29 @@ class AICreditsLowDetector(BaseDetector):
         remaining_pct = max(0.0, 100 - usage_pct)
         # Escalation: >=95% saldo critico -> high; >=alert_at -> medium.
         effective_severity = "high" if usage_pct >= 95 else "medium"
+
+        # Vinculacao preditiva (Task #1296): projeta a data de esgotamento a
+        # partir do consumo historico (AiConsumption). Fail-defensive: sem
+        # historico suficiente, o hint segue SEM forecast (nunca inventa data).
+        forecast = await self._forecast_exhaustion(
+            db, company_id, monthly_limit, current_usage
+        )
+        forecast_msg = ""
+        action_params: dict[str, Any] = {
+            "path": "/configuracoes/ai-credits",
+            "usage_pct": round(usage_pct, 1),
+        }
+        if forecast:
+            action_params["projected_exhaustion_date"] = forecast[
+                "projected_exhaustion_date"
+            ]
+            action_params["days_left"] = forecast["days_left"]
+            forecast_msg = (
+                f" No ritmo atual, o saldo deve zerar em "
+                f"~{forecast['days_left']:.0f} dia(s) "
+                f"({forecast['projected_exhaustion_date']})."
+            )
+
         return [
             {
                 "title": "AI Credits baixo",
@@ -691,12 +750,10 @@ class AICreditsLowDetector(BaseDetector):
                     f"Saldo de IA em {remaining_pct:.0f}% "
                     f"({current_usage}/{monthly_limit} tokens). "
                     "Considere upgrade do plano antes do saldo zerar."
+                    + forecast_msg
                 ),
                 "action": "navigate_to",
-                "action_params": {
-                    "path": "/configuracoes/ai-credits",
-                    "usage_pct": round(usage_pct, 1),
-                },
+                "action_params": action_params,
                 "severity": effective_severity,
                 "expires_in_hours": cfg.cooldown_hours or 12,
                 "related_job_id": None,
@@ -705,19 +762,68 @@ class AICreditsLowDetector(BaseDetector):
             }
         ]
 
+    async def _forecast_exhaustion(
+        self, db, company_id, monthly_limit, current_usage
+    ):
+        """Projeta a data de esgotamento do saldo a partir do consumo historico.
+
+        Le AiConsumption.total_tokens dos ultimos FORECAST_WINDOW_DAYS, calcula
+        o burn rate diario medio e projeta quantos dias ate current_usage
+        atingir monthly_limit. Fail-defensive: retorna None se nao houver
+        historico (canonical-fix: NUNCA inventa uma data de esgotamento).
+        """
+        forecast_window_days = 14
+        try:
+            from sqlalchemy import func, select
+
+            from app.models.ai_consumption import AiConsumption
+        except Exception as exc:
+            logger.debug("AICredits forecast import failed: %s", exc)
+            return None
+
+        cutoff = datetime.utcnow() - timedelta(days=forecast_window_days)
+        try:
+            consumed = await db.scalar(
+                select(
+                    func.coalesce(func.sum(AiConsumption.total_tokens), 0)
+                ).where(
+                    AiConsumption.company_id == company_id,
+                    AiConsumption.created_at >= cutoff,
+                )
+            )
+        except Exception as exc:
+            logger.debug("AICredits forecast query failed: %s", exc)
+            return None
+
+        consumed = int(consumed or 0)
+        if consumed <= 0:
+            return None
+        daily_burn = consumed / forecast_window_days
+        if daily_burn <= 0:
+            return None
+
+        remaining = max(0, int(monthly_limit) - int(current_usage))
+        days_left = remaining / daily_burn
+        exhaustion = datetime.utcnow() + timedelta(days=days_left)
+        return {
+            "days_left": round(days_left, 1),
+            "projected_exhaustion_date": exhaustion.date().isoformat(),
+            "daily_burn_tokens": int(daily_burn),
+        }
+
 
 class PipelineStuckDetector(BaseDetector):
     """Trigger quando vagas estao paradas em screening > N dias.
 
     Per-tenant override (AlertPreference.alert_type='candidates_stagnant'):
-    - threshold: dias parados para considerar stuck (default 14)
+    - threshold: dias parados para considerar stuck (default 10, espelha UI)
     - cooldown_hours: dedup gate (default 24*3=72)
     """
 
     name = "pipeline_stuck"
     severity = "medium"
 
-    STUCK_DAYS = 14
+    STUCK_DAYS = 10
 
     async def detect(self, db, company_id, override=None):
         cfg = self._resolve_override(override)
@@ -732,9 +838,11 @@ class PipelineStuckDetector(BaseDetector):
             logger.warning("PipelineStuckDetector import failed: %s", exc)
             return []
 
-        try:
-            company_uuid = UUID(company_id)
-        except ValueError:
+        # JobVacancy.company_id é String(255) (Python-owned table) — filtrar como
+        # string canônica. Converter p/ UUID quebrava o operador varchar=uuid no
+        # Postgres, caía no except e o detector NUNCA disparava (mesmo bug do
+        # AICreditsLowDetector, Task #1296/#1302). Ver lia_models/job_vacancy.py.
+        if not isinstance(company_id, str) or not company_id:
             return []
 
         stuck_days = cfg.threshold if cfg.threshold is not None else self.STUCK_DAYS
@@ -743,7 +851,7 @@ class PipelineStuckDetector(BaseDetector):
         try:
             result = await db.execute(
                 select(JobVacancy).where(
-                    JobVacancy.company_id == company_uuid,
+                    JobVacancy.company_id == company_id,
                     JobVacancy.status.in_(["screening", "triagem", "in_progress"]),
                     JobVacancy.updated_at <= cutoff,
                 ).limit(10)
@@ -777,6 +885,845 @@ class PipelineStuckDetector(BaseDetector):
         ]
 
 
+class ConversionRateLowDetector(BaseDetector):
+    """Trigger quando a taxa de conversao do funil cai abaixo do threshold (%).
+
+    Per-tenant override (AlertPreference.alert_type='conversion_rate_low'):
+    - threshold: taxa minima de conversao (%) aceitavel (default 2). Conversao =
+      contratados / total de candidatos adicionados na janela.
+    - cooldown_hours: dedup gate (default 48).
+
+    Janela: candidatos com created_at nos ultimos WINDOW_DAYS. Exige amostra
+    minima (MIN_SAMPLE) para evitar ruido em funil pequeno (sem fake alert).
+    """
+
+    name = "conversion_rate_low"
+    severity = "medium"
+
+    WINDOW_DAYS = 90
+    MIN_SAMPLE = 20
+
+    async def detect(self, db, company_id, override=None):
+        cfg = self._resolve_override(override)
+        if not cfg.is_enabled:
+            return []
+        if not company_id:
+            return []
+
+        try:
+            from sqlalchemy import func, select
+
+            from lia_models.candidate import VacancyCandidate
+        except Exception as exc:
+            logger.warning("ConversionRateLowDetector import failed: %s", exc)
+            return []
+
+        cutoff = datetime.utcnow() - timedelta(days=self.WINDOW_DAYS)
+        try:
+            total = await db.scalar(
+                select(func.count(VacancyCandidate.id)).where(
+                    VacancyCandidate.company_id == company_id,
+                    VacancyCandidate.created_at >= cutoff,
+                )
+            )
+            hired = await db.scalar(
+                select(func.count(VacancyCandidate.id)).where(
+                    VacancyCandidate.company_id == company_id,
+                    VacancyCandidate.created_at >= cutoff,
+                    VacancyCandidate.status == "hired",
+                )
+            )
+        except Exception as exc:
+            logger.debug("ConversionRateLowDetector query failed: %s", exc)
+            return []
+
+        total = int(total or 0)
+        hired = int(hired or 0)
+        if total < self.MIN_SAMPLE:
+            return []
+
+        rate = (hired / total) * 100
+        threshold = cfg.threshold if cfg.threshold is not None else 2
+        if rate >= threshold:
+            return []
+
+        return [
+            {
+                "title": f"Taxa de conversao baixa ({rate:.1f}%)",
+                "message": (
+                    f"Apenas {hired} de {total} candidatos dos ultimos "
+                    f"{self.WINDOW_DAYS} dias foram contratados "
+                    f"({rate:.1f}%, abaixo de {threshold}%). A LIA pode revisar "
+                    "gargalos do funil e sugerir ajustes de triagem."
+                ),
+                "action": "navigate_to_candidates",
+                "action_params": {
+                    "conversion_rate": round(rate, 1),
+                    "window_days": self.WINDOW_DAYS,
+                    "hired": hired,
+                    "total": total,
+                },
+                "severity": self.severity,
+                "expires_in_hours": cfg.cooldown_hours or 48,
+                "related_job_id": None,
+                "related_candidate_id": None,
+                "channels": cfg.channels or {},
+            }
+        ]
+
+
+class SlaNearExpirationDetector(BaseDetector):
+    """Trigger quando candidatos atingem >= threshold% do SLA na etapa atual.
+
+    Vinculacao preditiva (Task #1296): o SLA vem de RecruitmentStage.sla_hours
+    (config real por etapa/tenant), NAO de constante hardcoded. Para cada
+    VacancyCandidate ativo, calcula elapsed = now - stage_entered_at e compara
+    com o sla_hours da etapa. Conta quem esta entre threshold% e 100% (perto de
+    estourar, ainda dentro do prazo).
+
+    Vinculacao robusta por id (Task #1303): a etapa do candidato e resolvida por
+    VacancyCandidate.recruitment_stage_id (join estavel por identificador) quando
+    presente; o match por NOME so e usado como fallback para registros legados
+    sem o vinculo. Isso evita que divergencias de nomenclatura (acentuacao,
+    maiusculas, renomeacao) silenciosamente desliguem o alerta.
+
+    Per-tenant override (AlertPreference.alert_type='sla_near_expiration'):
+    - threshold: % do SLA decorrido para alertar (default 80).
+    - cooldown_hours: dedup gate (default 12).
+    """
+
+    name = "sla_near_expiration"
+    severity = "high"
+
+    TERMINAL_STATUSES = ("hired", "rejected", "not_selected", "cancelled")
+    MAX_CANDIDATES = 500
+
+    async def detect(self, db, company_id, override=None):
+        cfg = self._resolve_override(override)
+        if not cfg.is_enabled:
+            return []
+        if not company_id:
+            return []
+
+        try:
+            from sqlalchemy import select
+
+            from lia_models.candidate import VacancyCandidate
+            from lia_models.recruitment_stages import RecruitmentStage
+        except Exception as exc:
+            logger.warning("SlaNearExpirationDetector import failed: %s", exc)
+            return []
+
+        threshold = cfg.threshold if cfg.threshold is not None else 80
+        try:
+            stage_rows = await db.execute(
+                select(
+                    RecruitmentStage.id,
+                    RecruitmentStage.name,
+                    RecruitmentStage.sla_hours,
+                ).where(
+                    RecruitmentStage.company_id == company_id,
+                    RecruitmentStage.sla_hours.isnot(None),
+                )
+            )
+            # Task #1303: index the SLA both by stage id (robust, preferred) and
+            # by name (legacy fallback for rows without recruitment_stage_id).
+            sla_by_stage_id: dict[str, int] = {}
+            sla_by_stage: dict[str, int] = {}
+            for stage_id, name, sla in stage_rows.all():
+                if not sla or int(sla) <= 0:
+                    continue
+                hours = int(sla)
+                if stage_id is not None:
+                    sla_by_stage_id[str(stage_id)] = hours
+                if name:
+                    sla_by_stage[name] = hours
+        except Exception as exc:
+            logger.debug("SlaNearExpirationDetector stage query failed: %s", exc)
+            return []
+
+        if not sla_by_stage_id and not sla_by_stage:
+            # Tenant nao configurou SLA por etapa: nada a checar (sem fake).
+            return []
+
+        try:
+            cand_rows = await db.execute(
+                select(VacancyCandidate)
+                .where(
+                    VacancyCandidate.company_id == company_id,
+                    VacancyCandidate.stage_entered_at.isnot(None),
+                    ~VacancyCandidate.status.in_(self.TERMINAL_STATUSES),
+                )
+                .limit(self.MAX_CANDIDATES)
+            )
+            candidates = list(cand_rows.scalars().all())
+        except Exception as exc:
+            logger.debug(
+                "SlaNearExpirationDetector candidate query failed: %s", exc
+            )
+            return []
+
+        now = datetime.utcnow()
+        near = []
+        for cand in candidates:
+            # Prefer the structural stage link (Task #1303); fall back to the
+            # textual stage name only for legacy rows without the id binding.
+            sla_hours = None
+            stage_id = getattr(cand, "recruitment_stage_id", None)
+            if stage_id is not None:
+                sla_hours = sla_by_stage_id.get(str(stage_id))
+            if not sla_hours:
+                sla_hours = sla_by_stage.get(getattr(cand, "stage", None))
+            if not sla_hours:
+                continue
+            entered = getattr(cand, "stage_entered_at", None)
+            if entered is None:
+                continue
+            elapsed_h = (now - entered).total_seconds() / 3600
+            pct = (elapsed_h / sla_hours) * 100
+            if threshold <= pct < 100:
+                near.append(cand)
+
+        if not near:
+            return []
+
+        return [
+            {
+                "title": f"{len(near)} candidato(s) perto do limite de SLA",
+                "message": (
+                    f"{len(near)} candidato(s) ja consumiram {threshold}%+ do "
+                    "prazo (SLA) na etapa atual. Aja antes do vencimento para "
+                    "nao perder talentos qualificados."
+                ),
+                "action": "navigate_to_candidates_filtered",
+                "action_params": {
+                    "ids": [str(c.candidate_id) for c in near[:5]],
+                    "reason": "sla_near_expiration",
+                },
+                "severity": self.severity,
+                "expires_in_hours": cfg.cooldown_hours or 12,
+                "related_job_id": None,
+                "related_candidate_id": (
+                    str(near[0].candidate_id) if near else None
+                ),
+                "channels": cfg.channels or {},
+            }
+        ]
+
+
+class InterviewNotConfirmedDetector(BaseDetector):
+    """Trigger para entrevistas proximas sem confirmacao do candidato.
+
+    Per-tenant override (AlertPreference.alert_type='interview_not_confirmed'):
+    - threshold: janela (horas) antes do start_time para lembrar (default 24).
+    - cooldown_hours: dedup gate (default 12).
+
+    Considera Interview.confirmation_status=='pending', status ativo, e
+    start_time entre agora e agora+threshold horas.
+    """
+
+    name = "interview_not_confirmed"
+    severity = "high"
+
+    INACTIVE_STATUSES = ("cancelled", "completed", "no_show")
+
+    async def detect(self, db, company_id, override=None):
+        cfg = self._resolve_override(override)
+        if not cfg.is_enabled:
+            return []
+        if not company_id:
+            return []
+
+        try:
+            from sqlalchemy import select
+
+            from lia_models.interview import Interview
+        except Exception as exc:
+            logger.warning("InterviewNotConfirmedDetector import failed: %s", exc)
+            return []
+
+        threshold = cfg.threshold if cfg.threshold is not None else 24
+        now = datetime.utcnow()
+        window_end = now + timedelta(hours=threshold)
+        try:
+            rows = await db.execute(
+                select(Interview)
+                .where(
+                    Interview.company_id == company_id,
+                    Interview.confirmation_status == "pending",
+                    ~Interview.status.in_(self.INACTIVE_STATUSES),
+                    Interview.start_time >= now,
+                    Interview.start_time <= window_end,
+                )
+                .limit(50)
+            )
+            pending = list(rows.scalars().all())
+        except Exception as exc:
+            logger.debug("InterviewNotConfirmedDetector query failed: %s", exc)
+            return []
+
+        if not pending:
+            return []
+
+        first = pending[0]
+        return [
+            {
+                "title": f"{len(pending)} entrevista(s) sem confirmacao",
+                "message": (
+                    f"{len(pending)} entrevista(s) nas proximas {threshold}h ainda "
+                    "nao foram confirmadas pelo candidato. Reforce o lembrete "
+                    "para evitar no-show."
+                ),
+                "action": "navigate_to_interviews",
+                "action_params": {
+                    "ids": [str(i.id) for i in pending[:5]],
+                    "reason": "not_confirmed",
+                },
+                "severity": self.severity,
+                "expires_in_hours": cfg.cooldown_hours or 12,
+                "related_job_id": (
+                    str(first.job_vacancy_id)
+                    if getattr(first, "job_vacancy_id", None)
+                    else None
+                ),
+                "related_candidate_id": (
+                    str(first.candidate_id)
+                    if getattr(first, "candidate_id", None)
+                    else None
+                ),
+                "channels": cfg.channels or {},
+            }
+        ]
+
+
+class FeedbackPendingDetector(BaseDetector):
+    """Trigger para entrevistas realizadas ha threshold+ horas sem feedback.
+
+    Per-tenant override (AlertPreference.alert_type='feedback_pending'):
+    - threshold: horas apos a entrevista para cobrar feedback (default 48).
+    - cooldown_hours: dedup gate (default 24).
+
+    Default is_enabled=False (espelha a UI). Detecta Interview com end_time <
+    now-threshold, status nao cancelado, SEM InterviewFeedback e com feedback
+    JSON vazio.
+    """
+
+    name = "feedback_pending"
+    severity = "medium"
+
+    MAX_INTERVIEWS = 200
+
+    async def detect(self, db, company_id, override=None):
+        cfg = self._resolve_override(override)
+        if not cfg.is_enabled:
+            return []
+        if not company_id:
+            return []
+
+        try:
+            from sqlalchemy import select
+
+            from lia_models.interview import Interview, InterviewFeedback
+        except Exception as exc:
+            logger.warning("FeedbackPendingDetector import failed: %s", exc)
+            return []
+
+        threshold = cfg.threshold if cfg.threshold is not None else 48
+        cutoff = datetime.utcnow() - timedelta(hours=threshold)
+        try:
+            rows = await db.execute(
+                select(Interview)
+                .where(
+                    Interview.company_id == company_id,
+                    Interview.end_time < cutoff,
+                    ~Interview.status.in_(("cancelled",)),
+                )
+                .limit(self.MAX_INTERVIEWS)
+            )
+            past = list(rows.scalars().all())
+        except Exception as exc:
+            logger.debug("FeedbackPendingDetector query failed: %s", exc)
+            return []
+
+        if not past:
+            return []
+
+        interview_ids = [i.id for i in past]
+        try:
+            fb_rows = await db.execute(
+                select(InterviewFeedback.interview_id).where(
+                    InterviewFeedback.interview_id.in_(interview_ids)
+                )
+            )
+            with_feedback = {r for (r,) in fb_rows.all()}
+        except Exception as exc:
+            logger.debug(
+                "FeedbackPendingDetector feedback query failed: %s", exc
+            )
+            return []
+
+        pending = [
+            i
+            for i in past
+            if i.id not in with_feedback
+            and not (getattr(i, "feedback", None) or {})
+        ]
+        if not pending:
+            return []
+
+        first = pending[0]
+        return [
+            {
+                "title": f"{len(pending)} entrevista(s) sem feedback",
+                "message": (
+                    f"{len(pending)} entrevista(s) realizadas ha mais de "
+                    f"{threshold}h ainda nao tem feedback registrado. Colete a "
+                    "avaliacao enquanto a impressao esta fresca."
+                ),
+                "action": "navigate_to_interviews",
+                "action_params": {
+                    "ids": [str(i.id) for i in pending[:5]],
+                    "reason": "feedback_pending",
+                },
+                "severity": self.severity,
+                "expires_in_hours": cfg.cooldown_hours or 24,
+                "related_job_id": (
+                    str(first.job_vacancy_id)
+                    if getattr(first, "job_vacancy_id", None)
+                    else None
+                ),
+                "related_candidate_id": (
+                    str(first.candidate_id)
+                    if getattr(first, "candidate_id", None)
+                    else None
+                ),
+                "channels": cfg.channels or {},
+            }
+        ]
+
+
+class OffersPendingLongDetector(BaseDetector):
+    """Trigger para propostas enviadas ha threshold+ horas sem resposta.
+
+    Per-tenant override (AlertPreference.alert_type='offers_pending_long'):
+    - threshold: horas desde o envio sem resposta (default 72).
+    - cooldown_hours: dedup gate (default 24).
+
+    Detecta OfferProposal com sent_at < now-threshold, sem accepted_at/
+    declined_at e nao cancelada/expirada.
+    """
+
+    name = "offers_pending_long"
+    severity = "high"
+
+    async def detect(self, db, company_id, override=None):
+        cfg = self._resolve_override(override)
+        if not cfg.is_enabled:
+            return []
+        if not company_id:
+            return []
+
+        try:
+            from sqlalchemy import select
+
+            from lia_models.offer_proposal import OfferProposal
+        except Exception as exc:
+            logger.warning("OffersPendingLongDetector import failed: %s", exc)
+            return []
+
+        threshold = cfg.threshold if cfg.threshold is not None else 72
+        cutoff = datetime.utcnow() - timedelta(hours=threshold)
+        try:
+            rows = await db.execute(
+                select(OfferProposal)
+                .where(
+                    OfferProposal.company_id == company_id,
+                    OfferProposal.sent_at.isnot(None),
+                    OfferProposal.sent_at < cutoff,
+                    OfferProposal.accepted_at.is_(None),
+                    OfferProposal.declined_at.is_(None),
+                    ~OfferProposal.status.in_(
+                        ("accepted", "declined", "cancelled", "expired")
+                    ),
+                )
+                .limit(50)
+            )
+            pending = list(rows.scalars().all())
+        except Exception as exc:
+            logger.debug("OffersPendingLongDetector query failed: %s", exc)
+            return []
+
+        if not pending:
+            return []
+
+        first = pending[0]
+        return [
+            {
+                "title": f"{len(pending)} proposta(s) aguardando resposta",
+                "message": (
+                    f"{len(pending)} proposta(s) enviada(s) ha mais de "
+                    f"{threshold}h sem resposta do candidato. Faca follow-up "
+                    "antes que o candidato aceite outra oferta."
+                ),
+                "action": "navigate_to_offers",
+                "action_params": {
+                    "ids": [str(o.id) for o in pending[:5]],
+                    "reason": "pending_long",
+                },
+                "severity": self.severity,
+                "expires_in_hours": cfg.cooldown_hours or 24,
+                "related_job_id": (
+                    str(first.job_vacancy_id)
+                    if getattr(first, "job_vacancy_id", None)
+                    else None
+                ),
+                "related_candidate_id": (
+                    str(first.candidate_id)
+                    if getattr(first, "candidate_id", None)
+                    else None
+                ),
+                "channels": cfg.channels or {},
+            }
+        ]
+
+
+class TasksOverdueDetector(BaseDetector):
+    """Trigger quando ha threshold+ tarefas pendentes alem do prazo.
+
+    Per-tenant override (AlertPreference.alert_type='tasks_overdue'):
+    - threshold: numero MINIMO de tarefas atrasadas para alertar (default 5).
+      Interpretacao por-contagem (nao por-dias) para evitar 1 alerta por tarefa;
+      o tenant pode baixar para 1 se quiser sensibilidade maxima.
+    - cooldown_hours: dedup gate (default 8).
+
+    Atrasada = due_date < now e status == PENDING (nao completed/failed).
+    """
+
+    name = "tasks_overdue"
+    severity = "medium"
+
+    async def detect(self, db, company_id, override=None):
+        cfg = self._resolve_override(override)
+        if not cfg.is_enabled:
+            return []
+        if not company_id:
+            return []
+
+        try:
+            from sqlalchemy import func, select
+
+            from lia_models.task import Task, TaskStatus
+        except Exception as exc:
+            logger.warning("TasksOverdueDetector import failed: %s", exc)
+            return []
+
+        now = datetime.utcnow()
+        try:
+            overdue = await db.scalar(
+                select(func.count(Task.id)).where(
+                    Task.company_id == company_id,
+                    Task.due_date.isnot(None),
+                    Task.due_date < now,
+                    Task.status == TaskStatus.PENDING,
+                )
+            )
+        except Exception as exc:
+            logger.debug("TasksOverdueDetector query failed: %s", exc)
+            return []
+
+        overdue = int(overdue or 0)
+        threshold = cfg.threshold if cfg.threshold is not None else 5
+        if overdue < max(1, threshold):
+            return []
+
+        return [
+            {
+                "title": f"{overdue} tarefa(s) atrasada(s)",
+                "message": (
+                    f"{overdue} tarefa(s) pendente(s) ja passaram do prazo. "
+                    "Revise as pendencias para nao travar o pipeline."
+                ),
+                "action": "navigate_to_tasks",
+                "action_params": {"overdue_count": overdue, "filter": "overdue"},
+                "severity": self.severity,
+                "expires_in_hours": cfg.cooldown_hours or 8,
+                "related_job_id": None,
+                "related_candidate_id": None,
+                "channels": cfg.channels or {},
+            }
+        ]
+
+
+class EmailDeliveryLowDetector(BaseDetector):
+    """Trigger quando a taxa de entrega de email cai abaixo do threshold (%).
+
+    Per-tenant override (AlertPreference.alert_type='email_delivery_low'):
+    - threshold: taxa minima de entrega (%) aceitavel (default 80).
+    - cooldown_hours: dedup gate (default 24).
+
+    Fonte real: MessageQueue (channel='email') nos ultimos WINDOW_DAYS dias.
+    Taxa = (sent + delivered) / processados, onde processados exclui
+    pending/processing/cancelled. Exige amostra minima (MIN_SAMPLE) — sem
+    amostra suficiente, NAO alerta (canonical-fix: nada de metrica inventada).
+    """
+
+    name = "email_delivery_low"
+    severity = "medium"
+
+    WINDOW_DAYS = 7
+    MIN_SAMPLE = 10
+    DELIVERED_STATUSES = ("sent", "delivered")
+    FAILED_STATUSES = ("failed", "bounced", "blocked")
+
+    async def detect(self, db, company_id, override=None):
+        cfg = self._resolve_override(override)
+        if not cfg.is_enabled:
+            return []
+        if not company_id:
+            return []
+
+        try:
+            from sqlalchemy import func, select
+
+            from lia_models.message_queue import MessageQueue
+        except Exception as exc:
+            logger.warning("EmailDeliveryLowDetector import failed: %s", exc)
+            return []
+
+        cutoff = datetime.utcnow() - timedelta(days=self.WINDOW_DAYS)
+        processed_statuses = self.DELIVERED_STATUSES + self.FAILED_STATUSES
+        try:
+            processed = await db.scalar(
+                select(func.count(MessageQueue.id)).where(
+                    MessageQueue.company_id == company_id,
+                    MessageQueue.channel == "email",
+                    MessageQueue.created_at >= cutoff,
+                    MessageQueue.status.in_(processed_statuses),
+                )
+            )
+            delivered = await db.scalar(
+                select(func.count(MessageQueue.id)).where(
+                    MessageQueue.company_id == company_id,
+                    MessageQueue.channel == "email",
+                    MessageQueue.created_at >= cutoff,
+                    MessageQueue.status.in_(self.DELIVERED_STATUSES),
+                )
+            )
+        except Exception as exc:
+            logger.debug("EmailDeliveryLowDetector query failed: %s", exc)
+            return []
+
+        processed = int(processed or 0)
+        delivered = int(delivered or 0)
+        if processed < self.MIN_SAMPLE:
+            return []
+
+        rate = (delivered / processed) * 100
+        threshold = cfg.threshold if cfg.threshold is not None else 80
+        if rate >= threshold:
+            return []
+
+        return [
+            {
+                "title": f"Entrega de email baixa ({rate:.0f}%)",
+                "message": (
+                    f"Apenas {delivered} de {processed} emails dos ultimos "
+                    f"{self.WINDOW_DAYS} dias foram entregues ({rate:.0f}%, "
+                    f"abaixo de {threshold}%). Verifique reputacao de dominio e "
+                    "taxa de bounce."
+                ),
+                "action": "navigate_to_communications",
+                "action_params": {
+                    "delivery_rate": round(rate, 1),
+                    "window_days": self.WINDOW_DAYS,
+                    "delivered": delivered,
+                    "processed": processed,
+                },
+                "severity": self.severity,
+                "expires_in_hours": cfg.cooldown_hours or 24,
+                "related_job_id": None,
+                "related_candidate_id": None,
+                "channels": cfg.channels or {},
+            }
+        ]
+
+
+class IdealCandidateFoundDetector(BaseDetector):
+    """Trigger quando surge candidato com match >= threshold% recentemente.
+
+    Per-tenant override (AlertPreference.alert_type='ideal_candidate_found'):
+    - threshold: match minimo (%) para considerar ideal (default 90).
+    - cooldown_hours: dedup gate (default 0 = sem janela; usamos fallback de
+      expiracao para o hint nao ficar eterno).
+
+    Fonte: VacancyCandidate.match_percentage em candidatos ativos atualizados
+    nos ultimos WINDOW_DAYS (recem-encontrados/recem-pontuados).
+    """
+
+    name = "ideal_candidate_found"
+    severity = "medium"
+
+    WINDOW_DAYS = 7
+    ACTIVE_STATUSES = (
+        "sourced",
+        "screening",
+        "shortlisted",
+        "interview",
+        "approved",
+        "pending",
+    )
+
+    async def detect(self, db, company_id, override=None):
+        cfg = self._resolve_override(override)
+        if not cfg.is_enabled:
+            return []
+        if not company_id:
+            return []
+
+        try:
+            from sqlalchemy import select
+
+            from lia_models.candidate import VacancyCandidate
+        except Exception as exc:
+            logger.warning("IdealCandidateFoundDetector import failed: %s", exc)
+            return []
+
+        threshold = cfg.threshold if cfg.threshold is not None else 90
+        cutoff = datetime.utcnow() - timedelta(days=self.WINDOW_DAYS)
+        try:
+            rows = await db.execute(
+                select(VacancyCandidate)
+                .where(
+                    VacancyCandidate.company_id == company_id,
+                    VacancyCandidate.match_percentage.isnot(None),
+                    VacancyCandidate.match_percentage >= threshold,
+                    VacancyCandidate.status.in_(self.ACTIVE_STATUSES),
+                    VacancyCandidate.updated_at >= cutoff,
+                )
+                .limit(20)
+            )
+            ideal = list(rows.scalars().all())
+        except Exception as exc:
+            logger.debug("IdealCandidateFoundDetector query failed: %s", exc)
+            return []
+
+        if not ideal:
+            return []
+
+        first = ideal[0]
+        best = max((getattr(c, "match_percentage", 0) or 0) for c in ideal)
+        return [
+            {
+                "title": f"{len(ideal)} candidato(s) ideal(is) encontrado(s)",
+                "message": (
+                    f"{len(ideal)} candidato(s) com match >= {threshold}% "
+                    f"(melhor: {best:.0f}%) entraram no funil recentemente. "
+                    "Priorize o contato antes da concorrencia."
+                ),
+                "action": "navigate_to_candidates_filtered",
+                "action_params": {
+                    "ids": [str(c.candidate_id) for c in ideal[:5]],
+                    "reason": "ideal_match",
+                    "min_match": threshold,
+                },
+                "severity": self.severity,
+                "expires_in_hours": cfg.cooldown_hours or 24,
+                "related_job_id": (
+                    str(first.vacancy_id)
+                    if getattr(first, "vacancy_id", None)
+                    else None
+                ),
+                "related_candidate_id": (
+                    str(first.candidate_id)
+                    if getattr(first, "candidate_id", None)
+                    else None
+                ),
+                "channels": cfg.channels or {},
+            }
+        ]
+
+
+class AtsSyncFailedDetector(BaseDetector):
+    """Trigger quando ha threshold+ falhas de sync ATS recentes.
+
+    Per-tenant override (AlertPreference.alert_type='ats_sync_failed'):
+    - threshold: numero minimo de jobs de sync FAILED na janela (default 3).
+    - cooldown_hours: dedup gate (default 2).
+
+    ATSSyncJob nao tem company_id direto — escopo via ATSConnection
+    (connection_id -> ATSConnection.company_id). Janela: ultimas WINDOW_HOURS.
+    """
+
+    name = "ats_sync_failed"
+    severity = "high"
+
+    WINDOW_HOURS = 24
+
+    async def detect(self, db, company_id, override=None):
+        cfg = self._resolve_override(override)
+        if not cfg.is_enabled:
+            return []
+        if not company_id:
+            return []
+
+        try:
+            from sqlalchemy import func, select
+
+            from lia_models.ats_integration import (
+                ATSConnection,
+                ATSSyncJob,
+                SyncStatus,
+            )
+        except Exception as exc:
+            logger.warning("AtsSyncFailedDetector import failed: %s", exc)
+            return []
+
+        cutoff = datetime.utcnow() - timedelta(hours=self.WINDOW_HOURS)
+        try:
+            failed = await db.scalar(
+                select(func.count(ATSSyncJob.id))
+                .select_from(ATSSyncJob)
+                .join(
+                    ATSConnection,
+                    ATSConnection.id == ATSSyncJob.connection_id,
+                )
+                .where(
+                    ATSConnection.company_id == company_id,
+                    ATSSyncJob.status == SyncStatus.FAILED,
+                    ATSSyncJob.created_at >= cutoff,
+                )
+            )
+        except Exception as exc:
+            logger.debug("AtsSyncFailedDetector query failed: %s", exc)
+            return []
+
+        failed = int(failed or 0)
+        threshold = cfg.threshold if cfg.threshold is not None else 3
+        if failed < max(1, threshold):
+            return []
+
+        return [
+            {
+                "title": f"{failed} falha(s) de sincronizacao ATS",
+                "message": (
+                    f"{failed} job(s) de sincronizacao com o ATS falharam nas "
+                    f"ultimas {self.WINDOW_HOURS}h. Verifique credenciais e "
+                    "conectividade da integracao."
+                ),
+                "action": "navigate_to_integrations",
+                "action_params": {
+                    "failed_count": failed,
+                    "window_hours": self.WINDOW_HOURS,
+                },
+                "severity": self.severity,
+                "expires_in_hours": cfg.cooldown_hours or 2,
+                "related_job_id": None,
+                "related_candidate_id": None,
+                "channels": cfg.channels or {},
+            }
+        ]
+
+
 # ---------------------------------------------------------------------------
 # Service orchestrator
 # ---------------------------------------------------------------------------
@@ -796,6 +1743,16 @@ class ProactiveDetectorService:
             WorkforcePlanStaleDetector(),
             AICreditsLowDetector(),
             PipelineStuckDetector(),
+            # Task #1296 — 9 regras orfas do catalogo agora cobertas.
+            ConversionRateLowDetector(),
+            SlaNearExpirationDetector(),
+            InterviewNotConfirmedDetector(),
+            FeedbackPendingDetector(),
+            OffersPendingLongDetector(),
+            TasksOverdueDetector(),
+            EmailDeliveryLowDetector(),
+            IdealCandidateFoundDetector(),
+            AtsSyncFailedDetector(),
         ]
         self.logger = logging.getLogger(self.__class__.__name__)
 
@@ -822,9 +1779,12 @@ class ProactiveDetectorService:
 
             from app.models.alert import AlertPreference
         except Exception as exc:
+            # Task #1295 (fail-loud): import quebrado NÃO pode passar silencioso.
+            # Emite metric source="error" p/ distinguir de "tenant sem config".
             self.logger.warning(
                 "AlertPreference import failed (using all defaults): %s", exc
             )
+            _emit_threshold_source_metric("__load_overrides__", "error")
             return overrides
 
         try:
@@ -835,12 +1795,20 @@ class ProactiveDetectorService:
             )
             rows = list(result.scalars().all())
         except Exception as exc:
-            # Table may not exist yet em alguns ambientes; fall back para defaults.
-            self.logger.debug(
-                "AlertPreference query failed for company=%s: %s",
+            # Task #1295 (fail-loud, canonical-fix): um erro de DB ao carregar a
+            # config NÃO é o mesmo que "tenant sem config". Antes isto caía em
+            # logger.debug (silencioso) e mascarava indisponibilidade como
+            # "sem override". Eleva para WARNING + metric source="error" para
+            # ficar observável. O batch ainda roda com defaults (fail-open
+            # deliberado — ver test_orchestrator_fallback_when_load_fails), mas
+            # de forma RASTREÁVEL, nunca silenciosa.
+            self.logger.warning(
+                "AlertPreference query failed for company=%s: %s — "
+                "rodando detectors com defaults (source=error, fail-open)",
                 company_id,
                 exc,
             )
+            _emit_threshold_source_metric("__load_overrides__", "error")
             return overrides
 
         # Inverte _DETECTOR_ALERT_TYPE_MAP: alert_type -> detector.name.
@@ -912,53 +1880,45 @@ class ProactiveDetectorService:
             )
             tenant_overrides = {}
 
-        # WT-2022 Wave 2 P0.ALR-1+2 (2026-05-22): wire de
-        # communication_settings.alerts[].enabled — antes esses 5 toggles UI
-        # gravavam no DB mas o detector NAO consultava (ghost setting).
-        try:
-            from app.shared.services.communication_settings_consumer import (
-                get_company_communication_settings,
-                is_alert_enabled,
-                get_alert_channel,
-                inc_communication_skip,
-            )
-            comm_settings = await get_company_communication_settings(db, company_id)
-        except Exception as exc:
-            self.logger.warning(
-                "ProactiveDetector: failed to load tenant comm_settings for %s, "
-                "all detectors run with default-enabled (fail-safe): %s",
-                company_id, exc,
-            )
-            comm_settings = {}
-
-            def is_alert_enabled(_s, _id):  # type: ignore[no-redef]
-                return True
-
-            def get_alert_channel(_s, _id, default="email"):  # type: ignore[no-redef]
-                return default
-
-            def inc_communication_skip(_r):  # type: ignore[no-redef]
-                return None
-
+        # Task #1295: o gate de enable/canal é canônico via AlertPreference
+        # (carregado em tenant_overrides acima). O wire antigo de
+        # communication_settings.alerts[] era um ghost setting (alert_id nunca
+        # batia com detector.name -> sempre True) e o channel caía sempre em
+        # "email". REMOVIDO: enable vem de cfg.is_enabled (dentro de detect()),
+        # canais vêm de cfg.channels (AlertPreference). communication_settings
+        # mantém SÓ seu papel real (janela de envio / assinatura / LGPD),
+        # consumido pelos dispatchers, não pelo gate de detecção.
         for detector in self.detectors:
-            # WT-2022 Wave 2 P0.ALR-1: gate per tenant — toggle off pula detector.
-            if not is_alert_enabled(comm_settings, detector.name):
-                self.logger.info(
-                    "Detector %s disabled by tenant settings company=%s — skipping",
-                    detector.name, company_id,
-                )
-                inc_communication_skip("alert_disabled")
-                per_detector_count[detector.name] = -2  # skip sentinel (vs -1 error)
-                continue
+            # G9 fix (2026-06-04): a deteccao e read-only. Um detector anterior
+            # (ou o load de overrides/comm_settings) pode ter batido numa query
+            # que falhou e foi engolida, deixando a transacao asyncpg abortada
+            # (InFailedSQLTransactionError). Rollback aqui limpa esse estado SEM
+            # descartar nada que importe (nenhum write aconteceu ainda) e impede
+            # a falha de cascatear para este detector e para o persist abaixo.
+            try:
+                await db.rollback()
+            except Exception:
+                pass
 
             try:
                 override = tenant_overrides.get(detector.name)
+                # Task #1295: override efetivo (tenant OU default canônico) — a
+                # fonte dos canais que vão no hint. Espelha o que detect() resolve
+                # internamente via _resolve_override.
+                effective = (
+                    override
+                    if (override is not None and override.source == "tenant")
+                    else _DEFAULT_TENANT_OVERRIDE.get(
+                        detector.name, TenantThresholdOverride()
+                    )
+                )
                 hints = await detector.detect(db, company_id, override=override)
                 for hint in hints:
                     hint["detector"] = detector.name
                     hint["company_id"] = company_id
-                    # WT-2022 Wave 2 P0.ALR-2: anexa channel preferido tenant.
-                    hint["channel"] = get_alert_channel(comm_settings, detector.name)
+                    # Canais canônicos de AlertPreference (dict). Detector pode ter
+                    # setado explicitamente; senão herda do override efetivo.
+                    hint.setdefault("channels", dict(effective.channels))
                 all_hints.extend(hints)
                 per_detector_count[detector.name] = len(hints)
             except Exception as exc:
@@ -970,6 +1930,14 @@ class ProactiveDetectorService:
                     exc,
                 )
                 per_detector_count[detector.name] = -1
+
+        # Transacao limpa para a fase de escrita, independente do ultimo detector
+        # (ver comentario G9 acima). Sem isto, o SELECT de dedup do persist morria
+        # com InFailedSQLTransactionError — a causa real da lampada sempre vazia.
+        try:
+            await db.rollback()
+        except Exception:
+            pass
 
         persisted = await self._persist_hints(db, all_hints)
 
@@ -991,7 +1959,7 @@ class ProactiveDetectorService:
             return 0
 
         try:
-            from sqlalchemy import and_, select
+            from sqlalchemy import and_, select, text as sa_text
 
             from lia_models.background_jobs import (
                 ActionStatus,
@@ -1002,12 +1970,26 @@ class ProactiveDetectorService:
             self.logger.error("ProactiveAction model import failed: %s", exc)
             return 0
 
+        # Scheduler runs without an HTTP request context, so app.company_id is
+        # not set → app_current_company_id() returns NULL → RLS policy
+        # (company_id::text = app_current_company_id(), migration 124) denies
+        # both SELECTs (dedup) and INSERTs.  Set it per-company via
+        # set_config(is_local=true) — transaction-scoped, clears on commit.
+        _rls_company_set: str | None = None
+
         persisted = 0
         for hint in hints:
             try:
                 company_uuid = UUID(hint["company_id"])
             except (KeyError, ValueError):
                 continue
+
+            if str(company_uuid) != _rls_company_set:
+                await db.execute(
+                    sa_text("SELECT set_config('app.company_id', :cid, true)"),
+                    {"cid": str(company_uuid)},
+                )
+                _rls_company_set = str(company_uuid)
 
             detector_name = hint.get("detector", "")
             # Deduplicate: existe ja um hint pendente do mesmo detector?
@@ -1039,6 +2021,9 @@ class ProactiveDetectorService:
                     "action_params": hint.get("action_params") or {},
                     "source": "proactive_detector_scheduler",
                     "detector": detector_name,
+                    # Task #1295: canais canônicos (AlertPreference) persistidos
+                    # como lista para os dispatchers downstream (email/teams/...).
+                    "channels": channels_to_list(hint.get("channels")),
                 },
                 auto_executable=False,
                 trigger_reason=detector_name,
@@ -1081,8 +2066,22 @@ class ProactiveDetectorService:
                     exc,
                 )
 
-        # Commit responsabilidade do caller (task / endpoint). Mantemos a
-        # transacao aberta para que o caller controle isolation.
+        # G9 fix (2026-06-04): commit aqui (fail-loud). Antes o contrato era
+        # "caller commits" — mas o piggyback do MonitoringLoop roda numa sessao
+        # fresca e saia do `async with` SEM commit, descartando os INSERTs. O
+        # celery batch (proactive.detect_hints_hourly) ainda commita no fim; com
+        # persist commitando por company, aquele commit vira no-op idempotente
+        # e cada company fica duravel antes do proximo run.
+        try:
+            await db.commit()
+        except Exception as exc:
+            self.logger.error(
+                "ProactiveDetector persist commit failed (%d hints lost): %s",
+                persisted,
+                exc,
+            )
+            await db.rollback()
+            raise
         return persisted
 
 
@@ -1098,6 +2097,15 @@ __all__ = [
     "WorkforcePlanStaleDetector",
     "AICreditsLowDetector",
     "PipelineStuckDetector",
+    "ConversionRateLowDetector",
+    "SlaNearExpirationDetector",
+    "InterviewNotConfirmedDetector",
+    "FeedbackPendingDetector",
+    "OffersPendingLongDetector",
+    "TasksOverdueDetector",
+    "EmailDeliveryLowDetector",
+    "IdealCandidateFoundDetector",
+    "AtsSyncFailedDetector",
     "ProactiveDetectorService",
     "TenantThresholdOverride",
     "proactive_detector_service",

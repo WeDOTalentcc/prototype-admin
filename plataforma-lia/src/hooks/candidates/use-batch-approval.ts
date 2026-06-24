@@ -57,8 +57,8 @@ export interface BatchResults {
 export const availableStages = [
   { id: 'triagem', name: 'Triagem Inicial', color: 'bg-lia-bg-tertiary text-lia-text-primary' },
   { id: 'entrevista_rh', name: 'Entrevista RH', color: 'bg-lia-bg-tertiary dark:bg-lia-bg-elevated text-lia-text-primary' },
-  { id: 'teste_tecnico', name: 'Teste Técnico', color: 'bg-wedo-purple/15 text-wedo-purple' },
-  { id: 'entrevista_tecnica', name: 'Entrevista Técnica', color: 'bg-wedo-orange/15 text-wedo-orange' },
+  { id: 'teste_tecnico', name: 'Teste Técnico', color: 'bg-wedo-purple/15 text-wedo-purple-text' },
+  { id: 'entrevista_tecnica', name: 'Entrevista Técnica', color: 'bg-wedo-orange/15 text-wedo-orange-text' },
   { id: 'entrevista_final', name: 'Entrevista Final', color: 'bg-status-warning/15 text-status-warning' },
   { id: 'aprovado', name: 'Aprovado', color: 'bg-status-success/15 text-status-success' },
   { id: 'rejeitado', name: 'Rejeitado', color: 'bg-status-error/15 text-status-error' }
@@ -113,7 +113,7 @@ export function getScoreColor(score: number) {
 export function getPriorityColor(priority: string) {
   switch (priority) {
     case 'alta': return 'bg-status-error/15 text-status-error'
-    case 'média': return 'bg-wedo-orange/15 text-wedo-orange'
+    case 'média': return 'bg-wedo-orange/15 text-wedo-orange-text'
     case 'baixa': return 'bg-status-success/15 text-status-success'
     default: return 'bg-lia-bg-tertiary text-lia-text-primary'
   }
@@ -247,6 +247,7 @@ export function useBatchApproval({ candidates, onApprovalComplete }: {
           total_processed: selectedCount
         })
       } catch (error) {
+        console.error("[use-batch-approval] Error:", error)
       }
     }
   }

@@ -28,6 +28,40 @@ from app.domains.job_creation.helpers.llm_exceptions import (
 
 logger = logging.getLogger(__name__)
 
+def _load_company_context_sync(company_id: str) -> str:
+    """Load company context synchronously for JD enrichment prompt.
+
+    Runs build_company_agent_context in a new event loop (called from a
+    ThreadPoolExecutor thread - safe to create a new loop here).
+    Returns empty string on any failure (fail-open: enrichment proceeds
+    without company context rather than blocking the wizard).
+    """
+    if not company_id:
+        return ""
+    try:
+        import asyncio
+        from app.core.database import AsyncSessionLocal
+        from app.shared.services.lia_agent_context_builder import build_company_agent_context
+
+        async def _inner():
+            async with AsyncSessionLocal() as db:
+                return await build_company_agent_context(
+                    company_id=company_id,
+                    db=db,
+                )
+
+        loop = asyncio.new_event_loop()
+        try:
+            return loop.run_until_complete(_inner()) or ""
+        finally:
+            loop.close()
+    except Exception as _exc:
+        logger.warning(
+            "[jd_enrichment] company_context load failed (fail-open): %s", _exc
+        )
+        return ""
+
+
 
 def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
     """F1: Call JdEnrichmentService to enrich JD + calculate quality score.
@@ -151,6 +185,13 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
         and not _has_panel_form
         and not _has_attached
         and not _has_structured_intake  # RC2: funil aprovado → gera, nao pede JD
+        # Perf guard (2026-06-11): mensagens longas (>300 chars) são claramente
+        # conteúdo (JD colado, texto estruturado) e não meta-perguntas. Rodar
+        # o Haiku classifier nelas adiciona 1-3s de latência desnecessária.
+        # O static guard abaixo também não dispara (raw_len<100 não bate),
+        # então o enrichment segue normalmente. Fail-safe: raw_len não
+        # mascara disponibilidade do LLM — só pula a chamada Haiku.
+        and _raw_len <= 300
     )
 
     # ── Task #1098 + Task #1123 — LLM intent classifier SEMPRE roda ──
@@ -333,6 +374,23 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
         jd_enriched_dict = state["jd_enriched"]
         jd_quality_score = state.get("jd_quality_score", 0.0)
         jd_quality_warnings = state.get("jd_quality_warnings", [])
+        # PR-B2 item 3 (clone): JD reaproveitada da vaga origem chega SEM
+        # quality_score (a vaga nao persiste o score). Recalcula deterministico
+        # p/ o painel nao exibir 0. Fail-open: se reconstruir o objeto falhar,
+        # mantem o score do state.
+        if not jd_quality_score:
+            try:
+                from app.domains.job_creation.schemas import EnrichedJobDescription
+                from app.domains.job_creation.services.jd_enrichment import (
+                    calculate_quality_score as _calc_q_reuse,
+                )
+                _eobj = EnrichedJobDescription(**jd_enriched_dict)
+                jd_quality_score, jd_quality_warnings = _calc_q_reuse(_eobj)
+            except Exception as _q_reuse_exc:  # noqa: BLE001 — fail-open
+                logger.warning(
+                    "[JobCreation:jd_enrichment] quality recompute on reuse "
+                    "failed (fail-open): %s", _q_reuse_exc,
+                )
     else:
         # Call JdEnrichmentService (F1.C LLM enrichment)
         # IMPORTANT — pass jd_raw_safe (PII-stripped), NOT jd_raw original.
@@ -358,6 +416,11 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
         jd_enrichment_fallback_reason: Optional[str] = None
         try:
             with _cf.ThreadPoolExecutor(max_workers=1) as _ex:
+                # P1-G: load company context before enrichment (fail-open).
+                _company_id = state.get("company_id", "")
+                _company_ctx = _ex.submit(
+                    _load_company_context_sync, _company_id
+                ).result(timeout=5.0)
                 _fut = _ex.submit(
                     service.enrich,
                     jd_raw=jd_raw_safe,
@@ -368,6 +431,7 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
                     confirmed_technical=state.get("confirmed_technical_competencies") or None,
                     confirmed_behavioral=state.get("confirmed_behavioral_competencies") or None,
                     screening_mode=state.get("screening_mode"),
+                    company_context=_company_ctx,
                 )
                 enriched_obj, jd_quality_score, jd_quality_warnings = _fut.result(
                     timeout=_JD_LLM_TIMEOUT_S

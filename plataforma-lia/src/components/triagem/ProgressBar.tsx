@@ -43,7 +43,7 @@ export function ProgressBar({ progress, className }: ProgressBarProps) {
           {" · "}
           {progress.currentBlockName}
         </span>
-        <span className="text-micro font-['Inter',sans-serif] text-lia-text-disabled">
+        <span className="text-micro font-['Inter',sans-serif] text-lia-text-muted">
           {percentage}%
         </span>
       </div>

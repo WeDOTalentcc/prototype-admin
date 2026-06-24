@@ -75,7 +75,35 @@ AFFIRMATIVE_QUESTIONS = {
     "gender": "Que bom te ter aqui! 😊 Essa vaga faz parte do nosso programa de ação afirmativa para mulheres. Você se identifica com esse perfil? Sua resposta não elimina você do processo, mas nos ajuda a entender melhor a composição dos candidatos.",
     "age": "Legal ter você aqui! 😊 Essa vaga faz parte do nosso programa de inclusão para profissionais 50+. Você se enquadra nessa faixa etária? Fique tranquilo(a), sua resposta não elimina você do processo — queremos apenas garantir diversidade geracional.",
     "lgbtqia+": "Que bom te ter aqui! 😊 Essa vaga faz parte do nosso programa de diversidade para pessoas LGBTQIA+. Você se identifica com esse grupo? Sua resposta não elimina você do processo, é apenas para nos ajudar a promover um ambiente mais inclusivo.",
+    "refugee": "Que bom te ter aqui! 😊 Essa vaga faz parte do nosso programa de inclusão para pessoas refugiadas e imigrantes. Você se identifica com esse perfil? Sua resposta não elimina você do processo — é apenas para nos ajudar a promover diversidade e inclusão.",
+    "indigenous": "Que bom te ter aqui! 😊 Essa vaga faz parte do nosso programa de ação afirmativa para pessoas indígenas, por autodeclaração. Você se identifica com esse perfil? Independente da resposta, você segue no processo — queremos apenas entender melhor seu perfil.",
 }
+
+# Onda 2C.1 (audit 2026-06-06): ponte entre o vocabulário do critério gravado na vaga
+# (affirmative_criteria_primary) e as chaves de AFFIRMATIVE_QUESTIONS. A VAGA é a fonte
+# da verdade — o endpoint resolve o tipo server-side, sem confiar na flag do FE.
+_CRITERION_TO_TYPE = {
+    "gender": "gender",
+    "race_ethnicity": "racial",
+    "disability": "pcd",
+    "lgbtqia": "lgbtqia+",
+    "age": "age",
+    "refugee": "refugee",
+    "indigenous": "indigenous",
+    "other": None,
+}
+
+
+def criterion_to_affirmative_type(criterion):
+    """Mapeia affirmative_criteria_primary da vaga -> chave de AFFIRMATIVE_QUESTIONS.
+
+    Retorna None para 'other'/desconhecido (injection usa o texto fallback genérico,
+    nunca uma pergunta ausente).
+    """
+    if not criterion:
+        return None
+    return _CRITERION_TO_TYPE.get(str(criterion).strip().lower())
+
 
 
 def _text_similarity(a: str, b: str) -> float:

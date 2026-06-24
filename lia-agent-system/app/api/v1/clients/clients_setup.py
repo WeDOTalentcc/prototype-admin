@@ -17,6 +17,7 @@ from ._shared import (
 )
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+from app.shared.errors import LIAError
 
 router = APIRouter()
 
@@ -55,7 +56,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting client setup: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to get client setup: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.put("/{client_id}/setup/{section_id}", summary="Update setup section progress", response_model=None)
@@ -118,4 +119,4 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error updating setup section: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to update setup section: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")

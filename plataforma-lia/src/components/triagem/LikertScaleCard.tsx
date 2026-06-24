@@ -89,10 +89,10 @@ export function LikertScaleCard({
       </div>
 
       <div className="flex justify-between">
-        <span className="text-micro text-lia-text-disabled">
+        <span className="text-micro text-lia-text-muted">
           {effectiveLabels[0]}
         </span>
-        <span className="text-micro text-lia-text-disabled">
+        <span className="text-micro text-lia-text-muted">
           {effectiveLabels[effectiveLabels.length - 1]}
         </span>
       </div>

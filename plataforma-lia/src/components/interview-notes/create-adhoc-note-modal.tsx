@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import React, { useState, useMemo } from "react"
 import {
   Dialog,
@@ -44,6 +45,9 @@ export function CreateAdhocNoteModal({
   candidates,
   jobs,
 }: CreateAdhocNoteModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('create-adhoc-note', isOpen)
+
   const [selectedCandidateId, setSelectedCandidateId] = useState<string>("")
   const [selectedJobId, setSelectedJobId] = useState<string>("")
   const [interviewDate, setInterviewDate] = useState<string>("")

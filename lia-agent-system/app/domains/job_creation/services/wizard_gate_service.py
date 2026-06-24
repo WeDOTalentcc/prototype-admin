@@ -475,7 +475,7 @@ class WizardGateService:
         comment: str | None = None,
         gate_id: str | None = None,
         resume_domain: str = "wizard",
-        agent_timeout: float = 90.0,
+        agent_timeout: float = float(os.getenv("LIA_GATE_AGENT_TIMEOUT_S", "130")),
     ) -> dict[str, Any]:
         """Resume um gate HITL do wizard de forma idempotente sob concorrência real.
 

@@ -1066,7 +1066,7 @@ class SkillsCatalogDBService:
             # and read store (CompanyCultureProfile.tech_stack) diverge — Paulo's
             # bug 4. Lazy import to avoid circular deps at module load.
             try:
-                from app.domains.company_culture.repositories.company_culture_repository import (
+                from app.repositories.company_culture_repository import (
                     CompanyCultureRepository,
                 )
                 import uuid as _uuid

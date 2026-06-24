@@ -36,7 +36,6 @@ async def _wrap_get_recruitment_benchmarks(**kwargs: Any) -> dict[str, Any]:
         f"company={company_id} period={period_days}d"
     )
 
-    benchmarks: dict[str, Any] = {}
     try:
         async with AsyncSessionLocal() as db:
             repo = JobVacancyCrudRepository(db)
@@ -47,6 +46,10 @@ async def _wrap_get_recruitment_benchmarks(**kwargs: Any) -> dict[str, Any]:
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[jobs_mgmt_tools] SQL error in get_recruitment_benchmarks: {e}")
+        return {
+            "success": False,
+            "message": "Não consegui consultar os benchmarks agora. Tente novamente em instantes.",
+        }
 
     ttf = benchmarks.get("avg_ttf_days", 0.0)
     fill_rate = benchmarks.get("fill_rate", 0.0)
@@ -98,17 +101,113 @@ async def _wrap_get_recruitment_benchmarks(**kwargs: Any) -> dict[str, Any]:
     }
 
 
+def _format_location(loc) -> str | None:
+    """Formata location para string legivel — trata objeto JSON e string."""
+    if not loc:
+        return None
+    if isinstance(loc, str):
+        # Tenta parsear JSON serializado como string
+        try:
+            import json as _json
+            parsed = _json.loads(loc)
+            if isinstance(parsed, dict):
+                loc = parsed
+            else:
+                return loc.strip() or None
+        except Exception:
+            return loc.strip() or None
+    if isinstance(loc, dict):
+        parts = [loc.get("city"), loc.get("state"), loc.get("country")]
+        parts = [p for p in parts if p]
+        return ", ".join(parts) if parts else None
+    return str(loc) or None
+
+
+def _normalize_job_for_card(j: dict) -> dict:
+    """Normaliza job dict para o shape JobSummary esperado pelo FE (JobListCard)."""
+    return {
+        "id": str(j.get("id") or j.get("job_id") or ""),
+        "title": j.get("title") or j.get("job_title") or "",
+        "department": j.get("department") or j.get("department_name") or None,
+        "location": _format_location(j.get("location")),
+        "status": j.get("status") or j.get("job_status") or None,
+        "candidateCount": j.get("candidate_count") or j.get("candidates_count") or None,
+        "daysOpen": j.get("days_open") or None,
+        "priority": j.get("priority") or None,
+    }
+
+
+def _format_list_jobs_result(jobs_list: list, *, total: int = 0) -> dict:
+    """P2.5-BE: formata resultado de list_jobs com response_blocks list_jobs_result.
+
+    Produtor UNICO (canonical-fix) — adicionar response_blocks de tipo list_jobs_result
+    para que o FE renderize JobListCard. Dados originais (status_filter, etc.) continuam
+    em data para consumo pelo LLM.
+
+    Seguindo precedente de _format_search_candidates_result (P2.4).
+    """
+    _total = total or len(jobs_list)
+    response_blocks = (
+        [
+            {
+                "type": "list_jobs_result",
+                "data": {
+                    "jobs": [_normalize_job_for_card(j) for j in jobs_list[:20]],
+                    "total_count": _total,
+                },
+            }
+        ]
+        if jobs_list
+        else None
+    )
+    return {
+        "success": True,
+        "data": {
+            "total_jobs": _total,
+            "jobs": jobs_list,
+            "response_blocks": response_blocks,
+        },
+        "message": f"{_total} vagas encontradas.",
+    }
+
+
 @tool_handler("jobs_mgmt")
 async def _wrap_list_jobs(**kwargs: Any) -> dict[str, Any]:
-    status = kwargs.get("status", "all")
+    raw_status = kwargs.get("status", "ativa")
     department = kwargs.get("department", "all")
     company_id = kwargs.get("company_id", "")
-    limit = int(kwargs.get("limit", 30))
+    limit = min(int(kwargs.get("limit", 20)), 50)
+    query: str | None = kwargs.get("query") or kwargs.get("title_query") or None
+    # status_map: normaliza input do LLM (EN/PT/sinônimos de intent) → valor canonical do DB
+    status_map = {
+        # Ativa — vagas abertas / em andamento
+        "ativa": "Ativa", "active": "Ativa", "open": "Ativa",
+        "abertas": "Ativa", "abertas/em": "Ativa", "em andamento": "Ativa",
+        "em aberto": "Ativa", "publicada": "Ativa", "ao vivo": "Ativa",
+        # Pausada
+        "pausada": "Pausada", "paused": "Pausada", "em pausa": "Pausada",
+        # Concluída — encerradas / fechadas / finalizadas / contratadas
+        "concluida": "Concluída", "concluída": "Concluída", "closed": "Concluída",
+        "encerrada": "Concluída", "encerradas": "Concluída",
+        "fechada": "Concluída", "fechadas": "Concluída",
+        "finalizada": "Concluída", "finalizadas": "Concluída",
+        "filled": "Concluída", "hired": "Concluída",
+        # Rascunho
+        "rascunho": "Rascunho", "draft": "Rascunho", "em rascunho": "Rascunho",
+        # Cancelada
+        "cancelada": "Cancelada", "cancelled": "Cancelada", "canceled": "Cancelada",
+        # Arquivada
+        "arquivada": "Arquivada", "archived": "Arquivada",
+        # Todas
+        "all": "all", "todas": "all", "todos": "all",
+    }
+    status = status_map.get(raw_status.lower(), raw_status) if raw_status else "all"
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
-    logger.info(f"[jobs_mgmt_tools] list_jobs called: status={status} department={department}")
+    logger.info(f"[jobs_mgmt_tools] list_jobs called: status={status} department={department} query={query!r}")
 
     jobs: list[dict] = []
     total = 0
+    status_breakdown: dict[str, int] = {}
     try:
         async with AsyncSessionLocal() as db:
             repo = JobVacancyCrudRepository(db)
@@ -117,23 +216,99 @@ async def _wrap_list_jobs(**kwargs: Any) -> dict[str, Any]:
                 status=status,
                 department=department,
                 limit=limit,
+                title_query=query,
             )
             jobs = result["jobs"]
             total = result["total"]
+            try:
+                status_breakdown = await repo.count_by_status(company_id)
+            except Exception:
+                status_breakdown = {}
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[jobs_mgmt_tools] list_jobs DB error: {e}")
 
-    return {
-        "success": True,
-        "data": {
+    _bd = ", ".join(
+        f"{k}: {v}" for k, v in sorted(status_breakdown.items(), key=lambda x: -x[1])
+    )
+    _blocks, _hint = [], ""
+    if jobs:
+        try:
+            from app.shared.rrp_ranking_builder import build_table_block, RRP_TABLE_HINT
+            _hint = RRP_TABLE_HINT
+            _blocks = build_table_block(
+                title="Vagas",
+                entity_type="job",
+                source_tool="list_jobs",
+                total_count=total,
+                columns=[
+                    ("title", "Vaga", "text"),
+                    ("department", "Departamento", "text"),
+                    ("location", "Local", "text"),
+                    ("candidate_count", "Candidatos", "number"),
+                    ("days_open", "Dias aberta", "number"),
+                    ("priority", "Prioridade", "badge"),
+                ],
+                rows=[
+                    {
+                        "entity_id": str(j.get("id")),
+                        "cells": {
+                            "title": j.get("title"),
+                            "department": j.get("department"),
+                            "location": _format_location(j.get("location")),
+                            "candidate_count": j.get("candidate_count"),
+                            "days_open": j.get("days_open"),
+                            "priority": j.get("priority"),
+                        },
+                    }
+                    for j in jobs
+                ],
+            )
+        except Exception as _e:
+            logger.warning(f"[jobs_mgmt_tools] list_jobs RRP table skipped: {_e}")
+    _msg = (
+        f"{total} vagas no total -- por status: {_bd}." if _bd
+        else f"{total} vagas encontradas (status={status}, departamento={department})."
+    )
+    # FIX (2026-06-14): list_jobs_result foi removido — duplicava o display
+    # pois o build_table_block (kind-based) já renderiza os dados na tabela RRP.
+    # Ter os dois causava: tabela enriquecida + card simples para o mesmo dado,
+    # e se list_jobs era chamado 2× no mesmo turno = 2 tabelas + 2 cards.
+    _all_blocks = _blocks  # apenas RRP kind-based
+
+    if _all_blocks:
+        _data = {
             "status_filter": status,
             "department_filter": department,
             "total_jobs": total,
+            "status_breakdown": status_breakdown,
+            "rendered_as_card": True,
+            "narrative": f"{total} vagas (filtro status={status}).",
+            "response_blocks": _all_blocks,
+            "render_hint": (
+                "CARD VISUAL JÁ ENVIADO. Escreva APENAS 1-2 frases narrativas resumindo o total e destaques. "
+                "NUNCA repita dados em tabela markdown. "
+                "Os IDs em jobs_index estão disponíveis para follow-up."
+            ),
+            "jobs_index": [
+                {
+                    "id": str(j.get("id", "")),
+                    "title": j.get("title", ""),
+                    "status": j.get("status", ""),
+                    "department": j.get("department", ""),
+                }
+                for j in jobs[:20]
+            ],
+        }
+    else:
+        _data = {
+            "status_filter": status,
+            "department_filter": department,
+            "total_jobs": total,
+            "status_breakdown": status_breakdown,
             "jobs": jobs,
-        },
-        "message": f"{total} vagas encontradas (status={status}, departamento={department}).",
-    }
+        }
+    return {"success": True, "data": _data, "message": _msg}
 
 
 @tool_handler("jobs_mgmt")
@@ -171,7 +346,6 @@ async def _wrap_get_portfolio_metrics(**kwargs: Any) -> dict[str, Any]:
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[jobs_mgmt_tools] get_portfolio_metrics called: period={period}")
 
-    metrics: dict[str, Any] = {}
     try:
         async with AsyncSessionLocal() as db:
             repo = JobVacancyCrudRepository(db)
@@ -182,6 +356,10 @@ async def _wrap_get_portfolio_metrics(**kwargs: Any) -> dict[str, Any]:
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[jobs_mgmt_tools] get_portfolio_metrics DB error: {e}")
+        return {
+            "success": False,
+            "message": "Não consegui consultar as métricas do portfolio agora. Tente novamente em instantes.",
+        }
 
     return {
         "success": True,
@@ -201,7 +379,6 @@ async def _wrap_compare_jobs(**kwargs: Any) -> dict[str, Any]:
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[jobs_mgmt_tools] compare_jobs called: jobs={job_ids}")
 
-    comparison: list[dict] = []
     try:
         async with AsyncSessionLocal() as db:
             repo = JobVacancyCrudRepository(db)
@@ -212,6 +389,10 @@ async def _wrap_compare_jobs(**kwargs: Any) -> dict[str, Any]:
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[jobs_mgmt_tools] compare_jobs DB error: {e}")
+        return {
+            "success": False,
+            "message": "Não consegui comparar as vagas agora. Tente novamente em instantes.",
+        }
 
     return {
         "success": True,
@@ -231,12 +412,6 @@ async def _wrap_check_sla(**kwargs: Any) -> dict[str, Any]:
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[jobs_mgmt_tools] check_sla called: job={job_id or 'all'}")
 
-    sla: dict[str, Any] = {
-        "overdue_jobs": [],
-        "at_risk_jobs": [],
-        "compliant_count": 0,
-        "overall_status": "compliant",
-    }
     try:
         async with AsyncSessionLocal() as db:
             repo = JobVacancyCrudRepository(db)
@@ -247,6 +422,10 @@ async def _wrap_check_sla(**kwargs: Any) -> dict[str, Any]:
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[jobs_mgmt_tools] check_sla DB error: {e}")
+        return {
+            "success": False,
+            "message": "Não consegui consultar o status de SLA agora. Tente novamente em instantes.",
+        }
 
     return {
         "success": True,
@@ -274,7 +453,6 @@ async def _wrap_analyze_bottlenecks(**kwargs: Any) -> dict[str, Any]:
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[jobs_mgmt_tools] analyze_bottlenecks called: department={department}")
 
-    bottlenecks: list[dict] = []
     try:
         async with AsyncSessionLocal() as db:
             repo = JobVacancyCrudRepository(db)
@@ -285,6 +463,10 @@ async def _wrap_analyze_bottlenecks(**kwargs: Any) -> dict[str, Any]:
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[jobs_mgmt_tools] analyze_bottlenecks DB error: {e}")
+        return {
+            "success": False,
+            "message": "Não consegui analisar os gargalos agora. Tente novamente em instantes.",
+        }
 
     return {
         "success": True,
@@ -436,7 +618,6 @@ async def _wrap_generate_report(**kwargs: Any) -> dict[str, Any]:
     logger.info(f"[jobs_mgmt_tools] generate_report called: type={report_type} period={period}")
 
     report_id = f"rpt_{uuid.uuid4().hex[:12]}"
-    summary: dict[str, Any] = {}
     try:
         async with AsyncSessionLocal() as db:
             repo = JobVacancyCrudRepository(db)
@@ -447,6 +628,10 @@ async def _wrap_generate_report(**kwargs: Any) -> dict[str, Any]:
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[jobs_mgmt_tools] generate_report DB error: {e}")
+        return {
+            "success": False,
+            "message": "Não consegui gerar o relatório agora. Tente novamente em instantes.",
+        }
 
     return {
         "success": True,
@@ -649,12 +834,38 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
     ),
     ToolDefinition(
         name="list_jobs",
-        description="Lista todas as vagas ativas com status, metricas e informacoes resumidas do portfolio.",
+        description=(
+            "Lista vagas com status, metricas e informacoes resumidas do portfolio. "
+            "Use o parametro 'query' para buscar por nome/titulo (substring case-insensitive). "
+            "Exemplo: query='Diretor Juridico' retorna vagas cujo titulo contem essa expressao. "
+            "Sem query retorna as 50 vagas mais recentes/prioritarias. "
+            "Os IDs retornados em jobs_index podem ser usados diretamente em view_job_details(job_id=...) para detalhes de uma vaga especifica."
+        ),
         parameters={
             "type": "object",
             "properties": {
-                "status": {"type": "string", "description": "Filtro de status: active, paused, closed, all"},
-                "department": {"type": "string", "description": "Filtro por departamento"},
+                "status": {
+                    "type": "string",
+                    "description": (
+                        "Filtro de status da vaga. PADRAO: ativa. "
+                        "Mapeamento de intencao do usuario: "
+                        "'abertas'/'em andamento'/'em aberto'/'publicadas' → ativa; "
+                        "'encerradas'/'fechadas'/'finalizadas'/'concluidas' → concluida; "
+                        "'pausadas'/'em pausa' → pausada; "
+                        "'rascunho' → rascunho; 'canceladas' → cancelada; 'arquivadas' → arquivada; "
+                        "'todas'/'qualquer status' → all. "
+                        "Use all SOMENTE quando o usuario pedir explicitamente TODAS as vagas."
+                    ),
+                },
+                "department": {"type": "string", "description": "Filtro por departamento (padrao: all)"},
+                "query": {
+                    "type": "string",
+                    "description": "Busca por titulo da vaga (substring, case-insensitive). Use quando o usuario mencionar o nome de uma vaga especifica.",
+                },
+                "limit": {
+                    "type": "integer",
+                    "description": "Numero maximo de vagas a retornar (padrao: 20, max: 50)",
+                },
             },
             "required": [],
         },
@@ -667,7 +878,7 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
         parameters={
             "type": "object",
             "properties": {
-                "job_id": {"type": "string", "description": "ID da vaga"},
+                "job_id": {"type": "string", "description": "ID da vaga — use os IDs do jobs_index retornado pelo list_jobs"},
             },
             "required": ["job_id"],
         },
@@ -851,3 +1062,46 @@ def get_jobs_mgmt_tools(stage: str = "") -> list[ToolDefinition]:
     tool_names = STAGE_TOOLS.get(stage, list(_TOOL_MAP.keys()))
     tools = [_TOOL_MAP[name] for name in tool_names if name in _TOOL_MAP]
     return tools
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Opção C — registro global com namespace de domínio (2026-06-18)
+# ─────────────────────────────────────────────────────────────────────────────
+
+def register_jobs_mgmt_global() -> int:
+    """Registra as tools de gestão de vagas no tool_registry global.
+
+    Tools com nomes conflitantes recebem prefixo 'jm_' (Opção C —
+    namespace de domínio). Tools únicas mantêm o nome original.
+    Segue o padrão de register_ui_tools_global() (ui_tool_registry.py).
+    Chamada por app/tools/__init__.py:initialize_tools().
+
+    Renames:
+        pause_job             → jm_pause_job
+        close_job             → jm_close_job
+        generate_report       → jm_generate_report
+        get_pipeline_prediction → jm_pipeline_prediction
+    """
+    from app.tools.registry import ToolDefinition as _G
+    from app.tools.registry import tool_registry as _reg
+
+    _RENAMES: dict[str, str] = {
+        "pause_job": "jm_pause_job",
+        "close_job": "jm_close_job",
+        "generate_report": "jm_generate_report",
+        "get_pipeline_prediction": "jm_pipeline_prediction",
+    }
+
+    n = 0
+    for td in TOOL_DEFINITIONS:
+        _reg.register(
+            _G(
+                name=_RENAMES.get(td.name, td.name),
+                description=td.description,
+                parameters_schema=td.parameters,
+                handler=td.function,
+                allowed_agents=["recruiter_assistant", "orchestrator"],
+            )
+        )
+        n += 1
+    return n

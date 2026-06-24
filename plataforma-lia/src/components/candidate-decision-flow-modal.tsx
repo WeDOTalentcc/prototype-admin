@@ -132,7 +132,7 @@ const LIARulesInfo: React.FC<{ type: 'triage' | 'interview' }> = ({ type }) => {
                 <>
                   <li className="flex items-start gap-1.5">
                     <span className="text-lia-text-disabled">•</span>
-                    LIA envia mensagem por WhatsApp e Email com link e horários disponíveis em sua agenda
+                    IA envia mensagem por WhatsApp e Email com link e horários disponíveis em sua agenda
                   </li>
                   <li className="flex items-start gap-1.5">
                     <span className="text-lia-text-disabled">•</span>
@@ -147,7 +147,7 @@ const LIARulesInfo: React.FC<{ type: 'triage' | 'interview' }> = ({ type }) => {
                 <>
                   <li className="flex items-start gap-1.5">
                     <span className="text-lia-text-disabled">•</span>
-                    LIA envia convite via WhatsApp e Email
+                    IA envia convite via WhatsApp e Email
                   </li>
                   <li className="flex items-start gap-1.5">
                     <span className="text-lia-text-disabled">•</span>
@@ -171,6 +171,8 @@ const LIARulesInfo: React.FC<{ type: 'triage' | 'interview' }> = ({ type }) => {
   )
 }
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
+
 export const CandidateDecisionFlowModal: React.FC<CandidateDecisionFlowModalProps> = ({
   isOpen,
   onClose,
@@ -179,6 +181,8 @@ export const CandidateDecisionFlowModal: React.FC<CandidateDecisionFlowModalProp
   onConfirm,
   onOpenFeedbackModal,
 }) => {
+  // P0-2 (2026-06-18): notify LIA which modal is open
+  useLiaModalTracking('candidate-decision', isOpen)
   const [isLoading, setIsLoading] = useState(false)
   const [showFeedbackEditor, setShowFeedbackEditor] = useState(false)
   const [feedbackChannel, setFeedbackChannel] = useState<'whatsapp' | 'email'>('whatsapp')
@@ -212,7 +216,7 @@ Equipe de Recrutamento`
       case 'approve_to_triage':
         return {
           title: 'Aprovar para Triagem',
-          icon: <Brain className="w-5 h-5 text-wedo-cyan" />,
+          icon: <Brain className="w-5 h-5 text-wedo-cyan-text" />,
           steps: [
             { id: 'approve', label: 'Aprovação', status: 'current' as const },
             { id: 'triage', label: 'Triagem IA', status: 'upcoming' as const },
@@ -259,7 +263,7 @@ Equipe de Recrutamento`
           steps: [],
           confirmLabel: 'Enviar Solicitação Urgente',
           confirmColor: 'bg-status-warning hover:bg-status-warning',
-          description: 'A LIA enviará uma nova mensagem de agendamento com prioridade alta para o candidato, solicitando retorno imediato.',
+          description: 'A IA enviará uma nova mensagem de agendamento com prioridade alta para o candidato, solicitando retorno imediato.',
         }
       case 'reschedule_interview':
         return {
@@ -268,7 +272,7 @@ Equipe de Recrutamento`
           steps: [],
           confirmLabel: 'Buscar Novos Horários',
           confirmColor: 'bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active',
-          description: 'A LIA vai buscar novos horários disponíveis na sua agenda e enviar as opções para o candidato escolher.',
+          description: 'A IA vai buscar novos horários disponíveis na sua agenda e enviar as opções para o candidato escolher.',
         }
       case 'confirm_hire':
         return {
@@ -347,7 +351,7 @@ Equipe de Recrutamento`
                 </div>
                 <div className="flex-1">
                   <p className="text-base-ui font-medium text-lia-text-primary mb-0.5">
-                    {flowType === 'approve_to_triage' ? 'LIA vai iniciar a triagem' : 'LIA vai agendar a entrevista'}
+                    {flowType === 'approve_to_triage' ? 'IA vai iniciar a triagem' : 'IA vai agendar a entrevista'}
                   </p>
                   <p className="text-xs text-lia-text-tertiary mb-1.5" aria-live="polite" aria-atomic="true">
                     {flowType === 'approve_to_triage' 
@@ -369,7 +373,7 @@ Equipe de Recrutamento`
                 </div>
                 <div className="flex-1">
                   <p className="text-base-ui font-medium text-lia-text-primary mb-0.5">
-                    LIA vai enviar boas-vindas
+                    IA vai enviar boas-vindas
                   </p>
                   <p className="text-xs text-lia-text-tertiary mb-1.5">
                     {`Contato via ${contactChannels.join(' e ') || 'Email'} com próximos passos de onboarding`}
@@ -426,7 +430,7 @@ Equipe de Recrutamento`
                     Solicitação de Urgência
                   </p>
                   <p className="text-xs text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
-                    A LIA enviará uma nova mensagem de agendamento com prioridade alta para o candidato, solicitando retorno imediato.
+                    A IA enviará uma nova mensagem de agendamento com prioridade alta para o candidato, solicitando retorno imediato.
                   </p>
                 </div>
               </div>
@@ -444,7 +448,7 @@ Equipe de Recrutamento`
                     Alterar Horário da Entrevista
                   </p>
                   <p className="text-xs text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
-                    A LIA vai buscar novos horários disponíveis na sua agenda e enviar as opções para o candidato escolher.
+                    A IA vai buscar novos horários disponíveis na sua agenda e enviar as opções para o candidato escolher.
                   </p>
                 </div>
               </div>

@@ -291,18 +291,18 @@ async def _wrap_create_job_from_pool(**kwargs: Any) -> dict[str, Any]:
                 f"Preparando criacao de vaga a partir do pool **{pool.name}**. "
                 f"O assistente de criacao de vagas sera aberto com o perfil pre-configurado."
             ),
-            "ui_action": "wizard_step",
-            "ui_action_params": {
-                "wizard": "create_job",
-                "step": "step_1",
-                "prefill": {
-                    "source": "talent_pool",
-                    "pool_id": str(pool_id),
-                    "archetype_id": str(pool.archetype_id) if pool.archetype_id else None,
-                    "pool_name": pool.name,
-                },
-            },
             "data": {
+                "ui_action": "wizard_step",
+                "ui_action_params": {
+                    "wizard": "create_job",
+                    "step": "step_1",
+                    "prefill": {
+                        "source": "talent_pool",
+                        "pool_id": str(pool_id),
+                        "archetype_id": str(pool.archetype_id) if pool.archetype_id else None,
+                        "pool_name": pool.name,
+                    },
+                },
                 "pool_id": str(pool_id),
                 "pool_name": pool.name,
                 "archetype_id": str(pool.archetype_id) if pool.archetype_id else None,
@@ -483,3 +483,31 @@ def get_talent_pool_tools() -> list[ToolDefinition]:
             function=_wrap_create_job_from_pool,
         ),
     ]
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# P1-2 (2026-06-18) — registro global
+# ─────────────────────────────────────────────────────────────────────────────
+
+def register_talent_pool_global() -> int:
+    """Registra as 6 tools de talent pool no tool_registry global.
+
+    Wraps lia_agents_core.ToolContract -> app.tools.registry.ToolDefinition,
+    padrão idêntico a register_jobs_mgmt_global() (P0-1 2026-06-18).
+    """
+    from app.tools.registry import ToolDefinition as _G
+    from app.tools.registry import tool_registry as _reg
+
+    n = 0
+    for td in get_talent_pool_tools():
+        _reg.register(
+            _G(
+                name=td.name,
+                description=td.description,
+                parameters_schema=td.parameters,
+                handler=td.function,
+                allowed_agents=["recruiter_assistant", "orchestrator"],
+            )
+        )
+        n += 1
+    return n

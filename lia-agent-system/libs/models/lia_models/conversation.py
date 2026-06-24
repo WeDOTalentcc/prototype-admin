@@ -55,7 +55,13 @@ class Conversation(Base):
     status = Column(String(50), default="active")
     is_active = Column(Boolean, default=True, index=True)
     is_archived = Column(Boolean, default=False)
-    
+
+    # IA Sidebar session management (migration 297)
+    is_pinned = Column(Boolean, default=False, server_default="false", nullable=False)
+    domain_tag = Column(String(50), nullable=True)
+    note = Column(Text, nullable=True)
+    unread_count = Column(Integer, default=0, server_default="0", nullable=False)
+
     message_count = Column(Integer, default=0)
     last_summary_at_count = Column(Integer, default=0)
     

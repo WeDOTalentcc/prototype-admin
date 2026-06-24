@@ -38,6 +38,7 @@ from ._shared import (
     get_whatsapp_service,
 )
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.errors import LIAError, LIAInternalError
 
 logger = logging.getLogger(__name__)
 
@@ -106,7 +107,7 @@ async def get_automation_triggers(company_id: str = Depends(require_company_id))
         raise
     except Exception as e:
         logger.error(f"Error getting triggers: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/triggers/{trigger_id}", response_model=TriggerUpdateResponse)
@@ -131,7 +132,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error updating trigger: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/check", response_model=TriggerCheckResponse)
@@ -153,7 +154,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error checking triggers: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/status", response_model=AutomationStatusResponse)
@@ -179,7 +180,7 @@ async def get_automation_status(company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting automation status: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/stage-suggestions", response_model=StageSuggestionsResponse)
@@ -248,7 +249,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error getting stage suggestions: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/execute-action", response_model=ExecuteActionResponse)
@@ -467,10 +468,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"Error executing action '{request.action_type}': {e}", exc_info=True)
-        raise HTTPException(
-            status_code=500,
-            detail=f"Erro ao executar ação '{request.action_type}': {str(e)}"
-        )
+        raise LIAInternalError("Internal server error")
 
 
 @router.post("/screen-candidate", response_model=ScreenCandidateResponse)
@@ -542,10 +540,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"❌ [SCREEN_CANDIDATE] Error: {e}", exc_info=True)
-        raise HTTPException(
-            status_code=500,
-            detail=f"Erro ao executar triagem: {str(e)}"
-        )
+        raise LIAInternalError("Internal server error")
 
 
 @router.post("/trigger-event", response_model=TriggerEventResponse)
@@ -711,9 +706,6 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"Error triggering event '{request.event_type}': {e}", exc_info=True)
-        raise HTTPException(
-            status_code=500,
-            detail=f"Erro ao disparar evento '{request.event_type}': {str(e)}"
-        )
+        raise LIAInternalError("Internal server error")
 
 

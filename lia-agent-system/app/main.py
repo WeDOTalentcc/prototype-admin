@@ -7,6 +7,7 @@ from app.shared.llm_bootstrap import install_llm_guards
 
 install_llm_guards(entrypoint="fastapi")
 
+import asyncio
 import logging
 import os
 from contextlib import asynccontextmanager
@@ -30,6 +31,7 @@ from app.middleware.auth_enforcement import AuthEnforcementMiddleware
 from app.middleware.rate_limiter import RateLimitMiddleware
 from app.middleware.idempotency import IdempotencyMiddleware
 from app.middleware.request_id import RequestIdMiddleware
+from app.middleware.request_duration import RequestDurationMiddleware
 from app.middleware.audit_access_middleware import AuditAccessMiddleware
 from app.middleware.response_envelope import ResponseEnvelopeMiddleware
 from app.shared.services.embedding_cache_service import embedding_cache
@@ -116,6 +118,28 @@ async def lifespan(app: FastAPI):
     # (C1.2) abaixo. Garante atributo sempre definido para observabilidade.
     app.state.event_consumer_healthy = False
     logger.info("🚀 Starting LIA Agent System...")
+
+    # ─── GAP-12-004: OTEL distributed tracing bootstrap ─────────────────
+    # Ensures TracerProvider + OTLP exporter are initialized ONCE at startup
+    # (import-time init is fragile under reloads). FastAPIInstrumentor adds
+    # auto-spans for every HTTP request. Fail-open: never blocks app boot.
+    try:
+        from app.shared.observability.tracing import _try_init_otlp, is_otlp_active
+        if not is_otlp_active():
+            _try_init_otlp()
+        if is_otlp_active():
+            try:
+                from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+                FastAPIInstrumentor.instrument_app(app)
+                logger.info("[OTEL] FastAPIInstrumentor wired — auto HTTP spans active")
+            except ImportError:
+                logger.debug("[OTEL] opentelemetry-instrumentation-fastapi not installed — skip auto-instrument")
+            except Exception as _fi_exc:
+                logger.debug("[OTEL] FastAPIInstrumentor failed (fail-open): %s", _fi_exc)
+        else:
+            logger.info("[OTEL] OTLP exporter not active (set OTEL_EXPORTER_OTLP_ENDPOINT to enable)")
+    except Exception as _otel_exc:
+        logger.debug("[OTEL] bootstrap failed (fail-open): %s", _otel_exc)
     logger.info(f"Environment: {settings.APP_ENV}")
     logger.info(f"Debug mode: {settings.DEBUG}")
 
@@ -151,6 +175,38 @@ async def lifespan(app: FastAPI):
         raise  # re-raise the env validation error in prod
     except Exception as _env_check_exc:
         logger.warning("ADR-AUTH-001 env check skipped (import failed): %s", _env_check_exc)
+
+    # ─── ADR-031 v2 (2026-06-08): protected_attributes registry fail-fast ──
+    # O FairnessGuard só protege atributos LGPD (raça/etnia/religião) se o
+    # registry YAML carregou. Sem este check, um YAML ausente/quebrado em
+    # produção degradaria silenciosamente para fail-OPEN — detectado apenas
+    # no primeiro request, não no boot. Mesma disciplina do guard de
+    # REDIS_ENCRYPTION_KEY: fail-fast em prod, warn-only em dev.
+    try:
+        from app.shared.compliance.protected_attributes import is_registry_loaded
+        if not is_registry_loaded():
+            _pa_prod = os.getenv("APP_ENV", "development").lower() in (
+                "production", "prod", "staging"
+            )
+            _pa_msg = (
+                "[ADR-031] protected_attributes registry EMPTY at startup — "
+                "FairnessGuard rodaria fail-OPEN (LGPD gap). Verifique "
+                "app/config/protected_attributes.yaml e o loader em "
+                "app/shared/compliance/protected_attributes.py."
+            )
+            if _pa_prod:
+                logger.critical(_pa_msg)
+                raise RuntimeError(_pa_msg)
+            logger.warning(_pa_msg)
+        else:
+            logger.info("✅ ADR-031: protected_attributes registry loaded.")
+    except RuntimeError:
+        raise  # re-raise the LGPD fail-fast in prod
+    except Exception as _pa_check_exc:
+        logger.warning(
+            "ADR-031 protected_attributes check skipped (import failed): %s",
+            _pa_check_exc,
+        )
 
 
     # ─── Audit-loop-leak fix (2026-05-20) ────────────────────────────────
@@ -188,6 +244,17 @@ async def lifespan(app: FastAPI):
     else:
         logger.warning("⚠️  Microsoft Teams Bot NOT configured (MICROSOFT_APP_ID/PASSWORD missing)")
         logger.warning("   Teams integration will not work until credentials are added")
+
+    # Validate Teams outbound webhook (Incoming Webhook for proactive notifications/cards)
+    if settings.TEAMS_WEBHOOK_URL:
+        logger.info("✅ Teams outbound webhook configured (TEAMS_WEBHOOK_URL present — proactive delivery enabled)")
+    else:
+        logger.warning(
+            "⚠️  Teams outbound NOT configured (TEAMS_WEBHOOK_URL missing) — "
+            "all proactive notifications and Adaptive Cards will be logged only, not delivered. "
+            "Get URL: Teams channel → Manage channel → Connectors → Incoming Webhook → Configure. "
+            "Health check: GET /api/v1/health → components.integrations.teams_outbound"
+        )
     
     # Validate Microsoft Graph configuration
     if settings.AZURE_CLIENT_ID and settings.AZURE_CLIENT_SECRET and settings.AZURE_TENANT_ID:
@@ -631,7 +698,35 @@ async def lifespan(app: FastAPI):
             exc_info=True,
         )
 
+    # --- Studio scope cache warmup (cold-cache fix) ---
+    # The Studio scope cache (_STUDIO_SCOPE_CACHE) is built lazily.
+    # Without warmup, the first federated request may silently omit Studio tools.
+    # Fail-open: warmup failure logs a warning but never blocks startup.
+    try:
+        from app.orchestrator.studio_scope_extension import get_studio_tools_for_scope
+        async with AsyncSessionLocal() as _studio_db:
+            await get_studio_tools_for_scope("talent_analysis", _studio_db)
+        logger.info("Studio scope cache warmed at startup")
+    except Exception as _studio_warmup_exc:
+        logger.warning(
+            "Studio scope cache warmup failed (will retry on first request): %s",
+            _studio_warmup_exc,
+        )
+
     logger.info("🎯 LIA Agent System ready!")
+
+    # ─── PERF-299: DB connection pool warm-up (cold-start fix) ───────────────
+    # First query apos boot do pool leva ~538ms (conexao TCP + SSL handshake +
+    # auth PostgreSQL). Aqui executamos SELECT 1 pre-yield para que o pool
+    # ja tenha conexao aquecida antes de qualquer request chegar.
+    # Fail-open: nunca bloqueia boot.
+    try:
+        from sqlalchemy import text as _sa_text
+        async with AsyncSessionLocal() as _warmup_db:
+            await _warmup_db.execute(_sa_text("SELECT 1"))
+        logger.info("✅ DB connection pool warmed up (SELECT 1 pre-yield)")
+    except Exception as _warmup_exc:
+        logger.warning("⚠️  DB connection pool warm-up failed (non-blocking): %s", _warmup_exc)
 
     yield
 
@@ -820,6 +915,9 @@ app.add_middleware(
     ],
 )
 
+# GAP-12-008: Request duration tracking + slow-request alerting
+app.add_middleware(RequestDurationMiddleware)
+
 # Request ID middleware
 app.add_middleware(RequestIdMiddleware)
 
@@ -857,11 +955,14 @@ async def lia_compliance_error_handler(request: FastAPIRequest, exc: LIAComplian
 async def lia_error_handler(request: FastAPIRequest, exc: LIAError):
     """LIA platform errors return structured JSON with appropriate status code."""
     request_id = getattr(request.state, "request_id", "unknown")
-    status = 400 if exc.recoverable else 500
-    logger.warning(
-        "LIAError: code=%s recoverable=%s [request_id=%s]",
-        exc.code, exc.recoverable, request_id,
+    status = exc.http_status
+    log_fn = logger.error if status >= 500 else logger.warning
+    log_fn(
+        "LIAError: type=%s code=%s http=%d recoverable=%s [request_id=%s]",
+        type(exc).__name__, exc.code, status, exc.recoverable, request_id,
     )
+    if status >= 500:
+        sentry_sdk.capture_exception(exc)
     return JSONResponse(
         status_code=status,
         content={**exc.to_dict(), "request_id": request_id},
@@ -877,7 +978,7 @@ async def http_exception_handler(request: FastAPIRequest, exc: StarletteHTTPExce
             "HTTP %d raised explicitly: %s [request_id=%s]",
             exc.status_code, exc.detail, request_id,
         )
-    safe_message = exc.detail if exc.status_code < 500 else "Internal server error"
+    safe_message = exc.detail if exc.status_code < 500 else "Erro interno do servidor"
     return JSONResponse(
         status_code=exc.status_code,
         content={
@@ -919,6 +1020,47 @@ async def request_budget_exceeded_handler(request: FastAPIRequest, exc: RequestB
     )
 
 
+from app.domains.agent_studio.repositories.pool_agent_assignment_repository import (
+    CrossTenantError,
+)
+
+@app.exception_handler(CrossTenantError)
+async def cross_tenant_error_handler(request: FastAPIRequest, exc: CrossTenantError):
+    request_id = getattr(request.state, "request_id", "unknown")
+    logger.warning(
+        "Cross-tenant access attempt blocked [request_id=%s]: %s",
+        request_id, exc,
+    )
+    return JSONResponse(
+        status_code=403,
+        content={
+            "error": True,
+            "status_code": 403,
+            "message": "Acesso negado",
+            "request_id": request_id,
+        },
+    )
+
+
+@app.exception_handler(asyncio.TimeoutError)
+async def asyncio_timeout_error_handler(request: FastAPIRequest, exc: asyncio.TimeoutError):
+    request_id = getattr(request.state, "request_id", "unknown")
+    logger.warning(
+        "Request timeout [request_id=%s]: %s",
+        request_id, exc,
+        exc_info=True,
+    )
+    return JSONResponse(
+        status_code=504,
+        content={
+            "error": True,
+            "status_code": 504,
+            "message": "Requisição expirou",
+            "request_id": request_id,
+        },
+    )
+
+
 @app.exception_handler(Exception)
 async def unhandled_exception_handler(request: FastAPIRequest, exc: Exception):
     request_id = getattr(request.state, "request_id", "unknown")
@@ -933,7 +1075,7 @@ async def unhandled_exception_handler(request: FastAPIRequest, exc: Exception):
         content={
             "error": True,
             "status_code": 500,
-            "message": "Internal server error",
+            "message": "Erro interno do servidor",
             "request_id": request_id,
         }
     )
@@ -981,7 +1123,7 @@ async def pydantic_validation_error_handler(request: FastAPIRequest, exc: Pydant
             "error": True,
             "status_code": 422,
             "code": "VALIDATION_ERROR",
-            "message": "Validation error",
+            "message": "Erro de validação",
             "errors": exc.errors(include_url=False),
             "request_id": request_id,
         },
@@ -1009,7 +1151,7 @@ async def request_validation_error_handler(request: FastAPIRequest, exc: Request
             "error": True,
             "status_code": 422,
             "code": "REQUEST_VALIDATION_ERROR",
-            "message": "Request validation failed",
+            "message": "Requisição inválida",
             "errors": exc.errors(),
             "request_id": request_id,
         },
@@ -1074,6 +1216,13 @@ async def prometheus_metrics():
             generate_latest,
         )
         from fastapi.responses import Response
+
+        # GAP-12-011: refresh psutil gauges on every Prometheus scrape
+        try:
+            from app.core.metrics import update_process_metrics
+            update_process_metrics()
+        except Exception:
+            pass  # fail-open — metrics still returned without process gauges
 
         return Response(
             content=generate_latest(REGISTRY),

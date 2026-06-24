@@ -68,9 +68,10 @@ export function useCandidateArrayUpdate<T>(
               }),
             })
         if (!response.ok) {
-          const errBody = (await response.json().catch(() => ({}))) as { detail?: string; error?: string }
+          const errBody = (await response.json().catch(() => ({}))) as { detail?: string; error?: string; request_id?: string }
           const msg = errBody.detail ?? errBody.error ?? `Erro ${response.status} ao salvar ${fieldName}`
-          toast.error("Erro ao salvar", { description: msg })
+          const _rid = errBody.request_id ? ` (ID: ${errBody.request_id})` : ""
+          toast.error("Erro ao salvar", { description: `${msg}${_rid}` })
           return { success: false, error: msg }
         }
         if (companyId) {

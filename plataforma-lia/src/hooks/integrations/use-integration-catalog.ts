@@ -13,11 +13,12 @@
  * - B1: customize é snapshot canonical (não sincroniza com master após)
  * - C: admin tudo, recrutador create-novos OK mas não delete/update-de-outros
  *
- * Pattern canonical: useState + fetch direto (sem React Query — projeto não
- * usa). Cache em-memory + invalidate manual via refetch().
+ * Performance fix 2026-06-21: migrado para React Query com staleTime: 60_000.
+ * Elimina re-fetch a cada navegação para a aba Integrações (CAUSA #2).
  */
 
-import { useCallback, useEffect, useState } from "react"
+import { useCallback } from "react"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 
 export type IntegrationCategory =
   | "ai_models"
@@ -26,6 +27,7 @@ export type IntegrationCategory =
   | "communication"
   | "crm_hris"
   | "mcps_apis"
+  | "job_board"
 
 export type IntegrationStatus = "production" | "coming_soon" | "deprecated"
 
@@ -99,6 +101,8 @@ interface UseIntegrationCatalogResult {
   ) => Promise<IntegrationCatalogEntry | null>
 }
 
+const CATALOG_QUERY_KEY = "integration-catalog" as const
+
 export function useIntegrationCatalog(
   options: {
     includeMaster?: boolean
@@ -106,17 +110,18 @@ export function useIntegrationCatalog(
   } = {},
 ): UseIntegrationCatalogResult {
   const { includeMaster = true, category = null } = options
-  const [entries, setEntries] = useState<IntegrationCatalogEntry[]>([])
-  const [masterCount, setMasterCount] = useState(0)
-  const [customCount, setCustomCount] = useState(0)
-  const [total, setTotal] = useState(0)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const queryClient = useQueryClient()
 
-  const fetchAll = useCallback(async () => {
-    setIsLoading(true)
-    setError(null)
-    try {
+  const queryKey = [CATALOG_QUERY_KEY, includeMaster, category] as const
+
+  const {
+    data,
+    isLoading,
+    error: queryError,
+    refetch: queryRefetch,
+  } = useQuery<IntegrationCatalogListResponse>({
+    queryKey,
+    queryFn: async () => {
       const params: Record<string, string> = {
         include_master: String(includeMaster),
       }
@@ -128,21 +133,29 @@ export function useIntegrationCatalog(
       if (!res.ok) {
         throw new Error(`HTTP ${res.status}`)
       }
-      const data: IntegrationCatalogListResponse = await res.json()
-      setEntries(data.items || [])
-      setMasterCount(data.master_count ?? 0)
-      setCustomCount(data.custom_count ?? 0)
-      setTotal(data.total ?? 0)
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Erro ao carregar catalogo")
-    } finally {
-      setIsLoading(false)
-    }
-  }, [includeMaster, category])
+      return res.json()
+    },
+    staleTime: 60_000,
+    retry: 1,
+  })
 
-  useEffect(() => {
-    fetchAll()
-  }, [fetchAll])
+  const entries = data?.items ?? []
+  const masterCount = data?.master_count ?? 0
+  const customCount = data?.custom_count ?? 0
+  const total = data?.total ?? 0
+  const error = queryError instanceof Error
+    ? queryError.message
+    : queryError
+      ? "Erro ao carregar catalogo"
+      : null
+
+  const refetch = useCallback(async () => {
+    await queryRefetch()
+  }, [queryRefetch])
+
+  const invalidate = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: [CATALOG_QUERY_KEY] })
+  }, [queryClient])
 
   const createCustom = useCallback(
     async (data: IntegrationCatalogData) => {
@@ -157,14 +170,13 @@ export function useIntegrationCatalog(
           throw new Error(err.detail || err.error || `HTTP ${res.status}`)
         }
         const created: IntegrationCatalogEntry = await res.json()
-        await fetchAll()
+        invalidate()
         return created
       } catch (e) {
-        setError(e instanceof Error ? e.message : "Erro ao criar entry")
         return null
       }
     },
-    [fetchAll],
+    [invalidate],
   )
 
   const updateEntry = useCallback(
@@ -183,14 +195,13 @@ export function useIntegrationCatalog(
           throw new Error(err.detail || err.error || `HTTP ${res.status}`)
         }
         const updated: IntegrationCatalogEntry = await res.json()
-        await fetchAll()
+        invalidate()
         return updated
       } catch (e) {
-        setError(e instanceof Error ? e.message : "Erro ao atualizar entry")
         return null
       }
     },
-    [fetchAll],
+    [invalidate],
   )
 
   const deleteEntry = useCallback(
@@ -204,14 +215,13 @@ export function useIntegrationCatalog(
           const err = await res.json().catch(() => ({}))
           throw new Error(err.detail || err.error || `HTTP ${res.status}`)
         }
-        await fetchAll()
+        invalidate()
         return true
       } catch (e) {
-        setError(e instanceof Error ? e.message : "Erro ao deletar entry")
         return false
       }
     },
-    [fetchAll],
+    [invalidate],
   )
 
   const customizeMaster = useCallback(
@@ -230,14 +240,13 @@ export function useIntegrationCatalog(
           throw new Error(err.detail || err.error || `HTTP ${res.status}`)
         }
         const custom: IntegrationCatalogEntry = await res.json()
-        await fetchAll()
+        invalidate()
         return custom
       } catch (e) {
-        setError(e instanceof Error ? e.message : "Erro ao customizar master")
         return null
       }
     },
-    [fetchAll],
+    [invalidate],
   )
 
   return {
@@ -247,7 +256,7 @@ export function useIntegrationCatalog(
     total,
     isLoading,
     error,
-    refetch: fetchAll,
+    refetch,
     createCustom,
     updateEntry,
     deleteEntry,

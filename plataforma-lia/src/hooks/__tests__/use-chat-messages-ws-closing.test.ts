@@ -33,12 +33,17 @@ describe('useChatMessages — WS fechando entre mensagens (Task #379)', () => {
 
   beforeEach(() => {
     fetchMock = vi.fn()
+    // Isola do Secret NEXT_PUBLIC_CHAT_TRANSPORT=sse do Replit (Fase C SSE-e2e):
+    // sem isso o early-return SSE de useChatMessages pularia o fallback REST
+    // (wsSend=false → REST) que este arquivo testa.
+    vi.stubEnv('NEXT_PUBLIC_CHAT_TRANSPORT', '')
     global.fetch = fetchMock as unknown as typeof fetch
   })
 
   afterEach(() => {
     global.fetch = ORIGINAL_FETCH
     vi.restoreAllMocks()
+    vi.unstubAllEnvs()
   })
 
   function renderChatMessages(opts: {
@@ -93,8 +98,11 @@ describe('useChatMessages — WS fechando entre mensagens (Task #379)', () => {
 
     // E a resposta do REST foi entregue ao consumidor — mensagem não some.
     await waitFor(() => {
-      expect(onMessageComplete).toHaveBeenCalledWith('Resposta pelo REST')
+      expect(onMessageComplete).toHaveBeenCalled()
     })
+    // Contrato canonical (PR-D): (content, executionPlan?, extras?). O conteúdo
+    // entregue ao consumidor é o 1º argumento — metadata opcional pode seguir.
+    expect(onMessageComplete.mock.calls[0][0]).toBe('Resposta pelo REST')
   })
 
   it('libera o indicador "LIA digitando" mesmo após o fallback REST', async () => {

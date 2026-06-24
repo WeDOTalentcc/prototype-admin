@@ -1,6 +1,12 @@
 """
 Workforce Planning / Demand Forecasting — Predict hiring needs based on
 turnover data, pipeline velocity, growth targets, and seasonality.
+
+ADR-001 T9 (2026-06-09): raw SQL queries extracted to WorkforceRepository
+(app/domains/workforce/repositories/workforce_repository.py). The 3 analytical
+methods — get_open_jobs_summary, get_historical_hire_metrics,
+get_internal_employee_count — are the canonical place for those queries.
+ADR-001-EXEMPT markers removed; tool now delegates to the repository.
 """
 import logging
 from datetime import datetime, timedelta
@@ -29,63 +35,36 @@ async def forecast_hiring_needs(
         include_backfills: Include estimated backfills from turnover
     """
     from app.core.database import AsyncSessionLocal
-    from sqlalchemy import text
+    from app.repositories.workforce_repository import WorkforceRepository
 
     company_id = kwargs.get("company_id", "")
 
     period_months = {"month": 1, "quarter": 3, "half_year": 6, "year": 12}.get(period, 3)
-    forecast_end = datetime.utcnow() + timedelta(days=period_months * 30)
+    forecast_end = datetime.utcnow() + timedelta(days=period_months * 30)  # noqa: F841
 
     try:
         async with AsyncSessionLocal() as session:
-            dept_filter = "AND department = :dept" if department else ""
-            params: dict[str, Any] = {"cid": company_id}
-            if department:
-                params["dept"] = department
+            repo = WorkforceRepository(session)
 
-            active_jobs_q = f"""
-                SELECT COUNT(*) AS open_positions,
-                       COALESCE(SUM(CASE WHEN status = 'Ativa' THEN 1 ELSE 0 END), 0) AS active_count,
-                       COALESCE(SUM(CASE WHEN status IN ('Pausada', 'Em Aprovação') THEN 1 ELSE 0 END), 0) AS pipeline_count
-                FROM job_vacancies
-                WHERE company_id = :cid
-                  AND status NOT IN ('Cancelada', 'Fechada')
-                  {dept_filter}
-            """
-            row = await session.execute(text(active_jobs_q), params)
-            job_data = row.mappings().first() or {}
+            job_data = await repo.get_open_jobs_summary(
+                company_id=company_id,
+                department=department,
+            )
+            hist_data = await repo.get_historical_hire_metrics(
+                company_id=company_id,
+                lookback_days=180,
+                department=department,
+            )
+            total_employees = await repo.get_internal_employee_count(
+                company_id=company_id,
+                department=department,
+            )
 
-            lookback = datetime.utcnow() - timedelta(days=180)
-            hist_params = {**params, "lookback": lookback}
-            historical_q = f"""
-                SELECT COUNT(*) AS total_hires,
-                       COALESCE(AVG(EXTRACT(EPOCH FROM (updated_at - created_at)) / 86400), 45) AS avg_time_to_fill
-                FROM job_vacancies
-                WHERE company_id = :cid
-                  AND status = 'Fechada'
-                  AND updated_at >= :lookback
-                  {dept_filter}
-            """
-            hist_row = await session.execute(text(historical_q), hist_params)
-            hist_data = hist_row.mappings().first() or {}
-
-            employee_q = f"""
-                SELECT COUNT(*) AS total_employees
-                FROM candidates
-                WHERE company_id = :cid
-                  AND is_active = true
-                  AND source IN ('internal', 'employee', 'colaborador')
-                  {dept_filter}
-            """
-            emp_row = await session.execute(text(employee_q), params)
-            emp_data = emp_row.mappings().first() or {}
-
-            total_employees = int(emp_data.get("total_employees") or 0)
-            total_hires_6m = int(hist_data.get("total_hires") or 0)
-            avg_ttf = float(hist_data.get("avg_time_to_fill") or 45)
-            open_positions = int(job_data.get("open_positions") or 0)
-            active_positions = int(job_data.get("active_count") or 0)
-            pipeline_positions = int(job_data.get("pipeline_count") or 0)
+            total_hires_6m = hist_data["total_hires"]
+            avg_ttf = hist_data["avg_time_to_fill"]
+            open_positions = job_data["open_positions"]
+            active_positions = job_data["active_count"]
+            pipeline_positions = job_data["pipeline_count"]
 
     except Exception as e:
         logger.error(f"Error fetching workforce data: {e}", exc_info=True)

@@ -2,6 +2,7 @@
 Interview Scheduling API endpoints.
 """
 import json
+from app.shared.errors import LIAInternalError
 import uuid
 from datetime import datetime, timedelta
 
@@ -252,7 +253,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error("Failed to schedule interview: %s", e)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.get("/interviews", response_model=list[dict])
@@ -356,7 +357,7 @@ async def list_interviews(
         raise
     except Exception as e:
         logger.error("Failed to list interviews: %s", e)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.post("/interviews/{interview_id}/cancel", response_model=dict)
@@ -402,7 +403,7 @@ async def cancel_interview(
         raise
     except Exception as e:
         logger.error("Failed to cancel interview: %s", e)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 class CompleteInterviewRequest(WeDoBaseModel):
@@ -465,7 +466,7 @@ async def complete_interview(
         raise
     except Exception as e:
         logger.error("Failed to complete interview: %s", e)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.post("/interviews/{interview_id}/reschedule", response_model=dict)
@@ -525,7 +526,7 @@ current_user: User = Depends(get_current_user_or_demo),
         raise
     except Exception as e:
         logger.error("Failed to reschedule interview: %s", e)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.post("/interviews/check-availability", response_model=dict)
@@ -553,7 +554,7 @@ async def check_availability(request: CheckAvailabilityRequest, company_id: str 
         raise
     except Exception as e:
         logger.error("Failed to check availability: %s", e)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.post("/interviews/{interview_id}/feedback", response_model=dict)
@@ -610,7 +611,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error("Failed to submit feedback: %s", e)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 # =============================================
@@ -685,7 +686,7 @@ Retorne APENAS o corpo do email (sem assunto), formatado em HTML simples.
         raise
     except Exception as e:
         logger.error("Failed to generate email template: %s", e)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.post("/interviews/schedule-from-prompt", response_model=dict)
@@ -800,10 +801,7 @@ IMPORTANTE: Retorne APENAS o JSON válido sem texto adicional.
             raise
         except Exception as calendar_error:
             logger.error("Calendar service failed: %s", calendar_error)
-            raise HTTPException(
-                status_code=500,
-                detail=f"Erro ao criar evento no calendário: {str(calendar_error)}",
-            )
+            raise LIAInternalError(f"Erro ao criar evento no calendário: {str(calendar_error)}")
 
         # Create database record
         interview = Interview(
@@ -870,7 +868,7 @@ IMPORTANTE: Retorne APENAS o JSON válido sem texto adicional.
         raise
     except Exception as e:
         logger.error("Unexpected error scheduling from prompt: %s", e)
-        raise HTTPException(status_code=500, detail=f"Erro inesperado: {str(e)}")
+        raise
 
 
 # =============================================
@@ -940,7 +938,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error("Failed to get shortlisted candidates: %s", e)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.get("/interviews/stages", response_model=list[dict])
@@ -979,7 +977,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error("Failed to get interview stages: %s", e)
-        raise HTTPException(status_code=500, detail="Error fetching stages")
+        raise
 
 
 def _validate_interview_uuid(interview_id: str) -> None:
@@ -1053,7 +1051,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error("Failed to attach recording to interview %s: %s", interview_id, e)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.post("/interviews/{interview_id}/transcribe", response_model=dict)
@@ -1112,7 +1110,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error("Failed to trigger transcription for interview %s: %s", interview_id, e)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.get("/interviews/{interview_id}/transcript", response_model=dict)
@@ -1169,7 +1167,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error("Failed to get transcript for interview %s: %s", interview_id, e)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 async def _run_transcription_background(

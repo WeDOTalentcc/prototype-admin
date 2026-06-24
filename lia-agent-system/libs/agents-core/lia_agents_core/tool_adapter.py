@@ -170,6 +170,59 @@ class ToolContract(BaseModel):
 ToolDefinition = ToolContract
 
 
+
+def _parameters_to_args_schema(name: str, parameters: Dict[str, Any]) -> Any:
+    """Convert ToolContract.parameters (JSON Schema dict) to a Pydantic model
+    suitable for StructuredTool.args_schema.
+
+    Without args_schema, LangChain infers schema from the function signature.
+    Since tee wrappers have ``*args, **kwargs``, it creates a single ``kwargs``
+    field — causing double-nesting: the LLM sends ``{"kwargs": {"field": val}}``
+    instead of ``{"field": val}``, and handlers that read ``kwargs.get("field")``
+    get None.
+    """
+    from pydantic import create_model as _create_model
+    from pydantic import Field as _Field
+
+    if not parameters or not isinstance(parameters, dict):
+        return None
+    props = parameters.get("properties")
+    if not props:
+        return None
+
+    required = set(parameters.get("required", []))
+    _TYPE_MAP = {
+        "string": str, "integer": int, "number": float,
+        "boolean": bool, "array": list, "object": dict,
+    }
+
+    fields: Dict[str, Any] = {}
+    for fname, fschema in props.items():
+        raw_type = fschema.get("type", "string")
+        if isinstance(raw_type, list):
+            raw_type = next((t for t in raw_type if t != "null"), "string")
+        py_type = _TYPE_MAP.get(raw_type, str)
+        desc = fschema.get("description", "")
+        extra: Dict[str, Any] = {}
+        if "enum" in fschema:
+            extra["enum"] = fschema["enum"]
+        if fname in required:
+            fields[fname] = (
+                py_type,
+                _Field(description=desc, **({"json_schema_extra": extra} if extra else {})),
+            )
+        else:
+            fields[fname] = (
+                Optional[py_type],
+                _Field(default=None, description=desc, **({"json_schema_extra": extra} if extra else {})),
+            )
+
+    try:
+        return _create_model(f"{name}_args", **fields)
+    except Exception:
+        return None
+
+
 def tool_definition_to_langchain_tool(td: ToolContract) -> Any:
     """
     Converte um ToolContract em LangChain StructuredTool compatível com
@@ -191,19 +244,58 @@ def tool_definition_to_langchain_tool(td: ToolContract) -> Any:
         ) from exc
 
     fn = td.function
+    # wire-B canonical (2026-06-06): tee response_blocks de TODA tool pro
+    # rrp_block_sink ANTES da stringificacao do StructuredTool, p/ que os
+    # domain agents (talent/jobs/kanban) — nao so o federado — preservem os
+    # blocks. Defensivo: tee_tool_function nunca levanta nem altera o retorno.
+    try:
+        from app.shared.rrp_block_sink import tee_tool_function
+        fn = tee_tool_function(fn)
+    except Exception:
+        pass
+    # HITL surfacing (AUD-4 1b, 2026-06-07): tee needs_confirmation pro
+    # hitl_pending_sink (irmao do rrp). Mesmo ponto, defensivo, passthrough.
+    try:
+        from app.shared.hitl_pending_sink import tee_tool_function as _hitl_tee
+        fn = _hitl_tee(fn)
+    except Exception:
+        pass
+    # Fase 2 (2026-06-09): tee da diretiva ui_action (open_modal/navigate_to/
+    # apply_table_state) pro ui_action_sink (irmao do rrp/hitl). Sem isso a
+    # diretiva morre na stringificacao do ToolMessage no caminho federado
+    # (ReAct) — open_ui/apply_table_state nao chegavam ao FE. Defensivo.
+    try:
+        from app.shared.ui_action_sink import tee_tool_function as _uia_tee
+        fn = _uia_tee(fn)
+    except Exception:
+        pass
+    # STL-GATE (Stop-The-Lie): reescreve resultado de ghost tools
+    # (side_effect_executed=False + success=True) ANTES da stringificacao.
+    # Outermost tee = primeiro a processar o resultado.
+    try:
+        from app.shared.stl_gate_sink import tee_tool_function as _stl_tee
+        fn = _stl_tee(fn)
+    except Exception:
+        pass
     name = td.name
     description = td.description or f"Executa {name}"
+
+    _schema = _parameters_to_args_schema(name, td.parameters)
 
     if inspect.iscoroutinefunction(fn):
         return StructuredTool.from_function(
             coroutine=fn,
             name=name,
             description=description,
+            args_schema=_schema,
+            infer_schema=_schema is None,
         )
     return StructuredTool.from_function(
         func=fn,
         name=name,
         description=description,
+        args_schema=_schema,
+        infer_schema=_schema is None,
     )
 
 

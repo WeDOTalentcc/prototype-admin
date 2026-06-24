@@ -23,6 +23,7 @@ from app.schemas.company import (
     IdealProfileUpdate,
 )
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.errors import LIAError
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +54,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         # Task #1161 (Bug C): preserve full traceback (was hidden by f-string
         # of `str(e)`) and do not leak internal error message to the client.
         logger.exception("Error listing culture values")
-        raise HTTPException(status_code=500, detail="internal error") from e
+        raise LIAError(message="internal error") from e
 
 
 @router.post("/culture-values", response_model=CultureValueResponse)
@@ -74,7 +75,7 @@ _company_gate: str = Depends(require_company_id)):
     except Exception as e:
         # Task #1161 (Bug C): full traceback + no internal leak.
         logger.exception("Error creating culture value")
-        raise HTTPException(status_code=500, detail="internal error") from e
+        raise LIAError(message="internal error") from e
 
 
 @router.put("/culture-values/{value_id}", response_model=CultureValueResponse)
@@ -97,7 +98,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         # Task #1161 (Bug C): full traceback + no internal leak.
         logger.exception("Error updating culture value")
-        raise HTTPException(status_code=500, detail="internal error") from e
+        raise LIAError(message="internal error") from e
 
 
 @router.delete("/culture-values/{value_id}", response_model=None)
@@ -117,7 +118,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         # Task #1161 (Bug C): full traceback + no internal leak.
         logger.exception("Error deleting culture value")
-        raise HTTPException(status_code=500, detail="internal error") from e
+        raise LIAError(message="internal error") from e
 
 
 @router.get("/ideal-profiles", response_model=list[IdealProfileResponse])
@@ -149,7 +150,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
     except Exception as e:
         # Task #1161 (Bug C): full traceback + no internal leak.
         logger.exception("Error listing ideal profiles")
-        raise HTTPException(status_code=500, detail="internal error") from e
+        raise LIAError(message="internal error") from e
 
 
 @router.post("/ideal-profiles", response_model=IdealProfileResponse)
@@ -170,7 +171,7 @@ _company_gate: str = Depends(require_company_id)):
     except Exception as e:
         # Task #1161 (Bug C): full traceback + no internal leak.
         logger.exception("Error creating ideal profile")
-        raise HTTPException(status_code=500, detail="internal error") from e
+        raise LIAError(message="internal error") from e
 
 
 @router.get("/ideal-profiles/{profile_id}", response_model=IdealProfileResponse)
@@ -194,7 +195,7 @@ async def get_ideal_profile(
         raise
     except Exception:
         logger.exception("Error fetching ideal profile")
-        raise HTTPException(status_code=500, detail="internal error") from None
+        raise LIAError(message="internal error") from None
 
 @router.put("/ideal-profiles/{profile_id}", response_model=IdealProfileResponse)
 async def update_ideal_profile(
@@ -219,7 +220,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         # Task #1161 (Bug C): full traceback + no internal leak.
         logger.exception("Error updating ideal profile")
-        raise HTTPException(status_code=500, detail="internal error") from e
+        raise LIAError(message="internal error") from e
 
 
 @router.delete("/ideal-profiles/{profile_id}", response_model=None)
@@ -239,4 +240,4 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         # Task #1161 (Bug C): full traceback + no internal leak.
         logger.exception("Error deleting ideal profile")
-        raise HTTPException(status_code=500, detail="internal error") from e
+        raise LIAError(message="internal error") from e

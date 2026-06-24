@@ -5,6 +5,7 @@
 import { describe, it, expect, vi } from "vitest"
 import { render, screen } from "@testing-library/react"
 import { CandidateScoreBadge, formatScore, getScoreColor } from "../CandidateScoreBadge"
+import { WSI_VISUAL_3TIER } from '@/lib/wsi/visual'
 
 vi.mock("next-intl", () => ({
   useTranslations: () => (key: string) => key,
@@ -85,7 +86,7 @@ describe("getScoreColor WSI tiers", () => {
   it("score >=7.5 returns success class", () => {
     expect(getScoreColor(8.0, "wsi")).toMatch(/success|green/i)
   })
-  it("score 6.0-7.4 returns warning class", () => {
+  it(`score ${WSI_VISUAL_3TIER.yellow}-${WSI_VISUAL_3TIER.green - 0.1} returns warning class`, () => {
     expect(getScoreColor(6.5, "wsi")).toMatch(/warning|orange|yellow/i)
   })
   it("score <6 returns error class", () => {

@@ -14,6 +14,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db, get_tenant_db
 from app.domains.communication.repositories.optout_repository import OptoutRepository
+from app.domains.communication.services.communication_optout_service import CommunicationOptOutService
+from app.enums.communication import MessageChannel
 from app.shared.security.require_company_id import require_company_id
 
 
@@ -66,7 +68,7 @@ UNSUBSCRIBE_PAGE_HTML = """<!DOCTYPE html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cancelar Inscrição - Plataforma LIA / WeDOTalent</title>
+    <title>Cancelar Inscrição - WeDOTalent</title>
     <style>
         body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f7fa; margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }}
         .container {{ background: #fff; border-radius: 12px; box-shadow: 0 2px 16px rgba(0,0,0,0.08); max-width: 480px; width: 90%; padding: 40px; text-align: center; }}
@@ -81,7 +83,7 @@ UNSUBSCRIBE_PAGE_HTML = """<!DOCTYPE html>
 </head>
 <body>
     <div class="container">
-        <div class="logo">Plataforma LIA / WeDOTalent</div>
+        <div class="logo">WeDOTalent</div>
         <h1>Cancelar Recebimento de Comunicações</h1>
         <p>Você está solicitando o cancelamento do recebimento de e-mails de comunicação para o endereço:</p>
         <p class="email">{email}</p>
@@ -89,7 +91,7 @@ UNSUBSCRIBE_PAGE_HTML = """<!DOCTYPE html>
         <form method="POST">
             <button type="submit">Confirmar Cancelamento</button>
         </form>
-        <div class="footer">Plataforma LIA / WeDOTalent &mdash; Em conformidade com a LGPD</div>
+        <div class="footer">WeDOTalent &mdash; Em conformidade com a LGPD</div>
     </div>
 </body>
 </html>"""
@@ -99,7 +101,7 @@ ALREADY_OPTED_OUT_HTML = """<!DOCTYPE html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Já Cancelado - Plataforma LIA / WeDOTalent</title>
+    <title>Já Cancelado - WeDOTalent</title>
     <style>
         body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f7fa; margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }}
         .container {{ background: #fff; border-radius: 12px; box-shadow: 0 2px 16px rgba(0,0,0,0.08); max-width: 480px; width: 90%; padding: 40px; text-align: center; }}
@@ -112,12 +114,12 @@ ALREADY_OPTED_OUT_HTML = """<!DOCTYPE html>
 </head>
 <body>
     <div class="container">
-        <div class="logo">Plataforma LIA / WeDOTalent</div>
+        <div class="logo">WeDOTalent</div>
         <div class="check">&#10003;</div>
         <h1>Comunicações Já Canceladas</h1>
         <p>O endereço <strong>{email}</strong> já teve o recebimento de comunicações cancelado anteriormente.</p>
         <p>Nenhuma ação adicional é necessária.</p>
-        <div class="footer">Plataforma LIA / WeDOTalent &mdash; Em conformidade com a LGPD</div>
+        <div class="footer">WeDOTalent &mdash; Em conformidade com a LGPD</div>
     </div>
 </body>
 </html>"""
@@ -127,7 +129,7 @@ CONFIRM_HTML = """<!DOCTYPE html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cancelamento Confirmado - Plataforma LIA / WeDOTalent</title>
+    <title>Cancelamento Confirmado - WeDOTalent</title>
     <style>
         body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f7fa; margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }}
         .container {{ background: #fff; border-radius: 12px; box-shadow: 0 2px 16px rgba(0,0,0,0.08); max-width: 480px; width: 90%; padding: 40px; text-align: center; }}
@@ -140,12 +142,12 @@ CONFIRM_HTML = """<!DOCTYPE html>
 </head>
 <body>
     <div class="container">
-        <div class="logo">Plataforma LIA / WeDOTalent</div>
+        <div class="logo">WeDOTalent</div>
         <div class="check">&#10003;</div>
         <h1>Cancelamento Confirmado</h1>
         <p>O endereço <strong>{email}</strong> foi removido da lista de comunicações com sucesso.</p>
         <p>Você não receberá mais e-mails de comunicação desta empresa.</p>
-        <div class="footer">Plataforma LIA / WeDOTalent &mdash; Em conformidade com a LGPD</div>
+        <div class="footer">WeDOTalent &mdash; Em conformidade com a LGPD</div>
     </div>
 </body>
 </html>"""
@@ -155,7 +157,7 @@ ERROR_HTML = """<!DOCTYPE html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Erro - Plataforma LIA / WeDOTalent</title>
+    <title>Erro - WeDOTalent</title>
     <style>
         body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f7fa; margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }}
         .container {{ background: #fff; border-radius: 12px; box-shadow: 0 2px 16px rgba(0,0,0,0.08); max-width: 480px; width: 90%; padding: 40px; text-align: center; }}
@@ -167,10 +169,10 @@ ERROR_HTML = """<!DOCTYPE html>
 </head>
 <body>
     <div class="container">
-        <div class="logo">Plataforma LIA / WeDOTalent</div>
+        <div class="logo">WeDOTalent</div>
         <h1>Link Inválido</h1>
         <p>O link de cancelamento é inválido ou expirou. Por favor, entre em contato com o suporte.</p>
-        <div class="footer">Plataforma LIA / WeDOTalent &mdash; Em conformidade com a LGPD</div>
+        <div class="footer">WeDOTalent &mdash; Em conformidade com a LGPD</div>
     </div>
 </body>
 </html>"""
@@ -245,3 +247,133 @@ async def process_unsubscribe(token: str, request: Request, db: AsyncSession = D
         await db.rollback()
         logger.error(f"Error processing unsubscribe: {e}", exc_info=True)
         return HTMLResponse(content=ERROR_HTML, status_code=500)
+
+
+# ---------------------------------------------------------------------------
+# RFC 8058 one-click unsubscribe (LOTE-009 / GAP-07-002)
+# Called by email clients when recipient clicks the unsubscribe button in Gmail,
+# Apple Mail, etc. NO authentication — the email is the only identifier.
+# The List-Unsubscribe URL includes ?email= per our mailgun_provider patch.
+# ---------------------------------------------------------------------------
+
+ONE_CLICK_CONFIRM_HTML = """
+<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
+<title>Descadastro confirmado</title>
+<style>body{{font-family:sans-serif;max-width:480px;margin:60px auto;padding:0 16px}}
+h1{{color:#2563eb}}p{{color:#555}}</style></head>
+<body><h1>Descadastro confirmado</h1>
+<p>O endereço <strong>{email}</strong> foi removido da lista de comunicações.</p>
+</body></html>
+"""
+
+
+async def _one_click_unsubscribe_action(db, email: str, user_agent: str, ip: str) -> None:
+    """
+    Add 'marketing_email' to Candidate.channel_opt_out for all candidates matching the
+    email hash. Silently no-ops when email is unknown.
+    """
+    import hashlib
+    from sqlalchemy import select as _select
+    from sqlalchemy.orm.attributes import flag_modified
+
+    try:
+        from lia_models.candidate import Candidate
+    except ImportError:
+        from app.domains.candidates.models.candidate import Candidate
+
+    email_norm = email.lower().strip()
+    email_hash = hashlib.sha256(email_norm.encode()).hexdigest()
+    flag = "marketing_email"
+
+    result = await db.execute(
+        _select(Candidate).where(Candidate.email_hash == email_hash)
+    )
+    candidates = result.scalars().all()
+    for candidate in candidates:
+        current: list = candidate.channel_opt_out or []
+        if flag not in current:
+            candidate.channel_opt_out = current + [flag]
+            flag_modified(candidate, "channel_opt_out")
+    if candidates:
+        await db.commit()
+        logger.info(
+            "[Optout] one-click email_hash=%.8s candidates=%d ip=%s",
+            email_hash, len(candidates), ip,
+        )
+        # GAP-07-005: cross-channel sync — opt-out WhatsApp too
+        optout_svc = CommunicationOptOutService(db)
+        for candidate in candidates:
+            try:
+                await optout_svc.revoke_all_channels(
+                    company_id=str(candidate.company_id) if candidate.company_id else "",
+                    candidate_id=str(candidate.id),
+                    source_channel=MessageChannel.EMAIL,
+                    reason="email one-click unsubscribe (RFC 8058)",
+                    candidate_email=email_norm,
+                )
+            except Exception as exc:
+                logger.warning("[Optout] cross-channel sync failed for %s: %s", candidate.id, exc)
+
+
+@router.post("/unsubscribe", response_class=HTMLResponse, response_model=None,
+             summary="RFC 8058 one-click unsubscribe (no auth)")
+async def one_click_unsubscribe(
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    RFC 8058 one-click unsubscribe endpoint.
+    Email clients POST here when the recipient clicks 'Unsubscribe' inside the email.
+    Email address is passed as a query param (?email=...) embedded in the List-Unsubscribe URL.
+    No authentication — always returns 200 to prevent email enumeration.
+    """
+    from urllib.parse import unquote_plus
+
+    email_raw = request.query_params.get("email", "")
+    email = unquote_plus(email_raw).strip()
+
+    if not email or "@" not in email:
+        # RFC 8058: always return 200 to prevent enumeration
+        return HTMLResponse(content="", status_code=200)
+
+    try:
+        ip = request.client.host if request.client else ""
+        ua = request.headers.get("user-agent", "")
+        await _one_click_unsubscribe_action(db, email, ua, ip)
+    except Exception as exc:
+        logger.warning("[Optout] one-click action error: %s", exc)
+
+    safe_email = html.escape(email)
+    return HTMLResponse(content=ONE_CLICK_CONFIRM_HTML.format(email=safe_email), status_code=200)
+
+
+@router.get("/unsubscribe", response_class=HTMLResponse, response_model=None,
+            summary="Human-readable unsubscribe landing page (no auth)")
+async def one_click_unsubscribe_get(
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Human-readable landing page for the one-click URL.
+    Shown when user manually navigates to the unsubscribe URL.
+    POSTing via form completes the unsubscribe.
+    """
+    from urllib.parse import unquote_plus
+
+    email_raw = request.query_params.get("email", "")
+    email = unquote_plus(email_raw).strip()
+    safe_email = html.escape(email) if email else ""
+
+    # Auto-unsubscribe on GET as well (browser may follow the URL directly)
+    if email and "@" in email:
+        try:
+            ip = request.client.host if request.client else ""
+            ua = request.headers.get("user-agent", "")
+            await _one_click_unsubscribe_action(db, email, ua, ip)
+        except Exception as exc:
+            logger.warning("[Optout] one-click GET action error: %s", exc)
+
+    return HTMLResponse(
+        content=ONE_CLICK_CONFIRM_HTML.format(email=safe_email or "desconhecido"),
+        status_code=200,
+    )

@@ -162,13 +162,13 @@ export function TemplatesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-lia-bg-primary dark:bg-lia-bg-primary p-6">
+    <div className="h-full overflow-y-auto bg-lia-bg-primary dark:bg-lia-bg-primary p-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-semibold font-sans text-lia-text-primary mb-2 flex items-center gap-2">
             <Brain className="w-6 h-6 text-wedo-cyan" />
-            Templates LIA
+            Templates de IA
           </h1>
           <p className="text-lia-text-secondary">
             Gerencie comandos personalizados e acelere seu workflow de recrutamento

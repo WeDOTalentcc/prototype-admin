@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 /**
  * ConfigureAssignmentModal — Sprint 7B-2 + Sprint 7C Part 3.
  *
@@ -46,6 +47,9 @@ export function ConfigureAssignmentModal({
   onClose,
   onSaved,
 }: ConfigureAssignmentModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('configure-assignment', open)
+
   const t = useTranslations("talentPool.schedule")
   const updateAssignment = useUpdateAssignment({ poolId })
 

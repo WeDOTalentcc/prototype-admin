@@ -31,7 +31,7 @@ class TestCanonicalRegistry:
 
     def test_phase5_domains_registered(self):
         """analytics, communication, ats_integration registrados via @register_agent."""
-        from app.api.v1.agent_chat_ws import _ensure_agents_loaded
+        from app.api.v1.chat_shared import _ensure_agents_loaded
         from app.shared.agents.agent_registry import AgentRegistry
 
         _ensure_agents_loaded()
@@ -43,14 +43,14 @@ class TestCanonicalRegistry:
 
     def test_core_domains_registered(self):
         """Core domains canonical (wizard, pipeline, sourcing, talent, etc)."""
-        from app.api.v1.agent_chat_ws import _ensure_agents_loaded
+        from app.api.v1.chat_shared import _ensure_agents_loaded
         from app.shared.agents.agent_registry import AgentRegistry
 
         _ensure_agents_loaded()
         registry = AgentRegistry()
         for domain in [
             "wizard", "pipeline", "sourcing", "talent",
-            "jobs_management", "kanban", "policy",
+            "jobs_management", "kanban", "hiring_policy",
         ]:
             assert registry.is_registered(domain), (
                 f"Core domain '{domain}' not registered"
@@ -58,7 +58,7 @@ class TestCanonicalRegistry:
 
     def test_get_instance_returns_callable_agent(self):
         """AgentRegistry().get_instance retorna agente com process method."""
-        from app.api.v1.agent_chat_ws import _ensure_agents_loaded
+        from app.api.v1.chat_shared import _ensure_agents_loaded
         from app.shared.agents.agent_registry import AgentRegistry
 
         _ensure_agents_loaded()
@@ -68,7 +68,7 @@ class TestCanonicalRegistry:
 
     def test_get_or_fallback_returns_talent_for_unknown(self):
         """get_or_fallback retorna talent quando domain desconhecido."""
-        from app.api.v1.agent_chat_ws import _ensure_agents_loaded
+        from app.api.v1.chat_shared import _ensure_agents_loaded
         from app.shared.agents.agent_registry import AgentRegistry
 
         _ensure_agents_loaded()
@@ -80,7 +80,7 @@ class TestCanonicalRegistry:
 
     def test_pipeline_cv_screening_alias_resolves(self):
         """cv_screening alias resolve para pipeline (canonical W1-001 alias)."""
-        from app.api.v1.agent_chat_ws import _ensure_agents_loaded
+        from app.api.v1.chat_shared import _ensure_agents_loaded
         from app.shared.agents.agent_registry import AgentRegistry
 
         _ensure_agents_loaded()

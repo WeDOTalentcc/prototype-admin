@@ -26,6 +26,7 @@ from ._shared import (
     RejectSuggestionRequest,
 )
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.errors import LIAError, LIAInternalError
 
 logger = logging.getLogger(__name__)
 
@@ -65,10 +66,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error fetching pending suggestions: {e}", exc_info=True)
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error fetching pending suggestions: {str(e)}"
-        )
+        raise LIAInternalError("Internal server error")
 
 
 @router.post("/approve-suggestion/{suggestion_id}", response_model=None)
@@ -118,10 +116,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error approving suggestion: {e}", exc_info=True)
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error approving suggestion: {str(e)}"
-        )
+        raise LIAInternalError("Internal server error")
 
 
 @router.post("/reject-suggestion/{suggestion_id}", response_model=None)
@@ -174,10 +169,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error rejecting suggestion: {e}", exc_info=True)
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error rejecting suggestion: {str(e)}"
-        )
+        raise LIAInternalError("Internal server error")
 
 
 @router.post("/bulk-approve-suggestions", response_model=None)
@@ -225,10 +217,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error in bulk approve: {e}", exc_info=True)
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error in bulk approve: {str(e)}"
-        )
+        raise LIAInternalError("Internal server error")
 
 
 @router.post("/bulk-reject-suggestions", response_model=None)
@@ -278,10 +267,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error in bulk reject: {e}", exc_info=True)
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error in bulk reject: {str(e)}"
-        )
+        raise LIAInternalError("Internal server error")
 
 
 @router.get("/ai-suggestions/vacancy/{vacancy_id}", response_model=None)
@@ -307,7 +293,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting AI suggestions by vacancy: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/ai-suggestions/candidate/{candidate_id}", response_model=None)
@@ -333,7 +319,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting AI suggestions by candidate: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/ai-suggestions/{suggestion_id}/approve", response_model=None)
@@ -375,7 +361,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error(f"Error approving AI suggestion: {e}")
         await db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/ai-suggestions/{suggestion_id}/reject", response_model=None)
@@ -419,4 +405,4 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error(f"Error rejecting AI suggestion: {e}")
         await db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")

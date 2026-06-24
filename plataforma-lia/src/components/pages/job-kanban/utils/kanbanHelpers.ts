@@ -21,6 +21,7 @@ interface KanbanCandidateBase {
   role?: string
   location?: string
   currentCompany?: string
+  appliedDate?: string
   id: string | number
 }
 
@@ -191,4 +192,78 @@ export const getFilteredAndSortedCandidates = (
   })
 
   return candidates
+}
+
+// ─── Kanban column sort ─────────────────────────────────────────────────────
+// GAP-03-006: sort candidates within kanban columns.
+
+/**
+ * Allowed sort fields for kanban columns.
+ * Keys = UI-facing identifiers; values = candidate property paths.
+ */
+export const KANBAN_SORT_FIELDS = {
+  score: 'score',
+  name: 'name',
+  appliedDate: 'appliedDate',
+  fitScore: 'fitScore',
+  notaLiaGeral: 'notaLiaGeral',
+} as const
+
+export type KanbanSortField = keyof typeof KANBAN_SORT_FIELDS
+export type KanbanSortOrder = 'asc' | 'desc'
+
+/** Default: highest score first, then newest. */
+export const DEFAULT_KANBAN_SORT_FIELD: KanbanSortField = 'score'
+export const DEFAULT_KANBAN_SORT_ORDER: KanbanSortOrder = 'desc'
+
+/**
+ * Pure comparator — sorts a **copy** of the candidates array.
+ * `needsAction` candidates always float to the top regardless of sort field
+ * (preserves existing screening-stage UX).
+ */
+export function sortKanbanCandidates<
+  T extends KanbanCandidateBase
+>(
+  candidates: T[],
+  sortBy: KanbanSortField = DEFAULT_KANBAN_SORT_FIELD,
+  sortOrder: KanbanSortOrder = DEFAULT_KANBAN_SORT_ORDER,
+): T[] {
+  return [...candidates].sort((a, b) => {
+    // needsAction always on top
+    if (a.needsAction && !b.needsAction) return -1
+    if (!a.needsAction && b.needsAction) return 1
+
+    let aVal: string | number
+    let bVal: string | number
+
+    switch (sortBy) {
+      case 'score':
+        aVal = a.liaScore ?? a.score ?? 0
+        bVal = b.liaScore ?? b.score ?? 0
+        break
+      case 'name':
+        aVal = (a.name || '').toLowerCase()
+        bVal = (b.name || '').toLowerCase()
+        break
+      case 'appliedDate':
+        aVal = a.appliedDate ?? ''
+        bVal = b.appliedDate ?? ''
+        break
+      case 'fitScore':
+        aVal = a.skillsMatch ?? a.fitScore ?? 0
+        bVal = b.skillsMatch ?? b.fitScore ?? 0
+        break
+      case 'notaLiaGeral':
+        aVal = calculateNotaLiaGeral(a)
+        bVal = calculateNotaLiaGeral(b)
+        break
+      default:
+        aVal = a.liaScore ?? a.score ?? 0
+        bVal = b.liaScore ?? b.score ?? 0
+    }
+
+    if (aVal < bVal) return sortOrder === 'asc' ? -1 : 1
+    if (aVal > bVal) return sortOrder === 'asc' ? 1 : -1
+    return 0
+  })
 }

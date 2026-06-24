@@ -197,13 +197,13 @@ export function TemplateGallery({
       )}
       {!templatesError && templatesLoading && filtered.length === 0 && (
         <div className="text-center py-10" aria-busy="true">
-          <Icons.Loader2 className="w-6 h-6 mx-auto text-lia-text-disabled mb-2 animate-spin" />
+          <Icons.Loader2 className="w-6 h-6 mx-auto text-lia-text-muted mb-2 animate-spin" />
           <p className={textStyles.caption}>{t('templateLoading') || 'Carregando templates...'}</p>
         </div>
       )}
       {!templatesError && !templatesLoading && filtered.length === 0 && (
         <div className="text-center py-10">
-          <Icons.SearchX className="w-8 h-8 mx-auto text-lia-text-disabled mb-2" />
+          <Icons.SearchX className="w-8 h-8 mx-auto text-lia-text-muted mb-2" />
           <p className={textStyles.caption}>{t('noTemplateInCategory')}</p>
         </div>
       )}

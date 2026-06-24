@@ -77,10 +77,10 @@ export function useCandidateFieldUpdate(candidateId: string | undefined) {
 
         if (!response.ok) {
           const errBody = await response.json().catch(() => ({}))
-          const msg = (errBody as { detail?: string; error?: string }).detail
-            ?? (errBody as { detail?: string; error?: string }).error
-            ?? `Erro ${response.status} ao salvar ${fieldName}`
-          toast.error("Erro ao salvar", { description: msg })
+          const _ebody = errBody as { detail?: string; error?: string; request_id?: string }
+          const msg = _ebody.detail ?? _ebody.error ?? `Erro ${response.status} ao salvar ${fieldName}`
+          const _rid = _ebody.request_id ? ` (ID: ${_ebody.request_id})` : ""
+          toast.error("Erro ao salvar", { description: `${msg}${_rid}` })
           return { success: false, error: msg }
         }
 

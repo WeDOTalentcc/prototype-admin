@@ -133,12 +133,12 @@ class EventActionConnector:
             notification_type = severity_map.get(event.severity, NotificationType.INFO)
 
             await service.create_notification(
-                user_id=None,
-                company_id=event.company_id,
+                user_id=f"system:{event.company_id}",
                 title=event.title,
                 message=event.message,
                 notification_type=notification_type,
                 category="pipeline_monitor",
+                channels=["bell"],
                 metadata={
                     "event_type": event.event_type.value,
                     "suggested_action": event.suggested_action,
@@ -146,6 +146,7 @@ class EventActionConnector:
                     "data": event.data,
                     "candidate_id": event.candidate_id,
                     "vacancy_id": event.vacancy_id,
+                    "company_id": event.company_id,
                 },
             )
             return True

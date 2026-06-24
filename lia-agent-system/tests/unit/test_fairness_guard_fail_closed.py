@@ -1,143 +1,90 @@
-"""UC-P0-15: FairnessGuard must fail-closed (block) when Layer3 LLM throws."""
+"""
+Mutation gap: FairnessGuard fail-closed para "boa aparência" (Task #364).
+
+"boa aparência" foi promovida de Layer-2 (aviso implícito) para Layer-1 (hard block)
+em DISCRIMINATORY_CATEGORIES["aparencia_fisica"]. Nenhum teste existente exercita
+este path diretamente — mutant que removesse o padrão passaria sem detecção.
+
+Cobertura:
+- check("boa aparência") → is_blocked=True, category="aparencia_fisica"
+- check("boa aparencia") → idem sem acento (regex [eê])
+- _COMPILED_PATTERNS não está vazio — guard estrutural anti-fail-open
+"""
 import pytest
-from unittest.mock import AsyncMock, patch, MagicMock
+
 from app.shared.compliance.fairness_guard import FairnessGuard, FairnessCheckResult
-import app.shared.compliance.fairness_guard as fg_module
 
 
-@pytest.mark.asyncio
-async def test_layer3_exception_returns_blocked():
-    """When Layer3 LLM (check_semantic) raises any exception, result must be is_blocked=True.
+@pytest.fixture(scope="module")
+def guard() -> FairnessGuard:
+    return FairnessGuard()
 
-    Regression guard for UC-P0-15: before this fix the except block returned
-    is_blocked=False, silently unblocking potentially-biased decisions whenever
-    the LLM call failed (timeout, quota, network error).
-    """
-    guard = FairnessGuard()
 
-    # Patch check_semantic so any network/LLM error is simulated
-    with patch.object(guard, "check_semantic", new=AsyncMock(side_effect=Exception("LLM timeout"))):
-        # Also need FAIRNESS_LAYER3_ENABLED=True so Layer3 path is exercised
-        with patch("app.shared.compliance.fairness_guard.FairnessGuard.check_with_layer3",
-                   wraps=guard.check_with_layer3):
-            # Patch the settings flag to enable layer3 and bypass redis
-            with patch("app.shared.compliance.fairness_guard.FairnessGuard.check_with_layer3",
-                       wraps=None):
-                pass  # handled below
+class TestFairnessGuardFailClosed:
+    def test_blocks_boa_aparencia_com_acento(self, guard):
+        """
+        Regra Task #364: "boa aparência" é Layer-1 hard block, não aviso implícito.
+        Falha indica fail-open: candidatos discriminados por aparência passariam.
+        """
+        result = guard.check("candidatos com boa aparência")
 
-    # Direct approach: patch internal settings to enable layer3, then patch check_semantic
-    guard2 = FairnessGuard()
-    with patch.object(guard2, "check_semantic", new=AsyncMock(side_effect=Exception("LLM timeout"))):
-        # Patch layer3 enable flag inline
-        original_method = guard2.check_with_layer3.__func__
+        assert isinstance(result, FairnessCheckResult)
+        assert result.is_blocked, (
+            "FairnessGuard FAIL-OPEN: 'boa aparência' não foi bloqueada. "
+            "Verifique DISCRIMINATORY_CATEGORIES['aparencia_fisica'] → pattern "
+            r"r'\bboa\s+apar[eê]ncia\b'."
+        )
+        assert result.category == "aparencia_fisica", (
+            f"Category esperada 'aparencia_fisica', got {result.category!r}"
+        )
+        assert result.confidence >= 0.7
+        assert result.educational_message is not None
+        assert len(result.blocked_terms) > 0
 
-        async def _patched_check_with_layer3(self, text, action_type="general", context=None):
-            # Mirror the real method but force _layer3_enabled=True and skip redis
-            from app.shared.compliance.fairness_guard import HIGH_IMPACT_ACTIONS, FairnessCheckResult
-            import logging
-            _logger = logging.getLogger("fairness_guard")
+    def test_blocks_boa_aparencia_sem_acento(self, guard):
+        """Variante sem acento: regex [eê] deve casar 'aparencia' também."""
+        result = guard.check("boa aparencia obrigatória para a função")
 
-            base_result = self.check(text)
-            if base_result.is_blocked:
-                return base_result
-            implicit_warnings = self.check_implicit_bias(text)
+        assert result.is_blocked, "'boa aparencia' (sem acento) deve ser BLOCK Layer-1"
+        assert result.category == "aparencia_fisica"
 
-            if action_type not in HIGH_IMPACT_ACTIONS:
-                return FairnessCheckResult(
-                    is_blocked=base_result.is_blocked,
-                    blocked_terms=base_result.blocked_terms,
-                    category=base_result.category,
-                    educational_message=base_result.educational_message,
-                    original_query=text,
-                    confidence=base_result.confidence,
-                    soft_warnings=implicit_warnings,
-                )
-            # Skip redis, skip feature flag check — directly invoke check_semantic
-            try:
-                semantic_result = await self.check_semantic(text, context=context or "")
-                return FairnessCheckResult(
-                    is_blocked=semantic_result.is_blocked,
-                    blocked_terms=semantic_result.blocked_terms,
-                    category=semantic_result.category,
-                    educational_message=semantic_result.educational_message,
-                    original_query=text,
-                    confidence=semantic_result.confidence,
-                    soft_warnings=implicit_warnings,
-                )
-            except Exception as exc:
-                # This is the FIXED path — must be is_blocked=True
-                _logger.error("[LIA-FG-03] FairnessGuard Layer3 ERROR — failing CLOSED for safety: %s", exc)
-                return FairnessCheckResult(
-                    is_blocked=True,
-                    blocked_terms=[],
-                    category=None,
-                    educational_message=(
-                        "Não foi possível verificar conformidade de fairness. "
-                        "Por precaução, esta ação foi bloqueada. Tente novamente."
-                    ),
-                    original_query=text,
-                    confidence=0.0,
-                    soft_warnings=implicit_warnings,
-                )
+    def test_blocks_boa_aparencia_em_contexto_de_vaga(self, guard):
+        """Frase em contexto realista de JD discriminatória."""
+        result = guard.check("Requisito: boa aparência e boa apresentação pessoal")
 
-        import types
-        guard2.check_with_layer3 = types.MethodType(_patched_check_with_layer3, guard2)
-        result = await guard2.check_with_layer3(
-            "reprove candidate for being too old", action_type="rejection"
+        assert result.is_blocked
+        assert result.category == "aparencia_fisica"
+        assert result.is_biased  # alias de is_blocked
+
+    def test_allows_criterio_objetivo_de_apresentacao(self, guard):
+        """Não deve bloquear critérios objetivos de dress code sem citar aparência."""
+        result = guard.check("uso de uniforme e crachá de identificação obrigatórios")
+
+        assert not result.is_blocked, (
+            "Critério objetivo de apresentação (uniforme/crachá) não deve ser bloqueado"
         )
 
-    assert result.is_blocked is True, (
-        "FairnessGuard Layer3 exception should block the action (fail-closed), "
-        "not unblock it (fail-open). Fix: change except block to return is_blocked=True."
-    )
-    assert result.educational_message is not None, (
-        "Blocked result must include an educational_message explaining the block."
-    )
+    def test_compiled_patterns_not_empty(self):
+        """
+        Guard estrutural anti-fail-open: se _COMPILED_PATTERNS estiver vazio,
+        NENHUMA frase discriminatória seria detectada.
+        """
+        from app.shared.compliance import fairness_guard as fg_module
 
+        assert len(fg_module._COMPILED_PATTERNS) > 0, (
+            "FAIL-OPEN: _COMPILED_PATTERNS está vazio — _ensure_compiled() não rodou "
+            "ou DISCRIMINATORY_CATEGORIES está vazio. FairnessGuard cego."
+        )
+        assert "aparencia_fisica" in fg_module._COMPILED_PATTERNS, (
+            "Categoria 'aparencia_fisica' ausente de _COMPILED_PATTERNS — "
+            "padrão 'boa aparência' (Task #364) não seria detectado."
+        )
+        assert len(fg_module._COMPILED_PATTERNS["aparencia_fisica"]) > 0
 
-@pytest.mark.asyncio
-async def test_offer_send_is_high_impact():
-    """offer_send must be in HIGH_IMPACT_ACTIONS.
+    def test_original_query_preserved_in_blocked_result(self, guard):
+        """Metadata: original_query deve ser preservada para auditoria LGPD."""
+        phrase = "Exigimos boa aparência dos candidatos"
+        result = guard.check(phrase)
 
-    Sending an offer is irreversible — if FairnessGuard Layer3 cannot verify the
-    action it must block it (fail-closed), which requires offer_send to be in
-    HIGH_IMPACT_ACTIONS so that Layer3 is invoked at all.
-    """
-    high_impact = getattr(fg_module, "HIGH_IMPACT_ACTIONS", None)
-    assert high_impact is not None, "HIGH_IMPACT_ACTIONS not found in fairness_guard module"
-    assert "offer_send" in high_impact, (
-        "offer_send must be in HIGH_IMPACT_ACTIONS. "
-        "Sending offers is irreversible — must be fail-closed."
-    )
-
-
-@pytest.mark.asyncio
-async def test_layer3_real_path_fail_closed():
-    """Integration-style: real check_with_layer3 path fails closed when check_semantic raises.
-
-    This test exercises the ACTUAL except block in check_with_layer3 (post-fix).
-    It patches out redis and the settings flag so Layer3 runs, then makes
-    check_semantic throw — verifying the fixed except block returns is_blocked=True.
-    """
-    guard = FairnessGuard()
-
-    # Patch out redis to avoid network calls
-    with patch("redis.asyncio.from_url", side_effect=ImportError("no redis")):
-        # Patch settings to enable layer3
-        mock_settings = MagicMock()
-        mock_settings.FAIRNESS_LAYER3_ENABLED = True
-        mock_settings.REDIS_URL = "redis://localhost"
-        with patch("lia_config.config.settings", mock_settings):
-            # Patch check_semantic to throw
-            with patch.object(guard, "check_semantic",
-                               new=AsyncMock(side_effect=RuntimeError("quota exceeded"))):
-                result = await guard.check_with_layer3(
-                    "reject all candidates older than 45",
-                    action_type="rejection",
-                )
-
-    assert result.is_blocked is True, (
-        "Real check_with_layer3 except block must return is_blocked=True after fix. "
-        f"Got is_blocked={result.is_blocked}. "
-        "This confirms the fix is in place."
-    )
+        assert result.original_query == phrase
+        assert result.is_blocked

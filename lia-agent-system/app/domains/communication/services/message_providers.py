@@ -93,10 +93,14 @@ class MockEmailProvider(MessageProvider):
     def __init__(self):
         self._environment = os.environ.get("ENVIRONMENT", os.environ.get("APP_ENV", "development")).lower()
         if self._environment == "production":
-            logger.critical(
-                "[MOCK EMAIL] MockEmailProvider activated in PRODUCTION — "
-                "emails will NOT be delivered! Configure MAILGUN_API_KEY or RESEND_API_KEY immediately."
+            _has_real_provider = bool(
+                os.environ.get("MAILGUN_API_KEY") or os.environ.get("RESEND_API_KEY")
             )
+            if not _has_real_provider:
+                logger.critical(
+                    "[MOCK EMAIL] MockEmailProvider activated in PRODUCTION — "
+                    "emails will NOT be delivered! Configure MAILGUN_API_KEY or RESEND_API_KEY immediately."
+                )
 
     @property
     def name(self) -> str:

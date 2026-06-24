@@ -12,7 +12,7 @@ from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db, get_tenant_db
-from app.domains.email_templates.repositories.default_template_repository import (
+from app.repositories.default_template_repository import (
     DefaultTemplateRepository,
 )
 from app.models.default_templates import (
@@ -30,6 +30,7 @@ from app.schemas.default_templates import (
     TemplateVariablesListResponse,
 )
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 
 logger = logging.getLogger(__name__)
 
@@ -104,7 +105,7 @@ company_id: str = Depends(require_company_id)) -> DefaultTemplateListResponse:
         raise
     except Exception as e:
         logger.error(f"Error listing default templates: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to list default templates: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/{template_id}", response_model=None)
@@ -124,7 +125,7 @@ company_id: str = Depends(require_company_id)) -> DefaultTemplateResponse:
         raise
     except Exception as e:
         logger.error(f"Error getting default template: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to get default template: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("", status_code=status.HTTP_201_CREATED, response_model=None)
@@ -155,7 +156,7 @@ company_id: str = Depends(require_company_id)) -> DefaultTemplateResponse:
     except Exception as e:
         await db.rollback()
         logger.error(f"Error creating default template: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to create default template: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.put("/{template_id}", response_model=None)
@@ -197,7 +198,7 @@ company_id: str = Depends(require_company_id)) -> DefaultTemplateResponse:
     except Exception as e:
         await db.rollback()
         logger.error(f"Error updating default template: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to update default template: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.delete("/{template_id}", response_model=None)
@@ -224,7 +225,7 @@ company_id: str = Depends(require_company_id)) -> dict[str, Any]:
     except Exception as e:
         await db.rollback()
         logger.error(f"Error deleting default template: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to delete default template: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/{template_id}/duplicate", response_model=None)
@@ -251,7 +252,7 @@ company_id: str = Depends(require_company_id)) -> DefaultTemplateResponse:
     except Exception as e:
         await db.rollback()
         logger.error(f"Error duplicating default template: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to duplicate default template: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/seed", response_model=None)
@@ -276,4 +277,4 @@ company_id: str = Depends(require_company_id)) -> SeedTemplatesResponse:
     except Exception as e:
         await db.rollback()
         logger.error(f"Error seeding default templates: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to seed default templates: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")

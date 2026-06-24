@@ -12,6 +12,7 @@ Tables covered:
   - wsi_feedbacks
 """
 import json
+import hashlib
 from typing import Any
 
 from sqlalchemy import text
@@ -366,8 +367,7 @@ class WsiRepository:
         """Fetch the candidate feedback row for a WSI result."""
         result = await self.db.execute(text("""
             SELECT decision, main_message, technical_strengths, development_opportunities,
-                   behavioral_strengths, next_steps, personalized_tip, development_plan,
-                   recommended_resources
+                   behavioral_strengths, next_steps, personalized_tip
             FROM wsi_feedbacks WHERE wsi_result_id = :result_id
         """), {"result_id": result_id})
         return result.fetchone()
@@ -809,6 +809,8 @@ class WsiRepository:
         analysis_id: str,
         session_id: str,
         question_id: str,
+        candidate_id: str,
+        job_vacancy_id: str,
         competency: str,
         response_text: str,
         autodeclaration_score: float,
@@ -820,25 +822,42 @@ class WsiRepository:
         consistency_penalty: float,
         final_score: float,
         justification: str,
+        response_hash: str | None = None,
     ) -> None:
-        """Insert wsi_response_analyses row with full analysis fields."""
+        """Insert wsi_response_analyses row with full analysis fields.
+
+        candidate_id, job_vacancy_id e response_hash sao NOT NULL no schema.
+        Antes eram OMITIDOS -> o insert falhava silenciosamente em producao
+        (candidato real ficava sem respostas por-competencia no modal de
+        triagem). response_hash e derivado de response_text (md5) quando nao
+        informado. Casts jsonb usam CAST(...) (evita o bug :param::cast).
+        """
+        if not response_hash:
+            response_hash = hashlib.md5(
+                (response_text or "").encode("utf-8")
+            ).hexdigest()
         await self.db.execute(
             # RLS-EXEMPT: wsi_response_analyses — transitive via session
             text(
                 "INSERT INTO wsi_response_analyses "
-                "    (id, session_id, question_id, competency, response_text, "
+                "    (id, session_id, question_id, candidate_id, job_vacancy_id, "
+                "     competency, response_text, "
                 "     autodeclaration_score, context_score, bloom_level, dreyfus_level, "
-                "     evidences, red_flags, consistency_penalty, final_score, justification) "
+                "     evidences, red_flags, consistency_penalty, final_score, "
+                "     justification, response_hash) "
                 "VALUES "
-                "    (:id, :session_id, :question_id, :competency, :response_text, "
+                "    (:id, :session_id, :question_id, :candidate_id, :job_vacancy_id, "
+                "     :competency, :response_text, "
                 "     :autodeclaration_score, :context_score, :bloom_level, :dreyfus_level, "
-                "     :evidences::jsonb, :red_flags::jsonb, :consistency_penalty, "
-                "     :final_score, :justification)"
+                "     CAST(:evidences AS jsonb), CAST(:red_flags AS jsonb), "
+                "     :consistency_penalty, :final_score, :justification, :response_hash)"
             ),
             {
                 "id": analysis_id,
                 "session_id": session_id,
                 "question_id": question_id,
+                "candidate_id": candidate_id,
+                "job_vacancy_id": job_vacancy_id,
                 "competency": competency,
                 "response_text": response_text,
                 "autodeclaration_score": autodeclaration_score,
@@ -850,6 +869,7 @@ class WsiRepository:
                 "consistency_penalty": consistency_penalty,
                 "final_score": final_score,
                 "justification": justification,
+                "response_hash": response_hash,
             },
         )
 

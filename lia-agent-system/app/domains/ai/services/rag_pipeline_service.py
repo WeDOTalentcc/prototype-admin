@@ -43,6 +43,7 @@ DOMAIN_ALIASES: dict[str, str] = {
     "jobs": "jobs",
     "policy_blocks": "policy",
     "policy": "policy",
+    "hiring_policy": "policy",
     "company_docs": "company",
     "company": "company",
     "general": "general",
@@ -84,7 +85,7 @@ class RAGSearchResult:
 # ---------------------------------------------------------------------------
 
 
-async def generate_embedding(text: str) -> list[float] | None:
+async def generate_embedding(text: str, company_id: str | None = None) -> list[float] | None:
     """
     Gera embedding para o texto fornecido.
 
@@ -106,7 +107,9 @@ async def generate_embedding(text: str) -> list[float] | None:
     try:
         from app.shared.providers.embedding_factory import EmbeddingProviderFactory
 
-        vector, _, embed_model = await EmbeddingProviderFactory.embed_with_fallback(text)
+        vector, _, embed_model = await EmbeddingProviderFactory.embed_with_fallback(
+        text, company_id=company_id
+    )  # Gap E.2 BYOK
         try:
             from app.shared.services.embedding_cache_service import embedding_cache  # type: ignore[union-attr]
             await embedding_cache.cache_embedding(text, vector, embed_model)
@@ -359,7 +362,7 @@ class RAGPipelineService:
             async with _tracer.start_span("rag.semantic_search", attributes={
                 "service": "rag_pipeline", "tier_name": "rag_semantic_search",
             }) as _sem_span:
-                embedding = await generate_embedding(query)
+                embedding = await generate_embedding(query, company_id=company_id)
                 if embedding is not None:
                     semantic_results = await self._semantic_search(
                         embedding, company_id, db, limit, domain=normalized_domain

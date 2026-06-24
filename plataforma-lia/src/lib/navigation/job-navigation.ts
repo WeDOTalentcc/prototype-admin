@@ -95,7 +95,7 @@ export function navigateToNewJobFromCandidates(
   )
   toast.info("Criar nova vaga com candidatos selecionados", {
     description:
-      "Use o chat com a LIA: peça 'criar vaga com estes candidatos' " +
+      "Use o chat com a IA: peça 'criar vaga com estes candidatos' " +
       "ou abra o wizard manualmente.",
   })
   return false

@@ -20,11 +20,10 @@ from ._shared import VALID_JOB_STATUSES
 from ._shared import *
 from app.domains.job_management.repositories.job_vacancy_crud_repository import JobVacancyCRUDRepository
 from app.domains.job_management.dependencies import get_job_vacancy_crud_repo
-from app.domains.integrations_hub.services.rails_adapter import RailsAdapter, RAILS_ENABLED
-from app.domains.integrations_hub.services.rails_adapter_dependency import get_rails_adapter
-from app.shared.rails_migration.deprecation import enforce_job_vacancies_deprecation
 from app.shared.rbac.mutation_gate import assert_mutation_allowed
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
+from app.shared.optimistic_lock import check_optimistic_lock
 from app.shared.types import WeDoBaseModel
 
 # MIGRATION_PLAN item 7.1 — Python CRUD deprecated in favor of Rails (ats-api-copia).
@@ -35,7 +34,7 @@ from app.shared.types import WeDoBaseModel
 # environment to turn all routes below into HTTP 410 Gone with a pointer at
 # the Rails endpoint — this lets us kill-switch the old API without a deploy.
 router = APIRouter(
-    dependencies=[Depends(enforce_job_vacancies_deprecation)],
+    dependencies=[],
 )
 
 
@@ -200,7 +199,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error finalizing job vacancy: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 # ─── Search ───────────────────────────────────────────────────────────────────
@@ -259,7 +258,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error searching job vacancies: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 # ─── Archetypes (must be before param routes) ──────────────────────────────
@@ -334,7 +333,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"Error fetching archetypes: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 # ─── Find by identifier ────────────────────────────────────────────────────
@@ -372,7 +371,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error finding job: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 # ─── GET one ──────────────────────────────────────────────────────────────────
@@ -386,38 +385,14 @@ async def get_job_vacancy(
     job_vacancy_id: str = Path(..., pattern=DUAL_ID_PATH_PATTERN),
     repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo),
     current_user: User = Depends(get_current_user_or_demo),
-    rails_adapter: RailsAdapter = Depends(get_rails_adapter),
 company_id: str = Depends(require_company_id)):
     """Get job vacancy by ID. Accepts UUID (local) or integer string (Rails bigint).
-    When RAILS_API_URL is configured and the ID looks like a Rails bigint, queries Rails first.
+
     Falls back to local DB with company/visibility authorization when Rails is disabled or ID is a UUID.
     """
     try:
         # When Rails is enabled and the ID is a bigint (Rails-style), try Rails first.
         # UUID-style IDs are always served from local DB with full authorization checks.
-        if RAILS_ENABLED and job_vacancy_id.isdigit():
-            rails_job = await rails_adapter.get_job_from_rails_only(job_vacancy_id)
-            if rails_job:
-                # Apply visibility/confidentiality checks equivalent to local path.
-                # Rails is the authoritative auth source for its own data, but we
-                # enforce confidentiality rules here as a defense-in-depth layer.
-                jv_visibility = rails_job.get("visibility", "public")
-                is_admin = current_user.role == UserRole.admin if hasattr(current_user, "role") else False
-                can_access = jv_visibility in ("public", "internal") or is_admin
-                if not can_access and jv_visibility == "confidential":
-                    user_email = (current_user.email or "").lower()
-                    user_id = str(current_user.id) if current_user.id else ""
-                    jv_created_by = (rails_job.get("created_by") or "").lower()
-                    jv_recruiter_email = (rails_job.get("recruiter_email") or "").lower()
-                    jv_access_list = [x.lower() for x in (rails_job.get("access_list") or [])]
-                    if user_email in (jv_created_by, jv_recruiter_email) or \
-                       user_email in jv_access_list or user_id in (rails_job.get("access_list") or []):
-                        can_access = True
-                if not can_access:
-                    raise HTTPException(status_code=403, detail="Você não tem acesso a esta vaga")
-                logger.debug("[get_job_vacancy] Returning job %s from Rails", job_vacancy_id)
-                return rails_job
-
         # Parse as UUID for local repository lookup
         try:
             job_vacancy_uuid = UUID(job_vacancy_id)
@@ -433,6 +408,8 @@ company_id: str = Depends(require_company_id)):
 
         user_email = (current_user.email or "").lower()
         user_id = str(current_user.id) if current_user.id else ""
+        # PERM-EXEMPT: computed bool, nao e gate de acesso direto
+        # PERM-EXEMPT: computed bool nao e gate de acesso direto
         is_admin = current_user.role == UserRole.admin if hasattr(current_user, "role") else False
         jv_visibility = job_vacancy.visibility or "public"
 
@@ -453,7 +430,10 @@ company_id: str = Depends(require_company_id)):
         if not can_access:
             raise HTTPException(status_code=403, detail="Você não tem acesso a esta vaga")
 
-        return {
+        await resolve_inherited_salary_ranges(repo.db, user_company, [job_vacancy])
+        await resolve_inherited_benefits(repo.db, user_company, [job_vacancy])
+        _role_defaults = await load_role_pii_defaults(repo.db, user_company)
+        _vacancy_detail = {
             "id": str(job_vacancy.id),
             "title": job_vacancy.title,
             "department": job_vacancy.department,
@@ -469,7 +449,9 @@ company_id: str = Depends(require_company_id)):
             "languages": job_vacancy.languages,
             "behavioral_competencies": job_vacancy.behavioral_competencies,
             "interview_stages": job_vacancy.interview_stages,
-            "screening_questions": job_vacancy.screening_questions,
+            # P1-4 (audit 2026-06-05): preview lê esta coluna; wizard/grafo grava
+            # em screening_config["screening_questions"]. Fallback p/ nao vir vazio.
+            "screening_questions": job_vacancy.screening_questions or (job_vacancy.screening_config or {}).get("screening_questions") or [],
             "disabled_eligibility_question_ids": job_vacancy.disabled_eligibility_question_ids or [],
             "timeline": job_vacancy.timeline,
             "governance_rules": job_vacancy.governance_rules,
@@ -480,12 +462,13 @@ company_id: str = Depends(require_company_id)):
             "created_at": job_vacancy.created_at.isoformat() if hasattr(job_vacancy.created_at, "isoformat") else None,
             "updated_at": job_vacancy.updated_at.isoformat() if hasattr(job_vacancy.updated_at, "isoformat") else None,
         }
+        return apply_vacancy_salary_visibility(_vacancy_detail, current_user, _role_defaults)
 
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Error getting job vacancy: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 # ─── GET list ────────────────────────────────────────────────────────────────
@@ -495,18 +478,21 @@ async def list_job_vacancies(
     status: str | None = None,
     visibility: str | None = None,
     source: str | None = None,  # Phase 4H — filter by 'wizard' | 'ats_import' | 'ats_external' | 'manual'
+    sort_by: str | None = Query(None, description="Sort field: created_at|title|status|updated_at"),
+    sort_order: str = Query("desc", description="Sort direction: asc|desc"),
     skip: int = 0,
     limit: int = 500,
     repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo),
     current_user: User = Depends(get_current_user_or_demo),
-    rails_adapter: RailsAdapter = Depends(get_rails_adapter),
 company_id: str = Depends(require_company_id)):
-    """List job vacancies. When RAILS_API_URL is configured, tries Rails first then local DB."""
+    """List job vacancies from local DB."""
     try:
         # Only query Rails when explicitly enabled — never let the adapter's own DB fallback
         # bypass company/visibility scoping and authorization done in the local path below.
         user_email = current_user.email.lower() if current_user.email else ""
         user_id = str(current_user.id) if current_user.id else ""
+        # PERM-EXEMPT: context-specific role gate
+        # PERM-EXEMPT: context-specific role gate, preservar inline
         is_admin = current_user.role == UserRole.admin if hasattr(current_user, "role") else False
 
         # Sprint 6 RBAC: compute visible scope (own dept + 1-level subordinate depts/emails)
@@ -519,62 +505,20 @@ company_id: str = Depends(require_company_id)):
             current_user._sprint6_subord_depts = set()
             current_user._sprint6_subord_emails = set()
 
-        if RAILS_ENABLED:
-            page = skip // limit + 1 if limit else 1
-            rails_jobs = await rails_adapter.list_jobs_from_rails_only(
-                page=page,
-                limit=limit,
-                status=status,
-                visibility=visibility,
-            )
-            if rails_jobs is not None:
-                # Apply the same confidentiality/visibility filtering used in the local DB path.
-                # This is a defense-in-depth layer — Rails may enforce its own access control,
-                # but we must be consistent with our own security model.
-                filtered: list[dict] = []
-                for jv in rails_jobs:
-                                        # Phase 4H — source filter on Rails branch
-                    if source and (jv.get('source') or 'wizard') != source:
-                        continue
-                    jv_visibility = (jv.get("visibility") or "public")
-
-                    if jv_visibility in ("public", "internal"):
-                        filtered.append(jv)
-                        continue
-
-                    if is_admin:
-                        filtered.append(jv)
-                        continue
-
-                    if jv_visibility == "confidential":
-                        jv_created_by = (jv.get("created_by") or "").lower()
-                        jv_recruiter_email = (jv.get("recruiter_email") or "").lower()
-                        jv_access_list = [x.lower() for x in (jv.get("access_list") or [])]
-                        if (user_email in (jv_created_by, jv_recruiter_email)
-                                or user_email in jv_access_list
-                                or user_id in (jv.get("access_list") or [])):
-                            filtered.append(jv)
-
-                logger.debug(
-                    "[list_job_vacancies] Rails returned %d jobs; %d visible after auth filter",
-                    len(rails_jobs), len(filtered),
-                )
-                return {
-                    "total": len(filtered),
-                    "skip": skip,
-                    "limit": limit,
-                    "items": filtered,
-                }
-
         company_id = get_user_company_id(current_user)
 
-        all_vacancies = await repo.list_vacancies(
-            company_id=company_id,
-            status=status,
-            visibility=visibility,
-            skip=skip,
-            limit=limit,
-        )
+        try:
+            all_vacancies = await repo.list_vacancies(
+                company_id=company_id,
+                status=status,
+                visibility=visibility,
+                skip=skip,
+                limit=limit,
+                sort_by=sort_by,
+                sort_order=sort_order,
+            )
+        except ValueError as e:
+            raise HTTPException(status_code=422, detail=str(e))
 
         job_vacancies = []
         for jv in all_vacancies:
@@ -637,12 +581,32 @@ company_id: str = Depends(require_company_id)):
                 elif user_email in jv_access_list or user_id in (jv.access_list or []):
                     job_vacancies.append(jv)
 
+        # P1-2: métricas reais por vaga (Candidatos / Funil / Performance LIA) —
+        # batch aggregate de vacancy_candidates + wsi_sessions + interviews
+        # (UMA query GROUP BY por fonte, sem N+1). Substitui o antigo
+        # generate_lia_metrics() que fabricava números com random.uniform.
+        _metrics_by_vaga = await repo.aggregate_list_metrics(
+            [str(jv.id) for jv in job_vacancies], company_id
+        )
+        _empty_metrics = {
+            "candidates_count": 0,
+            "funnel_data": {
+                "total": 0, "screening": 0, "interview": 0, "final": 0, "hired": 0,
+            },
+            "lia_metrics": {
+                "pipeline_lia": 0, "triagens_agendadas": 0, "triagens_realizadas": 0,
+                "sem_resposta": 0, "entrevistas_agendadas": 0,
+            },
+        }
+
+        await resolve_inherited_salary_ranges(repo.db, company_id, job_vacancies)
+        _list_role_defaults = await load_role_pii_defaults(repo.db, company_id)
         return {
             "total": len(job_vacancies),
             "skip": skip,
             "limit": limit,
             "items": [
-                {
+                apply_vacancy_salary_visibility({
                     "id": str(jv.id),
                     "title": jv.title,
                     "department": jv.department,
@@ -677,8 +641,9 @@ company_id: str = Depends(require_company_id)):
                     "created_at": jv.created_at.isoformat() if hasattr(jv.created_at, "isoformat") else None,
                     "updated_at": jv.updated_at.isoformat() if hasattr(jv.updated_at, "isoformat") else None,
                     "deadline": jv.deadline.isoformat() if hasattr(jv, "deadline") and jv.deadline else None,
-                    "funnel_data": jv.funnel_data,
-                    "lia_metrics": jv.lia_metrics or generate_lia_metrics(jv.funnel_data),
+                    "candidates_count": _metrics_by_vaga.get(str(jv.id), _empty_metrics)["candidates_count"],
+                    "funnel_data": _metrics_by_vaga.get(str(jv.id), _empty_metrics)["funnel_data"],
+                    "lia_metrics": _metrics_by_vaga.get(str(jv.id), _empty_metrics)["lia_metrics"],
                     "nps": jv.nps,
                     "budget": jv.budget,
                     "budget_used": jv.budget_used,
@@ -689,7 +654,7 @@ company_id: str = Depends(require_company_id)):
                     "approval_status": jv.approval_status,
                     "tags": jv.tags or [],
                     "salary": jv.salary,
-                    "screening_questions": jv.screening_questions or [],
+                    "screening_questions": jv.screening_questions or (jv.screening_config or {}).get("screening_questions") or [],  # P1-4: fallback forma wizard
                     "interview_stages": jv.interview_stages or [],
                     "eligibility_questions": jv.eligibility_questions or [],
                     "disabled_eligibility_question_ids": jv.disabled_eligibility_question_ids or [],
@@ -704,7 +669,7 @@ company_id: str = Depends(require_company_id)):
                     "affirmative_description": jv.affirmative_description,
                     "affirmative_document_required": jv.affirmative_document_required or False,
                     "affirmative_document_types": jv.affirmative_document_types or [],
-                }
+                }, current_user, _list_role_defaults)
                 for jv in job_vacancies
             ]
         }
@@ -713,7 +678,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error listing job vacancies: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 # ─── POST create ──────────────────────────────────────────────────────────────
@@ -825,7 +790,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error creating job vacancy: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 # ─── PUT update ───────────────────────────────────────────────────────────────
@@ -851,8 +816,15 @@ company_id: str = Depends(require_company_id)):
 
         await assert_mutation_allowed(job_vacancy, current_user, resource_label="vaga")
 
+        # GAP-05-004: Optimistic locking — reject if vacancy was modified
+        # since the client last read it.  Backward-compatible: when
+        # expected_updated_at is not sent (None), the check is skipped.
+        check_optimistic_lock(job_vacancy.updated_at, job_data.expected_updated_at)
+
         update_data = job_data.model_dump(exclude_unset=True, exclude_none=True)
         update_data["updated_at"] = datetime.utcnow()
+        # GAP-05-004: Pop control field — not a DB column.
+        update_data.pop("expected_updated_at", None)
 
         changes = {}
         for field, value in update_data.items():
@@ -863,6 +835,15 @@ company_id: str = Depends(require_company_id)):
                 if old_value != value:
                     changes[field] = {"old": old_value, "new": value}
                 setattr(job_vacancy, field, value)
+
+        # Onda 2D (audit 2026-06-06): prazos derivados do SLA do pipeline ao salvar as etapas.
+        if "interview_stages" in update_data:
+            from app.domains.cv_screening.services.deadline_calculator_service import (
+                derive_deadlines_from_stages,
+            )
+            for _df, _dv in derive_deadlines_from_stages(update_data["interview_stages"]).items():
+                if hasattr(job_vacancy, _df):
+                    setattr(job_vacancy, _df, _dv)
 
         if changes:
             from app.domains.job_management.services.job_audit_service import job_audit_service
@@ -916,7 +897,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error updating job vacancy: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 # ─── DELETE (soft) ───────────────────────────────────────────────────────────
@@ -963,7 +944,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error deleting job vacancy: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 # ─── PATCH status ─────────────────────────────────────────────────────────────
@@ -972,6 +953,7 @@ company_id: str = Depends(require_company_id)):
 async def update_job_vacancy_status(
     job_vacancy_id: str = Path(..., pattern=DUAL_ID_PATH_PATTERN),
     status: str = ...,
+    expected_updated_at: str | None = None,
     repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo),
     current_user: User = Depends(get_current_active_user), 
 company_id: str = Depends(require_company_id)):
@@ -996,6 +978,9 @@ company_id: str = Depends(require_company_id)):
             raise HTTPException(status_code=404, detail="Job vacancy not found")
         # Sprint 7.2 RBAC: mutation gate
         await assert_mutation_allowed(job_vacancy, current_user, resource_label="vaga")
+
+        # GAP-05-004: Optimistic locking
+        check_optimistic_lock(job_vacancy.updated_at, expected_updated_at)
 
         old_status = job_vacancy.status
         job_vacancy.status = status
@@ -1038,7 +1023,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error updating job vacancy status: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 # ─── Duplicate / Clone ────────────────────────────────────────────────────────
@@ -1087,14 +1072,14 @@ company_id: str = Depends(require_company_id)):
         if not result.get("success"):
             raise HTTPException(status_code=404, detail=result.get("error", "Failed to duplicate job"))
 
-        logger.info(f"Created {result[total_jobs_created]} duplicate jobs from {job_id}")
+        logger.info(f"Created {result.get('total_jobs_created')} duplicate jobs from {job_id}")
         return result
 
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Error duplicating job: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/job-vacancies/{job_id}/clone-from-template", response_model=CloneFromTemplateResponse)
@@ -1132,7 +1117,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error creating from template: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/job-vacancies/{job_id}/clone-summary", response_model=CloneSummaryResponse)
@@ -1158,4 +1143,4 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting clone summary: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")

@@ -16,6 +16,8 @@ import { Card } from"@/components/ui/card"
 import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import { textStyles } from"@/lib/design-tokens"
+import { useDepartmentsList } from '@/hooks/settings/useDepartmentsList'
+import type { Job } from '@/components/jobs'
 
 interface SavedSearch {
   id: string
@@ -48,6 +50,9 @@ interface TableFiltersPanelProps {
   onApplySavedSearch: (id: string) => void
   onRenameSavedSearch: (id: string, name: string) => void
   onDeleteSavedSearch: (id: string) => void
+  /** Lista de vagas reais usada para derivar opções de Localização. Opcional
+   *  para não quebrar callers legados — fallback = [] (sem chips). */
+  allJobs?: Job[]
 }
 
 const TableFiltersPanel = memo(function TableFiltersPanel({
@@ -65,9 +70,17 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
   onApplySavedSearch,
   onRenameSavedSearch,
   onDeleteSavedSearch,
+  allJobs,
 }: TableFiltersPanelProps) {
   const tf = useTranslations('jobs.tableFilters')
   const locale = useLocale()
+  const { departments } = useDepartmentsList()
+
+  // Derivar localizações distintas das vagas reais (RV-019)
+  const locationOptions: string[] = [
+    ...new Set((allJobs ?? []).map(j => j.location).filter(Boolean)),
+  ].sort()
+
   const statusLabels: Record<string, string> = {
     'Ativa': tf('statusValues.Ativa'),
     'Rascunho': tf('statusValues.Rascunho'),
@@ -99,25 +112,6 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
     'Coordenador': tf('seniorityValues.Coordenador'),
     'Gerente': tf('seniorityValues.Gerente'),
     'Diretor': tf('seniorityValues.Diretor'),
-  }
-  const deptLabels: Record<string, string> = {
-    'Tecnologia': tf('departmentValues.Tecnologia'),
-    'Design': tf('departmentValues.Design'),
-    'Produto': tf('departmentValues.Produto'),
-    'Marketing': tf('departmentValues.Marketing'),
-    'Vendas': tf('departmentValues.Vendas'),
-    'RH': tf('departmentValues.RH'),
-    'Financeiro': tf('departmentValues.Financeiro'),
-    'Operações': tf('departmentValues.Operações'),
-  }
-  const locLabels: Record<string, string> = {
-    'São Paulo, SP': tf('locationValues.São Paulo, SP'),
-    'Rio de Janeiro, RJ': tf('locationValues.Rio de Janeiro, RJ'),
-    'Belo Horizonte, MG': tf('locationValues.Belo Horizonte, MG'),
-    'Curitiba, PR': tf('locationValues.Curitiba, PR'),
-    'Porto Alegre, RS': tf('locationValues.Porto Alegre, RS'),
-    'Brasília, DF': tf('locationValues.Brasília, DF'),
-    'Remoto': tf('locationValues.Remoto'),
   }
   const pubLabels: Record<string, string> = {
     'linkedin': tf('publishingValues.linkedin'),
@@ -354,28 +348,32 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
             </div>
           </div>
 
-          {/* Location */}
+          {/* Location — derivado das vagas reais (RV-019) */}
           <div className="space-y-2">
             <h4 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5">
               <MapPin className="w-3.5 h-3.5" />
               {tf('location')}
             </h4>
-            <div className="flex flex-wrap gap-1.5">
-              {['São Paulo, SP', 'Rio de Janeiro, RJ', 'Belo Horizonte, MG', 'Curitiba, PR', 'Porto Alegre, RS', 'Brasília, DF', 'Remoto'].map(loc => (
-                <Chip
-                  key={loc}
-                  variant="neutral"
-                  className={`text-xs cursor-pointer hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none ${
-                    jobFilters.position?.locations?.includes(loc)
-                      ? 'bg-lia-bg-tertiary border-lia-text-primary text-lia-text-primary font-medium dark:bg-lia-bg-secondary'
-                      : 'bg-lia-bg-primary text-lia-text-primary'
-                  }`}
-                  onClick={() => onToggleFilter('position', 'locations', loc)}
-                >
-                  {locLabels[loc] || loc}
-                </Chip>
-              ))}
-            </div>
+            {locationOptions.length > 0 ? (
+              <div className="flex flex-wrap gap-1.5">
+                {locationOptions.map(loc => (
+                  <Chip
+                    key={loc}
+                    variant="neutral"
+                    className={`text-xs cursor-pointer hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none ${
+                      jobFilters.position?.locations?.includes(loc)
+                        ? 'bg-lia-bg-tertiary border-lia-text-primary text-lia-text-primary font-medium dark:bg-lia-bg-secondary'
+                        : 'bg-lia-bg-primary text-lia-text-primary'
+                    }`}
+                    onClick={() => onToggleFilter('position', 'locations', loc)}
+                  >
+                    {loc}
+                  </Chip>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-lia-text-tertiary">{tf('noLocationsAvailable', { defaultValue: 'Nenhuma localização disponível' })}</p>
+            )}
           </div>
 
           {/* Department */}
@@ -385,18 +383,18 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
               {tf('department')}
             </h4>
             <div className="flex flex-wrap gap-1.5">
-              {['Tecnologia', 'Design', 'Produto', 'Marketing', 'Vendas', 'RH', 'Financeiro', 'Operações'].map(dept => (
+              {departments.map(dept => (
                 <Chip
-                  key={dept}
+                  key={dept.id}
                   variant="neutral"
                   className={`text-xs cursor-pointer hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none ${
-                    jobFilters.team?.departments?.includes(dept)
+                    jobFilters.team?.departments?.includes(dept.name)
                       ? 'bg-lia-bg-tertiary border-lia-text-primary text-lia-text-primary font-medium dark:bg-lia-bg-secondary'
                       : 'bg-lia-bg-primary text-lia-text-primary'
                   }`}
-                  onClick={() => onToggleFilter('team', 'departments', dept)}
+                  onClick={() => onToggleFilter('team', 'departments', dept.name)}
                 >
-                  {deptLabels[dept] || dept}
+                  {dept.name}
                 </Chip>
               ))}
             </div>

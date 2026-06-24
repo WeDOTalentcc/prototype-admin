@@ -1,79 +1,72 @@
-version: "1.0"
-description: |
-  Capabilities and intent-keyword mapping for the company_settings domain.
-  Used by KeywordIntentMatcher (domain.py) for fast intent routing.
+# capabilities.yaml — company_settings domain intent keywords
+# Fixed by P0-1: schema {action:[keywords]} -> {keyword:action} canonical (ADR-031)
+
+domain: company_settings
 
 intent_keywords:
-  configure_profile:
-    - "perfil"
-    - "dados"
-    - "nome"
-    - "cnpj"
-    - "website"
-    - "email"
-    - "telefone"
-    - "endereço"
-    - "setor"
-    - "indústria"
-    - "porte"
-    - "funcionários"
-    - "linkedin"
-    - "logo"
-    - "fundação"
-  configure_culture:
-    - "cultura"
-    - "missão"
-    - "visão"
-    - "valores"
-    - "evp"
-    - "proposta de valor"
-    - "employer branding"
-    - "modelo de trabalho"
-    - "híbrido"
-    - "remoto"
-    - "presencial"
-    - "diversidade"
-    - "dei"
-    - "inclusão"
-    - "sustentabilidade"
-    - "liderança"
-    - "dinâmica"
-    - "crescimento"
-  configure_tech_stack:
-    - "tech stack"
-    - "stack"
-    - "tecnologia"
-    - "engenharia"
-    - "linguagens"
-    - "ferramentas"
-    - "infraestrutura"
-  configure_benefits:
-    - "benefícios"
-    - "plano de saúde"
-    - "vale"
-    - "auxílio"
-    - "bônus"
-    - "PLR"
-    - "stock options"
-    - "gympass"
-    - "home office"
-  configure_workforce:
-    - "planejamento"
-    - "contratações"
-    - "workforce"
-    - "headcount"
-    - "vagas planejadas"
-    - "meta de contratação"
-  analyze_website:
-    - "analisar website"
-    - "analisar site"
-    - "extrair do site"
-    - "importar do website"
-    - "scraping"
-  process_document:
-    - "documento"
-    - "handbook"
-    - "manual"
-    - "organograma"
-    - "plano de cargos"
-    - "upload"
+  perfil da empresa: configure_profile
+  dados da empresa: configure_profile
+  nome da empresa: configure_profile
+  cnpj: configure_profile
+  website da empresa: configure_profile
+  email da empresa: configure_profile
+  telefone da empresa: configure_profile
+  endereço da empresa: configure_profile
+  setor: configure_profile
+  indústria: configure_profile
+  porte da empresa: configure_profile
+  número de funcionários: configure_profile
+  linkedin da empresa: configure_profile
+  logo da empresa: configure_profile
+  fundação da empresa: configure_profile
+  cultura da empresa: configure_culture
+  missão da empresa: configure_culture
+  visão da empresa: configure_culture
+  valores da empresa: configure_culture
+  evp: configure_culture
+  proposta de valor: configure_culture
+  employer branding: configure_culture
+  modelo de trabalho: configure_culture
+  híbrido: configure_culture
+  remoto: configure_culture
+  presencial: configure_culture
+  diversidade: configure_culture
+  dei: configure_culture
+  inclusão: configure_culture
+  sustentabilidade: configure_culture
+  liderança: configure_culture
+  dinâmica da empresa: configure_culture
+  crescimento da empresa: configure_culture
+  tech stack: configure_tech_stack
+  stack tecnológico: configure_tech_stack
+  tecnologia da empresa: configure_tech_stack
+  engenharia: configure_tech_stack
+  linguagens de programação: configure_tech_stack
+  ferramentas da empresa: configure_tech_stack
+  infraestrutura: configure_tech_stack
+  benefícios: configure_benefits
+  plano de saúde: configure_benefits
+  vale refeição: configure_benefits
+  auxílio: configure_benefits
+  bônus: configure_benefits
+  PLR: configure_benefits
+  stock options: configure_benefits
+  gympass: configure_benefits
+  home office: configure_benefits
+  planejamento de contratações: configure_workforce
+  contratações planejadas: configure_workforce
+  workforce planning: configure_workforce
+  headcount: configure_workforce
+  vagas planejadas: configure_workforce
+  meta de contratação: configure_workforce
+  analisar website: analyze_website
+  analisar site: analyze_website
+  extrair do site: analyze_website
+  importar do website: analyze_website
+  scraping: analyze_website
+  processar documento: process_document
+  handbook: process_document
+  manual da empresa: process_document
+  organograma: process_document
+  plano de cargos: process_document
+  upload de documento: process_document

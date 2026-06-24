@@ -54,6 +54,27 @@ class ParsedJD:
     parsing_confidence: float
 
 
+
+def _normalize_location(raw) -> str | None:
+    """Format location: JSON string {"city":...,"state":...} -> "City, ST".
+    Handles plain strings, dicts, and null values transparently.
+    """
+    if not raw:
+        return None
+    if isinstance(raw, dict):
+        parts = [p for p in [raw.get("city"), raw.get("state")] if p]
+        return ", ".join(parts) or None
+    if isinstance(raw, str) and raw.startswith("{"):
+        import json as _json
+        try:
+            loc = _json.loads(raw)
+            parts = [p for p in [loc.get("city"), loc.get("state")] if p]
+            return ", ".join(parts) or None
+        except Exception:
+            pass
+    return raw or None
+
+
 class JDImportService:
     """
     Service for importing and parsing job descriptions from external sources.
@@ -174,7 +195,7 @@ class JDImportService:
             seniority=jd_data.get("seniority"),
             employment_type=jd_data.get("employment_type"),
             work_model=jd_data.get("work_model"),
-            location=jd_data.get("location"),
+            location=_normalize_location(jd_data.get("location")),
             description_raw=jd_data.get("description"),
             responsibilities_raw=jd_data.get("responsibilities_text"),
             salary_min=jd_data.get("salary_min"),
@@ -342,6 +363,28 @@ class JDImportService:
                 logger.info(
                     "[JDImport] JobVacancy mirror exists (external_id=%s) — skip",
                     imported_jd.external_id,
+                )
+                return
+
+        else:
+            # Dedup by title for imports without external_id (manual uploads)
+            # ADR-001-EXEMPT: cross-repo query; no canonical repository covers
+            # job_vacancies title-dedup without an external_id anchor.
+            title_check = await db.execute(
+                sa_text(
+                    "SELECT 1 FROM job_vacancies "
+                    "WHERE company_id = :cid "
+                    "AND title = :title "
+                    "AND status = 'Rascunho' "
+                    "AND created_at > NOW() - INTERVAL '24 hours' "
+                    "LIMIT 1"
+                ),
+                {"cid": str(company_id), "title": imported_jd.title},
+            )
+            if title_check.scalar_one_or_none() is not None:
+                logger.info(
+                    "[JDImport] Duplicate title (no external_id) \u2014 skip: %s",
+                    imported_jd.title,
                 )
                 return
 

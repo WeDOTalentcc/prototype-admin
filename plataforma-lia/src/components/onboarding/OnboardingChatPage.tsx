@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useEffect, useState, useCallback } from "react"
+import { useAiPersona } from "@/hooks/company/use-ai-persona"
 import { useTourMode } from "./tour/useTourMode"
 import { TourController } from "./tour/TourController"
 import { ONBOARDING_TOUR_STEPS } from "./tour/tour-steps"
@@ -30,6 +31,8 @@ interface OnboardingContext {
 }
 
 export function OnboardingChatPage({ sessionId, userId, children }: Props) {
+  const { persona } = useAiPersona()
+  const personaName = persona?.name ?? "IA"
   const [context, setContext] = useState<OnboardingContext | null>(null)
   const [tourReady, setTourReady] = useState(false)
   const { tourActive, startTour, completeStep, endTour } = useTourMode()
@@ -133,8 +136,10 @@ function OnboardingProgressBar({
   completedSteps: string[]
   totalSteps: number
 }) {
+  const { persona } = useAiPersona()
+  const personaName = persona?.name ?? "LIA"
   const STEPS = [
-    { id: "whatsapp", label: "Conhecendo a LIA" },
+    { id: "whatsapp", label: `Conhecendo ${personaName}` },
     { id: "login", label: "Primeiro acesso" },
     { id: "tour", label: "Tour da plataforma" },
     { id: "action", label: "Primeira acao" },
@@ -158,7 +163,7 @@ function OnboardingProgressBar({
                     completed
                       ? "bg-wedo-cyan text-white"
                       : active
-                        ? "border-2 border-wedo-cyan text-wedo-cyan"
+                        ? "border-2 border-wedo-cyan text-wedo-cyan-text"
                         : "bg-lia-bg-tertiary text-lia-text-disabled"
                   }`}
                 >

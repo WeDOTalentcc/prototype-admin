@@ -835,6 +835,12 @@ COMPETÊNCIAS COMPORTAMENTAIS VALORIZADAS:
             ]
             context += "\nDEPARTAMENTOS:\n" + "\n".join(dept_info) + "\n"
 
+            context += (
+                "\nIMPORTANTE: quando o usuário nomeia explicitamente um gestor "
+                "(ex: 'o gestor é João Silva'), SEMPRE use o nome fornecido pelo "
+                "usuário, mesmo que o departamento tenha outro gestor registrado acima.\n"
+            )
+
         if company_benefits:
             benefit_info = [f"- {b['name']} ({b['category']})" for b in company_benefits[:10]]
             context += "\nBENEFÍCIOS:\n" + "\n".join(benefit_info) + "\n"

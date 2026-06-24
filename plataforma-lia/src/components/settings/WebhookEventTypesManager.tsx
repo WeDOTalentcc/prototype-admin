@@ -76,7 +76,7 @@ const CATEGORIES: { value: EventCategory; label: string; icon: string }[] = [
   { value: "interviews", label: "Entrevistas", icon: "🎙️" },
   { value: "offers", label: "Ofertas", icon: "📄" },
   { value: "ats", label: "ATS", icon: "🔗" },
-  { value: "agents", label: "Agentes LIA", icon: "🤖" },
+  { value: "agents", label: "Agentes de IA", icon: "🤖" },
   { value: "system", label: "Sistema", icon: "⚙️" },
 ]
 
@@ -250,7 +250,7 @@ export function WebhookEventTypesManager({
               onClick={() => setFilter(f)}
               className={`px-2 py-0.5 rounded-full text-micro ${
                 filter === f
-                  ? "bg-wedo-cyan/15 text-wedo-cyan-dark border border-wedo-cyan/30"
+                  ? "bg-wedo-cyan/15 text-wedo-cyan-text border border-wedo-cyan/30"
                   : "bg-lia-bg-secondary text-lia-text-secondary border border-transparent"
               }`}
             >
@@ -352,7 +352,7 @@ export function WebhookEventTypesManager({
                       </Chip>
                     )}
                     {template.is_master_template && (
-                      <Chip variant="neutral" className="text-micro bg-wedo-purple/15 text-wedo-purple">
+                      <Chip variant="neutral" className="text-micro bg-wedo-purple/15 text-wedo-purple-text">
                         {tc("masterChip")}
                       </Chip>
                     )}

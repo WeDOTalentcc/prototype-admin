@@ -237,7 +237,7 @@ export function RecruitmentJourneyConfig({
           {isEditMode && (
             <Popover open={catalogOpen} onOpenChange={setCatalogOpen}>
               <PopoverTrigger asChild>
-                <Button data-testid="pipeline-stage-add-trigger" className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active rounded-xl px-4 py-2 text-xs font-semibold transition-colors motion-reduce:transition-none">
+                <Button data-testid="pipeline-stage-add-trigger" className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active px-4 py-2 text-xs font-semibold transition-colors motion-reduce:transition-none">
                   <Plus className="h-4 w-4 mr-2" />
                   {t("addStage")}
                 </Button>

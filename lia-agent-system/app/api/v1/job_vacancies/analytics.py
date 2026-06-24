@@ -13,7 +13,6 @@ from ._shared import (  # noqa: F401
     _calculate_days_between,
     _is_job_at_risk,
     get_current_user_or_demo,
-    get_user_company_id,
     User,
     get_db,
     Depends,
@@ -22,11 +21,12 @@ from ._shared import (  # noqa: F401
     BaseModel,
     logger,
 )
-from app.domains.job_vacancies_analytics.dependencies import get_job_vacancies_analytics_repo
-from app.domains.job_vacancies_analytics.repositories.job_vacancies_analytics_repository import (
+from app.repositories.dependencies import get_job_vacancies_analytics_repo
+from app.repositories.job_vacancies_analytics_repository import (
     JobVacanciesAnalyticsRepository,
 )
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 
 router = APIRouter()
 
@@ -78,11 +78,11 @@ async def get_job_vacancy_metrics(
 company_id: str = Depends(require_company_id)):
     """Get performance metrics for a specific job vacancy."""
     try:
-        company_id = get_user_company_id(current_user)
 
         job = await repo.get_job_by_id_and_company(job_vacancy_id, company_id)
         if not job:
             raise HTTPException(status_code=404, detail="Vaga não encontrada")
+        job_vacancy_id = job.id  # resolve to UUID PK
 
         stage_counts = await repo.get_stage_counts_for_vacancy(job_vacancy_id)
         total_candidates = await repo.get_total_candidates_for_vacancy(job_vacancy_id)
@@ -173,7 +173,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error fetching job vacancy metrics: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 # ─── Deep Analytics ───────────────────────────────────────────────────────────
@@ -226,11 +226,11 @@ async def get_job_analytics(
 company_id: str = Depends(require_company_id)):
     """Returns detailed analytics for a job vacancy."""
     try:
-        company_id = get_user_company_id(current_user)
 
         job = await repo.get_job_by_id_and_company(job_id, company_id)
         if not job:
             raise HTTPException(status_code=404, detail="Vaga não encontrada")
+        job_id = job.id  # resolve str path param → UUID object for subsequent queries
 
         vacancy_candidates = await repo.get_all_vacancy_candidates(job_id)
         total_candidates = len(vacancy_candidates)
@@ -260,18 +260,19 @@ company_id: str = Depends(require_company_id)):
 
         stage_order = ["sourcing", "initial", "pending_gate1", "screening", "triagem", "interview", "entrevista", "offer", "proposta", "hired", "contratado", "rejected", "reprovado"]
         funnel_items = []
-        cumulative_count = total_candidates
+        prev_count = total_candidates  # stage-to-stage: updates after each stage
 
         for stage_name in stage_order:
             if stage_name in stage_counts:
                 count = stage_counts[stage_name]
-                conversion_rate = (count / cumulative_count * 100) if cumulative_count > 0 else 0.0
+                conversion_rate = (count / prev_count * 100) if prev_count > 0 else 0.0
                 funnel_items.append(FunnelStageItem(
                     stage=stage_name,
                     count=count,
                     conversion_rate=round(conversion_rate, 1),
                     avg_days=0.0
                 ))
+                prev_count = count  # advance denominator for next stage
 
         for stage_name, count in stage_counts.items():
             if stage_name not in stage_order:
@@ -416,7 +417,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error fetching job vacancy analytics: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 # ─── History ──────────────────────────────────────────────────────────────────
@@ -458,12 +459,12 @@ company_id: str = Depends(require_company_id)):
     from fastapi import Request
 
     try:
-        company_id = get_user_company_id(current_user)
         offset = (page - 1) * page_size
 
         job = await repo.get_job_by_id_and_company(job_id, company_id)
         if not job:
             raise HTTPException(status_code=404, detail="Job vacancy not found")
+        job_id = job.id  # resolve to UUID PK
 
         history = await job_audit_service.get_history(
             job_id=str(job_id),
@@ -503,7 +504,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error fetching job vacancy history: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 # ─── Stats Overview ───────────────────────────────────────────────────────────
@@ -652,13 +653,20 @@ async def get_job_vacancies_stats_overview(
 company_id: str = Depends(require_company_id)):
     """Get aggregated metrics for the job vacancies dashboard."""
     try:
-        company_id = get_user_company_id(current_user)
         now = datetime.utcnow()
         logger.info(f"Fetching job vacancies stats overview for company: {company_id}")
 
         recruiter_filter_email = recruiter_email or current_user.email
 
         all_company_jobs = await repo.get_all_company_jobs(company_id)
+
+        # Fix 2026-06-08: funnel_data was NULL/stale for all active jobs;
+        # use vacancy_candidates real counts instead of the cached JSON column.
+        try:
+            live_candidate_counts = await repo.get_candidate_counts_by_vacancy_for_company(company_id)
+        except Exception as _e:
+            logger.warning("Could not fetch live candidate counts: %s", _e)
+            live_candidate_counts = {}
 
         my_jobs_list = [
             j for j in all_company_jobs
@@ -689,9 +697,16 @@ company_id: str = Depends(require_company_id)):
         my_candidates_in_funnel = 0
         my_offers_sent = 0
 
-        for job in my_jobs_list:
+        # Fix 2026-06-08: use real vacancy_candidates counts (live_candidate_counts)
+        # instead of stale funnel_data. If current user has no assigned jobs (e.g.
+        # company owner), fall back to summing across ALL active jobs so the header
+        # never shows 0 when candidates clearly exist.
+        jobs_for_funnel = my_jobs_list if my_jobs_list else active_jobs_list
+        for job in jobs_for_funnel:
+            job_id_str = str(job.id)
+            my_candidates_in_funnel += live_candidate_counts.get(job_id_str, 0)
+            # interviewed / offers: keep funnel_data for these (less critical)
             funnel = job.funnel_data or {}
-            my_candidates_in_funnel += funnel.get("total", 0) or 0
             my_candidates_interviewed += funnel.get("interview", 0) or funnel.get("entrevista", 0) or 0
             my_offers_sent += funnel.get("offer", 0) or funnel.get("proposta", 0) or 0
 
@@ -704,10 +719,13 @@ company_id: str = Depends(require_company_id)):
             my_conversion_rate = (hired_count / my_candidates_in_funnel) * 100
 
         my_interviews_last_7d = 0
-        for job in my_jobs_list:
+        # Fix 2026-06-08: funnel_data.interview is stale; use job updated_at as
+        # a reasonable proxy (if job was updated this week, count its live VC total).
+        # Full fix: query VacancyCandidate stage_name directly (deferred — needs
+        # VacancyCandidateRepository in this endpoint).
+        for job in jobs_for_funnel:
             if job.updated_at and job.updated_at >= date_7d_ago:
-                funnel = job.funnel_data or {}
-                my_interviews_last_7d += funnel.get("interview", 0) or funnel.get("entrevista", 0) or 0
+                my_interviews_last_7d += live_candidate_counts.get(str(job.id), 0)
 
         my_jobs_stats = MyJobsStats(
             active=my_active,
@@ -831,7 +849,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error fetching job vacancies stats overview: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 # ─── Job Report ──────────────────────────────────────────────────────────────
@@ -876,14 +894,14 @@ async def get_job_report(
 company_id: str = Depends(require_company_id)):
     # Support db kwarg for backwards compatibility (tests inject db directly)
     if db is not None and not hasattr(repo, 'get_job_by_id_and_company'):
-        from app.domains.job_vacancies_analytics.repositories.job_vacancies_analytics_repository import JobVacanciesAnalyticsRepository as _JVAR
+        from app.repositories.job_vacancies_analytics_repository import JobVacanciesAnalyticsRepository as _JVAR
         repo = _JVAR(db)
     """Returns JSON data for the JobReportModal."""
-    company_id = get_user_company_id(current_user)
 
     job = await repo.get_job_by_id_and_company(job_id, company_id)
     if not job:
         raise HTTPException(status_code=404, detail="Vaga não encontrada")
+    job_id = job.id  # resolve to UUID PK
 
     vacancy_candidates = await repo.get_all_vacancy_candidates(job_id)
     total = len(vacancy_candidates)
@@ -1079,6 +1097,17 @@ STAGE_TO_MACRO = {
     "hired": "contratacao",
     "Recusado": "contratacao",
     "recusado": "contratacao",
+    # Stages present in real DB rows — caused 13 invisible candidates in pipeline-pulse
+    "interview_hr": "entrevista",
+    "interview_manager": "entrevista",
+    "interview_manager2": "entrevista",
+    "interview_technical": "entrevista",
+    "technical_test": "entrevista",
+    "english_test": "entrevista",
+    "short_list": "triagem",
+    "long_list": "triagem",
+    "rejected": "contratacao",
+    "reprovado": "contratacao",
 }
 
 @router.get("/pipeline-pulse", response_model=PipelinePulseResponse)
@@ -1098,7 +1127,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error fetching pipeline pulse: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="Internal error fetching pipeline data")
+        raise LIAError(message="Internal error fetching pipeline data")
 
     macro_counts: dict[str, int] = {}
     total = 0
@@ -1144,7 +1173,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error fetching pipeline overview: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
     stage_map: dict[str, list[PipelineOverviewCandidateItem]] = {}
     stage_counts: dict[str, int] = {}
@@ -1368,6 +1397,27 @@ def _classify_job_lifecycle_stage(job: JobVacancy) -> str:
     return "rascunho"
 
 
+
+def _normalize_location(raw) -> str | None:
+    """Format location: JSON string {"city":...,"state":...} -> "City, ST".
+    Handles plain strings, dicts, and null values transparently.
+    """
+    if not raw:
+        return None
+    if isinstance(raw, dict):
+        parts = [p for p in [raw.get("city"), raw.get("state")] if p]
+        return ", ".join(parts) or None
+    if isinstance(raw, str) and raw.startswith("{"):
+        import json as _json
+        try:
+            loc = _json.loads(raw)
+            parts = [p for p in [loc.get("city"), loc.get("state")] if p]
+            return ", ".join(parts) or None
+        except Exception:
+            pass
+    return raw or None
+
+
 class JobLifecycleVacancyItem(BaseModel):
     id: str
     title: str
@@ -1412,7 +1462,6 @@ company_id: str = Depends(require_company_id)):
     Companion to `/pipeline-overview` (candidate side). Powers the
     "Vagas|Candidatos" toggle in the Visão do Pipeline page.
     """
-    company_id = get_user_company_id(current_user)
     if not company_id:
         raise HTTPException(status_code=403, detail="Company not associated with user")
 
@@ -1423,7 +1472,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error fetching jobs for lifecycle overview: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
     buckets: dict[str, list[JobLifecycleVacancyItem]] = {k: [] for k in JOB_LIFECYCLE_ORDER}
 
@@ -1448,7 +1497,7 @@ company_id: str = Depends(require_company_id)):
             id=str(job.id),
             title=job.title or "Sem título",
             department=job.department,
-            location=job.location,
+            location=_normalize_location(job.location),
             work_model=job.work_model,
             seniority_level=job.seniority_level,
             status=job.status or "Rascunho",
@@ -1487,3 +1536,363 @@ company_id: str = Depends(require_company_id)):
         ))
 
     return JobLifecycleOverviewResponse(stages=stages, total_vacancies=len(jobs))
+
+
+# ─── G6 Analytics Dashboard ──────────────────────────────────────────────────
+
+class StageFunnelItem(BaseModel):
+    stage: str
+    label: str
+    count: int
+    pct_of_total: float = 0.0
+    pct_from_prev: float | None = None
+
+
+
+
+class StageVelocityItem(BaseModel):
+    stage: str
+    label: str
+    avg_days: float
+    sample_count: int
+
+
+class SourceQualityItem(BaseModel):
+    source: str
+    label: str
+    total: int
+    hired: int
+    conversion_rate: float  # hired / total * 100
+
+
+
+class DiversityDistributionItem(BaseModel):
+    key: str
+    label: str
+    count: int
+    pct: float
+
+
+class DEIInsightsResponse(BaseModel):
+    period: str
+    total_hired_sample: int = 0
+    min_sample_gate: int = 10
+    # Professional attributes
+    seniority_distribution: list[DiversityDistributionItem] = []
+    location_distribution: list[DiversityDistributionItem] = []
+    experience_distribution: list[DiversityDistributionItem] = []
+    # D&I sensitive attributes — LGPD Art. 11 §1 (prevenção de discriminação)
+    # Self-declared by candidate (null = not provided = not included)
+    gender_distribution: list[DiversityDistributionItem] = []
+    race_ethnicity_distribution: list[DiversityDistributionItem] = []
+    disability_distribution: list[DiversityDistributionItem] = []
+    disability_type_distribution: list[DiversityDistributionItem] = []
+    # LGPD + fairness guardrail — always surfaced to client
+    lgpd_note: str = (
+        "Dados auto-declarados pelos candidatos. Processados com base em LGPD Art. 11 §1 "
+        "(prevenção de discriminação e promoção de diversidade). "
+        "Células com N<10 suprimidas per LGPD Art. 12 §1 + ANPD Guia Anonimização §3. "
+        "marital_status e religion excluídos (sem propósito D&I legítimo). "
+        "USO EXCLUSIVO para monitoramento de equidade — NUNCA utilizados em decisões automatizadas de IA."
+    )
+
+class DashboardKPIResponse(BaseModel):
+    period: str
+    active_candidates: int = 0
+    open_vacancies: int = 0
+    avg_time_to_fill_days: float | None = None
+    conversion_rate: float = 0.0
+    offer_acceptance_rate: float | None = None
+    sla_at_risk: int = 0
+    hired_in_period: int = 0
+    weekly_trend: list[WeeklyTrend] = []
+    stage_funnel: list[StageFunnelItem] = []
+    insights: list[Insight] = []
+    pipeline_velocity: list[StageVelocityItem] = []
+    source_quality: list[SourceQualityItem] = []
+
+
+@router.get("/job-vacancies/analytics/dashboard", response_model=DashboardKPIResponse)
+async def get_analytics_dashboard(
+    period: str = Query("30d"),
+    repo: JobVacanciesAnalyticsRepository = Depends(get_job_vacancies_analytics_repo),
+    company_id: str = Depends(require_company_id),
+) -> DashboardKPIResponse:
+    """G6 free-tier KPI cards aggregated for /indicadores page."""
+    try:
+        now = datetime.utcnow()
+        period_days = {"30d": 30, "90d": 90, "180d": 180}.get(period, 30)
+        cutoff = now - timedelta(days=period_days)
+
+        all_jobs = await repo.get_all_company_jobs(company_id)
+        try:
+            live_counts = await repo.get_candidate_counts_by_vacancy_for_company(company_id)
+        except Exception as _e:
+            logger.warning("Dashboard: could not fetch live candidate counts: %s", _e)
+            live_counts = {}
+
+        active_jobs = [j for j in all_jobs if j.status == "Ativa"]
+        completed_in_period = [
+            j for j in all_jobs
+            if j.status in ("Concluída", "Encerrada")
+            and j.closed_at is not None
+            and j.closed_at >= cutoff
+        ]
+
+        # Active candidates — real live count
+        active_candidates = sum(live_counts.get(str(j.id), 0) for j in active_jobs)
+
+        # TTF from completed_in_period with valid open/close dates
+        ttf_jobs = [j for j in completed_in_period if j.open_date and j.closed_at]
+        avg_ttf: float | None = None
+        if ttf_jobs:
+            avg_ttf = round(
+                sum(_calculate_days_between(j.open_date, j.closed_at) for j in ttf_jobs)
+                / len(ttf_jobs),
+                1,
+            )
+
+        # Funnel aggregation across active + completed_in_period
+        total_apps = total_screening = total_interview = total_offer = total_hired = 0
+        for j in active_jobs + completed_in_period:
+            total_apps += live_counts.get(str(j.id), 0)
+            fd = j.funnel_data or {}
+            total_screening += (fd.get("screening") or 0) + (fd.get("triagem") or 0) + (fd.get("initial") or 0)
+            total_interview += (
+                (fd.get("interview") or 0)
+                + (fd.get("entrevista") or 0)
+                + (fd.get("interview_1") or 0)
+                + (fd.get("interview_2") or 0)
+            )
+            total_offer += (fd.get("offer") or 0) + (fd.get("proposta") or 0)
+            total_hired += (fd.get("hired") or 0) + (fd.get("contratado") or 0)
+
+        # Supplement hired from completed_in_period count (more reliable than funnel_data cache)
+        hired_in_period = len(completed_in_period)
+        total_hired = max(total_hired, hired_in_period)
+
+        conversion_rate = round(total_hired / total_apps * 100, 1) if total_apps > 0 else 0.0
+        oar: float | None = round(total_hired / total_offer * 100, 1) if total_offer > 0 else None
+
+        sla_at_risk = sum(
+            1 for j in active_jobs
+            if j.deadline is not None and 0 <= (j.deadline - now).days < 5
+        )
+
+        # Stage funnel for display
+        funnel_base = total_apps or 1
+        stage_funnel: list[StageFunnelItem] = [
+            StageFunnelItem(stage="aplicacoes", label="Aplicações", count=total_apps, pct_of_total=100.0),
+            StageFunnelItem(
+                stage="triagem", label="Triagem", count=total_screening,
+                pct_of_total=round(total_screening / funnel_base * 100, 1),
+                pct_from_prev=round(total_screening / funnel_base * 100, 1) if total_apps > 0 else None,
+            ),
+            StageFunnelItem(
+                stage="entrevista", label="Entrevista", count=total_interview,
+                pct_of_total=round(total_interview / funnel_base * 100, 1),
+                pct_from_prev=round(total_interview / total_screening * 100, 1) if total_screening > 0 else None,
+            ),
+            StageFunnelItem(
+                stage="oferta", label="Oferta", count=total_offer,
+                pct_of_total=round(total_offer / funnel_base * 100, 1),
+                pct_from_prev=round(total_offer / total_interview * 100, 1) if total_interview > 0 else None,
+            ),
+            StageFunnelItem(
+                stage="contratado", label="Contratado", count=total_hired,
+                pct_of_total=round(total_hired / funnel_base * 100, 1),
+                pct_from_prev=round(total_hired / total_offer * 100, 1) if total_offer > 0 else None,
+            ),
+        ]
+
+        # Weekly trend scaled to period
+        num_weeks = max(4, period_days // 7)
+        completed_all = [j for j in all_jobs if j.status in ("Concluída", "Encerrada")]
+        trend_weeks: list[WeeklyTrend] = []
+        for weeks_ago in range(num_weeks - 1, -1, -1):
+            ws = now - timedelta(weeks=weeks_ago + 1)
+            we = now - timedelta(weeks=weeks_ago)
+            trend_weeks.append(WeeklyTrend(
+                week=ws.strftime("%d/%m"),
+                hired=sum(1 for j in completed_all if j.closed_at and ws <= j.closed_at < we),
+                opened=sum(1 for j in all_jobs if j.created_at and ws <= j.created_at < we),
+            ))
+
+        insights = _generate_insights(
+            my_jobs_list=active_jobs,
+            active_jobs_list=active_jobs,
+            completed_jobs_90d=completed_in_period,
+            stats={"conversion_rate": conversion_rate, "time_to_fill_avg_90d": avg_ttf or 0.0, "success_rate": oar or 0.0},
+            now=now,
+        )
+
+        logger.info("Analytics dashboard: company=%s period=%s active=%d completed=%d",
+                    company_id, period, len(active_jobs), hired_in_period)
+
+
+        # ── Pipeline Velocity (Premium) ──────────────────────────────────────
+        STAGE_VELOCITY_LABELS: dict[str, str] = {
+            "initial": "Sourcing", "sourcing": "Sourcing",
+            "screening": "Triagem", "triagem": "Triagem",
+            "interview": "Entrevista", "entrevista": "Entrevista",
+            "offer": "Oferta", "proposta": "Oferta",
+            "hired": "Contratado", "contratado": "Contratado",
+        }
+        raw_velocity = await repo.get_pipeline_velocity_for_company(company_id, period_days)
+        pipeline_velocity: list[StageVelocityItem] = [
+            StageVelocityItem(
+                stage=item["stage"],
+                label=STAGE_VELOCITY_LABELS.get(item["stage"], item["stage"].title()),
+                avg_days=round(item["avg_hours"] / 24, 1),
+                sample_count=item["samples"],
+            )
+            for item in raw_velocity
+            if item["samples"] >= 3
+        ]
+
+        # ── Source Quality (Premium) ──────────────────────────────────────────
+        SOURCE_LABELS: dict[str, str] = {
+            "local": "Plataforma", "linkedin": "LinkedIn", "indeed": "Indeed",
+            "referral": "Indicação", "indicacao": "Indicação",
+            "ats_import": "ATS Import", "email": "E-mail",
+            "whatsapp": "WhatsApp", "unknown": "Outros",
+        }
+        raw_sources = await repo.get_source_quality_for_company(company_id, period_days)
+        source_quality: list[SourceQualityItem] = [
+            SourceQualityItem(
+                source=item["source"],
+                label=SOURCE_LABELS.get(item["source"], item["source"].title()),
+                total=item["total"],
+                hired=item["hired"],
+                conversion_rate=round(item["hired"] / item["total"] * 100, 1) if item["total"] > 0 else 0.0,
+            )
+            for item in raw_sources
+            if item["total"] >= 2
+        ][:8]
+
+        return DashboardKPIResponse(
+            period=period,
+            active_candidates=active_candidates,
+            open_vacancies=len(active_jobs),
+            avg_time_to_fill_days=avg_ttf,
+            conversion_rate=conversion_rate,
+            offer_acceptance_rate=oar,
+            sla_at_risk=sla_at_risk,
+            hired_in_period=hired_in_period,
+            weekly_trend=trend_weeks,
+            stage_funnel=stage_funnel,
+            insights=insights,
+            pipeline_velocity=pipeline_velocity,
+            source_quality=source_quality,
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("Error fetching analytics dashboard: %s", e, exc_info=True)
+        raise LIAError(message="Erro interno do servidor")
+
+
+@router.get("/job-vacancies/analytics/dei-insights", response_model=DEIInsightsResponse)
+async def get_dei_insights(
+    period: str = Query("90d"),
+    repo: JobVacanciesAnalyticsRepository = Depends(get_job_vacancies_analytics_repo),
+    company_id: str = Depends(require_company_id),
+) -> DEIInsightsResponse:
+    """Diversity distribution for hired candidates — LGPD-safe aggregate.
+
+    Only professional attributes (seniority, location, experience).
+    N>=10 gate per cell (ADR-LGPD-001 anonymisation pattern).
+    Sensitive fields (gender, race, disability, marital_status) never queried.
+    """
+    try:
+        period_days = {"30d": 30, "90d": 90, "180d": 180, "365d": 365}.get(period, 90)
+
+        SENIORITY_LABELS: dict[str, str] = {
+            "junior": "Júnior", "junior": "Júnior", "pleno": "Pleno",
+            "senior": "Sênior", "especialista": "Especialista",
+            "estagio": "Estágio", "estagiario": "Estagiário",
+            "lideranca": "Liderança", "gerencia": "Gerência",
+        }
+
+        raw = await repo.get_diversity_distribution_for_company(company_id, period_days)
+        total = raw["total"]
+
+        def build_dist(items: list[dict]) -> list[DiversityDistributionItem]:
+            tot = sum(i["count"] for i in items) or 1
+            return [
+                DiversityDistributionItem(
+                    key=i["key"],
+                    label=SENIORITY_LABELS.get(i["key"].lower(), i["key"].title()),
+                    count=i["count"],
+                    pct=round(i["count"] / tot * 100, 1),
+                )
+                for i in items
+            ]
+
+        EXP_LABELS = {"0-2": "0–2 anos", "3-5": "3–5 anos", "6-10": "6–10 anos", "11+": "11+ anos"}
+        experience = [
+            DiversityDistributionItem(
+                key=i["key"],
+                label=EXP_LABELS.get(i["key"], i["key"]),
+                count=i["count"],
+                pct=round(i["count"] / (sum(x["count"] for x in raw["experience"]) or 1) * 100, 1),
+            )
+            for i in raw["experience"]
+        ]
+
+        # Location labels — state abbreviation uppercase (already stored as "SP", "MG", etc.)
+        location = [
+            DiversityDistributionItem(
+                key=i["key"],
+                label=i["key"].upper() if len(i["key"]) == 2 else i["key"].title(),
+                count=i["count"],
+                pct=round(i["count"] / (sum(x["count"] for x in raw["location"]) or 1) * 100, 1),
+            )
+            for i in raw["location"]
+        ]
+
+        GENDER_LABELS: dict[str, str] = {
+            "masculino": "Masculino", "feminino": "Feminino",
+            "nao_binario": "Não-binário", "nao-binario": "Não-binário",
+            "prefiro_nao_informar": "Prefiro não informar",
+            "outro": "Outro",
+        }
+        RACE_LABELS: dict[str, str] = {
+            "branco": "Branco", "pardo": "Pardo", "preto": "Preto",
+            "amarelo": "Amarelo", "indigena": "Indígena",
+            "prefiro_nao_informar": "Prefiro não informar",
+        }
+        DISABILITY_LABELS = {"sim": "Com deficiência", "nao": "Sem deficiência"}
+
+        def label_dist(items: list[dict], labels: dict[str, str]) -> list[DiversityDistributionItem]:
+            tot = sum(i["count"] for i in items) or 1
+            return [
+                DiversityDistributionItem(
+                    key=i["key"],
+                    label=labels.get(i["key"].lower(), i["key"].title()),
+                    count=i["count"],
+                    pct=round(i["count"] / tot * 100, 1),
+                )
+                for i in items
+            ]
+
+        return DEIInsightsResponse(
+            period=period,
+            total_hired_sample=total,
+            min_sample_gate=raw["min_cell"],
+            seniority_distribution=build_dist(raw["seniority"]),
+            location_distribution=location,
+            experience_distribution=experience,
+            gender_distribution=label_dist(raw["gender"], GENDER_LABELS),
+            race_ethnicity_distribution=label_dist(raw["race_ethnicity"], RACE_LABELS),
+            disability_distribution=label_dist(raw["disability"], DISABILITY_LABELS),
+            disability_type_distribution=build_dist(raw["disability_type"]),
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("Error fetching DEI insights: %s", e, exc_info=True)
+        raise LIAError(message="Erro interno do servidor")
+

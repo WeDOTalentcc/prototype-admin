@@ -20,8 +20,11 @@ import {
   Monitor,
   BellOff,
   Check,
+  ChevronsLeft,
   ExternalLink,
   Trash2,
+  Brain,
+  ArrowRight,
 } from "lucide-react"
 import {
   useNotifications,
@@ -29,6 +32,7 @@ import {
   type Notification,
   type NotificationCategory,
 } from "@/hooks/shared/use-notifications"
+import { useProactiveHints, type ProactiveHint } from "@/hooks/proactive/use-proactive-hints"
 import { cn } from "@/lib/utils"
 
 const CATEGORY_ICONS: Record<NotificationCategory, React.ElementType> = {
@@ -166,14 +170,14 @@ const NotificationItem = React.memo(({
             {notification.message}
           </p>
           <div className="flex items-center justify-between mt-1.5">
-            <span className="text-[10px] text-lia-text-disabled flex items-center gap-1">
+            <span className="text-[10px] text-lia-text-muted flex items-center gap-1">
               <Clock className="w-2.5 h-2.5" />
               {formatTimeAgo(notification.timestamp)}
             </span>
             {notification.actionUrl && notification.actionLabel && (
               <a
                 href={notification.actionUrl}
-                className="text-[10px] font-medium text-wedo-cyan hover:underline flex items-center gap-0.5"
+                className="text-[10px] font-medium text-lia-text-secondary hover:underline flex items-center gap-0.5"
                 onClick={(e) => e.stopPropagation()}
               >
                 {notification.actionLabel}
@@ -194,6 +198,9 @@ interface NotificationSystemProps {
   userId?: string
   pollingInterval?: number
   panelPosition?: "sidebar" | "topbar"
+  /** When set, the bell delegates open/close to the parent (attached panel mode) */
+  externalIsOpen?: boolean
+  onExternalToggle?: () => void
 }
 
 const CATEGORY_ORDER: NotificationCategory[] = [
@@ -211,6 +218,8 @@ export function NotificationSystem({
   userId = "default_user",
   pollingInterval = 60000,
   panelPosition = "sidebar",
+  externalIsOpen,
+  onExternalToggle,
 }: NotificationSystemProps) {
   const {
     notifications,
@@ -236,6 +245,15 @@ export function NotificationSystem({
   const [portalPosition, setPortalPosition] = useState({ top: 0, left: 0, right: 0, fromSidebar: false })
   const prevUnreadCountRef = useRef(unreadCount)
 
+  // Proactive hints — merged into this panel
+  const { hints, isLoading: hintsLoading, dismiss: dismissHint } = useProactiveHints()
+  const [deferredHintIds, setDeferredHintIds] = useState<Set<string>>(new Set())
+  const visibleHints = useMemo(
+    () => hints.filter((h: ProactiveHint) => !deferredHintIds.has(h.id)),
+    [hints, deferredHintIds]
+  )
+  const totalBadgeCount = unreadCount + visibleHints.length
+
   useEffect(() => {
     if (prevUnreadCountRef.current !== null && unreadCount > prevUnreadCountRef.current) {
       setHasNewNotification(true)
@@ -244,7 +262,7 @@ export function NotificationSystem({
         toast(newest.title, {
           description: newest.message?.slice(0, 80),
           duration: 5000,
-          icon: <Bell className="w-4 h-4 text-wedo-cyan" />,
+          icon: <Bell className="w-4 h-4 text-wedo-cyan-text" />,
           position: "bottom-right",
           className: "notification-toast",
         })
@@ -289,13 +307,17 @@ export function NotificationSystem({
   }, [panelPosition])
 
   const toggleOpen = useCallback(() => {
+    if (onExternalToggle) {
+      onExternalToggle()
+      return
+    }
     updatePosition()
     setIsOpen(prev => {
       const newState = !prev
       if (newState) refreshIfStale()
       return newState
     })
-  }, [refreshIfStale, updatePosition])
+  }, [onExternalToggle, refreshIfStale, updatePosition])
 
   useEffect(() => {
     setMounted(true)
@@ -342,7 +364,10 @@ export function NotificationSystem({
       .map(g => ({ label: g, items: groups[g] }))
   }, [notifications])
 
-  const panelContent = isOpen ? (
+  // When external toggle is used (attached panel mode), the bell is a pure
+  // trigger - the panel is rendered by the parent as NotificationPanelInline.
+  const effectiveIsOpen = onExternalToggle ? false : isOpen
+  const panelContent = effectiveIsOpen ? (
     <div
       ref={panelRef}
       className="fixed z-modal animate-in fade-in slide-in-from-bottom-2 duration-200"
@@ -376,7 +401,7 @@ export function NotificationSystem({
                     variant="ghost"
                     size="sm"
                     onClick={markAllAsRead}
-                    className="text-[10px] h-6 px-2 text-wedo-cyan hover:text-wedo-cyan/80"
+                    className="text-[10px] h-6 px-2 text-wedo-cyan-text hover:text-wedo-cyan/80"
                   >
                     <Check className="w-3 h-3 mr-1" />
                     Marcar todas lidas
@@ -395,45 +420,9 @@ export function NotificationSystem({
               </div>
             </div>
 
-            <div className="flex gap-1 mt-2.5 overflow-x-auto pb-0.5" role="tablist" aria-label="Filtrar notificações por categoria">
-              <button
-                role="tab"
-                aria-selected={activeCategory === null}
-                onClick={() => setActiveCategory(null)}
-                className={cn(
-                  "px-2.5 py-1.5 text-[11px] rounded-lg whitespace-nowrap transition-colors flex items-center gap-1.5",
-                  activeCategory === null
-                    ? "bg-wedo-cyan/15 text-wedo-cyan font-medium"
-                    : "text-lia-text-secondary hover:bg-lia-bg-tertiary"
-                )}
-              >
-                <Bell className="w-3 h-3" />
-                Todas
-              </button>
-              {CATEGORY_ORDER.map(cat => {
-                const CatIcon = CATEGORY_ICONS[cat]
-                return (
-                  <button
-                    key={cat}
-                    role="tab"
-                    aria-selected={activeCategory === cat}
-                    onClick={() => setActiveCategory(cat)}
-                    className={cn(
-                      "px-2.5 py-1.5 text-[11px] rounded-lg whitespace-nowrap transition-colors flex items-center gap-1.5",
-                      activeCategory === cat
-                        ? "bg-wedo-cyan/15 text-wedo-cyan font-medium"
-                        : "text-lia-text-secondary hover:bg-lia-bg-tertiary"
-                    )}
-                  >
-                    <CatIcon className="w-3 h-3" />
-                    {CATEGORY_LABELS[cat]}
-                  </button>
-                )
-              })}
-            </div>
           </div>
 
-          <div className="max-h-[380px] overflow-y-auto bg-lia-bg-secondary dark:bg-lia-bg-primary/50" aria-live="polite">
+          <div className="max-h-[380px] overflow-y-auto bg-lia-bg-primary dark:bg-lia-bg-primary" aria-live="polite">
             {error ? (
               <div className="py-12 px-4 text-center">
                 <AlertCircle className="w-8 h-8 mx-auto mb-3 text-status-error" />
@@ -452,11 +441,11 @@ export function NotificationSystem({
                 {groupedNotifications.map((group) => (
                   <div key={group.label} className="mb-2 last:mb-0">
                     <div className="flex items-center gap-2 px-2 py-1.5">
-                      <span className="text-[10px] font-semibold text-lia-text-disabled tracking-wider uppercase">
+                      <span className="text-[10px] font-semibold text-lia-text-tertiary tracking-wider uppercase">
                         {group.label}
                       </span>
                       <div className="flex-1 h-px bg-lia-border-subtle" />
-                      <span className="text-[10px] text-lia-text-disabled">
+                      <span className="text-[10px] text-lia-text-muted">
                         {group.items.length}
                       </span>
                     </div>
@@ -477,19 +466,75 @@ export function NotificationSystem({
             ) : (
               <div className="py-14 px-6 text-center">
                 <div className="w-14 h-14 rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-secondary flex items-center justify-center mx-auto mb-4">
-                  <BellOff className="w-6 h-6 text-lia-text-disabled" aria-hidden="true" />
+                  <BellOff className="w-6 h-6 text-lia-text-muted" aria-hidden="true" />
                 </div>
-                <p className="text-sm font-medium text-lia-text-primary">
+                <p className="text-xs font-medium text-lia-text-primary">
                   {isLoading ? "Carregando..." : activeCategory ? `Nenhuma em ${CATEGORY_LABELS[activeCategory]}` : "Tudo em dia!"}
                 </p>
                 {!isLoading && !activeCategory && (
-                  <p className="text-xs text-lia-text-secondary mt-1.5">
+                  <p className="text-[11px] text-lia-text-tertiary mt-1">
                     Quando houver atualizações, elas aparecerão aqui.
                   </p>
                 )}
               </div>
             )}
           </div>
+
+          {/* Sugestões da IA — proactive hints merged from ProactiveActionsBell */}
+          {(visibleHints.length > 0 || hintsLoading) && (
+            <div className="border-t border-lia-border-subtle">
+              <div className="px-3 py-2 flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <Brain className="w-3.5 h-3.5 text-wedo-cyan-dark" />
+                  <span className="text-[11px] font-semibold text-lia-text-primary">Sugestões da IA</span>
+                </div>
+                {visibleHints.length > 0 && (
+                  <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-lia-btn-primary-bg/15 text-wedo-cyan-dark">
+                    {visibleHints.length}
+                  </span>
+                )}
+              </div>
+              {hintsLoading ? (
+                <div className="flex justify-center py-3">
+                  <Loader2 className="w-4 h-4 animate-spin text-lia-text-secondary" />
+                </div>
+              ) : (
+                <div className="divide-y divide-lia-border-subtle max-h-[200px] overflow-y-auto">
+                  {visibleHints.map((hint: ProactiveHint) => (
+                    <div key={hint.id} className="px-3 py-2">
+                      <div className="flex items-start gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 bg-lia-text-tertiary" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-medium text-lia-text-primary line-clamp-1">{hint.title}</p>
+                          <p className="text-[11px] text-lia-text-tertiary line-clamp-2 mt-0.5">{hint.message}</p>
+                          {hint.action && (
+                            <div className="flex items-center gap-1 mt-1">
+                              <ArrowRight className="w-3 h-3 text-lia-text-secondary shrink-0" />
+                              <span className="text-[11px] text-lia-text-secondary font-medium line-clamp-1">{hint.action}</span>
+                            </div>
+                          )}
+                          <div className="flex items-center gap-1 mt-1.5">
+                            <button
+                              onClick={() => dismissHint(hint.id)}
+                              className="text-[11px] px-1.5 py-0.5 rounded text-lia-text-secondary hover:text-status-error hover:bg-status-error/10 transition-colors"
+                            >
+                              Dispensar
+                            </button>
+                            <button
+                              onClick={() => setDeferredHintIds(prev => new Set([...prev, hint.id]))}
+                              className="text-[11px] px-1.5 py-0.5 rounded text-lia-text-secondary hover:text-status-warning hover:bg-status-warning/10 transition-colors"
+                            >
+                              Depois
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
@@ -506,7 +551,7 @@ export function NotificationSystem({
           hasNewNotification && "animate-notification-shake"
         )}
         aria-label={unreadCount > 0 ? `Notificações, ${unreadCount} não lidas` : "Notificações"}
-        aria-expanded={isOpen}
+        aria-expanded={externalIsOpen ?? isOpen}
         aria-haspopup="true"
         data-testid="notification-bell"
       >
@@ -523,6 +568,115 @@ export function NotificationSystem({
       </button>
 
       {mounted && panelContent && createPortal(panelContent, document.body)}
+    </div>
+  )
+}
+
+// -- Inline Panel (attached mode) --------------------------------------------
+export function NotificationPanelInline({
+  userId = "default_user",
+  pollingInterval = 60000,
+  onClose,
+  onNotificationClick,
+}: {
+  userId?: string
+  pollingInterval?: number
+  onClose?: () => void
+  onNotificationClick?: (notification: Notification) => void
+}) {
+  const {
+    notifications,
+    isLoading,
+    error,
+    unreadCount,
+    hasNotifications,
+    activeCategory,
+    setActiveCategory,
+    fetchNotifications,
+    markAsRead,
+    markAllAsRead,
+    removeNotification,
+  } = useNotifications({ userId, pollingInterval })
+
+  const groupedNotifications = useMemo(() => {
+    const filtered = activeCategory
+      ? notifications.filter(n => n.category === activeCategory)
+      : notifications
+    const groups: Record<string, Notification[]> = {}
+    for (const n of filtered) {
+      const g = getTemporalGroup(n.timestamp)
+      if (!groups[g]) groups[g] = []
+      groups[g].push(n)
+    }
+    return TEMPORAL_ORDER.filter(g => groups[g]?.length).map(g => ({ label: g, items: groups[g] }))
+  }, [notifications, activeCategory])
+
+  return (
+    <div className="flex flex-col h-full border-r border-lia-border-subtle bg-lia-bg-primary">
+      {/* Header */}
+      <div className="px-4 py-3 border-b border-lia-border-subtle flex-shrink-0">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Bell className="w-4 h-4 text-lia-text-primary" />
+            <h3 className="text-sm font-semibold text-lia-text-primary">Notificações</h3>
+            {unreadCount > 0 && (
+              <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-status-error/15 text-status-error">
+                {unreadCount} nova{unreadCount > 1 ? "s" : ""}
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-1" role="status" aria-live="polite">
+            {isLoading && <Loader2 className="w-3 h-3 animate-spin text-lia-text-secondary" />}
+            <Button variant="ghost" size="sm" onClick={markAllAsRead} disabled={unreadCount === 0} className="text-[10px] h-6 px-2 text-lia-text-secondary disabled:opacity-40 hover:enabled:text-wedo-cyan-text transition-colors">
+              <Check className="w-3 h-3 mr-1" /> Marcar todas lidas
+            </Button>
+            {onClose && (
+              <Button variant="ghost" size="sm" onClick={onClose} className="h-6 w-6 p-0 text-lia-text-secondary hover:text-lia-text-primary" aria-label="Retrair painel">
+                <ChevronsLeft className="w-4 h-4" />
+              </Button>
+            )}
+          </div>
+        </div>
+      </div>
+      {/* Notifications list */}
+      <div className="flex-1 overflow-y-auto bg-lia-bg-primary dark:bg-lia-bg-primary" aria-live="polite">
+        {error ? (
+          <div className="py-12 px-4 text-center">
+            <AlertCircle className="w-8 h-8 mx-auto mb-3 text-status-error" />
+            <p className="text-sm text-status-error font-medium">{error}</p>
+            <Button variant="ghost" size="sm" onClick={fetchNotifications} className="mt-3 text-xs">Tentar novamente</Button>
+          </div>
+        ) : hasNotifications && groupedNotifications.length > 0 ? (
+          <div className="p-2">
+            {groupedNotifications.map((group) => (
+              <div key={group.label} className="mb-2 last:mb-0">
+                <div className="flex items-center gap-2 px-2 py-1.5">
+                  <span className="text-[10px] font-semibold text-lia-text-tertiary tracking-wider uppercase">{group.label}</span>
+                  <div className="flex-1 h-px bg-lia-border-subtle" />
+                  <span className="text-[10px] text-lia-text-muted">{group.items.length}</span>
+                </div>
+                <div className="space-y-1">
+                  {group.items.map((notification) => (
+                    <NotificationItem key={notification.id} notification={notification} onMarkAsRead={markAsRead} onRemove={removeNotification} onClick={onNotificationClick} />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="py-14 px-6 text-center">
+            <div className="w-14 h-14 rounded-full bg-lia-bg-tertiary flex items-center justify-center mx-auto mb-4">
+              <BellOff className="w-6 h-6 text-lia-text-muted" aria-hidden="true" />
+            </div>
+            <p className="text-xs font-medium text-lia-text-primary">
+              {isLoading ? "Carregando..." : activeCategory ? `Nenhuma em ${CATEGORY_LABELS[activeCategory]}` : "Tudo em dia!"}
+            </p>
+            {!isLoading && !activeCategory && (
+              <p className="text-[11px] text-lia-text-tertiary mt-1">Quando houver atualizações, elas aparecerão aqui.</p>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   )
 }

@@ -4,7 +4,7 @@ Billing models for subscription management.
 Supports Iugu and Vindi as payment gateway providers.
 """
 from datetime import datetime, date
-from sqlalchemy import Column, String, DateTime, Date, Boolean, Integer, ForeignKey, Index, Text
+from sqlalchemy import Column, String, DateTime, Date, Boolean, Integer, ForeignKey, Index, Text, Numeric
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
 import uuid
@@ -80,6 +80,10 @@ class Subscription(Base):
     
     cancelled_at = Column(DateTime, nullable=True)
     cancellation_reason = Column(Text, nullable=True)
+
+    # ALFA discount — admin-only, per-company. Zero impact when desconto_pct=0.
+    desconto_pct = Column(Numeric(precision=5, scale=2), nullable=False, default=0)
+    desconto_validade = Column(DateTime, nullable=True)
     
     extra_data = Column(Text, nullable=True)
     
@@ -117,6 +121,8 @@ class Subscription(Base):
             "billing_day": self.billing_day,
             "cancelled_at": self.cancelled_at.isoformat() if self.cancelled_at else None,
             "cancellation_reason": self.cancellation_reason,
+            "desconto_pct": float(self.desconto_pct) if self.desconto_pct else 0,
+            "desconto_validade": self.desconto_validade.isoformat() if self.desconto_validade else None,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }
@@ -486,7 +492,7 @@ AVAILABLE_MODULES = {
     "predictive_analytics": {
         "label": "Predictive Attrition",
         "description": "Previsão de risco de turnover com ML",
-        "initial_status": "coming_soon",
+        "initial_status": "beta",
     },
 }
 

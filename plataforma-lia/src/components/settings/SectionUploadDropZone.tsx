@@ -21,7 +21,7 @@ const STATE_PROGRESS: Record<UploadState, number> = {
   error: 0,
 }
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024
+import { MAX_FILE_SIZE } from '@/constants/upload'
 const VALID_EXTS = [".pdf", ".docx", ".txt"]
 
 export type TargetSection =

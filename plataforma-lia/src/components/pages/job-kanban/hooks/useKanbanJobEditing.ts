@@ -6,6 +6,7 @@ import { liaApi } from "@/services/lia-api"
 import type { DynamicStage } from "../utils/kanbanStageUtils"
 import type { InterviewStageFromJob } from "../utils/kanbanStageUtils"
 import { toast } from "sonner"
+import { buildJobUpdatePayload } from "./jobUpdatePayload"
 
 interface KanbanJobRef {
   id?: string | number
@@ -42,55 +43,7 @@ export function useKanbanJobEditing(ctx: KanbanJobEditingContext) {
     if (!currentJob) return
     setSavingJobSection(sectionId)
     try {
-      const fieldMapping: Record<string, string> = {
-        title: 'title', department: 'department', location: 'location',
-        workModel: 'work_model', type: 'employment_type', seniority: 'seniority_level',
-        status: 'status', urgencyLevel: 'urgency_level',
-        recruiter: 'recruiter', recruiterEmail: 'recruiter_email',
-        manager: 'hiring_manager', managerEmail: 'hiring_manager_email',
-        openDate: 'open_date', deadline: 'deadline',
-        deadlineScreening: 'deadline_screening', deadlineShortlist: 'deadline_shortlist',
-        deadlineClosing: 'deadline_closing',
-        benefits: 'benefits', targetAudience: 'target_audience',
-        targetSector: 'target_sector', targetSegment: 'target_segment',
-        languages: 'languages', visibility: 'visibility',
-        publishedLinkedIn: 'published_linkedin', publishedWebsite: 'published_website',
-        publishedIndeed: 'published_indeed',
-        isConfidential: 'is_confidential', maskedCompanyName: 'masked_company_name',
-        isAffirmative: 'is_affirmative',
-        affirmativeCriteriaPrimary: 'affirmative_criteria_primary',
-        affirmativeCriteriaSecondary: 'affirmative_criteria_secondary',
-        affirmativeDescription: 'affirmative_description',
-        affirmativeDocumentRequired: 'affirmative_document_required',
-        affirmativeDocumentTypes: 'affirmative_document_types',
-        priority: 'priority',
-        description: 'description',
-        interviewStages: 'interview_stages',
-      }
-      const updates: Record<string, unknown> = {}
-      fields.forEach(f => {
-        if (f === 'salaryMin' || f === 'salaryMax') {
-          if (!updates['salary_range']) {
-            updates['salary_range'] = {
-              min: jobEditForm.salaryMin ? Number(jobEditForm.salaryMin) : null,
-              max: jobEditForm.salaryMax ? Number(jobEditForm.salaryMax) : null,
-              currency: 'BRL'
-            }
-          }
-          return
-        }
-        if (f === 'bonusMin' || f === 'bonusMax') {
-          if (!updates['bonus_range']) {
-            updates['bonus_range'] = {
-              min: jobEditForm.bonusMin ? Number(jobEditForm.bonusMin) : null,
-              max: jobEditForm.bonusMax ? Number(jobEditForm.bonusMax) : null,
-              currency: 'BRL'
-            }
-          }
-          return
-        }
-        updates[fieldMapping[f] || f] = jobEditForm[f]
-      })
+      const updates = buildJobUpdatePayload(fields, jobEditForm)
       const jobId = currentJob.backendId || currentJob.jobId || currentJob.id
       await liaApi.updateJobVacancy(String(jobId), updates)
       if (fields.includes('interviewStages') && (jobEditForm as Record<string, unknown>).interviewStages) {

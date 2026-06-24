@@ -16,8 +16,8 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
-from app.domains.observability.dependencies import get_observability_repo
-from app.domains.observability.repositories.observability_repository import ObservabilityRepository
+from app.repositories.dependencies import get_observability_repo
+from app.repositories.observability_repository import ObservabilityRepository
 from app.schemas.observability import (
     AIInferenceLogListResponse,
     AIInferenceLogResponse,
@@ -53,6 +53,7 @@ from app.shared.security.require_company_id import require_company_id
 from typing import Annotated
 from fastapi import Path
 from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
+from app.shared.errors import LIAError
 
 logger = logging.getLogger(__name__)
 
@@ -104,7 +105,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting AI inference stats: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/ai-logs", response_model=AIInferenceLogListResponse, summary="List AI inference logs")
@@ -145,7 +146,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error listing AI inference logs: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/ai-logs/{log_id}", response_model=AIInferenceLogResponse, summary="Get AI inference log by ID")
@@ -170,7 +171,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting AI inference log: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/data-access/stats", response_model=DataAccessStatsResponse, summary="Get data access statistics")
@@ -207,7 +208,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting data access stats: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/data-access", response_model=DataAccessLogListResponse, summary="List data access logs")
@@ -250,7 +251,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error listing data access logs: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/consents", response_model=ConsentRecordListResponse, summary="List consent records")
@@ -285,7 +286,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error listing consent records: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/consents/{candidate_id}", response_model=ConsentRecordListResponse, summary="Get consents by candidate")
@@ -317,7 +318,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting candidate consents: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/consents", response_model=ConsentRecordResponse, status_code=status.HTTP_201_CREATED, summary="Create consent record")
@@ -352,7 +353,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error creating consent record: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.put("/consents/{consent_id}/revoke", response_model=ConsentRecordResponse, summary="Revoke consent")
@@ -380,7 +381,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error revoking consent: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/incidents", response_model=IncidentReportListResponse, summary="List incidents")
@@ -421,7 +422,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error listing incidents: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/incidents", response_model=IncidentReportResponse, status_code=status.HTTP_201_CREATED, summary="Create incident")
@@ -451,7 +452,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error creating incident: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.put("/incidents/{incident_id}", response_model=IncidentReportResponse, summary="Update incident")
@@ -496,7 +497,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error updating incident: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.put("/incidents/{incident_id}/resolve", response_model=IncidentReportResponse, summary="Resolve incident")
@@ -534,7 +535,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error resolving incident: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/evaluations/summary", response_model=ModelEvaluationSummaryResponse, summary="Get evaluation summary")
@@ -563,7 +564,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting evaluation summary: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/evaluations", response_model=ModelEvaluationListResponse, summary="List model evaluations")
@@ -602,7 +603,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error listing model evaluations: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/compliance/summary", response_model=ComplianceSummaryResponse, summary="Get compliance summary")
@@ -629,7 +630,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting compliance summary: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/compliance", response_model=ComplianceControlListResponse, summary="List compliance controls")
@@ -666,7 +667,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error listing compliance controls: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.put("/compliance/{control_id}", response_model=ComplianceControlResponse, summary="Update compliance control")
@@ -709,7 +710,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error updating compliance control: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/dashboard", response_model=ObservabilityDashboardResponse, summary="Get dashboard data")
@@ -783,7 +784,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting dashboard data: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/bias-audits/latest", response_model=BiasAuditReportResponse, summary="Get latest bias audit")
@@ -805,7 +806,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting latest bias audit: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/bias-audits/summary", response_model=BiasAuditSummaryResponse, summary="Get bias audit summary")
@@ -840,7 +841,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting bias audit summary: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/bias-audits", response_model=BiasAuditReportListResponse, summary="List bias audits")
@@ -879,7 +880,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error listing bias audits: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/bias-audits/{audit_id}", response_model=BiasAuditReportResponse, summary="Get bias audit by ID")
@@ -904,7 +905,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting bias audit: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/bias-audits", response_model=BiasAuditReportResponse, status_code=status.HTTP_201_CREATED, summary="Create bias audit")
@@ -959,7 +960,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error creating bias audit: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/bias-audits/{audit_id}/publish", response_model=BiasAuditReportResponse, summary="Publish bias audit")
@@ -994,6 +995,6 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error publishing bias audit: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 reorder_collection_before_item(router)

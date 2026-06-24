@@ -129,7 +129,7 @@ export function getCostColor(level: "low" | "medium" | "high" | "very-high"): st
   switch (level) {
     case "low": return "text-status-success"
     case "medium": return "text-status-warning"
-    case "high": return "text-wedo-orange"
+    case "high": return "text-wedo-orange-text"
     case "very-high": return "text-status-error"
   }
 }

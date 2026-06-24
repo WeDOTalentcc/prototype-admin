@@ -16,6 +16,7 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy import and_, case, cast, func, select, Float
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user
@@ -75,7 +76,7 @@ async def _get_drift_status(company_id: str, db: AsyncSession) -> dict[str, Any]
 
 @router.get("/agent-quality-dashboard")
 async def get_agent_quality_dashboard(
-    period: str = Query("7d", regex="^(7d|30d|90d)$"),
+    period: str = Query("7d", pattern="^(7d|30d|90d)$"),
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 company_id: str = Depends(require_company_id)) -> dict[str, Any]:
@@ -135,9 +136,12 @@ company_id: str = Depends(require_company_id)) -> dict[str, Any]:
     try:
         from lia_models.calibration import CalibrationEvent
 
+        # `context` is a plain JSON column → cast to JSONB so `.astext` (->>) works,
+        # built once so SELECT and GROUP BY emit identical SQL.
+        domain_expr = cast(CalibrationEvent.context, JSONB)["domain"].astext
         cal_result = await db.execute(
             select(
-                CalibrationEvent.context["domain"].astext.label("domain"),
+                domain_expr.label("domain"),
                 func.count(CalibrationEvent.id).label("total"),
                 func.avg(CalibrationEvent.lia_score).label("avg_lia_score"),
             )
@@ -147,7 +151,7 @@ company_id: str = Depends(require_company_id)) -> dict[str, Any]:
                     CalibrationEvent.created_at >= cutoff,
                 )
             )
-            .group_by(CalibrationEvent.context["domain"].astext)
+            .group_by(domain_expr)
         )
 
         for row in cal_result.all():

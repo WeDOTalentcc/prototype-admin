@@ -1,7 +1,6 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { ExpandableAIPrompt } from "@/components/expandable-ai-prompt"
 import { AdvancedReportExporter } from "@/components/reports/advanced-report-exporter"
 import { Download, RefreshCw } from "lucide-react"
 import { useIndicatorsPage } from "./indicators/useIndicatorsPage"
@@ -42,7 +41,6 @@ export function IndicatorsPage() {
     setSortBy,
     sortOrder,
     setSortOrder,
-    selectedCandidates,
     showExportModal,
     setShowExportModal,
     recruiters,
@@ -50,12 +48,11 @@ export function IndicatorsPage() {
     filteredRecruiters,
     teamMetrics,
     getStatusColor,
-    handleCommandAction,
     handleAlertAction,
   } = useIndicatorsPage()
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 h-full overflow-y-auto">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -81,14 +78,6 @@ export function IndicatorsPage() {
           </Button>
         </div>
       </div>
-
-      {/* LIA Prompt */}
-      <ExpandableAIPrompt
-        selectedCandidates={selectedCandidates}
-        onCommand={handleCommandAction}
-        filteredCount={filteredRecruiters.length}
-        totalCount={recruiters.length}
-      />
 
       {/* Tabs */}
       <div className="flex gap-1 p-1 bg-lia-bg-secondary rounded-lg w-fit">

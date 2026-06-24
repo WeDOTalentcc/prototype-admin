@@ -19,6 +19,8 @@ from ._shared import (
     InterpretContextResponse,
     TransitionExecuteRequest,
     TransitionExecuteResponse,
+    PreviewFeedbackRequest,
+    PreviewFeedbackResponse,
     DispatchResult,
     TaskItem,
     LearnedSuggestion,
@@ -36,9 +38,17 @@ from ._shared import (
     User,
 )
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAInvalidStateTransition
+from app.shared.errors import LIAError
 from typing import Annotated
 from fastapi import Path
 from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from app.services.cache.context_cache import get_context_cache as _get_ctx_cache
+from app.api.v1.candidates._shared import REJECTION_STAGES  # P-GUARD SEV1-C3-01
+from app.shared.compliance.fairness_guard_middleware import (  # P-GUARD SEV1-C3-01
+    check_rejection_reason,
+)
+
 
 logger = logging.getLogger(__name__)
 
@@ -77,6 +87,8 @@ company_id: str = Depends(require_company_id)):
         return result
     except TransitionError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    except LIAInvalidStateTransition as e:
+        raise HTTPException(status_code=409, detail=e.message)
     except PermissionError as e:
         raise HTTPException(status_code=403, detail=str(e))
     except ValueError as e:
@@ -85,7 +97,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error transitioning candidate: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/candidate/{vacancy_candidate_id}/info", response_model=None)
@@ -113,7 +125,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting candidate info: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/candidate/{vacancy_candidate_id}/history", response_model=None)
@@ -144,7 +156,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting candidate history: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/transition/interpret-context", response_model=InterpretContextResponse)
@@ -269,219 +281,74 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error interpreting transition context: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
-@router.post("/transition/execute", response_model=TransitionExecuteResponse)
-async def execute_transition(
-    request: TransitionExecuteRequest,
+@router.post("/transition/preview-feedback", response_model=PreviewFeedbackResponse)
+async def preview_feedback(
+    request: PreviewFeedbackRequest,
     current_user: User = Depends(get_current_active_user),
     stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
-company_id: str = Depends(require_company_id)):
-    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
-    """Execute a candidate stage transition with optional auto-dispatch."""
-    import asyncio as _asyncio
+    company_id: str = Depends(require_company_id),
+):
+    """Gera o texto do feedback para REVISAO (item 3 / 1-exemplo do bulk).
+
+    READ-ONLY: NAO move o candidato e NAO envia nada. Reusa o MESMO produtor
+    (MessageGenerator) + a mesma camada de fairness/LGPD e a regra de canal (W1)
+    do envio real, para o recrutador ver exatamente o que sairia.
+    """
+    from app.domains.automation.services.candidate_context_aggregator import (
+        CandidateContextAggregator,
+    )
+    from app.domains.automation.services.stage_transition_automation import (
+        MessageGenerator,
+        is_high_risk_rejection,
+    )
+    from app.domains.communication.services.transition_dispatch_service import (
+        ai_personalization_allowed_for_channel,
+        is_feedback_fairness_blocked,
+    )
+
+    channel = request.channel or "email"
+    aggregator = CandidateContextAggregator(stage_repo.db)
+    candidate_context = await aggregator.aggregate(request.vacancy_candidate_id)
+    job_context = candidate_context.get("job", {}) or {}
+
     try:
-        from sqlalchemy import update as sa_update
-
-        from app.models.candidate import VacancyCandidate
-
-        values = {"stage": request.to_stage}
-        if request.sub_status:
-            values["status"] = request.sub_status
-
-        predicted_sub_status = None
-        prediction = None
-        if not request.sub_status and settings.ENABLE_LLM_SUBSTATUS_PREDICTION:
-            try:
-                from app.domains.automation.services.candidate_context_aggregator import CandidateContextAggregator
-                from app.domains.automation.services.stage_transition_automation import SubStatusPredictor
-
-                aggregator = CandidateContextAggregator(stage_repo.db)
-                candidate_context = await aggregator.aggregate(request.vacancy_candidate_id)
-
-                prediction = SubStatusPredictor.predict(
-                    candidate_context=candidate_context,
-                    from_stage=request.from_stage or "",
-                    to_stage=request.to_stage,
-                )
-
-                if prediction and prediction.get("confidence", 0) >= 0.6:
-                    predicted_sub_status = prediction.get("predicted_substatus") or ""  # type: ignore[arg-type]
-                    values["status"] = predicted_sub_status
-                    logger.info(
-                        f"[PIPELINE] Predicted sub-status: {predicted_sub_status} "
-                        f"(confidence: {prediction.get('confidence')}, "
-                        f"reasoning: {prediction.get('reasoning')})"
-                    )
-            except Exception as pred_err:
-                logger.warning(f"[PIPELINE] SubStatus prediction failed (fallback to no sub-status): {pred_err}")
-
-        stmt = (
-            sa_update(VacancyCandidate)
-            # Onda 4.2b-P0-3 (2026-05-23): filtro company_id obrigatorio — cross-
-            # tenant write em candidato = LGPD critical.
-            .where(
-                VacancyCandidate.id == request.vacancy_candidate_id,
-                VacancyCandidate.company_id == company_id,
-            )
-            .values(**values)
+        from sqlalchemy import select as _sa_sel
+        from app.models.company import Company as _Company
+        _r = await stage_repo.db.execute(
+            _sa_sel(_Company.display_name, _Company.name).where(_Company.id == company_id)
         )
-        result = await stage_repo.db.execute(stmt)
-        await stage_repo.db.commit()
+        _row = _r.first()
+        if _row:
+            job_context["company_name"] = _row[0] or _row[1] or ""
+    except Exception as _ce:
+        logger.warning(f"[PREVIEW] could not resolve company name: {_ce}")
 
-        if result.rowcount == 0:
-            raise HTTPException(
-                status_code=404,
-                detail="Candidate not found in this tenant",
-            )
+    msg_type = "feedback_construtivo" if request.to_stage == "rejected" else "aprovacao"
+    result = await MessageGenerator.generate(
+        candidate_context=candidate_context,
+        to_stage=request.to_stage,
+        substatus=request.sub_status or "",
+        job_context=job_context,
+        message_type=msg_type,
+        channel=channel,
+    )
+    body = result.get("body", "") or ""
+    generated_by = (result.get("metadata") or {}).get("generated_by", "unknown")
+    high_risk = request.to_stage == "rejected" and is_high_risk_rejection(request.sub_status or "")
+    uses_template_only = not ai_personalization_allowed_for_channel(channel)
+    fairness_blocked = (not uses_template_only) and is_feedback_fairness_blocked(body, str(company_id))
+    ai_personalized = (generated_by == "lia_claude") and not uses_template_only and not fairness_blocked
 
-        try:
-            from app.domains.automation.services.stage_automation_engine import (
-                AutomationEvent,
-                StageAutomationEngine,
-                TriggerType,
-            )
-
-            automation_payload = {
-                    "from_stage": request.from_stage or "",
-                    "to_stage": request.to_stage,
-                    "action_behavior": request.action_behavior or "",
-                    "sub_status": request.sub_status or "",
-                    "prompt": request.prompt or "",
-                    "action": request.action or "",
-                    "triggered_by": str(getattr(current_user, 'id', 'system')),
-                }
-            if request.extracted_preferences:
-                automation_payload["extracted_preferences"] = request.extracted_preferences
-
-            event = AutomationEvent(
-                trigger_type=TriggerType.STAGE_CHANGED,
-                candidate_id=request.vacancy_candidate_id,
-                vacancy_id=request.vacancy_id or "",
-                # Onda 4.2b-P0-4 (2026-05-23): removido 'admin_company' fallback.
-                # JWT e fonte autoritativa unica (REGRA 6).
-                company_id=company_id,
-                payload=automation_payload,
-            )
-            engine = StageAutomationEngine()
-            _asyncio.create_task(engine.process_event(event, stage_repo.db))
-            logger.info(f"[PIPELINE] Emitted STAGE_CHANGED event for {request.vacancy_candidate_id}")
-        except Exception as event_err:
-            logger.warning(f"[PIPELINE] Failed to emit STAGE_CHANGED event: {event_err}")
-
-        dispatch_results = []
-
-        resolved_action_behavior = request.action_behavior
-        if request.action == "lia_auto" and not resolved_action_behavior:
-            try:
-                from sqlalchemy import select as sa_select
-
-                from app.models.recruitment_stages import RecruitmentStage as _RS
-                # Onda 4.2b-P0-5 (2026-05-23): stage lookup com company_id filter.
-                # Antes resolvia stage de qualquer empresa que tivesse nome igual.
-                stage_result = await stage_repo.db.execute(
-                    sa_select(_RS).where(
-                        _RS.name == request.to_stage,
-                        _RS.company_id == company_id,
-                    )
-                )
-                dest_stage = stage_result.scalar_one_or_none()
-                if dest_stage:
-                    resolved_action_behavior = dest_stage.action_behavior
-                    logger.info(f"Resolved action_behavior '{resolved_action_behavior}' from stage '{request.to_stage}'")
-            except Exception as stage_err:
-                logger.warning(f"Could not resolve action_behavior from stage: {stage_err}")
-
-        if request.action == "lia_auto" and resolved_action_behavior:  # type: ignore[truthy-bool]
-            try:
-                from app.domains.communication.services.transition_dispatch_service import TransitionDispatchService
-                dispatch_service = TransitionDispatchService(stage_repo.db)
-
-                # Onda 4.2b-P0-4 (2026-05-23): removido fallback 'admin_company'.
-                # company_id ja vem do Depends(require_company_id) — usar direto.
-                triggered_by = getattr(current_user, 'id', None) or 'system'
-
-                personalized_content = None
-                if request.prompt and settings.ENABLE_LLM_DISPATCH_PERSONALIZATION:
-                    try:
-                        from app.domains.automation.services.candidate_context_aggregator import (
-                            CandidateContextAggregator,
-                        )
-                        from app.domains.automation.services.stage_transition_automation import MessageGenerator
-
-                        aggregator = CandidateContextAggregator(stage_repo.db)
-                        candidate_context = await aggregator.aggregate(request.vacancy_candidate_id)
-                        job_context = candidate_context.get("job", {})
-
-                        msg_type = "feedback_construtivo" if request.to_stage == "rejected" else "aprovacao"
-
-                        msg_result = await MessageGenerator.generate(
-                            candidate_context=candidate_context,
-                            to_stage=request.to_stage,
-                            substatus=request.sub_status or predicted_sub_status or "",
-                            job_context=job_context,
-                            message_type=msg_type,
-                            channel=request.channel or "email",
-                        )
-
-                        if msg_result and msg_result.get("body"):
-                            personalized_content = msg_result["body"]
-                            logger.info("[PIPELINE] AI-generated personalized message for dispatch")
-                    except Exception as msg_err:
-                        logger.warning(f"[PIPELINE] AI message generation failed, using template: {msg_err}")
-
-                extra_vars: dict[str, Any] = {}
-                if request.prompt:
-                    extra_vars["prompt"] = request.prompt
-                if request.extracted_preferences and request.action in ("lia_auto", None):
-                    prefs = {k: str(v) for k, v in request.extracted_preferences.items() if v is not None and str(v).strip()}
-                    extra_vars.update(prefs)
-                    pref_map = {
-                        "date": "interview_date",
-                        "time": "interview_time",
-                        "interviewer": "interviewer_name",
-                        "location": "interview_location",
-                        "format": "interview_format",
-                        "duration": "interview_duration",
-                    }
-                    for src_key, dest_key in pref_map.items():
-                        if src_key in prefs:
-                            extra_vars[dest_key] = prefs[src_key]
-
-                result = await dispatch_service.dispatch_for_transition(
-                    vacancy_candidate_id=request.vacancy_candidate_id,
-                    to_stage=request.to_stage,
-                    action_behavior=str(resolved_action_behavior),  # type: ignore[arg-type]
-                    channel=request.channel or "email",
-                    company_id=str(company_id),
-                    triggered_by=str(triggered_by),
-                    extra_variables=extra_vars if extra_vars else None,
-                    personalized_content=personalized_content,
-                )
-                dispatch_results.append(DispatchResult(**result))
-            except Exception as dispatch_error:
-                logger.error(f"Dispatch error during transition: {dispatch_error}", exc_info=True)
-                dispatch_results.append(DispatchResult(
-                    success=False,
-                    channel=request.channel or "email",
-                    error=str(dispatch_error)
-                ))
-
-        return TransitionExecuteResponse(
-            success=True,
-            message=f"Candidato movido para {request.to_stage}",
-            candidate_id=request.vacancy_candidate_id,
-            new_stage=request.to_stage,
-            new_sub_status=request.sub_status or predicted_sub_status,
-            dispatch_results=dispatch_results if dispatch_results else None,
-            predicted_sub_status=predicted_sub_status,
-            prediction_confidence=prediction.get("confidence") if predicted_sub_status and prediction else None,
-        )
-    except Exception as e:
-        return TransitionExecuteResponse(
-            success=False,
-            message=str(e),
-            candidate_id=request.vacancy_candidate_id,
-            new_stage=request.to_stage,
-        )
+    return PreviewFeedbackResponse(
+        body=body,
+        subject=result.get("subject"),
+        generated_by=generated_by,
+        ai_personalized=ai_personalized,
+        fairness_blocked=fairness_blocked,
+        high_risk=high_risk,
+        uses_template_only=uses_template_only,
+        channel=channel,
+    )

@@ -1,14 +1,18 @@
 "use client"
 
-import { LoadingModal } from "@/components/ui/loading"
+import { useState } from "react"
+import type { CommunicationResult } from "@/components/modals/unified-communication-types"
 import type { CommunicationType } from "@/components/modals/unified-communication-modal"
 import dynamic from "next/dynamic"
 import type { CandidatesPageModalsProps } from "./CandidatesPageModals.types"
+import { BulkResultReport } from "@/components/bulk"
+import type { BulkItemResult } from "@/lib/bulk"
 
-const ContactModal = dynamic(() => import("@/components/quick-actions-modals").then(m => ({ default: m.ContactModal })), { ssr: false, loading: () => <LoadingModal /> })
-const ScheduleModal = dynamic(() => import("@/components/quick-actions-modals").then(m => ({ default: m.ScheduleModal })), { ssr: false, loading: () => <LoadingModal /> })
-const UnifiedCommunicationModal = dynamic(() => import("@/components/modals/unified-communication-modal").then(m => ({ default: m.UnifiedCommunicationModal })), { ssr: false, loading: () => <LoadingModal /> })
-const SendEmailModal = dynamic(() => import("@/components/email-templates").then(m => ({ default: m.SendEmailModal })), { ssr: false, loading: () => <LoadingModal /> })
+const ContactModal = dynamic(() => import("@/components/quick-actions-modals").then(m => ({ default: m.ContactModal })), { ssr: false, loading: () => null })
+const ScheduleModal = dynamic(() => import("@/components/quick-actions-modals").then(m => ({ default: m.ScheduleModal })), { ssr: false, loading: () => null })
+const UnifiedCommunicationModal = dynamic(() => import("@/components/modals/unified-communication-modal").then(m => ({ default: m.UnifiedCommunicationModal })), { ssr: false, loading: () => null })
+const ScheduleMessageModal = dynamic(() => import("@/components/communication").then(m => ({ default: m.ScheduleMessageModal })), { ssr: false, loading: () => null })
+const SendEmailModal = dynamic(() => import("@/components/email-templates").then(m => ({ default: m.SendEmailModal })), { ssr: false, loading: () => null })
 
 type CandidatesContactModalsProps = Pick<CandidatesPageModalsProps,
   | 'selectedCandidateForAction'
@@ -25,6 +29,7 @@ type CandidatesContactModalsProps = Pick<CandidatesPageModalsProps,
   | 'handleScheduleComplete'
   | 'unifiedModalOpen'
   | 'unifiedModalCandidate'
+  | 'unifiedModalSelectedCandidates'
   | 'unifiedModalType'
   | 'lastSearchQuery'
   | 'handleUnifiedModalClose'
@@ -33,7 +38,19 @@ type CandidatesContactModalsProps = Pick<CandidatesPageModalsProps,
   | 'setShowSendEmailModal'
   | 'emailCandidateSelected'
   | 'setEmailCandidateSelected'
+  | 'showScheduleMessageModal'
+  | 'setShowScheduleMessageModal'
+  | 'scheduleMessageCandidate'
+  | 'setScheduleMessageCandidate'
 >
+
+const TYPE_LABELS: Record<string, string> = {
+  email: 'Email',
+  whatsapp: 'WhatsApp',
+  triagem: 'Triagem',
+  agendamento: 'Agendamento',
+  feedback: 'Feedback',
+}
 
 export function CandidatesContactModals(props: CandidatesContactModalsProps) {
   const {
@@ -51,6 +68,7 @@ export function CandidatesContactModals(props: CandidatesContactModalsProps) {
     handleScheduleComplete,
     unifiedModalOpen,
     unifiedModalCandidate,
+    unifiedModalSelectedCandidates,
     unifiedModalType,
     lastSearchQuery,
     handleUnifiedModalClose,
@@ -59,7 +77,31 @@ export function CandidatesContactModals(props: CandidatesContactModalsProps) {
     setShowSendEmailModal,
     emailCandidateSelected,
     setEmailCandidateSelected,
+    showScheduleMessageModal,
+    setShowScheduleMessageModal,
+    scheduleMessageCandidate,
+    setScheduleMessageCandidate,
   } = props
+
+  const [bulkReport, setBulkReport] = useState<{
+    isOpen: boolean
+    results: BulkItemResult[]
+    actionLabel: string
+  }>({ isOpen: false, results: [], actionLabel: '' })
+
+  // Intercepts onSend: forwards to the original handler, then opens BulkResultReport
+  // if the payload carries bulkResults (bulk mode injected by useUnifiedCommunication T5).
+  const handleSend = (data: CommunicationResult) => {
+    handleUnifiedModalSend?.(data)
+    const withBulk = data as CommunicationResult & { bulkResults?: BulkItemResult[] }
+    if (Array.isArray(withBulk.bulkResults) && withBulk.bulkResults.length > 0) {
+      setBulkReport({
+        isOpen: true,
+        results: withBulk.bulkResults,
+        actionLabel: TYPE_LABELS[data.type] ?? 'Envio',
+      })
+    }
+  }
 
   return (
     <>
@@ -162,8 +204,9 @@ export function CandidatesContactModals(props: CandidatesContactModalsProps) {
           }
         })() : null}
         type={unifiedModalType}
+        selectedCandidates={unifiedModalSelectedCandidates}
         jobTitle={lastSearchQuery || undefined}
-        onSend={handleUnifiedModalSend}
+        onSend={handleSend}
         companyId="demo"
       />
 
@@ -195,6 +238,25 @@ export function CandidatesContactModals(props: CandidatesContactModalsProps) {
           setShowSendEmailModal(false)
           setEmailCandidateSelected(null)
         }}
+      />
+
+
+      {/* GAP-07-007 - Schedule Message Modal */}
+      <ScheduleMessageModal
+        open={showScheduleMessageModal}
+        onClose={() => {
+          setShowScheduleMessageModal(false)
+          setScheduleMessageCandidate(null)
+        }}
+        candidateId={scheduleMessageCandidate?.id ?? ""}
+        candidateName={scheduleMessageCandidate?.name ?? ""}
+      />
+
+      <BulkResultReport
+        isOpen={bulkReport.isOpen}
+        onClose={() => setBulkReport(s => ({ ...s, isOpen: false }))}
+        results={bulkReport.results}
+        actionLabel={bulkReport.actionLabel}
       />
     </>
   )

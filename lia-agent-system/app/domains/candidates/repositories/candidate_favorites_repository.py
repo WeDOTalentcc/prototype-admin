@@ -38,7 +38,7 @@ class CandidateFavoritesRepository:
             CandidateFavorite.candidate_id == candidate_id,
             CandidateFavorite.user_id == user_id,
         )
-        if company_id:
+        if company_id is not None:
             query = query.where(CandidateFavorite.company_id == company_id)
         result = await self.db.execute(query)
         return result.scalar_one_or_none()
@@ -50,6 +50,7 @@ class CandidateFavoritesRepository:
         return favorite
 
     async def update(self, favorite: CandidateFavorite) -> CandidateFavorite:
+        self.db.add(favorite)
         await self.db.commit()
         await self.db.refresh(favorite)
         return favorite
@@ -73,7 +74,7 @@ class CandidateFavoritesRepository:
         count_query = select(func.count(CandidateFavorite.id)).where(
             CandidateFavorite.user_id == user_id
         )
-        if company_id:
+        if company_id is not None:
             query = query.where(CandidateFavorite.company_id == company_id)
             count_query = count_query.where(
                 CandidateFavorite.company_id == company_id
@@ -113,7 +114,7 @@ class CandidateHiddenRepository:
             CandidateHidden.candidate_id == candidate_id,
             CandidateHidden.user_id == user_id,
         )
-        if company_id:
+        if company_id is not None:
             query = query.where(CandidateHidden.company_id == company_id)
         result = await self.db.execute(query)
         return result.scalar_one_or_none()
@@ -143,7 +144,7 @@ class CandidateHiddenRepository:
         count_query = select(func.count(CandidateHidden.id)).where(
             CandidateHidden.user_id == user_id
         )
-        if company_id:
+        if company_id is not None:
             query = query.where(CandidateHidden.company_id == company_id)
             count_query = count_query.where(CandidateHidden.company_id == company_id)
 

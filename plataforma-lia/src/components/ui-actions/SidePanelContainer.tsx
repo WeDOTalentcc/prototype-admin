@@ -1,5 +1,11 @@
+/**
+ * @deprecated Pre-unified-chat hook. Zero external callers.
+ * Canonical: useLiaPanelStore (wizard panel focus) + openDynamicPanel (panel content).
+ * This file may be removed in a future cleanup sprint.
+ */
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import React from "react"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
@@ -71,6 +77,9 @@ export function SidePanelContainer({
   onClose,
   onSubmit
 }: SidePanelContainerProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('side-panel-container', isOpen)
+
   const handleSubmit = async (data: unknown) => {
     if (!panelType) return
     await onSubmit({

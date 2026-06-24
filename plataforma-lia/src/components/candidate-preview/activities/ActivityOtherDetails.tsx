@@ -76,7 +76,7 @@ export function ActivityLiaEvaluationDetails({ activity }: { activity: ActivityD
     <div className="mt-3 space-y-3">
       <div className="bg-lia-bg-primary p-3 rounded-xl border border-lia-border-subtle">
         <h5 className="text-xs font-semibold text-lia-text-primary mb-2 flex items-center gap-1">
-          <Brain className="w-3 h-3 text-wedo-cyan" />Avaliação Automática da IA
+          <Brain className="w-3 h-3 text-wedo-cyan-text" />Avaliação Automática da IA
         </h5>
         <div className="grid grid-cols-4 gap-2 mb-3">
           <div className="text-center p-2 bg-lia-bg-secondary rounded-xl">

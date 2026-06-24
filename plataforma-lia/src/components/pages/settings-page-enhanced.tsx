@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useMemo, useCallback, useEffect } from"react"
+import React, { useState, useMemo, useCallback, useEffect, Suspense } from"react"
 import { Button } from"@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
 import { Chip } from "@/components/ui/chip"
@@ -16,11 +16,11 @@ import {
   Send, Bell, Palette, Lightbulb, TrendingDown, Activity, RotateCcw,
   ChevronLeft, FastForward, SkipForward, RefreshCw, Zap as Lightning,
   MousePointer, Compass, HelpCircle, Rocket,
-  ChevronDown, ChevronUp, Lock, Unlock, Circle, Plug, Shield
+  ChevronDown, ChevronUp, Circle, Plug, Shield,
 } from"lucide-react"
 
 const SECTION_ICON_COLORS: Record<string, string> = {
-  'minha-empresa': 'text-wedo-cyan',
+  'minha-empresa': 'text-lia-text-secondary',
   'pipeline': 'text-emerald-500',
   'screening': 'text-amber-500',
   'templates-assinatura': 'text-violet-500',
@@ -34,7 +34,10 @@ const SECTION_ICON_COLORS: Record<string, string> = {
 
 
 import dynamic from"next/dynamic"
+import { useSearchParams } from"next/navigation"
 import { LoadingFallback } from"@/components/ui/loading"
+import { useQuery } from "@tanstack/react-query"
+
 const MinhaEmpresaHub = dynamic(() => import("@/components/settings/MinhaEmpresaHub").then(m => ({ default: m.MinhaEmpresaHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando empresa..." /> })
 const RecruitmentPipelineTab = dynamic(() => import("@/components/settings/RecruitmentPipelineTab").then(m => ({ default: m.RecruitmentPipelineTab })), { ssr: false, loading: () => <LoadingFallback text="Carregando pipeline..." /> })
 const RecruitmentScreeningTab = dynamic(() => import("@/components/settings/RecruitmentScreeningTab").then(m => ({ default: m.RecruitmentScreeningTab })), { ssr: false, loading: () => <LoadingFallback text="Carregando screening..." /> })
@@ -43,12 +46,15 @@ const IntegrationsHub = dynamic(() => import("@/components/settings/Integrations
 const UsuariosDepartamentosHub = dynamic(() => import("@/components/settings/UsuariosDepartamentosHub").then(m => ({ default: m.UsuariosDepartamentosHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando usuários..." /> })
 const FairnessComplianceHub = dynamic(() => import("@/components/settings/FairnessComplianceHub").then(m => ({ default: m.FairnessComplianceHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando compliance..." /> })
 const ConsumoHub = dynamic(() => import("@/components/settings/ConsumoHub").then(m => ({ default: m.ConsumoHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando consumo..." /> })
-const LiaPersonalizacaoHub = dynamic(() => import("@/components/settings/LiaPersonalizacaoHub").then(m => ({ default: m.LiaPersonalizacaoHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando LIA..." /> })
+const LiaPersonalizacaoHub = dynamic(() => import("@/components/settings/LiaPersonalizacaoHub").then(m => ({ default: m.LiaPersonalizacaoHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando..." /> })
 
 import { textStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
-import { useHoverDebounce } from '@/lib/sidebar/useHoverDebounce'
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip"
 import { ErrorBoundarySection } from"@/components/ui/error-boundary-section"
+import { HubLoadingState } from"@/components/settings/_shared"
 import { useCompanyId } from"@/hooks/company/useCompanyId"
+import { useAiPersona } from "@/hooks/company/use-ai-persona"
+import { SETTINGS_SECTION_ALIASES } from "@/lib/settings/resolve-settings-target"
 
 interface SettingsSubsection {
   id: string
@@ -62,7 +68,7 @@ type SettingsSectionGroup = "empresa" | "processo" | "lia" | "comunicacao" | "pl
 const SECTION_GROUPS: { id: SettingsSectionGroup; label: string; defaultExpanded: boolean }[] = [
   { id: "empresa", label: "Empresa", defaultExpanded: true },
   { id: "processo", label: "Processo", defaultExpanded: true },
-  { id: "lia", label: "LIA & Personalização", defaultExpanded: true },
+  { id: "lia", label: "IA & Personalização", defaultExpanded: true },
   { id: "comunicacao", label: "Comunicação", defaultExpanded: true },
   { id: "plataforma", label: "Plataforma", defaultExpanded: false },
 ]
@@ -101,6 +107,12 @@ interface SectionProgress {
   percentage: number
 }
 
+interface SettingsProgressResponse {
+  overall: number
+  sections?: Record<string, number>
+  subsections?: Record<string, boolean>
+}
+
 const getDefaultSections = (): SettingsSection[] => [
   {
     id: 'minha-empresa',
@@ -115,7 +127,7 @@ const getDefaultSections = (): SettingsSection[] => [
   },
   {
     id: 'lia-personalizacao',
-    title: 'LIA & Personalizacao',
+    title: 'IA & Personalização',
     description: 'Persona da IA, instrucoes por campo e learning loops',
     icon: Brain,
     status: 'incomplete',
@@ -163,7 +175,7 @@ const getDefaultSections = (): SettingsSection[] => [
   {
     id: 'comunicacao-alertas',
     title: 'Comunicação & Alertas',
-    description: 'Horários LGPD, alertas e notificações da LIA',
+    description: 'Horários LGPD, alertas e notificações',
     icon: Bell,
     status: 'incomplete',
     priority: 'medium',
@@ -212,8 +224,8 @@ const getDefaultSections = (): SettingsSection[] => [
   },
   {
     id: 'consumo',
-    title: 'Consumo',
-    description: 'Créditos IA, Pearch, agentes e billing',
+    title: 'Plano e Cobrança',
+    description: 'Plano contratado, consumo de créditos, faturas e dados de cobrança.',
     icon: BarChart3,
     status: 'incomplete',
     priority: 'low',
@@ -233,6 +245,8 @@ const getCompletionBadgeColor = (percentage: number): string => {
 
 export default function SettingsPageEnhanced() {
   const { companyId, tenantInfo, isLoading: isTenantLoading } = useCompanyId()
+  const { persona: _aiPersona } = useAiPersona()
+  const _personaName = _aiPersona?.name ?? "IA"
   const [activeSection, setActiveSection] = useState<string>('minha-empresa')
   const [activeSubsection, setActiveSubsection] = useState<string>('')
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['minha-empresa']))
@@ -277,20 +291,65 @@ export default function SettingsPageEnhanced() {
     return () => window.removeEventListener('settings-open-tab', handler)
   }, [])
 
-  // Deep-link: /configuracoes?section=<id> abre a secao diretamente.
-  // Conserta os NAVIGATION_OVERRIDES (?section=pipeline, ?section=templates-assinatura,
-  // ?section=consumo via redirect ai-credits) que antes caiam em minha-empresa.
+  // Task #1277 — reconecta o atalho do chat (`lia:settings-action`).
+  // O hook `useUIAction` (settings_open_tab) dispara este CustomEvent com
+  // `{ section, subsection, field }`. Aqui abrimos a aba correta entre os 10
+  // hubs canônicos e, se houver `field`, rolamos até ele dentro do hub.
+  // Sem este listener, o atalho fica quebrado (regressão da antiga Task #712).
   useEffect(() => {
-    if (typeof window === "undefined") return
-    const requested = new URLSearchParams(window.location.search).get("section")
-    if (!requested) return
-    const match = settingsSections.find((s) => s.id === requested)
+    const actionHandler = (e: Event) => {
+      const detail = ((e as CustomEvent).detail || {}) as {
+        section?: string
+        subsection?: string
+        field?: string
+      }
+      const rawSection = detail.section
+      if (typeof rawSection !== 'string' || !rawSection) return
+      // Aplica os mesmos aliases do deep-link (`alertas → comunicacao-alertas`).
+      const section = SETTINGS_SECTION_ALIASES[rawSection] ?? rawSection
+      const known = settingsSections.find((s) => s.id === section)
+      if (!known) return // section inválida → ignora sem trocar a aba
+      setActiveSection(section)
+      setActiveSubsection(
+        typeof detail.subsection === 'string' ? detail.subsection : '',
+      )
+      setExpandedSections((prev) => new Set([...Array.from(prev), section]))
+      setExpandedGroups((prev) => new Set(prev).add(known.group))
+
+      const field = detail.field
+      if (typeof field === 'string' && field && typeof window !== 'undefined') {
+        // Espera o hub montar (next paint) antes de procurar o campo.
+        window.requestAnimationFrame(() => {
+          const el = (document.querySelector(`[data-field="${field}"]`) ||
+            document.querySelector(`[n="${field}"]`)) as HTMLElement | null
+          if (!el) return
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          el.dataset.recentlyHighlighted = 'true'
+          window.setTimeout(() => {
+            delete el.dataset.recentlyHighlighted
+          }, 3000)
+        })
+      }
+    }
+    window.addEventListener('lia:settings-action', actionHandler)
+    return () => window.removeEventListener('lia:settings-action', actionHandler)
+  }, [])
+
+  // Deep-link: /configuracoes?section=<id>&subsection=<sub> abre secao+subsecao.
+  // useSearchParams torna o efeito REATIVO a mudancas de URL (client-side nav
+  // para mesma pagina — ex: /configuracoes?section=minha-empresa ->  ?section=comunicacao-alertas).
+  const _searchParams = useSearchParams()
+  const _deepLinkSection = _searchParams.get("section")
+  const _deepLinkSubsection = _searchParams.get("subsection")
+  useEffect(() => {
+    if (!_deepLinkSection) return
+    const match = settingsSections.find((s) => s.id === _deepLinkSection)
     if (!match) return
     setActiveSection(match.id)
-    setActiveSubsection("")
+    setActiveSubsection(_deepLinkSubsection ?? "")
     setExpandedSections(new Set([match.id]))
     setExpandedGroups((prev) => new Set(prev).add(match.group))
-  }, [])
+  }, [_deepLinkSection, _deepLinkSubsection, settingsSections])
   
   const [sectionCompletion, setSectionCompletion] = useState<Record<string, number>>({
     'minha-empresa': 0,
@@ -308,72 +367,105 @@ export default function SettingsPageEnhanced() {
   const [subsectionCompletion, setSubsectionCompletion] = useState<Record<string, boolean>>({})
 
   const [overallProgress, setOverallProgress] = useState<number>(0)
-  const [progressLoading, setProgressLoading] = useState<boolean>(true)
   
+  // `isCollapsed` é a PREFERÊNCIA EXPLÍCITA de repouso da barra: expandida
+  // (fixa) vs. trilho congelado só de ícones. É a única coisa que persiste e o
+  // ÚNICO controle — espelha o modelo de um-controle-só do sidebar principal.
+  // Diferente do principal, o trilho recolhido é "congelado" (sem prévia ao
+  // passar o mouse), preservando a preferência histórica de Configurações.
+  // Init determinístico (igual no SSR e no primeiro render do cliente) para
+  // evitar hydration mismatch: a preferência salva é aplicada após a montagem,
+  // no useEffect abaixo — nunca no primeiro render.
   const [isCollapsed, setIsCollapsed] = useState(true)
-  const [isLocked, setIsLocked] = useState(false)
-
-  const expandSettings = useCallback(() => setIsCollapsed(false), [])
-  const collapseSettings = useCallback(() => setIsCollapsed(true), [])
-
-  const {
-    handleMouseEnter: handleSettingsMouseEnter,
-    handleMouseLeave: handleSettingsMouseLeave,
-  } = useHoverDebounce({
-    onExpand: expandSettings,
-    onCollapse: collapseSettings,
-    isEnabled: !isLocked,
-  })
-
-
-  const fetchProgress = useCallback(async () => {
-    try {
-      setProgressLoading(true)
-      const response = await fetch('/api/backend-proxy/settings/progress/')
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-      
-      const data = await response.json()
-      
-      if (data.overall !== undefined) {
-        setOverallProgress(data.overall)
-      }
-      
-      if (data.sections) {
-        setSectionCompletion(prev => ({
-          ...prev,
-          // P0-4: all 9 canonical sidebar section IDs mapped to backend keys
-          'minha-empresa': data.sections['minha-empresa'] ?? prev['minha-empresa'],
-          // pipeline/screening/templates share recrutamento-lia score (no dedicated backend key yet)
-          'pipeline': data.sections['pipeline'] ?? data.sections['recrutamento-lia'] ?? prev['pipeline'],
-          'screening': data.sections['screening'] ?? data.sections['recrutamento-lia'] ?? prev['screening'],
-          'templates-assinatura': data.sections['templates-assinatura'] ?? data.sections['recrutamento-lia'] ?? prev['templates-assinatura'],
-          'comunicacao-alertas': data.sections['comunicacao-alertas'] ?? prev['comunicacao-alertas'],
-          'usuarios-departamentos': data.sections['usuarios-departamentos'] ?? prev['usuarios-departamentos'],
-          'integrations': data.sections['integracoes'] ?? data.sections['integrations'] ?? prev['integrations'],
-          'fairness-compliance': data.sections['fairness-compliance'] ?? prev['fairness-compliance'],
-          'consumo': data.sections['ai-credits'] ?? data.sections['consumo'] ?? prev['consumo'],
-          'lia-personalizacao': data.sections['lia-personalizacao'] ?? prev['lia-personalizacao'],
-        }))
-      }
-      
-      if (data.subsections) {
-        setSubsectionCompletion(prev => ({
-          ...prev,
-          ...data.subsections
-        }))
-      }
-    } catch (error) {
-    } finally {
-      setProgressLoading(false)
-    }
-  }, [])
 
   useEffect(() => {
-    fetchProgress()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    try {
+      const savedCollapsed = localStorage.getItem('settings-sidebar-collapsed')
+      if (savedCollapsed === null) {
+        // Primeira visita: abre a barra expandida para reduzir custo de
+        // descoberta.
+        setIsCollapsed(false)
+      } else {
+        // Restaura a escolha explícita de recolhido vs. expandido.
+        setIsCollapsed(savedCollapsed === 'true')
+      }
+    } catch {}
+  }, [])
+
+  // Toggle ÚNICO de recolher/expandir — define a preferência de repouso e
+  // persiste. É o único controle da barra (espelha o sidebar principal).
+  const toggleCollapsed = useCallback(() => {
+    setIsCollapsed(prev => {
+      const next = !prev
+      try { localStorage.setItem('settings-sidebar-collapsed', String(next)) } catch {}
+      return next
+    })
+  }, [])
+
+  // useQuery canonical pattern for settings progress
+  const { data: progressData, isLoading: progressLoading, refetch: refetchProgress } = useQuery<SettingsProgressResponse>({
+    queryKey: ['settings-progress'],
+    queryFn: async () => {
+      const res = await fetch('/api/backend-proxy/settings/progress/', {
+        signal: AbortSignal.timeout(8000)
+      })
+      
+      if (!res.ok) {
+        throw new Error(`Erro ao carregar progresso: ${res.status}`)
+      }
+      
+      return res.json()
+    },
+    staleTime: 120_000, // 2 minutes
+    retry: 1,
+  })
+
+  // Sync progressData to local state when loaded
+  useEffect(() => {
+    if (!progressData) return
+    
+    if (progressData.overall !== undefined) {
+      setOverallProgress(progressData.overall)
+    }
+    
+    if (progressData.sections) {
+      setSectionCompletion(prev => ({
+        ...prev,
+        // P0-4: all 9 canonical sidebar section IDs mapped to backend keys
+        'minha-empresa': progressData.sections?.['minha-empresa'] ?? prev['minha-empresa'],
+        // pipeline/screening/templates share recrutamento-lia score (no dedicated backend key yet)
+        'pipeline': progressData.sections?.['pipeline'] ?? progressData.sections?.['recrutamento-lia'] ?? prev['pipeline'],
+        'screening': progressData.sections?.['screening'] ?? progressData.sections?.['recrutamento-lia'] ?? prev['screening'],
+        'templates-assinatura': progressData.sections?.['templates-assinatura'] ?? progressData.sections?.['recrutamento-lia'] ?? prev['templates-assinatura'],
+        'comunicacao-alertas': progressData.sections?.['comunicacao-alertas'] ?? prev['comunicacao-alertas'],
+        'usuarios-departamentos': progressData.sections?.['usuarios-departamentos'] ?? prev['usuarios-departamentos'],
+        'integrations': progressData.sections?.['integracoes'] ?? progressData.sections?.['integrations'] ?? prev['integrations'],
+        'fairness-compliance': progressData.sections?.['fairness-compliance'] ?? prev['fairness-compliance'],
+        'consumo': progressData.sections?.['ai-credits'] ?? progressData.sections?.['consumo'] ?? prev['consumo'],
+        'lia-personalizacao': progressData.sections?.['lia-personalizacao'] ?? prev['lia-personalizacao'],
+      }))
+    }
+    
+    if (progressData.subsections) {
+      setSubsectionCompletion(prev => ({
+        ...prev,
+        ...progressData.subsections
+      }))
+    }
+  }, [progressData])
+
+  // perf: preload all hub chunks on settings page mount to eliminate
+  // the download waterfall when the user navigates between tabs.
+  useEffect(() => {
+    void import("@/components/settings/IntegrationsHub")
+    void import("@/components/settings/MinhaEmpresaHub")
+    void import("@/components/settings/RecruitmentPipelineTab")
+    void import("@/components/settings/RecruitmentScreeningTab")
+    void import("@/components/settings/CommunicationHub")
+    void import("@/components/settings/UsuariosDepartamentosHub")
+    void import("@/components/settings/FairnessComplianceHub")
+    void import("@/components/settings/ConsumoHub")
+    void import("@/components/settings/LiaPersonalizacaoHub")
   }, [])
 
   const handleSectionCompletionUpdate = useCallback((sectionId: string, completion: number) => {
@@ -451,61 +543,81 @@ export default function SettingsPageEnhanced() {
       case 'minha-empresa':
         return (
           <ErrorBoundarySection>
-            <MinhaEmpresaHub />
+            <Suspense fallback={<HubLoadingState />}>
+              <MinhaEmpresaHub activeSubsection={activeSubsection} />
+            </Suspense>
           </ErrorBoundarySection>
         )
       case 'lia-personalizacao':
         return (
           <ErrorBoundarySection>
-            <LiaPersonalizacaoHub activeSubsection={activeSubsection} />
+            <Suspense fallback={<HubLoadingState />}>
+              <LiaPersonalizacaoHub activeSubsection={activeSubsection} />
+            </Suspense>
           </ErrorBoundarySection>
         )
       case 'pipeline':
         return (
           <ErrorBoundarySection>
-            <RecruitmentPipelineTab />
+            <Suspense fallback={<HubLoadingState />}>
+              <RecruitmentPipelineTab />
+            </Suspense>
           </ErrorBoundarySection>
         )
       case 'screening':
         return (
           <ErrorBoundarySection>
-            <RecruitmentScreeningTab />
+            <Suspense fallback={<HubLoadingState />}>
+              <RecruitmentScreeningTab />
+            </Suspense>
           </ErrorBoundarySection>
         )
       case 'templates-assinatura':
         return (
           <ErrorBoundarySection>
-            <CommunicationHub visibleTabs={['templates', 'signature']} stacked />
+            <Suspense fallback={<HubLoadingState />}>
+              <CommunicationHub visibleTabs={['templates', 'signature']} stacked />
+            </Suspense>
           </ErrorBoundarySection>
         )
       case 'comunicacao-alertas':
         return (
           <ErrorBoundarySection>
-            <CommunicationHub activeSubsection="alerts" visibleTabs={['alerts']} />
+            <Suspense fallback={<HubLoadingState />}>
+              <CommunicationHub activeSubsection="alerts" visibleTabs={['alerts']} />
+            </Suspense>
           </ErrorBoundarySection>
         )
       case 'usuarios-departamentos':
         return (
           <ErrorBoundarySection>
-            <UsuariosDepartamentosHub />
+            <Suspense fallback={<HubLoadingState />}>
+              <UsuariosDepartamentosHub />
+            </Suspense>
           </ErrorBoundarySection>
         )
       case 'integrations':
         return (
           <ErrorBoundarySection>
-            <IntegrationsHub activeSubsection={activeSubsection} />
+            <Suspense fallback={<HubLoadingState />}>
+              <IntegrationsHub activeSubsection={activeSubsection} />
+            </Suspense>
           </ErrorBoundarySection>
         )
       case 'fairness-compliance':
         return (
           <ErrorBoundarySection>
-            <FairnessComplianceHub activeSubsection={activeSubsection || 'fairness'} />
+            <Suspense fallback={<HubLoadingState />}>
+              <FairnessComplianceHub activeSubsection={activeSubsection || 'fairness'} />
+            </Suspense>
           </ErrorBoundarySection>
         )
       case 'consumo':
         return (
           <ErrorBoundarySection>
-            <ConsumoHub />
+            <Suspense fallback={<HubLoadingState />}>
+              <ConsumoHub />
+            </Suspense>
           </ErrorBoundarySection>
         )
       default:
@@ -525,23 +637,24 @@ export default function SettingsPageEnhanced() {
     }
   }
 
-  const shouldShowContent = !isCollapsed || isLocked
+  // Largura real da barra: expande quando o repouso é expandido. Sem prévia de
+  // hover — recolhida = trilho congelado (controle único, igual ao principal).
+  const isRailExpanded = !isCollapsed
+  const shouldShowContent = isRailExpanded
 
   return (
     <>
-    <div className="flex h-screen bg-lia-bg-primary dark:bg-lia-bg-primary overflow-hidden">
+    <div className="flex h-full bg-lia-bg-primary dark:bg-lia-bg-primary overflow-hidden">
       <aside 
         className={`
-          ${isCollapsed && !isLocked ? 'w-16' : 'w-64'}
+          ${isRailExpanded ? 'w-64' : 'w-16'}
           transition-[width,colors] duration-300 ease-in-out motion-reduce:transition-none
           flex-shrink-0
         `}
-        onMouseEnter={handleSettingsMouseEnter}
-        onMouseLeave={handleSettingsMouseLeave}
       >
-        <Card className="h-full m-3 border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary backdrop-blur-sm rounded-xl overflow-hidden flex flex-col">
-          <div className={`p-4 dark:border-lia-border-subtle ${isCollapsed && !isLocked ? 'px-2' : ''}`}>
-            <div className="flex items-center gap-3 mb-4">
+        <Card className="h-[calc(100%-1.5rem)] m-3 border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary backdrop-blur-sm rounded-xl overflow-hidden flex flex-col">
+          <div className={`flex-shrink-0 p-4 dark:border-lia-border-subtle ${!isRailExpanded ? 'px-2' : ''}`}>
+            <div className={`flex items-center gap-3 mb-4 ${!shouldShowContent ? 'flex-col' : ''}`}>
               <div className="w-10 h-10 bg-lia-bg-tertiary dark:bg-lia-bg-elevated text-lia-text-primary rounded-lg flex items-center justify-center flex-shrink-0">
                 <Settings className="w-5 h-5" />
               </div>
@@ -552,15 +665,31 @@ export default function SettingsPageEnhanced() {
                   </h1>
                 </div>
               )}
-              {shouldShowContent && (
+              {shouldShowContent ? (
+                <div className="flex items-center flex-shrink-0">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={toggleCollapsed}
+                    className="h-6 w-6 p-0"
+                    data-testid="settings-sidebar-collapse-toggle"
+                    aria-label="Recolher menu para ícones"
+                    title="Recolher menu para ícones"
+                  >
+                    <ChevronLeft className="w-3.5 h-3.5" />
+                  </Button>
+                </div>
+              ) : (
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setIsLocked(!isLocked)}
+                  onClick={toggleCollapsed}
                   className="h-6 w-6 p-0 flex-shrink-0"
-                  title={isLocked ?"Desbloquear menu" :"Bloquear menu expandido"}
+                  data-testid="settings-sidebar-collapse-toggle"
+                  aria-label="Expandir menu"
+                  title="Expandir menu"
                 >
-                  {isLocked ? <Lock className="w-3 h-3" /> : <Unlock className="w-3 h-3" />}
+                  <ChevronRight className="w-3.5 h-3.5" />
                 </Button>
               )}
             </div>
@@ -589,7 +718,8 @@ export default function SettingsPageEnhanced() {
           </div>
 
           <div className="flex-1 overflow-y-auto p-3">
-            <nav className="space-y-0">
+            <TooltipProvider delayDuration={150}>
+            <nav className="space-y-0" aria-label="Configurações">
               {(() => {
                 const grouped = SECTION_GROUPS.map(g => ({
                   ...g,
@@ -604,23 +734,23 @@ export default function SettingsPageEnhanced() {
                         aria-expanded={expandedGroups.has(grp.id)}
                         aria-controls={`group-${grp.id}`}
                       >
-                        <span>{grp.label}</span>
+                        <span>{grp.id === "lia" ? `${_personaName} & Personalização` : grp.label}</span>
                         {expandedGroups.has(grp.id)
                           ? <ChevronDown className="w-3 h-3 flex-shrink-0" aria-hidden="true" />
                           : <ChevronRight className="w-3 h-3 flex-shrink-0" aria-hidden="true" />
                         }
                       </button>
                     )}
-                    {expandedGroups.has(grp.id) && grp.sections.map((section) => {
+                    {(!shouldShowContent || expandedGroups.has(grp.id)) && grp.sections.map((section) => {
                 const IconComponent = section.icon
                 const isExpanded = expandedSections.has(section.id)
                 const isActive = activeSection === section.id
 
-                return (
-                  <div key={section.id}>
+                const sectionButton = (
                     <button
                       data-testid={`settings-menu-${section.id}`}
                       data-active={isActive && !activeSubsection}
+                      aria-label={section.title}
                       onClick={() => {
                         setActiveSection(section.id)
                         setActiveSubsection('')
@@ -632,8 +762,7 @@ export default function SettingsPageEnhanced() {
                         isActive && !activeSubsection
                           ? 'bg-lia-bg-tertiary dark:bg-lia-bg-elevated text-lia-text-primary'
                           : 'hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse/50 text-lia-text-secondary'
-                      } ${isCollapsed && !isLocked ? 'justify-center' : ''}`}
-                      title={isCollapsed && !isLocked ? section.title : ''}
+                      } ${!shouldShowContent ? 'justify-center' : ''}`}
                     >
                       <IconComponent className={`w-4 h-4 flex-shrink-0 ${SECTION_ICON_COLORS[section.id] || ''}`} />
                       {shouldShowContent && (
@@ -657,6 +786,16 @@ export default function SettingsPageEnhanced() {
                         </>
                       )}
                     </button>
+                )
+
+                return (
+                  <div key={section.id}>
+                    {shouldShowContent ? sectionButton : (
+                      <Tooltip>
+                        <TooltipTrigger asChild>{sectionButton}</TooltipTrigger>
+                        <TooltipContent side="right">{section.title}</TooltipContent>
+                      </Tooltip>
+                    )}
 
                     {shouldShowContent && isExpanded && section.subsections && (
                       <div className="ml-6 mt-1 space-y-1 border-l-2 border-lia-border-subtle dark:border-lia-border-subtle pl-2">
@@ -695,13 +834,14 @@ export default function SettingsPageEnhanced() {
                 ))
               })()}
             </nav>
+            </TooltipProvider>
 
           </div>
         </Card>
       </aside>
 
-        <div className="flex-1 flex flex-col" data-testid="settings-content-area" data-active-section={activeSection}>
-          <div className="p-6 dark:border-lia-border-subtle">
+        <div className="flex-1 flex flex-col min-h-0" data-testid="settings-content-area" data-active-section={activeSection}>
+          <div className="flex-shrink-0 p-6 dark:border-lia-border-subtle">
             <div className="flex items-center justify-between">
               <div>
                 <h2 className={`${textStyles.h3} mb-1`}>

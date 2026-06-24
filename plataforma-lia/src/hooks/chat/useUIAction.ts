@@ -28,7 +28,12 @@ import {
   type UnhandledUIActionEventDetail,
   isGlobalUIActionType,
 } from "@/types/ui-action";
-import { useRouter } from "next/navigation";
+import {
+  type CanonicalPageValue,
+  canonicalPageToUrl,
+  canonicalPageToUrlWithFallback,
+} from "@/lib/canonical-pages";
+import { useParams, usePathname, useRouter } from "next/navigation";
 import { useCallback } from "react";
 
 interface UseUIActionReturn {
@@ -56,6 +61,10 @@ interface UseUIActionReturn {
 
 export function useUIAction(): UseUIActionReturn {
   const router = useRouter();
+  const params = useParams();
+  const pathname = usePathname();
+  const locale =
+    typeof params?.locale === "string" && params.locale ? params.locale : "pt";
 
   const dispatch = useCallback(
     (action: string, params: Record<string, unknown> = {}): boolean => {
@@ -66,11 +75,43 @@ export function useUIAction(): UseUIActionReturn {
         case "navigate_to": {
           const page = params.page;
           if (typeof page !== "string" || !page) return false;
+          const id =
+            typeof params.id === "string" && params.id ? params.id : undefined;
+          // canonical-fix: traduz a page canônica -> rota real pela fonte
+          // única (canonical-pages.ts, mirror do backend canonical_pages.py).
+          // Antes empurrava o nome cru ("vagas") -> /pt/vagas = 404 (a lista
+          // real é /jobs; /vagas só tem [slug]). Cobre TODOS os slugs
+          // divergentes (funil_talentos -> /funil-de-talentos, etc.).
+          //
+          // Graceful degradation (2026-06-09): detalhe sem id usa
+          // canonicalPageToUrlWithFallback que devolve a lista pai ao
+          // invés de null (sem feedback). Quando fallback é usado, emite
+          // `lia:navigation_fallback` para que surfaces possam mostrar
+          // toast/banner opcional.
+          const navResult = canonicalPageToUrlWithFallback(
+            page as CanonicalPageValue,
+            locale,
+            id,
+          );
+          // Sem URL canônica (GENERAL, page desconhecida): falha-soft como
+          // não-global (re-emitida pra handler page-specific).
+          if (!navResult) return false;
+
+          let url = navResult.url;
+
+          // Sinaliza fallback para surfaces interessadas (toast/banner).
+          if (navResult.isFallback && typeof window !== "undefined") {
+            window.dispatchEvent(
+              new CustomEvent("lia:navigation_fallback", {
+                detail: { requested: page, requestedId: id, fallbackTo: url },
+              }),
+            );
+          }
+
           const query = params.query as Record<string, string> | undefined;
-          let url = page;
           if (query && typeof query === "object") {
             const search = new URLSearchParams(query).toString();
-            if (search) url = `${page}?${search}`;
+            if (search) url = `${url}?${search}`;
           }
           router.push(url);
           return true;
@@ -85,6 +126,18 @@ export function useUIAction(): UseUIActionReturn {
           window.dispatchEvent(
             new CustomEvent("lia:open_modal", {
               detail: { modal_id, data: params.data },
+            }),
+          );
+          return true;
+        }
+
+        case "close_modal": {
+          // GAP-04-004: forward optional modal_id for selective closing
+          const modal_id =
+            typeof params.modal_id === "string" ? params.modal_id : undefined;
+          window.dispatchEvent(
+            new CustomEvent("lia:close_modal", {
+              detail: modal_id ? { modal_id } : {},
             }),
           );
           return true;
@@ -131,6 +184,11 @@ export function useUIAction(): UseUIActionReturn {
               detail: { panel, entity_id: params.entity_id },
             }),
           );
+          return true;
+        }
+
+        case "close_panel": {
+          window.dispatchEvent(new CustomEvent("lia:close_panel", { detail: {} }));
           return true;
         }
 
@@ -184,12 +242,116 @@ export function useUIAction(): UseUIActionReturn {
           return true;
         }
 
+        case "open_communication_modal":
+        case "open_schedule_modal":
+        case "open_screening_modal": {
+          // P0.2 (2026-06-04) anti-ghost: estas acoes vivem na superficie de
+          // candidatos (funil-de-talentos) e operam sobre os selecionados la.
+          // Global entry-point (mirror de settings_open_tab): navega pra
+          // superficie e re-emite pro handler page-specific (useLIAQuickActions)
+          // tratar — sem duplicar modais e sem descartar em silencio.
+          if (typeof window === "undefined") return false;
+          router.push("/funil-de-talentos");
+          window.dispatchEvent(
+            new CustomEvent(UNHANDLED_UI_ACTION_EVENT, {
+              detail: { action, params },
+            }),
+          );
+          return true;
+        }
+
+        case "apply_table_state": {
+          // Fase 2 slice 1 (ponte in-page): aplica busca/ordenação/filtros à
+          // tabela JÁ ABERTA, sem navegar nem mutar. Despacha
+          // `lia:apply_table_state`; LiaTableStateBridge escuta e dirige o
+          // store da superfície (slice 1: candidates → useCandidatesStore).
+          const surface = params.surface;
+          if (typeof surface !== "string") return false;
+          // ponte in-page: candidates/jobs/kanban/talent_pool/recrutar.
+          const allowedSurfaces = ["candidates", "jobs", "kanban", "talent_pool", "recrutar"];
+          if (!allowedSurfaces.includes(surface)) return false;
+          const patch = params.patch;
+          if (!patch || typeof patch !== "object") return false;
+          if (typeof window === "undefined") return false;
+          // Bug-fix 2026-06-10: race condition navigate+filter.
+          // Quando o agente navega para /jobs e depois filtra, o evento pode
+          // disparar antes do listener em useJobsFilters estar registrado.
+          // Solução: para surface=jobs com filtro, também pusha rota com ?filter
+          // na URL — useJobsFilters lê o valor no mount (window.location.search).
+          if (
+            surface === "jobs" &&
+            typeof (patch as Record<string, unknown>).filter === "string"
+          ) {
+            const filterValue = (patch as Record<string, unknown>).filter as string;
+            const isOnJobsPage =
+              pathname?.includes("/jobs") && !pathname?.includes("/jobs/");
+            if (!isOnJobsPage) {
+              // Navegar para jobs com filtro embutido na URL (garante estado no mount)
+              router.push(`/${locale}/jobs?filter=${encodeURIComponent(filterValue)}`);
+            } else {
+              // Já na página: atualizar URL sem push completo (replace preserva histórico)
+              router.replace(
+                `${pathname}?filter=${encodeURIComponent(filterValue)}`,
+              );
+            }
+          }
+          window.dispatchEvent(
+            new CustomEvent("lia:apply_table_state", {
+              detail: { surface, patch },
+            }),
+          );
+          return true;
+        }
+
+        case "select_rows": {
+          // Fase 2 surface close: seleciona candidatos in-page via useCandidatesStore.
+          // LiaTableStateBridge escuta lia:select_rows e aplica mode/ids.
+          const surface = params.surface;
+          if (surface !== "candidates") return false;
+          if (typeof window === "undefined") return false;
+          window.dispatchEvent(
+            new CustomEvent("lia:select_rows", {
+              detail: {
+                surface,
+                mode: params.mode,
+                ids: params.ids,
+              },
+            }),
+          );
+          return true;
+        }
+
+
+        case "bulk_execute": {
+          // F3 Gap 1: feedback visual apos acao em lote via chat.
+          // LiaTableStateBridge escuta lia:bulk_execute e abre BulkResultReport.
+          if (typeof window === "undefined") return false;
+          window.dispatchEvent(
+            new CustomEvent("lia:bulk_execute", {
+              detail: {
+                action: params.action,
+                title: params.title,
+                results: params.results ?? [],
+              },
+            }),
+          );
+          return true;
+        }
+
+        case "start_wizard_seeded": {
+          // GAP-01-005 (2026-06-17): o painel wizard já é aberto pelo frame
+          // panel_update (wizard_stage) emitido ANTES desta diretiva no SSE.
+          // Aqui apenas navegamos para a surface correta para que o panel renderize.
+          router.push(`/${locale}/recrutar`);
+          return true;
+        }
+
         default:
           // exhaustiveness: caso TS deixe escapar um tipo, runtime falha-soft.
           return false;
       }
     },
-    [router],
+    [router, locale, pathname],
   );
 
   const dispatchOrEmit = useCallback(

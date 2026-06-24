@@ -1,6 +1,7 @@
 "use client"
 
-import React, { useCallback, useEffect, useMemo, useState } from "react"
+import React, { useMemo, useState } from "react"
+import { useQuery } from "@tanstack/react-query"
 import { useTranslations } from "next-intl"
 import { useCompanyId } from "@/hooks/company/useCompanyId"
 import { cardStyles, textStyles } from "@/lib/design-tokens"
@@ -90,27 +91,31 @@ function CandidateGranularConsentTab() {
   const t = useTranslations("settings.governanca.consent")
   const { companyId } = useCompanyId()
   const [candidateId, setCandidateId] = useState("")
-  const [summary, setSummary] = useState<GranularConsentSummary | null>(null)
-  const [loading, setLoading] = useState(false)
+  const [searchedId, setSearchedId] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [pending, setPending] = useState<Record<string, boolean>>({})
-
-  const load = async (id: string) => {
-    if (!companyId || !id.trim()) return
-    setLoading(true)
-    setError(null)
-    setSummary(null)
-    try {
+  const {
+    data: summary = null,
+    isFetching: loading,
+    refetch: reloadSummary,
+  } = useQuery<GranularConsentSummary | null>({
+    queryKey: ["consent-granular", searchedId],
+    enabled: !!companyId && !!searchedId.trim(),
+    queryFn: async () => {
       const res = await apiFetch(
-        `/api/backend-proxy/consent/granular/${encodeURIComponent(id.trim())}`,
+        `/api/backend-proxy/consent/granular/${encodeURIComponent(searchedId.trim())}`,
       )
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const data: GranularConsentSummary = await res.json()
-      setSummary(data)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : t("errorLoad"))
-    } finally {
-      setLoading(false)
+      return res.json()
+    },
+  })
+  const load = (id: string) => {
+    const trimmed = id.trim()
+    if (!companyId || !trimmed) return
+    if (trimmed === searchedId) {
+      void reloadSummary()
+    } else {
+      setSearchedId(trimmed)
     }
   }
 
@@ -133,7 +138,7 @@ function CandidateGranularConsentTab() {
         section: "governance",
         field: purpose,
       })
-      await load(summary.candidate_id)
+      await reloadSummary()
     } catch (err) {
       setError(err instanceof Error ? err.message : t("errorRevoke"))
     } finally {
@@ -281,36 +286,26 @@ function CandidateGranularConsentTab() {
 function TrainingDataConsentTab() {
   const t = useTranslations("settings.governanca.consent.trainingData")
   const { companyId } = useCompanyId()
-  const [status, setStatus] = useState<CompanyTrainingConsentStatus | null>(null)
-  const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [revokeOpen, setRevokeOpen] = useState(false)
   const [revokeReason, setRevokeReason] = useState("")
 
-  const load = useCallback(async () => {
-    if (!companyId) return
-    setLoading(true)
-    setError(null)
-    try {
+  const {
+    data: status = null,
+    isLoading: loading,
+    refetch: reloadStatus,
+  } = useQuery<CompanyTrainingConsentStatus | null>({
+    queryKey: ["company-training-consent", companyId],
+    enabled: !!companyId,
+    queryFn: async () => {
       const res = await apiFetch(
         `/api/backend-proxy/admin/consent/company-training-consent`,
       )
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const data: CompanyTrainingConsentStatus = await res.json()
-      setStatus(data)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : t("errorLoad"))
-    } finally {
-      setLoading(false)
-    }
-  }, [companyId, t])
-
-  useEffect(() => {
-    if (companyId) {
-      void load()
-    }
-  }, [companyId, load])
+      return res.json()
+    },
+  })
 
   const grant = async () => {
     if (!companyId) return
@@ -327,7 +322,7 @@ function TrainingDataConsentTab() {
             version: "1.0" }) },
       )
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      await load()
+      await reloadStatus()
     } catch (err) {
       setError(err instanceof Error ? err.message : t("errorGrant"))
     } finally {
@@ -350,7 +345,7 @@ function TrainingDataConsentTab() {
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       setRevokeOpen(false)
       setRevokeReason("")
-      await load()
+      await reloadStatus()
     } catch (err) {
       setError(err instanceof Error ? err.message : t("errorRevoke"))
     } finally {
@@ -379,7 +374,7 @@ function TrainingDataConsentTab() {
             href="/docs/adr/ADR-RLHF-001"
             target="_blank"
             rel="noreferrer noopener"
-            className="text-wedo-purple underline hover:opacity-80"
+            className="text-lia-text-secondary underline hover:opacity-80"
           >
             ADR-RLHF-001
           </a>
@@ -388,7 +383,7 @@ function TrainingDataConsentTab() {
             href="/docs/adr/ADR-LGPD-002"
             target="_blank"
             rel="noreferrer noopener"
-            className="text-wedo-purple underline hover:opacity-80"
+            className="text-lia-text-secondary underline hover:opacity-80"
           >
             ADR-LGPD-002
           </a>
@@ -545,55 +540,47 @@ interface ConsentStats {
 function ConsentMetricsTab() {
   const t = useTranslations("settings.governanca.consent.metrics")
   const { companyId } = useCompanyId()
-  const [stats, setStats] = useState<ConsentStats[] | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
-  const load = useCallback(async () => {
-    if (!companyId) return
-    setLoading(true)
-    setError(null)
-    try {
+  const {
+    data: statsData,
+    isLoading: loading,
+    error: queryError,
+  } = useQuery<ConsentStats[]>({
+    queryKey: ["consent-stats", companyId],
+    enabled: !!companyId,
+    queryFn: async () => {
       const res = await apiFetch(`/api/backend-proxy/consent/stats`)
       if (!res.ok) {
-        // Endpoint pode não existir ainda — fallback silencioso para [].
-        setStats([])
-        return
+        // Endpoint pode nao existir ainda — fallback silencioso para [].
+        return []
       }
       const data = await res.json()
-      // WT-2022 P4.4: backend retorna {total_granted, total_revoked, by_type: ConsentTypeStats[]}
-      // FE espera array flat {purpose, granted, revoked, total} — transformar aqui.
       let items: ConsentStats[] = []
       if (Array.isArray(data?.stats)) {
         items = data.stats
       } else if (Array.isArray(data)) {
         items = data
       } else if (Array.isArray(data?.by_type)) {
-        // Backend canonical shape
-        items = data.by_type.map((t: {
+        items = data.by_type.map((entry: {
           consent_type: string
           total_granted: number
           total_revoked: number
           total_expired?: number
         }) => ({
-          purpose: t.consent_type,
-          granted: t.total_granted ?? 0,
-          revoked: t.total_revoked ?? 0,
-          total: (t.total_granted ?? 0) + (t.total_revoked ?? 0) }))
+          purpose: entry.consent_type,
+          granted: entry.total_granted ?? 0,
+          revoked: entry.total_revoked ?? 0,
+          total: (entry.total_granted ?? 0) + (entry.total_revoked ?? 0),
+        }))
       }
-      setStats(items)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : t("errorLoad"))
-    } finally {
-      setLoading(false)
-    }
-  }, [companyId, t])
-
-  useEffect(() => {
-    if (companyId) {
-      void load()
-    }
-  }, [companyId, load])
+      return items
+    },
+  })
+  const stats = statsData ?? null
+  const error = queryError
+    ? queryError instanceof Error
+      ? queryError.message
+      : t("errorLoad")
+    : null
 
   const maxTotal = useMemo(
     () => stats?.reduce((m, s) => Math.max(m, s.total), 0) ?? 0,
@@ -698,14 +685,14 @@ function SummaryCard({
 }) {
   const color =
     accent === "success"
-      ? "text-wedo-green"
+      ? "text-wedo-green-text"
       : accent === "warning"
-        ? "text-wedo-orange"
+        ? "text-wedo-orange-text"
         : "text-lia-text-primary"
   return (
     <div className={cn(cardStyles.default, "p-3")}>
       <div className={textStyles.subtitleMuted}>{label}</div>
-      <div className={cn("mt-1 font-mono text-xl font-semibold", color)}>{value}</div>
+      <div className={cn("mt-1 font-data tabular-nums text-xl font-semibold", color)}>{value}</div>
     </div>
   )
 }

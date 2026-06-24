@@ -305,6 +305,32 @@ def _get_tenant_id() -> str:
         return ""
 
 
+def _get_tenant_key_sync(provider: str) -> str | None:
+    """Read BYOK tenant API key from in-memory cache (sync).
+
+    The cache (_tenant_configs) is populated asynchronously on first
+    get_tenant_llm_config() call. On cache miss (e.g. first request)
+    we return None so the caller falls back to the env var — no blocking,
+    no regression.
+
+    provider: "anthropic" | "openai" | "gemini"
+    """
+    company_id = _get_tenant_id()
+    if not company_id:
+        return None
+    try:
+        from app.shared.tenant_llm_context import _tenant_configs
+        config = _tenant_configs.get(company_id)
+        if not config:
+            return None
+        key = config.get("providers", {}).get(provider, {}).get("api_key")
+        if key and isinstance(key, str) and key.strip() and "..." not in key:
+            return key.strip()
+    except Exception:
+        pass
+    return None
+
+
 def _get_caller() -> str:
     """Get the caller's file:line for audit trail."""
     for frame_info in traceback.extract_stack():
@@ -440,7 +466,8 @@ def _patch_anthropic() -> bool:
         """
         if "api_key" not in kwargs:
             kwargs["api_key"] = (
-                os.environ.get("AI_INTEGRATIONS_ANTHROPIC_API_KEY")
+                _get_tenant_key_sync("anthropic")
+                or os.environ.get("AI_INTEGRATIONS_ANTHROPIC_API_KEY")
                 or os.environ.get("ANTHROPIC_API_KEY")
             )
         base_url = os.environ.get("AI_INTEGRATIONS_ANTHROPIC_BASE_URL")
@@ -604,7 +631,14 @@ def _patch_messages_api(client_instance, provider_label: str):
             caller = _get_caller()
             company_id = _get_tenant_id()
             estimated = max(0, int(_estimate_tokens_anthropic(kwargs)))
-            _enforce_credit_gate_sync(provider_label, kwargs, estimator=_estimate_tokens_anthropic)
+            # Fix 2026-06-04: cliente SYNC -> gate sync aqui; cliente ASYNC ->
+            # gate enforcado no __aenter__ async do reconciler (stream() e sync,
+            # nao pode await; o gate sync no event loop levantava RuntimeError).
+            _gate_kwargs = None
+            if is_async:
+                _gate_kwargs = dict(kwargs)
+            else:
+                _enforce_credit_gate_sync(provider_label, kwargs, estimator=_estimate_tokens_anthropic)
             if "messages" in kwargs:
                 kwargs["messages"] = _strip_pii_from_messages(kwargs["messages"])
             if "system" in kwargs and isinstance(kwargs["system"], str):
@@ -612,7 +646,9 @@ def _patch_messages_api(client_instance, provider_label: str):
             model = kwargs.get("model", "unknown")
             _audit_log(provider_label, "messages.stream", model=model, caller=caller)
             cm = _orig_stream(*args, **kwargs)
-            return _AnthropicStreamReconciler(cm, company_id, estimated, provider_label)
+            return _AnthropicStreamReconciler(
+                cm, company_id, estimated, provider_label, gate_kwargs=_gate_kwargs
+            )
 
         messages_obj.stream = _patched_stream
 
@@ -637,7 +673,8 @@ def _patch_openai() -> bool:
         if "api_key" not in kwargs and not args:
             # F3-2 fix (2026-05-10): fallback for Replit AI Integration prefix
             kwargs["api_key"] = (
-                os.environ.get("OPENAI_API_KEY")
+                _get_tenant_key_sync("openai")
+                or os.environ.get("OPENAI_API_KEY")
                 or os.environ.get("AI_INTEGRATIONS_OPENAI_API_KEY")
             )
             base_url = os.environ.get("AI_INTEGRATIONS_OPENAI_BASE_URL")
@@ -651,7 +688,8 @@ def _patch_openai() -> bool:
         if "api_key" not in kwargs and not args:
             # F3-2 fix (2026-05-10): fallback for Replit AI Integration prefix
             kwargs["api_key"] = (
-                os.environ.get("OPENAI_API_KEY")
+                _get_tenant_key_sync("openai")
+                or os.environ.get("OPENAI_API_KEY")
                 or os.environ.get("AI_INTEGRATIONS_OPENAI_API_KEY")
             )
             base_url = os.environ.get("AI_INTEGRATIONS_OPENAI_BASE_URL")
@@ -901,7 +939,10 @@ def _patch_genai() -> bool:
     @functools.wraps(_orig_init)
     def _patched_init(self, *args, **kwargs):
         if "api_key" not in kwargs and not args:
-            kwargs["api_key"] = os.environ.get("AI_INTEGRATIONS_GEMINI_API_KEY")
+            kwargs["api_key"] = (
+                _get_tenant_key_sync("gemini")
+                or os.environ.get("AI_INTEGRATIONS_GEMINI_API_KEY")
+            )
             base_url = os.environ.get("AI_INTEGRATIONS_GEMINI_BASE_URL")
             if base_url and "http_options" not in kwargs:
                 kwargs["http_options"] = {"api_version": "", "base_url": base_url}
@@ -1096,12 +1137,16 @@ class _AnthropicStreamReconciler:
     ``s.get_final_message().usage``. We snapshot at __exit__ and reconcile.
     """
 
-    def __init__(self, wrapped, company_id: str, estimated: int, service: str):
+    def __init__(self, wrapped, company_id: str, estimated: int, service: str,
+                 gate_kwargs: dict | None = None):
         self._wrapped = wrapped
         self._company_id = company_id
         self._estimated = estimated
         self._service = service
         self._inner = None
+        # Fix 2026-06-04: quando setado (caminho async), o gate de credito e
+        # enforcado AQUI no __aenter__ async (stream() e sync, nao pode await).
+        self._gate_kwargs = gate_kwargs
 
     def __getattr__(self, name):
         return getattr(self._wrapped, name)
@@ -1128,6 +1173,12 @@ class _AnthropicStreamReconciler:
                 logger.debug("[LLM-Reconcile] anthropic stream reconcile failed: %s", _exc)
 
     async def __aenter__(self):
+        # Async client: enforca o gate de credito async ANTES de abrir o stream.
+        # No caminho sync, gate_kwargs e None (o gate sync ja rodou em _patched_stream).
+        if self._gate_kwargs is not None:
+            await _enforce_credit_gate_async(
+                self._service, self._gate_kwargs, estimator=_estimate_tokens_anthropic
+            )
         self._inner = await self._wrapped.__aenter__()
         return self._inner
 

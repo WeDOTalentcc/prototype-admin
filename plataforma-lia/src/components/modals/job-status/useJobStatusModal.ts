@@ -276,7 +276,7 @@ export function useJobStatusModal({
         onClose()
       }
     } catch (error) {
-      toast.error('Erro ao processar. Tente novamente.')
+      toast.error('Erro ao processar. Tente novamente.', { description: "Verifique sua conexão e tente novamente." })
     } finally {
       setIsSubmitting(false)
     }
@@ -386,7 +386,7 @@ export function useJobStatusModal({
         onClose()
       }
     } catch (error) {
-      toast.error('Erro ao processar. Tente novamente.')
+      toast.error('Erro ao processar. Tente novamente.', { description: "Verifique sua conexão e tente novamente." })
     } finally {
       setIsSubmitting(false)
     }

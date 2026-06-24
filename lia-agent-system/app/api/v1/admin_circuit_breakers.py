@@ -26,6 +26,7 @@ from app.shared.resilience.circuit_breaker import (
     reset_circuit,
 )
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 
 logger = logging.getLogger(__name__)
 
@@ -113,7 +114,7 @@ async def list_circuit_breakers(_user=Depends(require_admin), company_id: str = 
         raise
     except Exception as exc:
         logger.error("[CircuitBreakerAdmin] Erro ao listar circuits: %s", exc)
-        raise HTTPException(status_code=500, detail=str(exc))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/{circuit_name}/reset", summary="Reset manual de um circuit breaker", response_model=None)

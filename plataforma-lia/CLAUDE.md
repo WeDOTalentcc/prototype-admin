@@ -191,3 +191,34 @@ export function JdEnrichmentPanel({ data, ... }: Props) {
 - **Producer-side**: `build_ws_stage_payload` raise ValueError se `data.message` faltar (Task #1099 invariant) — garante que toda copy contextual existe.
 - **Consumer-side**: idle state pula badge + loading timer — recrutador ve copy direta do agente, nao mensagem ambigua "demorando".
 - **CI**: sensor estatico bloqueia regressao se backend adicionar novo `awaiting_*_input` sem mapping no script + panel handler.
+
+
+## P0.2 — Acoes do chat (ui_action) nao podem ser ghost (registrado 2026-06-04)
+
+Toda ui_action que o BE pode emitir (contrato em src/lib/api/kanban-assistant.ts) DEVE ter handler no FE: registrada em GLOBAL_UI_ACTION_TYPES (src/types/ui-action.ts, tratada por useUIAction) OU com case/=== num handler page-specific. Acao declarada sem handler = ghost (descartada em silencio quando emitida fora da tela dona) = mentira pro usuario (mesma classe do lia_field_toggles ghost-setting).
+
+Acoes acopladas a uma superficie (ex: modais de candidatos) que precisam ser acionaveis de qualquer tela viram GLOBAIS via padrao navega+re-emite (mirror de settings_open_tab em useUIAction): router.push pra superficie dona + re-emite lia:unhandled_ui_action pro handler page-specific. Nao duplicar modais.
+
+Sensor (computacional, warn-only): scripts/check_ui_action_handlers.py. Baseline 2026-06-04: 2 ghosts conhecidos (compare_jobs, start_candidate_wizard) — follow-up no dominio jobs/wizard. Promover a --blocking quando baseline=0.
+
+
+## 0.3a — Transporte do chat: SSE deve cair pro REST ao esgotar (registrado 2026-06-04)
+
+Os transportes do chat (WS, SSE, REST) degradam com graca. O path WS, ao falhar/timeout, reenvia via sendViaRest (useChatMessages). O path SSE, ao esgotar maxSseFailures, DEVE fazer o mesmo: sendMessageViaSSE recebe onExhausted?: () => void e o caller passa () => sendViaRest(content, domain, context). Nunca terminar num erro duro sem tentar o REST quando NEXT_PUBLIC_CHAT_TRANSPORT=sse estiver ligada.
+Sensor (estrutural): src/hooks/chat/__tests__/useChatTransport.sse-fallback.test.ts.
+
+## Chat message ids — collision-safe canonical (registrado 2026-06-04)
+
+**Contexto (P0 crash):** `UnifiedMessageList.tsx` renderiza um `<div key={message.id}>` por mensagem do array `chatMessages` (lia-float-context). Ids eram cunhados inline com `` `${prefix}-${Date.now()}` `` em ~50+ sites. `Date.now()` tem resolução de milissegundo: dois mints no mesmo tick (um turno que emite texto + card de ação na mesma síncrona, loop de cards, ou backend Fase2 emitindo msg+card com id compartilhado) produzem o **mesmo id** → React `Encountered two children with the same key` → a lista de mensagens crasha. Reproduzia "ao buscar candidatos".
+
+### Regras canônicas
+
+1. **Todo id de mensagem de chat é cunhado por `createMessageId(prefix)`** de `@/hooks/chat/lia-chat-connection-types` — counter monotônico por sessão + timestamp, colisão-seguro. **PROIBIDO** `` id: `${prefix}-${Date.now()}` `` inline (colide no mesmo ms).
+
+2. **Append no store de chat usa `dedupeAppend(list, msg)`** (mesmo módulo). Invariante: o array `chatMessages` NUNCA contém dois ids iguais. Se um id repetido chega (ex: backend dá o mesmo id pra msg+card), o item é **mantido** (lossless) sob id uniquificado, nunca dropado. Em `lia-float-context`, `addChatMessage`/`addSharedMessage` e os `setChatMessages` de item único já passam por `dedupeAppend` — é o chokepoint que protege bolha + chat-page (ambas leem o mesmo `chatMessages`).
+
+3. **Por que no produtor, não no consumer:** `UnifiedMessageList` usa `key={message.id}` corretamente (uma msg = uma key; um único message já renderiza texto + card no mesmo div). O defeito é o produtor inserir duas entradas com id igual. Fix no produtor (mint + invariante de append), nunca trocar a key do consumer.
+
+### Sensor
+
+`scripts/check_no_collision_message_ids.mjs` (scope-aware: só sinaliza ids colidíveis em objetos com shape de mensagem de chat — `sender:`/`role:`/`type:"lia"` na vizinhança, exclui ids de entidade). Warn-only; baseline 2026-06-04 ≈ 106 sites (a classe inteira em superfícies de chat — candidates command-chat, lia panel, WSI chat, chat-page). O crash do `UnifiedMessageList` já está fechado pela invariante `dedupeAppend` no chokepoint do float; os 106 são débito de ratchet (migrar pra `createMessageId` e promover a `--blocking` quando baseline = 0). Rodar: `node scripts/check_no_collision_message_ids.mjs`.

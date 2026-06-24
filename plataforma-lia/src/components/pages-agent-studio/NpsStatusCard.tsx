@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { Star, Send, Loader2, ChevronDown } from "lucide-react"
 
 interface Job {
@@ -23,14 +24,16 @@ interface Survey {
   public_url: string
 }
 
+import { toast } from "@/lib/toast"
+
 const RESPONDENT_LABEL: Record<string, string> = {
   candidate: "Candidato",
   manager: "Gestor",
 }
 
 const STATUS_COLOR: Record<string, string> = {
-  pending: "text-wedo-orange",
-  responded: "text-wedo-green",
+  pending: "text-wedo-orange-text",
+  responded: "text-lia-text-secondary",
   expired: "text-lia-text-tertiary",
 }
 
@@ -38,7 +41,6 @@ export function NpsStatusCard({ jobId, jobs = [] }: NpsStatusCardProps) {
   const [selectedJobId, setSelectedJobId] = useState<string | null>(jobId)
   const [surveys, setSurveys] = useState<Survey[]>([])
   const [loading, setLoading] = useState(true)
-  const [actionLoading, setActionLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
   const [email, setEmail] = useState("")
@@ -49,33 +51,34 @@ export function NpsStatusCard({ jobId, jobs = [] }: NpsStatusCardProps) {
     if (jobId && !selectedJobId) setSelectedJobId(jobId)
   }, [jobId, selectedJobId])
 
-  const loadSurveys = async (jid: string) => {
-    setLoading(true)
-    try {
+  const queryClient = useQueryClient()
+  const { data: surveysData, isLoading, error: queryError, refetch } = useQuery({
+    queryKey: ["hiring-nps", selectedJobId],
+    queryFn: async () => {
+      if (!selectedJobId) return []
       const res = await fetch(
-        `/api/backend-proxy/hiring-nps?job_vacancy_id=${encodeURIComponent(jid)}&limit=20`,
+        `/api/backend-proxy/hiring-nps?job_vacancy_id=${encodeURIComponent(selectedJobId)}&limit=20`,
         { credentials: "include" }
       )
-      if (res.ok) {
-        const data = await res.json()
-        setSurveys(Array.isArray(data?.surveys) ? data.surveys : [])
-      }
-    } catch { /* silently skip */ }
-    finally { setLoading(false) }
-  }
+      if (!res.ok) throw new Error("Erro ao carregar pesquisas")
+      const data = await res.json()
+      return Array.isArray(data?.surveys) ? data.surveys : []
+    },
+    enabled: !!selectedJobId,
+    staleTime: 60_000,
+  })
 
   useEffect(() => {
-    if (!selectedJobId) { setLoading(false); return }
-    setSurveys([])
+    setSurveys(surveysData ?? [])
+  }, [surveysData])
+
+  useEffect(() => {
     setShowForm(false)
-    loadSurveys(selectedJobId)
   }, [selectedJobId])
 
-  const handleSend = async () => {
-    if (!email.trim() || !selectedJobId) return
-    setActionLoading(true)
-    setError(null)
-    try {
+  const { mutate: sendSurvey, isPending: actionLoading, error: mutationError } = useMutation({
+    mutationFn: async () => {
+      if (!email.trim() || !selectedJobId) throw new Error("Email e vaga são obrigatórios")
       const res = await fetch("/api/backend-proxy/hiring-nps", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -90,14 +93,20 @@ export function NpsStatusCard({ jobId, jobs = [] }: NpsStatusCardProps) {
         const e = await res.json()
         throw new Error(e.detail || "Erro ao enviar pesquisa")
       }
+      return res.json()
+    },
+    onSuccess: () => {
       setShowForm(false)
       setEmail("")
-      await loadSurveys(selectedJobId)
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Erro ao enviar")
-    } finally {
-      setActionLoading(false)
-    }
+      queryClient.invalidateQueries({ queryKey: ["hiring-nps", selectedJobId] })
+    },
+    onError: (err) => {
+      toast.error("Erro", err instanceof Error ? err.message : "Erro ao enviar pesquisa")
+    },
+  })
+
+  const handleSend = () => {
+    sendSurvey()
   }
 
   const jobSelector = jobs.length > 1 ? (
@@ -228,7 +237,7 @@ export function NpsStatusCard({ jobId, jobs = [] }: NpsStatusCardProps) {
               />
             </div>
 
-            {error && <p className="text-micro text-status-error">{error}</p>}
+            {mutationError && <p className="text-micro text-status-error">{mutationError?.message}</p>}
 
             <div className="flex gap-2">
               <button

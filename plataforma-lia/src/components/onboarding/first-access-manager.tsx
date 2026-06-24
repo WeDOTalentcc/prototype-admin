@@ -288,7 +288,7 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
           </div>
 
           <h1 className="lia-title-hero text-lia-text-primary mb-6">
-            Bem-vindo à Plataforma LIA
+            Bem-vindo ao WeDOTalent
           </h1>
           <p className="lia-text-large max-w-3xl mx-auto leading-relaxed">
             Você foi convidado para acessar a plataforma de recrutamento mais avançada do mercado.

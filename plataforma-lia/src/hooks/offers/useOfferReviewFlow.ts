@@ -13,6 +13,7 @@
 import { useCallback } from "react"
 import { useOfferDraftStore } from "@/stores/offer-draft-store"
 import { offersApi } from "@/services/lia-api/offers-api"
+import { toast } from "@/lib/toast"
 
 export interface OfferReviewTrigger {
   candidateId: string
@@ -29,20 +30,26 @@ export function useOfferReviewFlow() {
    * Otherwise creates new (or retrieves idempotent draft).
    */
   const openOfferReview = useCallback(async (trigger: OfferReviewTrigger) => {
-    if (trigger.draftId) {
-      await loadDraft(trigger.draftId)
-    } else {
-      // Explicitly call offersApi.createDraft so callers can verify draft creation path
-      const newDraft = await offersApi.createDraft({
-        candidate_id: trigger.candidateId,
-        job_id: trigger.jobId,
-      })
-      setDraft(newDraft)  // populate store directly — avoids round-trip GET
-      setOpen(true)
+    try {
+      if (trigger.draftId) {
+        await loadDraft(trigger.draftId)
+      } else {
+        // Explicitly call offersApi.createDraft so callers can verify draft creation path
+        const newDraft = await offersApi.createDraft({
+          candidate_id: trigger.candidateId,
+          job_id: trigger.jobId,
+        })
+        setDraft(newDraft)  // populate store directly — avoids round-trip GET
+        setOpen(true)
+      }
+      // Modal is controlled by useOfferDraftStore.draft !== null
+      // Components watching the store will open the modal
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Erro ao abrir proposta"
+      toast.error("Não foi possível abrir a proposta", message)
+      console.error("[useOfferReviewFlow] openOfferReview error:", err)
     }
-    // Modal is controlled by useOfferDraftStore.draft !== null
-    // Components watching the store will open the modal
-  }, [loadDraft, startDraft])
+  }, [loadDraft, setDraft, setOpen])
 
   const closeOfferReview = useCallback(() => {
     clearDraft()

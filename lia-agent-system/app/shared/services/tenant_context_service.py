@@ -10,12 +10,27 @@ Injeta nome, setor, nível de autonomia e estado atual no contexto do orquestrad
 from __future__ import annotations
 
 import logging
+import time
 from dataclasses import dataclass
+from typing import Any
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
+
+# ---------------------------------------------------------------------------
+# Module-level cache: company_id → (TenantContext, timestamp)
+# TTL=60s: tenant config changes infrequently; stale-for-60s is acceptable.
+# Harness: guide=computacional (deterministic, no inference). Sensor: unit tests.
+# ---------------------------------------------------------------------------
+_tenant_ctx_cache: dict[str, tuple[Any, float]] = {}
+_TENANT_CTX_TTL = 60.0  # seconds
+
+
+def invalidate_tenant_context_cache(company_id: str) -> None:
+    """Remove a single tenant entry from the cache (e.g. after config change)."""
+    _tenant_ctx_cache.pop(company_id, None)
 
 
 @dataclass
@@ -102,11 +117,43 @@ class TenantContextService:
     ) -> TenantContext:
         """Retorna contexto do tenant. Fail-safe: retorna defaults se falhar.
 
+        Cache: module-level dict with TTL=60s. Cache key is company_id only
+        (job_id contexts are NOT cached because pipeline_stages vary per job).
+        Cache is bypassed when job_id is provided to preserve per-job accuracy.
+
         Args:
             company_id: Tenant ID.
             db: AsyncSession.
             job_id: Optional — if provided, includes pipeline stages for this job.
+                    Bypasses cache when set.
         """
+        # Cache hit: skip all DB queries for the common case (no job_id context)
+        if not job_id:
+            cached = _tenant_ctx_cache.get(company_id)
+            if cached is not None:
+                ctx, ts = cached
+                if time.time() - ts < _TENANT_CTX_TTL:
+                    logger.debug(
+                        "[TenantContextService] cache hit company=%s age=%.1fs",
+                        company_id, time.time() - ts,
+                    )
+                    return ctx
+
+        result_ctx = await self._fetch_from_db(company_id=company_id, db=db, job_id=job_id)
+
+        # Store in cache only for non-job_id requests (stable context)
+        if not job_id:
+            _tenant_ctx_cache[company_id] = (result_ctx, time.time())
+
+        return result_ctx
+
+    async def _fetch_from_db(
+        self,
+        company_id: str,
+        db: AsyncSession,
+        job_id: str | None = None,
+    ) -> TenantContext:
+        """Internal: fetch TenantContext from DB. Called by get_context on cache miss."""
         try:
             from lia_models.company import Company
             from lia_models.job_vacancy import JobVacancy

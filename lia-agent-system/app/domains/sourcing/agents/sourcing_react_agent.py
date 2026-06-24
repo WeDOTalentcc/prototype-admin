@@ -98,7 +98,16 @@ class SourcingReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgen
         Falls back to legacy DOMAIN_INSTRUCTIONS if PromptComposer fails.
         """
         try:
+            from app.orchestrator.context.view_context import (
+                format_view_context,
+                view_context_from_context,
+            )
             ctx = input.context or {}
+            # P0.1: estado-da-tela vivo no prompt (agente ciente da visao atual).
+            _view_block = format_view_context(view_context_from_context(ctx))
+            _stage = ctx.get("stage_context", "") or ""
+            if _view_block:
+                _stage = (_view_block + "\n\n" + _stage).strip()
             return self._compose_runtime_prompt(
                 input,
                 agent_type="sourcing",
@@ -106,7 +115,7 @@ class SourcingReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgen
             few_shot_examples=SOURCING_FEW_SHOT_EXAMPLES,
                 reasoning_template=SOURCING_REASONING_PROMPT,
                 memory_summary=ctx.get("memory_summary", ""),
-                stage_context=ctx.get("stage_context", ""),
+                stage_context=_stage,
             ).text
         except Exception as exc:
             logger.warning(
@@ -166,7 +175,9 @@ class SourcingReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgen
         from app.domains.sourcing.agents.nurture_sequence_tool_registry import get_nurture_sequence_tools
 
         # Ferramentas base do sourcing + enhanced mixin
-        tool_defs = get_sourcing_tools() + self._get_all_enhanced_tools()
+        from app.domains.recruiter_assistant.agents.ui_tool_registry import get_open_ui_tools
+        # Grant UI: open_ui (modais/nav). apply_table_state NAO (surface sem ponte FE ainda).
+        tool_defs = get_sourcing_tools() + get_open_ui_tools() + self._get_all_enhanced_tools()
 
         # Ferramentas dos sub-agentes especializados — expostas diretamente no grafo LangGraph.
         # SOURCING_SUBAGENT_STAGE_MAP documenta a associação domain→stage para referência
@@ -229,7 +240,7 @@ class SourcingReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgen
                             reason=reason,
                             auto_navigate=False,
                         )
-        except Exception:
+        except Exception:  # ADR-031-R3-EXEMPT: deteccao opcional de navegacao por confirmacao do usuario; falha nao bloqueia resposta
             pass
 
         return AgentOutput(
@@ -323,7 +334,10 @@ class SourcingReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgen
                     company_id=str(input.company_id or ""),
                 )
         except Exception as _fg_exc:
-            logger.debug("[SourcingReActAgent] FairnessGuard check skipped: %s", _fg_exc)
+            logger.error(
+                "[SourcingReActAgent] FairnessGuard check FAILED (result served without fairness verification): %s",
+                _fg_exc, exc_info=True,
+            )
             _soft_warnings = []
 
         # AUD-4: HITL — abordagem (outreach) exige aprovação humana antes de enviar

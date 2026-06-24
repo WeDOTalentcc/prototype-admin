@@ -12,6 +12,7 @@ import { useLoadingWatchdog } from "@/hooks/shared/use-loading-watchdog"
 import { useGlobalSearchSettings } from "@/hooks/search/useGlobalSearchSettings"
 import { useHideViewedCandidates } from "@/hooks/candidates/useHideViewedCandidates"
 import { useCandidateFilters, getDefaultTableFilters } from "@/hooks/candidates/use-candidate-filters"
+import { isGlobalSource } from "@/lib/utils/source-detection"
 import { useCandidateSelection } from "@/hooks/candidates/use-candidate-selection"
 import { useTalentFunnel } from "@/hooks/candidates/use-talent-funnel"
 import { useCandidatesSearchState } from "@/hooks/candidates/use-candidates-search-state"
@@ -19,6 +20,9 @@ import { useCandidatesViewState } from "@/hooks/candidates/use-candidates-view-s
 import type { Candidate } from "@/components/pages/candidates/types"
 
 import { useCandidatesUIState } from "./useCandidatesUIState"
+import { useNavGuardStore } from "@/stores/nav-guard-store"
+import { useUnsavedChanges } from "@/hooks/shared/useUnsavedChanges"
+import { useUnsavedBackGuard } from "@/hooks/shared/useUnsavedBackGuard"
 import { useCandidatesNavigation } from "./useCandidatesNavigation"
 import { useCandidatesPageEffects } from "./useCandidatesPageEffects"
 import { useCandidatesSearchComposition } from "./useCandidatesSearchComposition"
@@ -125,7 +129,7 @@ export function useCandidatesPageCore({
       showSearchResults, searchSource, currentSearchSource,
       showGlobalExpansionConfirm, hasSearched, isExpandingToGlobal,
       searchExecutionId, searchSortBy, searchFeedbacks,
-      displayedResultsCount, isLoadingMore, showOnlyNew,
+      displayedResultsCount, isLoadingMore, canLoadMore, showOnlyNew,
       isDroppingCV, cvUploadLoading,
     },
     actions: {
@@ -138,7 +142,7 @@ export function useCandidatesPageCore({
       setShowSearchResults, setSearchSource, setCurrentSearchSource,
       setShowGlobalExpansionConfirm, setHasSearched, setIsExpandingToGlobal,
       setSearchExecutionId, setSearchSortBy, setSearchFeedbacks,
-      setDisplayedResultsCount, setIsLoadingMore, setShowOnlyNew,
+      setDisplayedResultsCount, setIsLoadingMore, setCanLoadMore, setShowOnlyNew,
       setIsDroppingCV, setCvUploadLoading,
     },
   } = useCandidatesSearchState()
@@ -165,6 +169,7 @@ export function useCandidatesPageCore({
   } = useCandidatesViewState()
 
   const [candidatesError, setCandidatesError] = useState<string | null>(null)
+  const [fairnessError, setFairnessError] = useState<string | null>(null)
 
   const {
     candidateListsForModal, setCandidateListsForModal,
@@ -211,6 +216,7 @@ export function useCandidatesPageCore({
     unifiedModalOpen, setUnifiedModalOpen,
     unifiedModalType, setUnifiedModalType,
     unifiedModalCandidate, setUnifiedModalCandidate,
+    unifiedModalSelectedCandidates, setUnifiedModalSelectedCandidates,
     showQuickViewModal, setShowQuickViewModal,
     showComparisonModal, setShowComparisonModal,
     selectedCandidateForAction, setSelectedCandidateForAction,
@@ -226,6 +232,8 @@ export function useCandidatesPageCore({
     rubricEvaluationData, setRubricEvaluationData,
     showSendEmailModal, setShowSendEmailModal,
     emailCandidateSelected, setEmailCandidateSelected,
+    showScheduleMessageModal, setShowScheduleMessageModal,
+    scheduleMessageCandidate, setScheduleMessageCandidate,
     showCVPreviewModal, setShowCVPreviewModal,
     parsedCVData, setParsedCVData,
     showAddToListModal, setShowAddToListModal,
@@ -250,7 +258,22 @@ export function useCandidatesPageCore({
   } = ui
 
   const unsavedPearchCandidates = candidates.filter(c => c.source === 'pearch')
-  const hasUnsavedPearchCandidates = unsavedPearchCandidates.length > 0 && showSearchResults
+  const hasUnsavedPearchCandidates = (unsavedPearchCandidates.length > 0 || pearchResultsCount > 0) && showSearchResults
+
+  // #6 guard de saida (candidatos globais nao salvos). Registra no nav-guard-store;
+  // o handleNavigate central (dashboard-app) consulta antes de sair da rota.
+  // useUnsavedChanges cobre fechar/recarregar a aba (beforeunload).
+  const setNavGuardActive = useNavGuardStore(s => s.setActive)
+  const pendingLeaveProceed = useNavGuardStore(s => s.pendingProceed)
+  useUnsavedChanges(hasUnsavedPearchCandidates)
+  useUnsavedBackGuard(hasUnsavedPearchCandidates)
+  useEffect(() => {
+    setNavGuardActive(hasUnsavedPearchCandidates)
+    return () => setNavGuardActive(false)
+  }, [hasUnsavedPearchCandidates, setNavGuardActive])
+  useEffect(() => {
+    if (pendingLeaveProceed) setShowUnsavedWarningModal(true)
+  }, [pendingLeaveProceed, setShowUnsavedWarningModal])
   const searchTemplates = SEARCH_TEMPLATES
   const [itemsPerPage] = useState(50)
   const tableContainerRef = useRef<HTMLDivElement>(null)
@@ -283,7 +306,7 @@ export function useCandidatesPageCore({
     setHasSearchResults, setSearchResultsCount, setLocalResultsCount, setPearchResultsCount,
     setLastSearchQuery, setLastSearchMode, setActiveSearchTab, setLiaPromptValue, setChatMessages,
     creditsRemaining, setCreditsRemaining,
-    searchThreadId, setSearchThreadId,
+    searchThreadId, searchFingerprint, setSearchThreadId,
     setSearchFingerprint,
     hideViewedCandidatesFilter: hideViewedCandidates.filterCandidates,
     talentFunnel, setSearchResults, setShowSearchResults, setDisplayedResultsCount,
@@ -299,7 +322,7 @@ export function useCandidatesPageCore({
     showSearchResults, hasSearchResults,
     showGlobalExpansionConfirm, setShowGlobalExpansionConfirm,
     isExpandingToGlobal, setIsExpandingToGlobal,
-    displayedResultsCount, isLoadingMore, setIsLoadingMore,
+    displayedResultsCount, isLoadingMore, setIsLoadingMore, canLoadMore, setCanLoadMore,
     searchFeedbacks, setSearchFeedbacks,
     hasSearched,
     showExpandGlobalOption, showSourceChangeModal, setShowSourceChangeModal,
@@ -311,6 +334,7 @@ export function useCandidatesPageCore({
     activeSearchFilters, setActiveSearchFilters,
     setSelectedTemplate, setSearchSource, searchExecutionId,
     user: user as Record<string, unknown> | null,
+    setFairnessError,
   })
 
   const { archetypesHook, revealContactHook, executeSearch: _rawExecuteSearch, cvHandlers, searchHandlers } = searchComposition
@@ -353,8 +377,17 @@ export function useCandidatesPageCore({
       buildFiltersFromTags, loadArchetypesFromBackend, executeArchetypeSearch,
     },
   } = archetypesHook
-  const { showRevealModal, revealCandidate, revealType, revealedContacts, isRevealing } = revealContactHook.state
-  const { setShowRevealModal, setRevealCandidate, setRevealType, setRevealedContacts, openRevealModal, handleRevealContact } = revealContactHook.actions
+  const { showRevealModal, revealCandidate, revealType, revealedContacts, isRevealing, showBulkRevealModal, bulkRevealCandidates, isBulkRevealing } = revealContactHook.state
+  const { setShowRevealModal, setRevealCandidate, setRevealType, setRevealedContacts, openRevealModal, handleRevealContact, openBulkRevealModal, handleBulkReveal, setShowBulkRevealModal, abortBulkReveal } = revealContactHook.actions
+  const bulkReveal = {
+    showModal: showBulkRevealModal,
+    candidates: bulkRevealCandidates,
+    isRevealing: isBulkRevealing,
+    open: openBulkRevealModal,
+    confirm: handleBulkReveal,
+    close: () => setShowBulkRevealModal(false),
+    cancel: abortBulkReveal,
+  }
   const handleCVDrop = cvHandlers.handleCVDrop
   const handleCVDragOver = cvHandlers.handleCVDragOver
   const handleCVDragLeave = cvHandlers.handleCVDragLeave
@@ -393,9 +426,10 @@ export function useCandidatesPageCore({
     isPreviewMaximized, setIsPreviewMaximized, previewWidth, setPreviewWidth,
     setPreviewCandidate, setShowCandidatePreview, setShowPreview,
     setSelectedCandidate, setShowCandidatePage, setShowSidePreview, setSidePreviewCandidate,
-    setUnifiedModalCandidate, setUnifiedModalType, setUnifiedModalOpen,
+    setUnifiedModalCandidate, setUnifiedModalSelectedCandidates, setUnifiedModalType, setUnifiedModalOpen,
     setShowScheduleModal, setShowContactModal, setSelectedCandidateForAction,
     setShowComparisonModal, setShowQuickViewModal, setShowBatchApproval,
+    setShowScheduleMessageModal, setScheduleMessageCandidate,
     setParsedCVData, setShowCVPreviewModal, setShowAddCandidateModal,
     onAddRecentItem, markCandidateAsViewed, handleBulkActionComplete,
     chatMessages, setChatMessages, liaPromptValue, setLiaPromptValue,
@@ -449,7 +483,7 @@ export function useCandidatesPageCore({
   const handleExitWithoutSaving = candidatesActions.handleExitWithoutSaving
 
   const selectedPearchCount = candidates.filter(
-    c => selectedCandidatesForBatch.has(c.id) && c.source === 'pearch'
+    c => selectedCandidatesForBatch.has(c.id) && isGlobalSource(c.source, !!c.pearch_profile_id)
   ).length
 
   const {
@@ -460,7 +494,7 @@ export function useCandidatesPageCore({
     handlePreviewResize, handleNavigateToFullProfile, handleScheduleInterview,
     handleContactCandidate, handleSendMessage, handleScheduleComplete,
     handleSendEmail, handleSendWhatsApp, handleSendTriagem, handleSendAgendamento,
-    handleSendFeedback, handleBulkEmail, handleBulkWSIScreening,
+    handleSendFeedback, handleOpenScheduleMessageModal, handleBulkEmail, handleBulkWSIScreening,
     handleBulkScheduleInterview, handleBulkFeedback,
     handleUnifiedModalClose, handleUnifiedModalSend,
     handleBatchApprovalComplete, handleWSIScreeningComplete,
@@ -485,6 +519,7 @@ export function useCandidatesPageCore({
   }
 
   return {
+    bulkReveal,
     searchFingerprint,
     handleReSearchWithFilters,
     activeSearchFilters, activeSearchTab, activeTab, addToListCandidateIds, addToListCandidateNames, bulkJobVacancies,
@@ -497,7 +532,7 @@ export function useCandidatesPageCore({
     handleCandidatePageOpen, handleCloseCandidatePage, handleCloseCandidatePreview, handleConfirmPearchSearch, handleContactCandidate, handleExitWithoutSaving,
     handleExpandToGlobal, handleLIAChatMessage, handleLIAClick, handleLoadMore, handleNavigateToFullProfile, handlePreviewResize,
     handleQuickAction, handleRevealContact, handleSaveAllAndExit, handleSaveToLocalBase, handleScheduleComplete, handleScheduleInterview,
-    handleSendAgendamento, handleSendEmail, handleSendFeedback, handleSendMessage, handleSendTriagem, handleSendWhatsApp,
+    handleSendAgendamento, handleSendEmail, handleSendFeedback, handleOpenScheduleMessageModal, handleSendMessage, handleSendTriagem, handleSendWhatsApp,
     handleStartWSITextScreening, handleTabChangeWithWarning, handleToggleColumnConfig, handleToggleFavorite, handleTogglePin, handleTogglePreviewMaximize,
     handleUnifiedModalClose, handleUnifiedModalSend, handleUpdateFavoriteNote, handleWSIScreeningComplete, hideViewedCandidates, isAddingToList,
     isLIAThinking, isLoading, isSavingToBase, isSearchActive,
@@ -513,20 +548,23 @@ export function useCandidatesPageCore({
     setSelectedCandidatesForBatch, setSelectedListForVacancies, setShareSearchCandidates, setShareSearchTitle, setShowAddCandidateModal, setShowAddListToVacanciesModal,
     setShowAddToListModal, setShowAddToVacancyModal, setShowAdvancedSearch, setShowBatchApproval, setShowCVPreviewModal, setShowColumnConfig,
     setShowComparisonModal, setShowContactFilterModal, setShowContactModal, setShowCreditConfirmation, setShowRevealModal, setShowRubricModal,
+    setShowScheduleMessageModal, setScheduleMessageCandidate,
     setShowScheduleModal, setShowSendEmailModal, setShowShareSearchModal, setShowSourceChangeModal, setShowTableFiltersPanel, setShowUnsavedWarningModal,
     setShowWSIInviteModal, setShowWSITextModal, setShowWSIVoiceModal, setTableColumns, setTableFilters, setWsiCandidateForScreening,
     setWsiInviteCandidate, shareSearchCandidates, shareSearchTitle, showAddCandidateModal, showAddListToVacanciesModal, showAddToListModal,
     showAddToVacancyModal, showAdvancedSearch, showBatchApproval, showCVPreviewModal, showColumnConfig, showComparisonModal,
     showContactFilterModal, showContactModal, showCreditConfirmation, showRevealModal, showRubricModal, showScheduleModal,
+    showScheduleMessageModal, scheduleMessageCandidate,
     showSendEmailModal, showShareSearchModal, showSourceChangeModal, showTableFiltersPanel, showUnsavedWarningModal, showWSIInviteModal,
     showWSITextModal, showWSIVoiceModal, sortedCandidates, tableColumns, tableContainerRef, tableFilters,
-    talentFunnel, toggleTableFilter, unifiedModalCandidate, unifiedModalOpen, unifiedModalType,
+    talentFunnel, toggleTableFilter, unifiedModalCandidate, unifiedModalSelectedCandidates, unifiedModalOpen, unifiedModalType,
     unsavedPearchCandidates, user, visibleCandidates, visibleTableColumns, wsiCandidateForScreening, wsiInviteCandidate,
     tabs,
+    fairnessError, setFairnessError,
     archetypeCreationStep, archetypeToDelete, buildFiltersFromTags, crossTabFilter, currentPage, currentSearchSource,
     cvUploadLoading, displayedResultsCount, editQueryValue, isCreatingArchetype, isDroppingCV, isExpandingToGlobal,
     isLoadingMore, isPreviewMaximized, itemsPerPage, lastSearchEntities, lastSearchQuery, lastSuccessfulQuery,
-    liaPromptValue, localResultsCount, newArchetypeData, previewCandidate, previewingUserArchetype, previewSuggestion,
+    liaPromptValue, localResultsCount, pearchResultsCount, newArchetypeData, previewCandidate, previewingUserArchetype, previewSuggestion,
     quickFilters, searchSortBy, searchSource, searchTerm, selectedCandidate,
     setArchetypeCreationStep, setArchetypeToDelete, setCurrentPage, setDisplayedResultsCount, setEditQueryValue,
     setHasSearchResults, setIsCreatingArchetype, setLastSearchEntities, setLastSearchMetadata, setLastSearchMode, setLastSearchQuery,

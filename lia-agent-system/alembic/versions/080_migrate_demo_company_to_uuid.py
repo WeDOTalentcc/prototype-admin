@@ -35,7 +35,7 @@ from alembic import op
 import sqlalchemy as sa
 
 revision = "080_migrate_demo_company_to_uuid"
-down_revision = "079_align_learning_patterns_columns"
+down_revision = "079_sox_audit_company_id"
 branch_labels = None
 depends_on = None
 

@@ -104,7 +104,7 @@ export function LiaChatInput({
           className={cn(
             "flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center transition-colors motion-reduce:transition-none",
             isScreening
-              ? "text-wedo-cyan animate-pulse"
+              ? "text-wedo-cyan-text animate-pulse"
               : "text-lia-text-disabled hover:text-lia-text-secondary disabled:opacity-40"
           )}
         >

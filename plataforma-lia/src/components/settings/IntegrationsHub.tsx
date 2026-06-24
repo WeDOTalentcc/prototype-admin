@@ -8,7 +8,9 @@ import { cn } from "@/lib/utils"
 import { useTranslations } from "next-intl"
 import { categories, type Integration, type IntegrationCategory } from "./integrations/integration-data"
 import { IntegrationDetailModal } from "./integrations/IntegrationDetailModal"
+import { LinkedInConnectModal } from "./integrations/LinkedInConnectModal"
 import { IntegrationGrid } from "./integrations/IntegrationGrid"
+import { EmbeddingTransparencyCard } from "./integrations/EmbeddingTransparencyCard"
 import { useIntegrationsData } from "@/hooks/integrations/use-integrations-data"
 import { useCurrentCompany } from "@/hooks/company/use-current-company"
 import { apiFetch } from "@/lib/api/api-fetch"
@@ -21,6 +23,7 @@ const tabToCategoryMap: Record<string, IntegrationCategory | "all"> = {
   communication: "communication",
   "crm-hris": "crm_hris",
   "mcps-apis": "mcps_apis",
+  "job-boards": "job_board",
 }
 
 const TAB_DEFS = [
@@ -31,6 +34,7 @@ const TAB_DEFS = [
   { id: "communication", labelKey: "integrations.tabCommunication", Icon: MessageCircle },
   { id: "crm-hris", labelKey: "integrations.tabCrmHris", Icon: Building },
   { id: "mcps-apis", labelKey: "integrations.tabMcpsApis", Icon: Code },
+  { id: "job-boards", labelKey: "integrations.tabJobBoards", Icon: Briefcase },
 ] as const
 
 interface IntegrationsHubProps {
@@ -45,13 +49,14 @@ export function IntegrationsHub({ activeSubsection }: IntegrationsHubProps) {
   const [activeTab, setActiveTab] = useState(activeSubsection || "all")
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedIntegration, setSelectedIntegration] = useState<Integration | null>(null)
+  const [linkedInModalOpen, setLinkedInModalOpen] = useState(false)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
   React.useEffect(() => {
     setActiveTab(activeSubsection || "all")
   }, [activeSubsection])
 
-  const { enrichedIntegrations, catalogLoading, googleStatus, microsoftStatus, teamsStatus, llmConfig, refetchLlmConfig } =
+  const { enrichedIntegrations, catalogLoading, googleStatus, microsoftStatus, teamsStatus, refetchTeamsStatus, llmConfig, refetchLlmConfig } =
     useIntegrationsData()
 
   const activeCategory = tabToCategoryMap[activeTab] ?? "all"
@@ -83,7 +88,11 @@ export function IntegrationsHub({ activeSubsection }: IntegrationsHubProps) {
   const connectedCount = enrichedIntegrations.filter((i) => i.status === "connected").length
 
   const handleCardClick = useCallback((integration: Integration) => {
-    setSelectedIntegration(integration)
+    if (integration.id === "linkedin_jobs") {
+      setLinkedInModalOpen(true)
+    } else {
+      setSelectedIntegration(integration)
+    }
   }, [])
 
   const handleConnectGoogle = useCallback(async () => {
@@ -122,6 +131,9 @@ export function IntegrationsHub({ activeSubsection }: IntegrationsHubProps) {
 
   const emptyState = isSearching ? searchEmptyState : categoryEmptyState
 
+  // Show the embedding transparency card in the ai-models tab and the all tab
+  const showEmbeddingCard = activeTab === "ai-models" || activeTab === "all"
+
   return (
     <div className="space-y-3" data-testid="integrations-hub">
       <div className={tabStyles.pillContainer} data-testid="integrations-category-tabs">
@@ -154,6 +166,10 @@ export function IntegrationsHub({ activeSubsection }: IntegrationsHubProps) {
         </p>
       </div>
 
+      {showEmbeddingCard && !isSearching && (
+        <EmbeddingTransparencyCard llmConfig={llmConfig} isLoading={catalogLoading} />
+      )}
+
       {filteredIntegrations.length === 0 ? (
         emptyState
       ) : (
@@ -178,7 +194,13 @@ export function IntegrationsHub({ activeSubsection }: IntegrationsHubProps) {
         onConnectGoogle={handleConnectGoogle}
         errorMsg={errorMsg}
         llmConfig={llmConfig}
-        onConfigSaved={() => { void refetchLlmConfig() }}
+        onConfigSaved={() => { void refetchLlmConfig(); void refetchTeamsStatus() }}
+      />
+
+      <LinkedInConnectModal
+        isOpen={linkedInModalOpen}
+        onClose={() => setLinkedInModalOpen(false)}
+        onConnected={() => void refetchLlmConfig()}
       />
     </div>
   )

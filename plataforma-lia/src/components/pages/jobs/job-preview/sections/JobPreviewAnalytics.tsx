@@ -86,7 +86,7 @@ export function JobPreviewAnalytics({ previewJob, jobMetrics, isLoadingJobMetric
           <Lightbulb className="w-3.5 h-3.5 text-lia-text-primary mt-0.5" />
           <div className="flex-1">
             <p className="text-xs font-medium text-lia-text-primary font-semibold mb-1">
-              Insights da LIA
+              Insights de IA
             </p>
             <ul className="space-y-1 text-xs text-lia-text-primary">
               {previewJob.funnel.total < 10 && (

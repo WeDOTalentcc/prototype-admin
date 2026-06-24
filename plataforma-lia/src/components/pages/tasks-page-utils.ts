@@ -70,8 +70,8 @@ export function getGreeting(): string {
 export function getGreetingIcon() {
   const hour = new Date().getHours()
   if (hour < 12) return React.createElement(Sun, { className: "w-5 h-5 text-status-warning" })
-  if (hour < 18) return React.createElement(Sunset, { className: "w-5 h-5 text-wedo-orange" })
-  return React.createElement(Moon, { className: "w-5 h-5 text-wedo-purple" })
+  if (hour < 18) return React.createElement(Sunset, { className: "w-5 h-5 text-wedo-orange-text" })
+  return React.createElement(Moon, { className: "w-5 h-5 text-wedo-purple-text" })
 }
 
 export function getFormattedDate(): string {

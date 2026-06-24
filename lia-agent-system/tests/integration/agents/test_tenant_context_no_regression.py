@@ -51,7 +51,6 @@ from app.domains.ats_integration.agents.ats_integration_react_agent import (
     ATSIntegrationReActAgent,
 )
 from app.domains.automation.agents.automation_react_agent import AutomationReActAgent
-from app.domains.autonomous.agents.autonomous_react_agent import AutonomousReActAgent
 from app.domains.communication.agents.communication_react_agent import (
     CommunicationReActAgent,
 )
@@ -120,7 +119,6 @@ RUNTIME_PATH_AGENTS = [
     AnalyticsReActAgent,
     ATSIntegrationReActAgent,
     AutomationReActAgent,
-    AutonomousReActAgent,
     CommunicationReActAgent,
     CompanySettingsReActAgent,
     PipelineReActAgent,
@@ -140,9 +138,9 @@ SYSTEM_PROMPT_PATH_AGENTS = [
 
 ALL_AGENTS = RUNTIME_PATH_AGENTS + SYSTEM_PROMPT_PATH_AGENTS
 
-assert len(ALL_AGENTS) == 16, (
-    f"Inventário canônico T-D quebrado: esperado 16 agentes, encontrado {len(ALL_AGENTS)}. "
-    "Se um 17º ReActAgent foi adicionado sem seguir o padrão TenantAwareAgentMixin, "
+assert len(ALL_AGENTS) == 15, (
+    f"Inventário canônico T-D quebrado: esperado 15 agentes, encontrado {len(ALL_AGENTS)}. "
+    "Se um 16º ReActAgent foi adicionado sem seguir o padrão TenantAwareAgentMixin, "
     "esta suite precisa ser atualizada — caso contrário o bug 'LIA pergunta company_id' "
     "volta silenciosamente para o agente novo."
 )

@@ -69,9 +69,9 @@ export function WelcomeSteps() {
   const [visibleSteps, setVisibleSteps] = useState(0)
   const [dontShowAgain, setDontShowAgain] = useState(false)
 
-  const text1 = "Prazer! Seu assistente de recrutamento está pronto."
-  const text2 = "Sua agente de IA de recrutamento."
-  const text3 = "A partir de agora, vamos trabalhar juntos."
+  const text1 = "Tudo pronto por aqui."
+  const text2 = "A partir de agora, vamos trabalhar juntos."
+  const text3 = ""
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -323,7 +323,7 @@ export function WelcomeSteps() {
               }}
             >
               <div className="text-center mb-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                <p className="text-sm font-medium text-wedo-cyan uppercase tracking-widest mb-3">Como funciona</p>
+                <p className="text-sm font-medium text-lia-text-secondary uppercase tracking-widest mb-3">Como funciona</p>
                 <h2 className="text-3xl font-light text-lia-text-primary">
                   Simples assim.
                 </h2>
@@ -413,7 +413,7 @@ export function WelcomeSteps() {
               {(phase === "welcome-message" || phase === "complete") && (
                 <div className="flex flex-col items-center gap-4 animate-in fade-in slide-in-from-bottom-4 duration-400">
                   <h1 className="text-3xl text-lia-text-primary">
-                    Olá, <span className="text-wedo-cyan font-semibold">{userName}</span>
+                    Olá, <span className="text-lia-text-secondary font-semibold">{userName}</span>
                   </h1>
                   <p className="text-lia-text-primary text-lg max-w-xl leading-relaxed text-center">
                     Bem-vindo(a) à nova era do recrutamento inteligente e automatizado.

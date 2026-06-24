@@ -1,3 +1,4 @@
+// proxy-auth-exempt: health check publico (liveness), sem dado de tenant
 export const dynamic = "force-dynamic"
 import { NextResponse } from 'next/server'
 

@@ -294,7 +294,7 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
                 Teste ainda não iniciado
               </p>
               <p 
-                className="text-micro text-center text-lia-text-disabled"
+                className="text-micro text-center text-lia-text-muted"
                
                aria-live="polite" aria-atomic="true">
                 O candidato receberá um convite para realizar o teste de inglês.
@@ -315,7 +315,7 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
                 Teste em andamento
               </p>
               <p 
-                className="text-micro text-center text-lia-text-disabled"
+                className="text-micro text-center text-lia-text-muted"
                
                aria-live="polite" aria-atomic="true">
                 O candidato está realizando o teste de inglês neste momento.

@@ -7,6 +7,7 @@ POST /api/v1/admin/token-budget/{company_id}/reset   (forçar reset — apenas s
 Requer autenticação de admin.
 """
 import logging
+from app.shared.errors import LIAInternalError
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
@@ -149,7 +150,7 @@ async def get_company_token_budget(
             "[AdminTokenBudget] Erro ao buscar status company_id=%s: %s",
             company_id, exc
         )
-        raise HTTPException(status_code=500, detail="Erro ao consultar token budget")
+        raise LIAInternalError("Erro ao consultar token budget")
 
 
 @router.get(
@@ -200,6 +201,6 @@ async def check_company_budget(
             "[AdminTokenBudget] Erro ao verificar budget company_id=%s: %s",
             company_id, exc
         )
-        raise HTTPException(status_code=500, detail="Erro ao verificar token budget")
+        raise LIAInternalError("Erro ao verificar token budget")
 
 reorder_collection_before_item(router)

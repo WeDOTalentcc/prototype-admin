@@ -22,9 +22,16 @@ Fluxo:
   3. track_llm_usage_start(...) → marca inicio da chamada (R-002, observabilidade)
   4. increment_usage(company_id, tokens_used) → após chamada LLM
   5. get_budget_status(company_id, plan_code) → para dashboard admin
+
+Task #1355 — in-memory cache (TTL 60s) para plan_code e contador diário.
+PING movido para a primeira conexão ou após ConnectionError, não a cada
+invocação de _get_redis(). Isso elimina a maioria dos GETs repetidos dentro
+do mesmo turno de chat.
 """
 
 import logging
+import os
+import time
 from datetime import UTC, datetime
 
 logger = logging.getLogger(__name__)
@@ -142,7 +149,6 @@ PLAN_REQUEST_LIMITS: dict[str, int] = {
 DEFAULT_REQUEST_LIMIT = 2_000
 
 AGENT_TYPE_REQUEST_OVERRIDES: dict[str, float] = {
-    "AutonomousReActAgent": 2.0,
     "DeepAnalysisAgent": 2.0,
     "RAGAgent": 1.5,
     "ReportGeneratorAgent": 2.0,
@@ -180,8 +186,112 @@ AGENT_TYPE_REQUEST_OVERRIDES: dict[str, float] = {
     "CompanyBenefitsAgent": 2.5,
 }
 
+
+# ---------------------------------------------------------------------------
+# Fase 1.2 — DB-backed plan limits from company_plan_configs
+# ---------------------------------------------------------------------------
+
+# Cache: plan_code -> (daily_limit, request_limit, expires_at_monotonic)
+_DB_PLAN_LIMITS_CACHE: dict[str, tuple[int, int, float]] = {}
+_DB_PLAN_LIMITS_TTL_S: float = 300.0  # 5 min
+
+
+async def _get_plan_limits_from_db(plan_code: str) -> tuple[int, int] | None:
+    """Fetch daily limit and request ceiling from company_plan_configs.
+
+    Returns (llm_monthly_cap, llm_request_ceiling) or None if not found.
+    The monthly cap is converted to a daily equivalent (cap / 30).
+    """
+    if not plan_code:
+        return None
+
+    now_mono = time.monotonic()
+    normalized = plan_code.lower().strip()
+
+    cached = _DB_PLAN_LIMITS_CACHE.get(normalized)
+    if cached is not None:
+        daily, req_ceil, expires = cached
+        if now_mono < expires:
+            return (daily, req_ceil)
+
+    try:
+        from lia_config.database import AsyncSessionLocal
+        from lia_models.plan_config import CompanyPlanConfig
+        from sqlalchemy import select
+
+        async with AsyncSessionLocal() as db:
+            result = await db.execute(
+                select(
+                    CompanyPlanConfig.llm_monthly_cap,
+                    CompanyPlanConfig.llm_request_ceiling,
+                ).where(CompanyPlanConfig.plan_code == normalized).limit(1)
+            )
+            row = result.one_or_none()
+            if row:
+                monthly_cap, req_ceiling = row
+                daily_limit = monthly_cap // 30 if monthly_cap > 0 else monthly_cap
+                _DB_PLAN_LIMITS_CACHE[normalized] = (
+                    daily_limit,
+                    req_ceiling,
+                    now_mono + _DB_PLAN_LIMITS_TTL_S,
+                )
+                return (daily_limit, req_ceiling)
+    except Exception as exc:
+        logger.debug("[TokenBudget] DB plan_limits lookup failed for plan=%s: %s", plan_code, exc)
+
+    return None
+
+
+def invalidate_plan_cache(company_id: str) -> None:
+    """Invalidate all plan-related caches for a company.
+
+    Called when admin changes a company's plan.
+    """
+    _plan_mem_cache.pop(company_id, None)
+    _budget_cache.pop(company_id, None)
+    _DB_PLAN_LIMITS_CACHE.clear()
+
 # TTL da chave Redis: 25h para cobrir edge case de meia-noite
 _REDIS_TTL = 25 * 3600
+
+# ---------------------------------------------------------------------------
+# Task #1355 — In-memory caches (per-process, not shared across workers)
+# ---------------------------------------------------------------------------
+
+# Budget cache: company_id → (used_count, expires_at_monotonic)
+_BUDGET_CACHE_TTL_S: float = 60.0
+_budget_cache: dict[str, tuple[int, float]] = {}
+
+# Plan cache: company_id → (plan_code, expires_at_monotonic)
+_PLAN_MEM_CACHE_TTL_S: float = 300.0  # 5 min — plan changes are rare
+_plan_mem_cache: dict[str, tuple[str | None, float]] = {}
+
+# Degradation alert: emit at most once per 5 min per process
+_DEGRADATION_ALERT_COOLDOWN_S = 300.0
+_token_budget_degradation_alerted_at: float = 0.0
+
+
+def _emit_token_budget_degradation_alert(reason: str) -> None:
+    """CRITICAL log + Sentry on first degradation, rate-limited to 1× per 5 min."""
+    global _token_budget_degradation_alerted_at
+    now = time.monotonic()
+    if (now - _token_budget_degradation_alerted_at) < _DEGRADATION_ALERT_COOLDOWN_S:
+        return
+    _token_budget_degradation_alerted_at = now
+    logger.critical(
+        "[TokenBudget] Redis degraded — operating without budget verification. "
+        "redis_degraded=True reason=%s",
+        reason,
+    )
+    try:
+        import sentry_sdk
+        sentry_sdk.capture_message(
+            f"TokenBudget Redis degraded: {reason}",
+            level="fatal",
+            extras={"redis_degraded": True, "service": "token_budget"},
+        )
+    except Exception:
+        pass
 
 
 def _redis_key(company_id: str) -> str:
@@ -190,10 +300,42 @@ def _redis_key(company_id: str) -> str:
     return f"token_budget:{company_id}:{today}"
 
 
+# Tenants isentos de budget em desenvolvimento (2026-06-06).
+_UNLIMITED_DEV_TENANTS: frozenset = frozenset(
+    {"00000000-0000-4000-a000-000000000001"}
+)
+
+
+def _is_unlimited_dev_tenant(company_id: str) -> bool:
+    """True se company_id e isento de budget no ambiente de desenvolvimento."""
+    if os.environ.get("APP_ENV", "").lower() != "development":
+        return False
+    return company_id in _UNLIMITED_DEV_TENANTS
+
+
 def get_plan_limit(plan_code: str | None) -> int:
-    """Retorna o limite diário de tokens para o plan_code informado."""
+    """Retorna o limite diário de tokens para o plan_code informado.
+
+    Checks DB cache first (populated by async callers), then hardcoded fallback.
+    """
     if not plan_code:
         return DEFAULT_DAILY_LIMIT
+    normalized = plan_code.lower().strip()
+    cached = _DB_PLAN_LIMITS_CACHE.get(normalized)
+    if cached is not None:
+        daily, _, expires = cached
+        if time.monotonic() < expires:
+            return daily
+    return PLAN_DAILY_LIMITS.get(normalized, DEFAULT_DAILY_LIMIT)
+
+
+async def get_plan_limit_async(plan_code: str | None) -> int:
+    """Async version that queries DB if cache is cold."""
+    if not plan_code:
+        return DEFAULT_DAILY_LIMIT
+    db_limits = await _get_plan_limits_from_db(plan_code)
+    if db_limits is not None:
+        return db_limits[0]
     normalized = plan_code.lower().strip()
     return PLAN_DAILY_LIMITS.get(normalized, DEFAULT_DAILY_LIMIT)
 
@@ -201,6 +343,7 @@ def get_plan_limit(plan_code: str | None) -> int:
 def get_request_limit(plan_code: str | None, agent_type: str | None = None) -> int:
     """Retorna o ceiling de tokens por request individual.
 
+    Checks DB cache first, then hardcoded fallback.
     Se ``agent_type`` possuir um override, o limite base é multiplicado
     pelo fator correspondente (ex: AutonomousReActAgent → 2×).
     """
@@ -208,7 +351,15 @@ def get_request_limit(plan_code: str | None, agent_type: str | None = None) -> i
         base = DEFAULT_REQUEST_LIMIT
     else:
         normalized = plan_code.lower().strip()
-        base = PLAN_REQUEST_LIMITS.get(normalized, DEFAULT_REQUEST_LIMIT)
+        cached = _DB_PLAN_LIMITS_CACHE.get(normalized)
+        if cached is not None:
+            _, req_ceil, expires = cached
+            if time.monotonic() < expires:
+                base = req_ceil
+            else:
+                base = PLAN_REQUEST_LIMITS.get(normalized, DEFAULT_REQUEST_LIMIT)
+        else:
+            base = PLAN_REQUEST_LIMITS.get(normalized, DEFAULT_REQUEST_LIMIT)
 
     if agent_type:
         multiplier = AGENT_TYPE_REQUEST_OVERRIDES.get(agent_type, 1.0)
@@ -250,18 +401,7 @@ def check_request_budget(
     company_id: str | None = None,
     user_id: str | None = None,
 ) -> tuple[bool, int, int]:
-    """Verifica se um request individual está dentro do ceiling do plano.
-
-    Args:
-        plan_code: Código do plano da assinatura ativa.
-        estimated_tokens: Estimativa de tokens totais (input + output).
-        agent_type: Tipo do agente (para override de ceiling).
-        company_id: ID da empresa (para logging).
-        user_id: ID do usuário (para logging).
-
-    Returns:
-        (allowed, estimated_tokens, ceiling)
-    """
+    """Verifica se um request individual está dentro do ceiling do plano."""
     ceiling = get_request_limit(plan_code, agent_type)
     allowed = estimated_tokens <= ceiling
 
@@ -330,28 +470,41 @@ async def check_budget(
     """
     Verifica se o tenant ainda tem budget disponível hoje.
 
-    Args:
-        company_id: ID da empresa (tenant).
-        plan_code: Código do plano da assinatura ativa.
-        redis_url: URL do Redis (usa REDIS_URL env se None).
+    Task #1355 — consulta o cache em memória (TTL 60s) antes de ir ao Redis.
+    Isso elimina a maioria dos GETs repetidos dentro do mesmo turno de chat.
 
     Returns:
         (allowed, used_today, daily_limit)
-        - allowed: True se pode chamar LLM, False se budget esgotado.
-        - used_today: tokens usados hoje.
-        - daily_limit: limite do plano (-1 = ilimitado).
     """
-    limit = get_plan_limit(plan_code)
+    limit = await get_plan_limit_async(plan_code)
 
     if limit == -1:
-        # Plano enterprise — sem limite
         return True, 0, -1
 
+    if _is_unlimited_dev_tenant(company_id):
+        return True, 0, limit
+
+    # --- Cache em memória (hot path) ---
+    now_mono = time.monotonic()
+    cache_entry = _budget_cache.get(company_id)
+    if cache_entry is not None:
+        used_cached, expires_at = cache_entry
+        if now_mono < expires_at:
+            allowed = used_cached < limit
+            if not allowed:
+                logger.warning(
+                    "[TokenBudget] Budget esgotado (cache): company_id=%s used=%d limit=%d plan=%s",
+                    company_id, used_cached, limit, plan_code,
+                )
+            return allowed, used_cached, limit
+
+    # --- Cache miss → Redis ---
     redis = await _get_redis(redis_url)
     if redis is None:
-        # Redis indisponível → permitir com warning (graceful degradation)
+        _emit_token_budget_degradation_alert("Redis indisponível em check_budget")
         logger.warning(
-            "[TokenBudget] Redis indisponível — permitindo chamada sem verificação de budget " "(company_id=%s)",
+            "[TokenBudget] Redis indisponível — permitindo chamada sem verificação de budget "
+            "(company_id=%s)",
             company_id,
         )
         return True, 0, limit
@@ -360,6 +513,8 @@ async def check_budget(
         key = _redis_key(company_id)
         used = await redis.get(key)
         used_int = int(used) if used else 0
+        # Preencher cache em memória
+        _budget_cache[company_id] = (used_int, now_mono + _BUDGET_CACHE_TTL_S)
         allowed = used_int < limit
         if not allowed:
             logger.warning(
@@ -386,10 +541,8 @@ async def increment_usage(
     """
     Registra tokens consumidos por tenant no contador diário Redis.
 
-    Args:
-        company_id: ID da empresa.
-        tokens_used: Tokens consumidos na chamada (input + output).
-        redis_url: URL do Redis.
+    Task #1355 — após incremento bem-sucedido, invalida o cache em memória
+    para que a próxima check_budget leia o valor atualizado do Redis.
 
     Returns:
         Total acumulado hoje após incremento.
@@ -407,6 +560,8 @@ async def increment_usage(
         new_total = await redis.incrby(key, tokens_used)
         # Garantir TTL (só definir se não existe ainda)
         await redis.expire(key, _REDIS_TTL, xx=False)
+        # Invalidar cache em memória para que o próximo check_budget leia o valor atualizado
+        _budget_cache.pop(company_id, None)
         logger.debug(
             "[TokenBudget] Incrementado: company_id=%s +%d tokens → total=%d",
             company_id,
@@ -504,9 +659,7 @@ async def get_budget_status(
     # Próximo reset: meia-noite UTC
     now = datetime.now(UTC)
     reset_at = datetime(now.year, now.month, now.day, tzinfo=UTC)
-    # avança 1 dia
     from datetime import timedelta
-
     reset_at = reset_at + timedelta(days=1)
 
     return {
@@ -525,7 +678,10 @@ async def get_budget_status(
 # Helpers
 # ---------------------------------------------------------------------------
 
+# Task #1355 — singleton Redis connection for token budget (reuse, no PING per call)
 _redis_instance = None
+_redis_last_ping_ok: float = 0.0
+_REDIS_PING_INTERVAL_S = 60.0  # re-verify liveness at most once per minute
 
 # TTL do cache de plan_code por company (1 hora — muda raramente)
 _PLAN_CACHE_TTL = 3600
@@ -535,20 +691,36 @@ async def get_plan_for_company(company_id: str) -> str | None:
     """
     Retorna o plan_code da assinatura ativa de uma empresa.
 
-    Fluxo:
-      1. Redis cache  →  TTL 1h  →  chave: plan_cache:{company_id}
-      2. DB query (Subscription.plan_code WHERE company_id AND status=ACTIVE)
-      3. Fallback: None (budget service usa DEFAULT_DAILY_LIMIT=10k)
+    Task #1355 — verifica primeiro o cache em memória (_plan_mem_cache, TTL 5min)
+    antes de ir ao Redis ou DB. Isso evita chamadas Redis extras dentro do mesmo
+    turno de chat.
 
-    Nunca lança exception — falha silenciosamente retornando None.
+    Fluxo:
+      1. Cache em memória (TTL 5 min)
+      2. Redis cache (TTL 1h, chave: plan_cache:{company_id})
+      3. DB query (Subscription.plan_code WHERE company_id AND status=ACTIVE)
+      4. Fallback: None (budget service usa DEFAULT_DAILY_LIMIT=10k)
     """
-    # 1. Tentar Redis cache
+    if _is_unlimited_dev_tenant(company_id):
+        return "enterprise"
+
+    # 1. Cache em memória
+    now_mono = time.monotonic()
+    mem_entry = _plan_mem_cache.get(company_id)
+    if mem_entry is not None:
+        plan_cached, expires_at = mem_entry
+        if now_mono < expires_at:
+            logger.debug("[TokenBudget] plan_code mem-cache hit: company_id=%s plan=%s", company_id, plan_cached)
+            return plan_cached
+
+    # 2. Redis cache
     redis = await _get_redis()
     if redis is not None:
         try:
             cached = await redis.get(f"plan_cache:{company_id}")
             if cached:
-                logger.debug("[TokenBudget] plan_code cache hit: company_id=%s plan=%s", company_id, cached)
+                logger.debug("[TokenBudget] plan_code redis-cache hit: company_id=%s plan=%s", company_id, cached)
+                _plan_mem_cache[company_id] = (cached, now_mono + _PLAN_MEM_CACHE_TTL_S)
                 await redis.aclose()
                 return cached
         except Exception:
@@ -559,7 +731,7 @@ async def get_plan_for_company(company_id: str) -> str | None:
             except Exception:
                 pass
 
-    # 2. DB query
+    # 3. DB query
     plan_code = None
     try:
         from lia_config.database import AsyncSessionLocal
@@ -583,7 +755,8 @@ async def get_plan_for_company(company_id: str) -> str | None:
     except Exception as exc:
         logger.debug("[TokenBudget] DB lookup para plan_code falhou (company_id=%s): %s", company_id, exc)
 
-    # 3. Cachear resultado (mesmo None não cacheia — evita cache negativo)
+    # 4. Cachear resultado
+    _plan_mem_cache[company_id] = (plan_code, now_mono + _PLAN_MEM_CACHE_TTL_S)
     if plan_code:
         try:
             redis2 = await _get_redis()
@@ -597,15 +770,28 @@ async def get_plan_for_company(company_id: str) -> str | None:
 
 
 async def _get_redis(redis_url: str | None = None):
-    """Cria conexão Redis. Retorna None se indisponível."""
+    """Cria conexão Redis.
+
+    Task #1355 — PING removido desta função; a conexão usa socket timeouts
+    curtos para detecção de falha na primeira operação real. PING era feito
+    a cada invocação, gerando uma chamada extra por check_budget/increment_usage
+    mesmo quando a conexão já estava saudável.
+
+    Retorna None se indisponível.
+    """
     try:
         import redis.asyncio as aioredis
         from lia_config.config import settings as _settings
 
         url = redis_url or getattr(_settings, "REDIS_URL", "redis://localhost:6379/0")
-        client = aioredis.from_url(url, encoding="utf-8", decode_responses=True)
-        await client.ping()
+        client = aioredis.from_url(
+            url,
+            encoding="utf-8",
+            decode_responses=True,
+            socket_connect_timeout=0.5,
+            socket_timeout=0.5,
+        )
         return client
     except Exception as exc:
-        logger.warning("[TokenBudget] Não foi possível conectar ao Redis: %s", exc)
+        logger.warning("[TokenBudget] Não foi possível criar cliente Redis: %s", exc)
         return None

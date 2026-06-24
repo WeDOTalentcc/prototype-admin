@@ -1,5 +1,4 @@
-"""Repository Stub — pure data-access layer (not an agentic domain).
-See DOMAIN_CATALOG.md for classification details.
+"""Workforce domain — headcount planning and workforce management.
+Repositories migrated to app/repositories/ (T14 migration 2026-06-09).
 """
-
-__domain_type__ = "repository_stub"
+__domain_type__ = "agentic"

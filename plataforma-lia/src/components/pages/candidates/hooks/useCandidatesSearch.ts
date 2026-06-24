@@ -3,6 +3,7 @@
 import type React from "react"
 import {
   searchCandidates as searchCandidatesHybrid,
+  refineSearch,
 } from "@/lib/api/candidate-search"
 import { isGlobalSource } from "@/lib/utils/source-detection"
 import type { Candidate } from "../types"
@@ -80,6 +81,8 @@ export interface CandidatesSearchContext {
   setDisplayedResultsCount: (v: number | ((prev: number) => number)) => void
   isLoadingMore: boolean
   setIsLoadingMore: (v: boolean) => void
+  canLoadMore: boolean
+  setCanLoadMore: (v: boolean) => void
   searchFeedbacks: Record<string, 'like' | 'dislike'>
   setSearchFeedbacks: (v: Record<string, 'like' | 'dislike'> | ((prev: Record<string, 'like' | 'dislike'>) => Record<string, 'like' | 'dislike'>)) => void
   hasSearched: boolean
@@ -87,6 +90,7 @@ export interface CandidatesSearchContext {
   setSearchThreadId: (id: string | undefined) => void
   setSearchFingerprint: (fp: string | undefined) => void
   searchThreadId: string | undefined
+  searchFingerprint: string | undefined
   showExpandGlobalOption: boolean
   setShowExpandGlobalOption: (v: boolean) => void
   setChatMessages: (v: unknown[] | ((prev: unknown[]) => unknown[])) => void
@@ -139,14 +143,19 @@ export function useCandidatesSearch(ctx: CandidatesSearchContext) {
     setHasSearchResults,
     setShowGlobalExpansionConfirm,
     setIsExpandingToGlobal,
+    displayedResultsCount,
     setDisplayedResultsCount,
+    isLoadingMore,
     setIsLoadingMore,
+    canLoadMore,
+    setCanLoadMore,
     setSearchFeedbacks,
     hasSearched,
     lastSuccessfulQuery,
     setSearchThreadId,
     setSearchFingerprint,
     searchThreadId,
+    searchFingerprint,
     setShowExpandGlobalOption,
     setChatMessages,
     setShowSourceChangeModal,
@@ -277,10 +286,45 @@ export function useCandidatesSearch(ctx: CandidatesSearchContext) {
   }
 
   const handleLoadMore = async () => {
+    // Case 1: still have buffered candidates to reveal locally
+    if (displayedResultsCount < candidates.length) {
+      setIsLoadingMore(true)
+      await new Promise(resolve => setTimeout(resolve, 300))
+      setDisplayedResultsCount(prev => prev + LOAD_MORE_STEP)
+      setIsLoadingMore(false)
+      return
+    }
+
+    // Case 2: local buffer exhausted — fetch more from backend (Pearch)
+    if (!canLoadMore || !searchThreadId || !lastSearchQuery) return
+
     setIsLoadingMore(true)
-    await new Promise(resolve => setTimeout(resolve, 300))
-    setDisplayedResultsCount(prev => prev + LOAD_MORE_STEP)
-    setIsLoadingMore(false)
+    try {
+      const dislikedDocids = Object.entries(ctx.searchFeedbacks)
+        .filter(([, type]) => type === 'dislike')
+        .map(([id]) => id)
+
+      const result = await refineSearch(
+        searchThreadId,
+        lastSearchQuery,
+        LOAD_MORE_STEP,
+        {
+          docidBlacklist: dislikedDocids.length > 0 ? dislikedDocids : undefined,
+          searchFingerprint: searchFingerprint ?? undefined,
+        }
+      )
+
+      if (result.candidates && result.candidates.length > 0) {
+        setCandidates(prev => [...prev, ...(result.candidates as unknown as typeof prev)])
+        setDisplayedResultsCount(prev => prev + result.candidates.length)
+      }
+      setCanLoadMore(result.candidates.length > 0 ? (result.can_load_more ?? false) : false)
+    } catch (err) {
+      // Fail loud — CLAUDE.md REGRA 4: no silent fallback
+      console.error('[handleLoadMore] refineSearch failed:', err)
+    } finally {
+      setIsLoadingMore(false)
+    }
   }
 
   // Handler para expandir busca para global (Pearch AI)
@@ -305,7 +349,8 @@ export function useCandidatesSearch(ctx: CandidatesSearchContext) {
         years_experience: lastSearchEntities.years_experience,
         skills: lastSearchEntities.skills || [],
         industry: lastSearchEntities.industry,
-        company: lastSearchEntities.company
+        company: lastSearchEntities.company,
+        work_model: lastSearchEntities.work_model,
       } : undefined
 
       // Executar busca global (Pearch AI)
@@ -364,7 +409,7 @@ export function useCandidatesSearch(ctx: CandidatesSearchContext) {
             position: c.headline || c.current_title || '',
             monthlySalary: 0,
             workModel: 'remoto' as const,
-            score: c.match_score ? Math.round(c.match_score * 25) : 75,
+            score: typeof c.score === 'number' ? Math.round(c.score) : 0,  // P1-2: score real, sem 75 fabricado
             contractType: 'CLT' as const,
             linkedin: c.linkedin_url || '',
             avatar: c.avatar_url || c.picture_url,
@@ -405,7 +450,7 @@ export function useCandidatesSearch(ctx: CandidatesSearchContext) {
               endDate: edu.end_date || ''
             })),
             liaAnalysis: {
-              score: c.match_score ? Math.round(c.match_score * 25) : 75,
+              score: typeof c.score === 'number' ? Math.round(c.score) : 0,  // P1-2: score real, sem 75 fabricado
               strengths: c.match_reasoning ? [c.match_reasoning] : [],
               concerns: [],
               recommendation: c.match_reasoning || ''

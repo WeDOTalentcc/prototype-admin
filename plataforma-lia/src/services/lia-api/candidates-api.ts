@@ -143,12 +143,13 @@ export async function getCreditBalance(userId: string = "demo-user"): Promise<{
   return response.json()
 }
 
-export async function listCandidates(search?: string, source?: string, skip: number = 0, limit: number = 50): Promise<CandidateListResponse> {
+export async function listCandidates(search?: string, source?: string, skip: number = 0, limit: number = 50, vacancyId?: string): Promise<CandidateListResponse> {
   const params = new URLSearchParams()
   if (search) params.set('search', search)
   if (source) params.set('source', source)
   params.set('skip', String(skip))
   params.set('limit', String(limit))
+  if (vacancyId) params.set('vacancy_id', vacancyId)
 
   const response = await fetch(`${BACKEND_URL}/candidates/?${params}`, {
     headers: getAuthHeaders(),
@@ -324,7 +325,7 @@ export async function addCandidatesToPipeline(request: AddCandidatesToPipelineRe
     headers: getAuthHeaders(),
     body: JSON.stringify({
       candidate_ids: request.candidate_ids,
-      job_id: request.job_vacancy_id,
+      job_vacancy_id: request.job_vacancy_id,
       source: request.source
     }),
   })

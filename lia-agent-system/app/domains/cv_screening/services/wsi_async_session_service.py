@@ -61,7 +61,7 @@ class WSIAsyncSessionService:
 
             import redis
             from lia_config.config import settings
-            _r = redis.from_url(settings.REDIS_URL)
+            _r = redis.from_url(settings.REDIS_URL, socket_connect_timeout=5, socket_timeout=5)
             _r.setex(
                 f"wsi_async:{session_id}",
                 WSI_SESSION_TTL_SECONDS,
@@ -107,7 +107,7 @@ class WSIAsyncSessionService:
 
             import redis
             from lia_config.config import settings
-            _r = redis.from_url(settings.REDIS_URL)
+            _r = redis.from_url(settings.REDIS_URL, socket_connect_timeout=5, socket_timeout=5)
             data = _r.get(f"wsi_async:{session_id}")
             if data:
                 return json.loads(data)
@@ -141,7 +141,7 @@ class WSIAsyncSessionService:
 
             import redis
             from lia_config.config import settings
-            _r = redis.from_url(settings.REDIS_URL)
+            _r = redis.from_url(settings.REDIS_URL, socket_connect_timeout=5, socket_timeout=5)
             remaining_ttl = _r.ttl(f"wsi_async:{session_id}")
             _r.setex(
                 f"wsi_async:{session_id}",

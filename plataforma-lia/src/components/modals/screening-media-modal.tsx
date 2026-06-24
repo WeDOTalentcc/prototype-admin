@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import { useState, useRef, useEffect } from"react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from"@/components/ui/dialog"
 import { VisuallyHidden } from"@radix-ui/react-visually-hidden"
@@ -69,6 +70,9 @@ export function ScreeningMediaModal({
   onDownload,
   onOpenFullEvaluation
 }: ScreeningMediaModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('screening-media', isOpen)
+
   const t = useTranslations('screening')
   const [isPlaying, setIsPlaying] = useState(false)
   const [isMuted, setIsMuted] = useState(false)

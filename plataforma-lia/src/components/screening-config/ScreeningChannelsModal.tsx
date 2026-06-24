@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import { useState, useEffect } from "react"
 import {
   Dialog,
@@ -13,6 +14,7 @@ import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { MessageSquare, Globe, Phone, Mic, Loader2, Power } from "lucide-react"
 import { toast } from "sonner"
+import { TOAST_MESSAGES } from "@/constants/toast-messages"
 import type { ScreeningConfig } from "@/hooks/recruitment/useScreeningConfig"
 
 interface ScreeningChannelsModalProps {
@@ -28,6 +30,9 @@ export function ScreeningChannelsModal({
   config,
   updateConfig,
 }: ScreeningChannelsModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('screening-channels', isOpen)
+
   const [masterEnabled, setMasterEnabled] = useState(config?.channels_master_enabled ?? true)
   const [whatsappEnabled, setWhatsappEnabled] = useState(config?.channels?.whatsapp?.enabled ?? true)
   const [chatWebEnabled, setChatWebEnabled] = useState(config?.channels?.chat_web?.enabled ?? true)
@@ -70,10 +75,10 @@ export function ScreeningChannelsModal({
         toast.success("Canais de comunicação atualizados com sucesso")
         onClose()
       } else {
-        toast.error("Erro ao atualizar canais de comunicação")
+        toast.error(TOAST_MESSAGES.SCREENING_CONFIG.UPDATE_CHANNELS_ERROR)
       }
     } catch (_error) {
-      toast.error("Erro ao salvar configurações")
+      toast.error(TOAST_MESSAGES.SCREENING_CONFIG.SAVE_ERROR)
     } finally {
       setIsSaving(false)
     }
@@ -92,7 +97,7 @@ export function ScreeningChannelsModal({
                 Canais de Comunicação
               </DialogTitle>
               <p className="text-xs text-lia-text-secondary mt-0.5" aria-live="polite" aria-atomic="true">
-                Defina por onde a LIA pode contatar candidatos
+                Defina por onde a IA pode contatar candidatos
               </p>
             </div>
           </div>
@@ -103,7 +108,7 @@ export function ScreeningChannelsModal({
           <div className={`flex items-center justify-between p-3 rounded-xl border ${masterEnabled ? 'bg-lia-bg-secondary border-lia-border-subtle' : 'bg-lia-bg-tertiary border-lia-border-default'}`}>
             <div className="flex items-center gap-3">
               <div className={`w-8 h-8 rounded-md flex items-center justify-center ${masterEnabled ? 'bg-lia-btn-primary-bg/15' : 'bg-lia-bg-tertiary'}`}>
-                <Power className={`w-4 h-4 ${masterEnabled ? 'text-lia-btn-primary-bg' : 'text-lia-text-disabled'}`} />
+                <Power className={`w-4 h-4 ${masterEnabled ? 'text-lia-btn-primary-bg' : 'text-lia-text-muted'}`} />
               </div>
               <div>
                 <Label className="text-xs font-semibold text-lia-text-primary">Triagem Habilitada</Label>

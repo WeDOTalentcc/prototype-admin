@@ -214,7 +214,7 @@ def build_wsi_persistence_payload(
     }
 
 
-class JdEnrichmentService:
+class JobManagementJdEnrichmentService:
     """
     Serviço de enriquecimento de Job Description.
     
@@ -1028,4 +1028,4 @@ class EnrichedJDResult:
         self.total_suggestions = total_suggestions
 
 
-jd_enrichment_service = JdEnrichmentService()
+jd_enrichment_service = JobManagementJdEnrichmentService()

@@ -11,9 +11,13 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID
 
+from app.shared.tool_guards import validate_uuid_params
 from app.tools.registry import ToolDefinition, tool_registry
 
 logger = logging.getLogger(__name__)
+
+# P1-3 (2026-06-18): defense-in-depth company_id filter
+from app.middleware.auth_enforcement import _current_company_id as _cid_ctx
 
 
 async def send_email(
@@ -23,7 +27,8 @@ async def send_email(
     body: str | None = None,
     job_id: str | None = None,
     cc: list[str] | None = None,
-    attachments: list[str] | None = None
+    attachments: list[str] | None = None,
+    **kwargs
 ) -> dict[str, Any]:
     """
     Send an email to a candidate.
@@ -40,6 +45,13 @@ async def send_email(
     Returns:
         Result with success status and message
     """
+    from app.shared.hitl.hitl_approval_context import hitl_preflight
+    _hitl_block = hitl_preflight(tool="send_email", domain="communication", data={"candidate_id": candidate_id, "job_id": job_id, "subject": subject})
+    if _hitl_block is not None:
+        return _hitl_block
+    err = validate_uuid_params(candidate_id=candidate_id)
+    if err:
+        return err
     logger.info(f"📧 Sending email to candidate {candidate_id}")
     
     try:
@@ -51,14 +63,14 @@ async def send_email(
             try:
                 from app.models.candidate import Candidate
                 
-                # TENANT-EXEMPT: tool handler is invoked via tool_registry.execute()
-                # which validates tenant context server-side. Postgres RLS (Task #1143)
-                # enforces tenant boundary at DB level via app_current_company_id().
-                # TODO(harness): refactor to accept company_id via **kwargs and pass
-                # to Candidate.company_id filter (defense-in-depth).
+                # P1-3 (2026-06-18): defense-in-depth — filter by company_id from
+                # ContextVar if available (RLS remains primary boundary per TENANT-EXEMPT).
+                _cid = _cid_ctx.get(None)
+                _cand_filter = [Candidate.id == UUID(candidate_id)]
+                if _cid:
+                    _cand_filter.append(Candidate.company_id == _cid)
                 result = await db.execute(
-                # TENANT-EXEMPT: see above — RLS + tool_registry tenant context.
-                    select(Candidate).where(Candidate.id == UUID(candidate_id))
+                    select(Candidate).where(*_cand_filter)
                 )
                 candidate = result.scalar_one_or_none()
                 
@@ -81,6 +93,7 @@ async def send_email(
                 
                 return {
                     "success": True,
+                    "side_effect_executed": False,
                     "message": f"📧 Email enviado para {candidate_name} ({candidate_email}).",
                     "action_taken": "send_email",
                     "affected_entities": [candidate_id],
@@ -100,6 +113,7 @@ async def send_email(
                 
                 return {
                     "success": True,
+                    "side_effect_executed": False,
                     "message": "📧 Email enviado para o candidato.",
                     "action_taken": "send_email",
                     "affected_entities": [candidate_id],
@@ -124,7 +138,8 @@ async def send_whatsapp(
     candidate_id: str,
     message: str,
     template_id: str | None = None,
-    job_id: str | None = None
+    job_id: str | None = None,
+    **kwargs
 ) -> dict[str, Any]:
     """
     Send a WhatsApp message to a candidate.
@@ -138,6 +153,13 @@ async def send_whatsapp(
     Returns:
         Result with success status and message
     """
+    from app.shared.hitl.hitl_approval_context import hitl_preflight
+    _hitl_block = hitl_preflight(tool="send_whatsapp", domain="communication", data={"candidate_id": candidate_id, "job_id": job_id})
+    if _hitl_block is not None:
+        return _hitl_block
+    err = validate_uuid_params(candidate_id=candidate_id)
+    if err:
+        return err
     logger.info(f"📱 Sending WhatsApp to candidate {candidate_id}")
     
     try:
@@ -149,14 +171,14 @@ async def send_whatsapp(
             try:
                 from app.models.candidate import Candidate
                 
-                # TENANT-EXEMPT: tool handler is invoked via tool_registry.execute()
-                # which validates tenant context server-side. Postgres RLS (Task #1143)
-                # enforces tenant boundary at DB level via app_current_company_id().
-                # TODO(harness): refactor to accept company_id via **kwargs and pass
-                # to Candidate.company_id filter (defense-in-depth).
+                # P1-3 (2026-06-18): defense-in-depth — filter by company_id from
+                # ContextVar if available (RLS remains primary boundary per TENANT-EXEMPT).
+                _cid = _cid_ctx.get(None)
+                _cand_filter = [Candidate.id == UUID(candidate_id)]
+                if _cid:
+                    _cand_filter.append(Candidate.company_id == _cid)
                 result = await db.execute(
-                # TENANT-EXEMPT: see above — RLS + tool_registry tenant context.
-                    select(Candidate).where(Candidate.id == UUID(candidate_id))
+                    select(Candidate).where(*_cand_filter)
                 )
                 candidate = result.scalar_one_or_none()
                 
@@ -179,6 +201,7 @@ async def send_whatsapp(
                 
                 return {
                     "success": True,
+                    "side_effect_executed": False,
                     "message": f"📱 WhatsApp enviado para {candidate_name} ({candidate_phone}).",
                     "action_taken": "send_whatsapp",
                     "affected_entities": [candidate_id],
@@ -198,6 +221,7 @@ async def send_whatsapp(
                 
                 return {
                     "success": True,
+                    "side_effect_executed": False,
                     "message": "📱 WhatsApp enviado para o candidato.",
                     "action_taken": "send_whatsapp",
                     "affected_entities": [candidate_id],
@@ -227,7 +251,8 @@ async def schedule_interview(
     location: str | None = None,
     meeting_link: str | None = None,
     notes: str | None = None,
-    send_invite: bool = True
+    send_invite: bool = True,
+    **kwargs
 ) -> dict[str, Any]:
     """
     Schedule an interview with a candidate.
@@ -248,6 +273,10 @@ async def schedule_interview(
         Result with success status and interview details
     """
     logger.info(f"📅 Scheduling {interview_type} interview for candidate {candidate_id}")
+    err = validate_uuid_params(candidate_id=candidate_id, job_id=job_id)
+    if err:
+        return err
+
     
     try:
         interview_datetime = datetime.fromisoformat(datetime_str.replace('Z', '+00:00'))
@@ -278,11 +307,13 @@ async def schedule_interview(
                 from app.models.candidate import Candidate
                 from app.models.job_vacancy import JobVacancy
                 
-                # TENANT-EXEMPT: tool handler invoked via tool_registry.execute();
-                # tenant boundary enforced by Postgres RLS (Task #1143).
-                # TODO(harness): pass company_id from tool_handler kwargs.
+                # P1-3 (2026-06-18): defense-in-depth — filter by company_id from ContextVar.
+                _cid = _cid_ctx.get(None)
+                _cand_filter = [Candidate.id == UUID(candidate_id)]
+                if _cid:
+                    _cand_filter.append(Candidate.company_id == _cid)
                 cand_result = await db.execute(
-                    select(Candidate).where(Candidate.id == UUID(candidate_id))
+                    select(Candidate).where(*_cand_filter)
                 )
                 candidate = cand_result.scalar_one_or_none()
 
@@ -299,6 +330,7 @@ async def schedule_interview(
                 
                 return {
                     "success": True,
+                    "side_effect_executed": False,
                     "message": f"📅 Entrevista {interview_type_display} agendada para {candidate_name} no dia {formatted_date}.",
                     "action_taken": "schedule_interview",
                     "affected_entities": [candidate_id, job_id],
@@ -325,6 +357,7 @@ async def schedule_interview(
                 
                 return {
                     "success": True,
+                    "side_effect_executed": False,
                     "message": f"📅 Entrevista {interview_type_display} agendada para {formatted_date}.",
                     "action_taken": "schedule_interview",
                     "affected_entities": [candidate_id, job_id],
@@ -351,7 +384,8 @@ async def send_bulk_email(
     candidate_ids: list[str],
     template_id: str,
     job_id: str | None = None,
-    custom_variables: dict[str, str] | None = None
+    custom_variables: dict[str, str] | None = None,
+    **kwargs
 ) -> dict[str, Any]:
     """
     Send bulk emails to multiple candidates using a template.
@@ -365,7 +399,17 @@ async def send_bulk_email(
     Returns:
         Result with success count and details
     """
+    from app.shared.hitl.hitl_approval_context import hitl_preflight
+    _hitl_block = hitl_preflight(tool="send_bulk_email", domain="communication", data={"candidate_count": len(candidate_ids), "template_id": template_id, "job_id": job_id})
+    if _hitl_block is not None:
+        return _hitl_block
     logger.info(f"📧 Sending bulk email to {len(candidate_ids)} candidates")
+
+    # Validate all UUIDs upfront before sending any
+    for _cid_check in candidate_ids:
+        _err = validate_uuid_params(candidate_id=_cid_check)
+        if _err:
+            return _err
     
     success_count = 0
     failed_ids = []
@@ -385,6 +429,7 @@ async def send_bulk_email(
         "success": len(failed_ids) == 0,
         "message": f"📧 {success_count}/{len(candidate_ids)} emails enviados com sucesso.",
         "action_taken": "send_bulk_email",
+        "side_effect_executed": False,
         "affected_entities": candidate_ids,
         "data": {
             "total": len(candidate_ids),
@@ -403,127 +448,34 @@ async def send_feedback(
     feedback_message: str | None = None,
     template_id: str | None = None
 ) -> dict[str, Any]:
-    """
-    Send feedback to a candidate about their application.
-    
-    Args:
-        candidate_id: UUID of the candidate
-        job_id: UUID of the job vacancy
-        feedback_type: Type of feedback ('positive', 'rejection', 'pending', 'next_steps')
-        feedback_message: Custom feedback message
-        template_id: Optional template ID for the feedback
-        
-    Returns:
-        Result with success status and message
-    """
-    logger.info(f"💬 Sending {feedback_type} feedback to candidate {candidate_id}")
-
-    # ACH-026 — FairnessGuard Camada 3: verificar viés em feedback de rejeição antes do envio
-    if feedback_type == "rejection" and feedback_message:
-        try:
-            from app.shared.compliance.fairness_guard import FairnessGuard
-            _fg3 = FairnessGuard()
-            _fg3_result = await _fg3.check_with_layer3(feedback_message, action_type="rejection")
-            if _fg3_result.is_blocked:
-                logger.warning(
-                    "FairnessGuard Camada 3 bloqueou feedback de rejeição: candidate=%s category=%s",
-                    candidate_id, _fg3_result.category,
-                )
-                feedback_message = (
-                    "Agradecemos sua candidatura. Após análise cuidadosa, "
-                    "optamos por seguir com outros perfis neste momento."
-                )
-            elif _fg3_result.soft_warnings:
-                logger.info(
-                    "FairnessGuard Camada 3: %d avisos em feedback de rejeição candidate=%s",
-                    len(_fg3_result.soft_warnings), candidate_id,
-                )
-        except Exception as _fg3_exc:
-            logger.debug("FairnessGuard Camada 3 em send_feedback indisponível: %s", _fg3_exc)
-
-    feedback_emojis = {
-        "positive": "🎉",
-        "rejection": "📝",
-        "pending": "⏳",
-        "next_steps": "📋"
+    """Send feedback — fail-honest: chat tool cannot send, directs to UI."""
+    logger.info(
+        "send_feedback: HONEST REFUSAL candidate=%s type=%s (chat tool does not send)",
+        candidate_id, feedback_type,
+    )
+    return {
+        "success": False,
+        "action_taken": None,
+        "message": (
+            "Ainda nao consigo enviar feedback ao candidato pelo chat. "
+            "Use a interface de feedback no painel do candidato "
+            "(clique no candidato > Feedback). "
+            "Posso ajudar a preparar o texto, se quiser."
+        ),
+        "data": {
+            "candidate_id": candidate_id,
+            "job_id": job_id,
+            "feedback_type": feedback_type,
+            "reason": "chat_tool_not_wired_to_send_service",
+        },
     }
-    emoji = feedback_emojis.get(feedback_type, "💬")
-    
-    feedback_messages = {
-        "positive": "Feedback positivo enviado",
-        "rejection": "Feedback de rejeição enviado",
-        "pending": "Status de pendência comunicado",
-        "next_steps": "Próximas etapas comunicadas"
-    }
-    
-    try:
-        from sqlalchemy import select
-
-        from app.core.database import AsyncSessionLocal
-        
-        async with AsyncSessionLocal() as db:
-            try:
-                from app.models.candidate import Candidate
-                
-                # TENANT-EXEMPT: tool handler is invoked via tool_registry.execute()
-                # which validates tenant context server-side. Postgres RLS (Task #1143)
-                # enforces tenant boundary at DB level via app_current_company_id().
-                # TODO(harness): refactor to accept company_id via **kwargs and pass
-                # to Candidate.company_id filter (defense-in-depth).
-                result = await db.execute(
-                # TENANT-EXEMPT: see above — RLS + tool_registry tenant context.
-                    select(Candidate).where(Candidate.id == UUID(candidate_id))
-                )
-                candidate = result.scalar_one_or_none()
-                
-                candidate_name = getattr(candidate, 'name', 'Candidato') if candidate else 'Candidato'
-                
-                return {
-                    "success": True,
-                    "message": f"{emoji} {feedback_messages.get(feedback_type, 'Feedback enviado')} para {candidate_name}.",
-                    "action_taken": "send_feedback",
-                    "affected_entities": [candidate_id],
-                    "data": {
-                        "candidate_id": candidate_id,
-                        "candidate_name": candidate_name,
-                        "job_id": job_id,
-                        "feedback_type": feedback_type,
-                        "template_id": template_id,
-                        "sent_at": datetime.utcnow().isoformat()
-                    }
-                }
-                
-            except Exception as e:
-                logger.warning(f"Database model access issue: {e}, using mock response")
-                
-                return {
-                    "success": True,
-                    "message": f"{emoji} {feedback_messages.get(feedback_type, 'Feedback enviado')} ao candidato.",
-                    "action_taken": "send_feedback",
-                    "affected_entities": [candidate_id],
-                    "data": {
-                        "candidate_id": candidate_id,
-                        "job_id": job_id,
-                        "feedback_type": feedback_type,
-                        "simulated": True
-                    }
-                }
-                
-    except Exception as e:
-        logger.error(f"❌ Error sending feedback: {e}", exc_info=True)
-        return {
-            "success": False,
-            "message": f"❌ Erro ao enviar feedback: {str(e)}",
-            "error": str(e)
-        }
-
 
 SEND_EMAIL_SCHEMA = {
     "type": "object",
     "properties": {
         "candidate_id": {
             "type": "string",
-            "description": "UUID of the candidate to email"
+            "description": "UUID do candidato para enviar email - use o campo id retornado por search_candidates. Nunca use o nome como ID."
         },
         "template_id": {
             "type": "string",
@@ -539,7 +491,7 @@ SEND_EMAIL_SCHEMA = {
         },
         "job_id": {
             "type": "string",
-            "description": "Optional job vacancy ID for context"
+            "description": "UUID da vaga para contexto (opcional) - use o campo id retornado por search_jobs. Nunca use o titulo como ID."
         },
         "cc": {
             "type": "array",
@@ -560,7 +512,7 @@ SEND_WHATSAPP_SCHEMA = {
     "properties": {
         "candidate_id": {
             "type": "string",
-            "description": "UUID of the candidate"
+            "description": "UUID do candidato - use o campo id retornado por search_candidates. Nunca use o nome como ID."
         },
         "message": {
             "type": "string",
@@ -572,7 +524,7 @@ SEND_WHATSAPP_SCHEMA = {
         },
         "job_id": {
             "type": "string",
-            "description": "Optional job vacancy ID for context"
+            "description": "UUID da vaga para contexto (opcional) - use o campo id retornado por search_jobs. Nunca use o titulo como ID."
         }
     },
     "required": ["candidate_id", "message"]
@@ -583,11 +535,11 @@ SCHEDULE_INTERVIEW_SCHEMA = {
     "properties": {
         "candidate_id": {
             "type": "string",
-            "description": "UUID of the candidate"
+            "description": "UUID do candidato - use o campo id retornado por search_candidates. Nunca use o nome como ID."
         },
         "job_id": {
             "type": "string",
-            "description": "UUID of the job vacancy"
+            "description": "UUID da vaga - use o campo id retornado por search_jobs. Nunca use o titulo como ID."
         },
         "interview_type": {
             "type": "string",
@@ -635,7 +587,7 @@ SEND_BULK_EMAIL_SCHEMA = {
         "candidate_ids": {
             "type": "array",
             "items": {"type": "string"},
-            "description": "List of candidate UUIDs"
+            "description": "Lista de UUIDs de candidatos - cada item deve ser o campo id retornado por search_candidates. Nunca use nomes como IDs."
         },
         "template_id": {
             "type": "string",
@@ -643,7 +595,7 @@ SEND_BULK_EMAIL_SCHEMA = {
         },
         "job_id": {
             "type": "string",
-            "description": "Optional job vacancy ID for context"
+            "description": "UUID da vaga para contexto (opcional) - use o campo id retornado por search_jobs. Nunca use o titulo como ID."
         },
         "custom_variables": {
             "type": "object",
@@ -658,11 +610,11 @@ SEND_FEEDBACK_SCHEMA = {
     "properties": {
         "candidate_id": {
             "type": "string",
-            "description": "UUID of the candidate"
+            "description": "UUID do candidato - use o campo id retornado por search_candidates. Nunca use o nome como ID."
         },
         "job_id": {
             "type": "string",
-            "description": "UUID of the job vacancy"
+            "description": "UUID da vaga - use o campo id retornado por search_jobs. Nunca use o titulo como ID."
         },
         "feedback_type": {
             "type": "string",

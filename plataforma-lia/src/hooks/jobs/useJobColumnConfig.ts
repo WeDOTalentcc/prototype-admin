@@ -29,7 +29,7 @@ const DEFAULT_COLUMNS: ColumnConfig[] = [
   { id: 'screeningStatus', label: 'Triagem', category: 'principais', visible: true, order: 2 },
   { id: 'title', label: 'Título da Vaga', category: 'principais', visible: true, order: 3 },
   { id: 'candidates', label: 'Candidatos', category: 'principais', visible: true, order: 4 },
-  { id: 'performance', label: 'Performance LIA', category: 'principais', visible: true, order: 5 },
+  { id: 'performance', label: 'Performance', category: 'principais', visible: true, order: 5 },
   { id: 'recruiter', label: 'Recrutador(a)', category: 'responsaveis', visible: true, order: 6 },
   { id: 'manager', label: 'Gestor(a)', category: 'responsaveis', visible: true, order: 7 },
   { id: 'location', label: 'Localização', category: 'localizacao', visible: true, order: 8 },
@@ -82,7 +82,7 @@ const DEFAULT_COLUMNS: ColumnConfig[] = [
   { id: 'nps', label: 'NPS', category: 'metricas', visible: false, order: 55 },
   { id: 'viewCount', label: 'Visualizações', category: 'metricas', visible: false, order: 56 },
   { id: 'funnelData', label: 'Dados do Funil', category: 'metricas', visible: false, order: 57 },
-  { id: 'liaMetrics', label: 'Métricas LIA', category: 'metricas', visible: false, order: 58 },
+  { id: 'liaMetrics', label: 'Métricas', category: 'metricas', visible: false, order: 58 },
   { id: 'nextActions', label: 'Próximas Ações', category: 'metricas', visible: false, order: 59 },
   { id: 'tags', label: 'Tags', category: 'tags', visible: false, order: 60 },
   { id: 'createdAt', label: 'Data de Criação', category: 'timestamps', visible: false, order: 61 },
@@ -114,7 +114,8 @@ export function useJobColumnConfig() {
           setSavedViews(stored.savedViews)
         }
       }
-    } catch {
+    } catch (error) {
+      console.error("[useJobColumnConfig] Error:", error)
     }
     setIsLoaded(true)
   // eslint-disable-next-line react-hooks/exhaustive-deps

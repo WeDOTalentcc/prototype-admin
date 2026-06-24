@@ -12,7 +12,7 @@
  * fetch. Estado local só para o texto em edição + auto-save on-blur.
  *
  * Facetas:
- *  - toggle (opcional, showToggle): "a LIA usa este campo?" — gates de empresa.
+ *  - toggle (opcional, showToggle): "a IA usa este campo?" — gates de empresa.
  *  - instruction (sempre): texto livre que orienta a LIA.
  * O valor tipado (gate de política) NÃO vive aqui — é editado nos controles
  * tipados (MinhaEmpresaCard). Invariante de segurança: instrução nunca é gate.
@@ -97,7 +97,7 @@ export function ConfigurableFieldCard({
               checked={isActive}
               disabled={isReadOnly}
               onCheckedChange={(c) => onToggleChange?.(c)}
-              aria-label={`A LIA usa o campo ${label}`}
+              aria-label={`Campo habilitado para IA: ${label}`}
               className="data-[state=checked]:bg-lia-btn-primary-bg dark:data-[state=checked]:bg-lia-bg-secondary"
             />
           )}
@@ -107,7 +107,7 @@ export function ConfigurableFieldCard({
       {instructionDisabled && showToggle && !isActive ? (
         <p className="flex items-center gap-1.5 text-xs text-lia-text-tertiary italic">
           <Bot className="w-3 h-3" />
-          Campo desativado — a LIA usa estratégias de fallback no lugar deste dado.
+          Campo desativado — a IA usa estratégias de fallback no lugar deste dado.
         </p>
       ) : (
         <Textarea

@@ -17,6 +17,19 @@ const devopsKeywords = ['aws', 'azure', 'gcp', 'docker', 'kubernetes', 'k8s', 't
 const designKeywords = ['figma', 'sketch', 'adobe', 'photoshop', 'illustrator', 'xd', 'ui', 'ux', 'design', 'prototyping', 'wireframe', 'invision', 'zeplin']
 const mobileKeywords = ['ios', 'android', 'swift', 'kotlin', 'react native', 'flutter', 'xamarin', 'mobile', 'objective-c']
 
+export function dedupeSkills(...arrays: (string[] | undefined)[]): string[] {
+  // P1-9: produtores espelham o mesmo array em skills + technical_skills.
+  // Dedup case-insensitive preservando a primeira grafia; ignora vazios.
+  const seen = new Map<string, string>()
+  for (const arr of arrays) {
+    for (const raw of arr || []) {
+      const v = String(raw).trim()
+      if (v && !seen.has(v.toLowerCase())) seen.set(v.toLowerCase(), v)
+    }
+  }
+  return Array.from(seen.values())
+}
+
 function categorizeSkills(allSkills: string[]) {
   const skillCategories: Record<string, { label: string, bgColor: string, skills: string[] }> = {
     backend: { label: 'Backend', bgColor: 'bg-lia-bg-tertiary', skills: [] },
@@ -66,7 +79,7 @@ function parseExpertise(candidate: Record<string, unknown>): string[] {
 }
 
 export function ProfileSkillsMapCard({ candidate }: ProfileSkillsMapCardProps) {
-  const allSkills = [...(candidate.skills as string[] || []), ...((candidate.technical_skills as string[]) || [])]
+  const allSkills = dedupeSkills(candidate.skills as string[], candidate.technical_skills as string[])
   const softSkillsList = (candidate.soft_skills as string[]) || []
   const expertiseList = parseExpertise(candidate)
   const interests = Array.isArray(candidate.interests) ? (candidate.interests as string[]) : []
@@ -166,7 +179,7 @@ export function ProfileSkillsMapCard({ candidate }: ProfileSkillsMapCardProps) {
               <span className={`${textStyles.label} text-lia-text-secondary`}>Expertise LinkedIn</span>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <span className="cursor-help text-micro text-lia-text-disabled">ⓘ</span>
+                  <span className="cursor-help text-micro text-lia-text-muted">ⓘ</span>
                 </TooltipTrigger>
                 <TooltipContent side="right" className="text-xs">
                   Áreas de expertise extraídas do perfil LinkedIn
@@ -190,10 +203,10 @@ export function ProfileSkillsMapCard({ candidate }: ProfileSkillsMapCardProps) {
           <div>
             <div className="flex items-center gap-1.5 mb-1">
               <Heart className="w-3 h-3 text-wedo-magenta" />
-              <span className={`${textStyles.label} text-wedo-magenta`}>Interesses</span>
+              <span className={`${textStyles.label} text-wedo-magenta-text`}>Interesses</span>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <span className="text-wedo-magenta cursor-help text-micro">ⓘ</span>
+                  <span className="text-wedo-magenta-text cursor-help text-micro">ⓘ</span>
                 </TooltipTrigger>
                 <TooltipContent side="right" className="text-xs">
                   Áreas de interesse declaradas pelo candidato
@@ -204,7 +217,7 @@ export function ProfileSkillsMapCard({ candidate }: ProfileSkillsMapCardProps) {
               {interests.map((interest: string) => (
                 <Chip variant="neutral" muted 
                   key={interest} 
-                  className="text-micro px-1.5 py-0 h-4 flex items-center bg-wedo-magenta/10 text-wedo-magenta border-0"
+                  className="text-micro px-1.5 py-0 h-4 flex items-center bg-wedo-magenta/10 text-wedo-magenta-text border-0"
                 >
                   {interest}
                 </Chip>
@@ -220,7 +233,7 @@ export function ProfileSkillsMapCard({ candidate }: ProfileSkillsMapCardProps) {
               <span className={`${textStyles.label} text-lia-text-secondary`}>Tags</span>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <span className="cursor-help text-micro text-lia-text-disabled">ⓘ</span>
+                  <span className="cursor-help text-micro text-lia-text-muted">ⓘ</span>
                 </TooltipTrigger>
                 <TooltipContent side="right" className="text-xs">
                   Tags adicionadas pelo recrutador ou sistema

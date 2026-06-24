@@ -203,8 +203,8 @@ class EmailTrackingService:
             if row:
                 notification_id = str(row.id)
                 company_id = str(row.company_id or "")
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning("[email-tracking] Failed to resolve MessageQueue for sg_message_id=%s: %s", sg_message_id, e, exc_info=True)
 
         if timestamp:
             try:
@@ -266,8 +266,8 @@ class EmailTrackingService:
                 extra = row.extra_data or {}
                 template_id = extra.get("template_id", "")
                 return (company_id, template_id)
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning("[email-tracking] Failed to resolve company/template for sg_message_id=%s: %s", sg_message_id, e, exc_info=True)
         return ("", "")
 
     async def resolve_ab_data(

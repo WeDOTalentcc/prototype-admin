@@ -15,6 +15,7 @@ from pydantic import BaseModel
 from app.schemas.api_envelope import APIResponse
 from fastapi import Depends
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
@@ -86,9 +87,28 @@ async def candidate_chat(request_data: CandidateChatRequest, request: Request, c
         )
 
         agent = CandidateSelfServiceAgent()
+
+        # ── Gap F (ADR LGPD, 2026-06-08): mascarar PII antes do LLM ──────────
+        # Surface candidate-facing: o candidato digita CPF/RG/email/telefone
+        # (próprios ou de terceiros). mask_names=True (default) é correto aqui
+        # — diferente do chat do recrutador (agent_chat_sse.py, mask_names=False
+        # para preservar nomes em busca de entidade). C3b comment fechado.
+        try:
+            from app.shared.pii_masking import strip_pii_for_llm_prompt
+            safe_message = strip_pii_for_llm_prompt(request_data.message)
+        except Exception as _pii_exc:
+            logger.warning(
+                "[CandidatePortal] PII strip falhou (fail-open): %s", _pii_exc
+            )
+            safe_message = request_data.message
+
         agent_input = AgentInput(
-            message=request_data.message,
+            message=safe_message,
             company_id=company_id,
+            # AgentInput.user_id é obrigatório (Field(...)). O portal do
+            # candidato não tem usuário recrutador — usar o candidate_id como
+            # identidade. Sem isto o endpoint falhava com validation error/500.
+            user_id=f"candidate_{candidate_id}",
             session_id=f"css_{candidate_id}_{vacancy_id}",
             context={
                 "candidate_id": candidate_id,
@@ -112,7 +132,7 @@ async def candidate_chat(request_data: CandidateChatRequest, request: Request, c
         raise
     except Exception as exc:
         logger.error("[CandidatePortal] chat error candidate_id=%s: %s", candidate_id, exc)
-        raise HTTPException(status_code=500, detail="Erro interno. Tente novamente.")
+        raise LIAError(message="Erro interno. Tente novamente.")
     finally:
         # Audit log — ADR-006: IDs only, no PII
         try:
@@ -153,31 +173,21 @@ async def list_candidate_applications(candidate_token: str, company_id: str = De
 
     logger.info("[CandidatePortal] list_applications candidate_id=%s", candidate_id)
 
-    try:
-        from app.shared.rails_client import rails_get
-        data = await rails_get(
-            "/v1/candidate-portal/applications",
-            params={"candidate_id": candidate_id},
+    from app.core.database import get_db as _get_db
+
+    async for db in _get_db():
+        repo = CandidateSelfServiceRepository(db)
+        applications = await repo.list_candidate_applications(
+            candidate_id=candidate_id,
             company_id=company_id,
         )
+        break
 
-        # Audit log — list access
-        try:
-            repo = CandidateSelfServiceRepository()
-            await repo.log_portal_access(
-                candidate_id=candidate_id,
-                vacancy_id=token_data.get("vacancy_id", ""),
-                company_id=company_id,
-                channel="web",
-                tools_called=["list_applications"],
-                fairness_triggered=False,
-            )
-        except Exception as audit_exc:
-            logger.debug("[CandidatePortal] audit log failed: %s", audit_exc)
-
-        return APIResponse.ok(data=data)
-    except HTTPException:
-        raise
-    except Exception as exc:
-        logger.error("[CandidatePortal] list_applications error candidate_id=%s: %s", candidate_id, exc)
-        raise HTTPException(status_code=500, detail="Erro ao buscar candidaturas.")
+    logger.info(
+        "[CandidatePortal] list_applications candidate_id=%s count=%d",
+        candidate_id, len(applications),
+    )
+    return APIResponse(
+        ok=True,
+        data={"applications": applications, "total": len(applications)},
+    )

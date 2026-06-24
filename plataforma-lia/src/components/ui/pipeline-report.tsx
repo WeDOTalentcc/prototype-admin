@@ -110,7 +110,7 @@ const CandidateCard = ({
             </h4>
             {candidate.lia_score && (
               <Chip density="relaxed" variant="neutral" className="shrink-0 border-lia-text-primary text-lia-text-secondary">
-                LIA {candidate.lia_score}%
+                IA {candidate.lia_score}%
               </Chip>
             )}
           </div>

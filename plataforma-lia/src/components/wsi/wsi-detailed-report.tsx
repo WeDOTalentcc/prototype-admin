@@ -197,8 +197,8 @@ function ResponseCard({ response, index, isOpen, onToggle }: {
   const gapConfigMap = {
     ok: { label: t('report.gapAligned'), icon: CheckCircle, color:"text-status-success", bg:"bg-status-success/10", border:"border-status-success/30" },
     aligned: { label: t('report.gapAligned'), icon: CheckCircle, color:"text-status-success", bg:"bg-status-success/10", border:"border-status-success/30" },
-    acima: { label: t('report.gapAboveExpected'), icon: Star, color:"text-wedo-cyan-dark", bg:"bg-wedo-cyan/10", border:"border-wedo-cyan/30" },
-    above: { label: t('report.gapAboveExpected'), icon: Star, color:"text-wedo-cyan-dark", bg:"bg-wedo-cyan/10", border:"border-wedo-cyan/30" },
+    acima: { label: t('report.gapAboveExpected'), icon: Star, color:"text-wedo-cyan-text", bg:"bg-wedo-cyan/10", border:"border-wedo-cyan/30" },
+    above: { label: t('report.gapAboveExpected'), icon: Star, color:"text-wedo-cyan-text", bg:"bg-wedo-cyan/10", border:"border-wedo-cyan/30" },
     gap: { label: t('report.gapIdentified'), icon: AlertTriangle, color:"text-status-warning", bg:"bg-status-warning/10", border:"border-status-warning/30" },
     below: { label: t('report.gapIdentified'), icon: AlertTriangle, color:"text-status-warning", bg:"bg-status-warning/10", border:"border-status-warning/30" },
     critical_gap: { label: t('report.gapCritical'), icon: XCircle, color:"text-status-error", bg:"bg-status-error/10", border:"border-status-error/30" },
@@ -508,7 +508,7 @@ function TabParecer({ data }: { data: WSIResultDetails }) {
       {feedback && (
         <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle rounded-xl p-5 shadow-lia-sm space-y-4">
           <h2 className="text-sm font-semibold text-lia-text-secondary flex items-center gap-2">
-            <BookOpen className="w-4 h-4 text-wedo-cyan" /> {t('report.candidateFeedback')}
+            <BookOpen className="w-4 h-4 text-wedo-cyan-text" /> {t('report.candidateFeedback')}
           </h2>
           {feedback.main_message && (
             <p className="text-xs text-lia-text-secondary leading-relaxed">{feedback.main_message}</p>
@@ -528,14 +528,14 @@ function TabParecer({ data }: { data: WSIResultDetails }) {
               <p className="text-xs font-medium text-lia-text-secondary mb-1.5">{t('report.developmentOpportunities')}</p>
               {feedback.development_opportunities.map((s, i) => (
                 <p key={i} className="flex items-center gap-1.5 text-xs text-lia-text-secondary mb-1">
-                  <BookOpen className="w-3 h-3 text-wedo-cyan shrink-0" /> {s}
+                  <BookOpen className="w-3 h-3 text-wedo-cyan-text shrink-0" /> {s}
                 </p>
               ))}
             </div>
           )}
           {feedback.personalized_tip && (
             <div className="bg-wedo-cyan/10 border border-wedo-cyan/30 rounded-lg p-3">
-              <p className="text-[10px] text-wedo-cyan font-medium mb-0.5">{t('report.personalizedTip')}</p>
+              <p className="text-[10px] text-lia-text-secondary font-medium mb-0.5">{t('report.personalizedTip')}</p>
               <p className="text-xs text-lia-text-secondary">{feedback.personalized_tip}</p>
             </div>
           )}

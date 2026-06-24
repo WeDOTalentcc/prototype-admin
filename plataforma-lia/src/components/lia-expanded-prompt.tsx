@@ -184,7 +184,7 @@ export function LiaExpandedPrompt({
         >
           <div className="flex items-start gap-2">
             <Lightbulb className="w-3 h-3 mt-0.5 flex-shrink-0" />
-            <span>LIA aprende com seus padrões para sugerir ações mais precisas</span>
+            <span>A IA aprende com seus padrões para sugerir ações mais precisas</span>
           </div>
         </div>
       </CardContent>

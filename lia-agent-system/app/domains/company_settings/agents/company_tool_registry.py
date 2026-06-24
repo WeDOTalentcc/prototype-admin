@@ -26,7 +26,7 @@ from app.shared.compliance.fairness_recursive import (
 )
 from app.shared.tool_handler import tool_handler
 from app.domains.company_settings.repositories.company_profile_repository import CompanyProfileRepository
-from app.domains.workforce.repositories.workforce_repository import WorkforceRepository
+from app.domains.workforce.services.headcount_import_service import import_planned_headcounts
 from types import SimpleNamespace
 
 from app.domains.cv_screening.services.confidence_policy_service import (
@@ -90,7 +90,7 @@ _CULTURE_FIELDS: frozenset[str] = frozenset({
 # `default_salary_ranges` (ver use-company-settings-cards.ts:246) e
 # portanto NÃO precisa de save próprio — é read-only no card.
 _PROFILE_ADDITIONAL_DATA_FIELDS: frozenset[str] = frozenset({
-    "additional_notes", "responsible_name", "responsible_position",
+
     # Sprint 1 BE-2 (2026-05-27) — workforce planning context fields from
     # onboarding_questions.yaml block "workforce". Stored as additional_data
     # JSONB until a dedicated column exists.
@@ -831,78 +831,64 @@ async def _import_workforce_plan_impl(
     total_hires = sum(item.get("quantity", 0) for item in plan_data if isinstance(item, dict))
     departments = list(set(item.get("department", "N/A") for item in plan_data if isinstance(item, dict)))
 
-    # PR4: usa session injetada; captura `before` (plano anterior) para
-    # payload canônico SOX. Migrado para repo (ADR-001 Wave C-2 Agent D).
-    repo = CompanyProfileRepository(db=session)
-    _wf = await repo.get_workforce_plan(company_id)
-    before_plan: Any = _wf["workforce_plan"] if _wf else None
-
-    plan_json = json.dumps(plan_data, ensure_ascii=False)
-    await repo.upsert_workforce_plan(company_id, plan_json, session=session)
-
-    # Sistema B: criar PlannedHeadcount records para integrar com UI canonical
-    # (Sistema C — additional_data — mantido para backward compatibility e audit trail)
+    # Track B / Fase 3: Sistema C (JSON blob em CompanyProfile.additional_data)
+    # removido — era redundante e sem consumidor de leitura. PlannedHeadcount
+    # (Store B) e o canonical; o audit abaixo registra o resumo do import.
+    # Sistema B (canonical): grava PlannedHeadcount via produtor unico
+    # (headcount_import_service), que resolve department NAME -> FK.
+    wf_summary: dict[str, Any] = {}
     try:
-        wf_repo = WorkforceRepository(db=session)
-        current_year = datetime.utcnow().year
-        plans = await wf_repo.list_hiring_plans(company_id=company_id, fiscal_year=current_year)
-        if plans:
-            hiring_plan = plans[0]
-        else:
-            hiring_plan = await wf_repo.create_hiring_plan({
-                "company_id": company_id,
-                "fiscal_year": current_year,
-                "name": f"Plano {current_year} (LIA)",
-                "status": "active",
-                "created_by": "lia_agent",
-            })
-
-        for item in plan_data:
-            if not isinstance(item, dict):
-                continue
-            deadline_str = item.get("deadline") or item.get("prazo") or ""
-            target_month = datetime.utcnow().month
-            target_year = current_year
-            if deadline_str:
-                try:
-                    d = datetime.fromisoformat(deadline_str[:10])
-                    target_month = d.month
-                    target_year = d.year
-                except (ValueError, TypeError):
-                    pass
-
-            await wf_repo.create_headcount(
-                headcount_data={
-                    "hiring_plan_id": hiring_plan.id,
-                    "title": item.get("role") or item.get("cargo") or "Posicao a definir",
-                    "level": item.get("seniority") or item.get("senioridade"),
-                    "headcount": item.get("quantity") or item.get("quantidade") or 1,
-                    "target_month": target_month,
-                    "target_year": target_year,
-                    "notes": item.get("observations") or item.get("observacoes"),
-                    "ai_generated": True,
-                    "status": "planned",
-                },
-                plan=hiring_plan,
-            )
-    except Exception as _wf_err:
-        # Sistema B write failed — log and continue; Sistema C already committed
-        logger.warning(
-            "[workforce] Sistema B write failed for company %s: %s",
-            company_id, _wf_err,
-            exc_info=True,
+        wf_summary = await import_planned_headcounts(
+            session=session,
+            company_id=company_id,
+            items=plan_data,
+            source="chat",
         )
+    except Exception as _wf_err:
+        # REGRA 4: falha alto e explicita; nao finge sucesso silenciosamente.
+        logger.error(
+            "[workforce] canonical headcount import failed for company %s: %s",
+            company_id, _wf_err, exc_info=True,
+        )
+        return {
+            "success": False,
+            "data": {"departments": departments},
+            "message": (
+                "Falha ao gravar o planejamento de headcount. Os dados nao "
+                "foram salvos corretamente; tente novamente."
+            ),
+            "_before": None,
+            "_after": None,
+        }
 
+    unresolved = wf_summary.get("unresolved_departments") or []
+    msg = (
+        f"Plano importado: {total_hires} contratacoes planejadas em "
+        f"{len(departments)} departamentos."
+    )
+    if unresolved:
+        msg += (
+            " Departamentos sem vinculo (nao cadastrados): "
+            + ", ".join(unresolved)
+            + ". Cadastre em Configuracoes > Departamentos para vincular."
+        )
     return {
         "success": True,
         "data": {
             "total_hires": total_hires,
             "departments": departments,
             "items_count": len(plan_data),
+            "headcounts_created": wf_summary.get("created", 0),
+            "unresolved_departments": unresolved,
         },
-        "message": f"Plano importado: {total_hires} contratacoes planejadas em {len(departments)} departamentos.",
-        "_before": {"workforce_plan": before_plan},
-        "_after": {"workforce_plan": plan_data, "total_hires": total_hires},
+        "message": msg,
+        "_before": None,
+        "_after": {
+            "headcounts_created": wf_summary.get("created", 0),
+            "departments": departments,
+            "total_hires": total_hires,
+            "unresolved_departments": unresolved,
+        },
     }
 
 

@@ -208,6 +208,7 @@ export const STATUS_TRANSLATION_MAP: Record<string, string> = {
   triado: "Triado",
   triado_aprovado: "Triado - Aprovado",
   awaiting_screening: "Aguardando Triagem",
+  cv_pending_review: "Revisão Manual Pendente",
 }
 
 export function translateStatus(rawStatus: string): string {

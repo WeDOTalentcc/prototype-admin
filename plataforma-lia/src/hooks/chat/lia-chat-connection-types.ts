@@ -9,6 +9,8 @@ export interface LiaChatClarificationOption {
   value: string;
 }
 
+import type { ResponseBlock } from "@/types/rrp-blocks";
+
 export interface LiaChatMessage {
   id: string;
   sender: "lia" | "user" | "system";
@@ -34,6 +36,8 @@ export interface LiaChatMessage {
    */
   thumbs?: "up" | "down" | null;
   feedbackText?: string | null;
+  /** Rich Response Protocol — blocos tipados renderizados pelo ResponseBlockRenderer. */
+  response_blocks?: ResponseBlock[];
 }
 
 export interface HITLPending {
@@ -80,8 +84,20 @@ export interface BackgroundTaskEvent {
 export interface MessageCompleteExtras {
   options?: LiaChatClarificationOption[];
   isClarification?: boolean;
+  /** Harness 2026-06-06: evento `error` do backend surfacado como mensagem. */
+  isError?: boolean;
+  /** error_code do produtor (ex: "budget_exhausted"). */
+  errorCode?: string;
   ui_action?: string;
   ui_action_params?: Record<string, unknown>;
+  /** F2 wizard: payload do stage emitido pelo wizard (jd_enrichment, wsi_questions, etc).
+   *  Usado pelo lia-float-context para popular msg.metadata e renderizar cards no chat. */
+  ws_stage_payload?: {
+    stage: string
+    data: Record<string, unknown>
+    completeness?: number
+    requires_approval?: boolean
+  }
 }
 
 export interface UseLiaChatConnectionOptions {
@@ -99,6 +115,7 @@ export type TransportMode = "ws" | "sse" | "disconnected";
 export interface UseLiaChatConnectionResult {
   conversationId: string | null;
   setConversationId: (id: string | null) => void;
+  clearActivityState: () => void;
   isConnected: boolean;
   isStreaming: boolean;
   isReconnecting: boolean;
@@ -162,4 +179,43 @@ export function maskPII(text: string): string {
 export function formatMessageTime(isoDate?: string): string {
   const d = isoDate ? new Date(isoDate) : new Date();
   return d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+}
+
+
+// ── Canonical message id (collision-safe) ──
+
+/**
+ * Monotonic per-session counter. `Date.now()` alone is NOT a safe React key:
+ * two messages minted in the same millisecond — a turn that emits a text reply
+ * plus an action/candidate card in one synchronous tick, or a loop of cards —
+ * collide → "Encountered two children with the same key" → the message list
+ * crashes (UnifiedMessageList). The counter guarantees uniqueness within the
+ * tab session; the timestamp keeps ids sortable + debuggable.
+ *
+ * Canonical: every chat message id MUST be minted here (or via `dedupeAppend`),
+ * never with an inline `` `${prefix}-${Date.now()}` `` literal.
+ */
+let _messageIdSeq = 0
+
+export function createMessageId(prefix: string): string {
+  _messageIdSeq += 1
+  return `${prefix}-${Date.now()}-${_messageIdSeq}`
+}
+
+/**
+ * Append `incoming` to `list` while guaranteeing the array never holds two
+ * items with the same `id` (the React-key invariant for every chat surface).
+ * If the id already exists — e.g. a backend that emits a message frame and a
+ * card frame sharing one id — the incoming item is KEPT (lossless) under a
+ * uniquified id instead of being dropped. Pure: returns a new array, never
+ * mutates the input.
+ */
+export function dedupeAppend(
+  list: LiaChatMessage[],
+  incoming: LiaChatMessage,
+): LiaChatMessage[] {
+  if (list.some((m) => m.id === incoming.id)) {
+    return [...list, { ...incoming, id: createMessageId(incoming.id) }]
+  }
+  return [...list, incoming]
 }

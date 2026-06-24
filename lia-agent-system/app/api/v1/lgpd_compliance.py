@@ -81,7 +81,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting LGPD stats: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.get("/dpo", response_model=DPORegistryListResponse, summary="List DPO registry entries")
@@ -114,7 +114,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error listing DPO entries: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.get("/dpo/{target_company_id}", response_model=DPORegistryResponse, summary="Get DPO for company")
@@ -148,7 +148,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting DPO: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.post("/dpo", response_model=DPORegistryResponse, status_code=status.HTTP_201_CREATED, summary="Register DPO")
@@ -179,7 +179,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error creating DPO registry: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.put("/dpo", response_model=DPORegistryResponse, summary="Update DPO")
@@ -212,7 +212,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error updating DPO registry: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.get("/breaches", response_model=BreachNotificationListResponse, summary="List breach notifications")
@@ -244,7 +244,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error listing breach notifications: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.get("/breaches/{breach_id}", response_model=BreachNotificationResponse, summary="Get breach notification")
@@ -268,7 +268,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting breach notification: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.post("/breaches", response_model=BreachNotificationResponse, status_code=status.HTTP_201_CREATED, summary="Report data breach")
@@ -301,7 +301,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error creating breach notification: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.put("/breaches/{breach_id}", response_model=BreachNotificationResponse, summary="Update breach notification")
@@ -337,7 +337,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error updating breach notification: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.put("/breaches/{breach_id}/notify-anpd", response_model=BreachNotificationResponse, summary="Mark ANPD notified")
@@ -371,7 +371,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error marking ANPD notified: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.put("/breaches/{breach_id}/notify-subjects", response_model=BreachNotificationResponse, summary="Mark subjects notified")
@@ -397,7 +397,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error marking subjects notified: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.put("/breaches/{breach_id}/resolve", response_model=BreachNotificationResponse, summary="Resolve breach")
@@ -423,7 +423,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error resolving breach: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.get("/decisions", response_model=AutomatedDecisionListResponse, summary="List automated decisions")
@@ -458,7 +458,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error listing automated decisions: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.get("/decisions/{decision_id}", response_model=AutomatedDecisionResponse, summary="Get automated decision")
@@ -482,7 +482,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting automated decision: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.post("/decisions", response_model=AutomatedDecisionResponse, status_code=status.HTTP_201_CREATED, summary="Record automated decision")
@@ -515,7 +515,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error creating automated decision: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.post("/decisions/{decision_id}/request-human-review", response_model=AutomatedDecisionResponse, summary="Request human review")
@@ -545,7 +545,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error requesting human review: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.post("/decisions/{decision_id}/complete-human-review", response_model=AutomatedDecisionResponse, summary="Complete human review")
@@ -582,7 +582,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error completing human review: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 # ---------------------------------------------------------------------------

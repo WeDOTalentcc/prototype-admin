@@ -248,7 +248,7 @@ export function WelcomeCard({ config, onStart, onRequestCall, onRequestWhatsapp,
           href={config.privacyPolicyUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center justify-center gap-1.5 text-xs text-lia-text-disabled hover:text-lia-text-secondary transition-colors motion-reduce:transition-none"
+          className="flex items-center justify-center gap-1.5 text-xs text-lia-text-muted hover:text-lia-text-secondary transition-colors motion-reduce:transition-none"
           aria-label={t("privacyFooterAria")}
         >
           <Shield className="w-3 h-3" />

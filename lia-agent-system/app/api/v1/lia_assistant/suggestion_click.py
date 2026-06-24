@@ -4,6 +4,7 @@ Append-only logging. Fire-and-forget do frontend (não bloqueia UX).
 Multi-tenancy fail-closed: company_id vem do JWT.
 """
 import logging
+from app.shared.errors import LIAInternalError
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -69,7 +70,7 @@ async def record_suggestion_click(
         )
 
     # Lazy import pra evitar circular
-    from app.domains.lia_assistant.repositories.suggestion_click_repository import (
+    from app.repositories.suggestion_click_repository import (
         SuggestionClickRepository,
     )
 
@@ -99,10 +100,7 @@ async def record_suggestion_click(
             },
             exc_info=True,
         )
-        raise HTTPException(
-            status_code=500,
-            detail="Failed to record click. Please retry.",
-        ) from exc
+        raise LIAInternalError("Failed to record click. Please retry.") from exc
 
     return SuggestionClickResponse(
         id=str(event.id),

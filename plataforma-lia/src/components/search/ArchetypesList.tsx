@@ -13,6 +13,7 @@ import {
 } from"lucide-react"
 import { Chip } from "@/components/ui/chip"
 import type { ArchetypeData, BackendEntities } from"@/components/search/expandable-ai-prompt.types"
+import { useAiPersona } from "@/hooks/company/use-ai-persona"
 
 interface ArchetypesListProps {
   archetypes: ArchetypeData[]
@@ -55,6 +56,8 @@ export function ArchetypesList({
   onDeleteArchetype,
   onUseAsBase,
 }: ArchetypesListProps) {
+  const { persona } = useAiPersona()
+  const personaName = persona?.name ?? "IA"
   return (
     <div className="space-y-4">
       {/* Criar Arquétipo */}
@@ -145,7 +148,7 @@ export function ArchetypesList({
         {naturalSearchValue && hasParsedEntities() && (
           <div className="flex items-center gap-2">
             <div className="flex-1 h-px bg-lia-interactive-active" />
-            <span className="text-micro text-lia-text-tertiary">ou crie do zero com LIA</span>
+            <span className="text-micro text-lia-text-tertiary">{`ou crie do zero com ${personaName}`}</span>
             <div className="flex-1 h-px bg-lia-interactive-active" />
           </div>
         )}
@@ -174,7 +177,7 @@ export function ArchetypesList({
           ) : (
             <>
               <Wand2 className="w-3.5 h-3.5" />
-              Criar Arquétipo com LIA
+              {`Criar Arquétipo com ${personaName}`}
             </>
           )}
         </button>

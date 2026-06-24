@@ -41,6 +41,25 @@ export const WSI_DECISION_CUTOFFS = {
   approved: 8.4,
   humanReview: 7.6,
 } as const
+/**
+ * Presets canônicos de score minimo de triagem (`min_score_preset`).
+ * Producer único — proibido redefinir localmente em componentes.
+ * desc:     texto curto para panels de configuração
+ * descView: texto descritivo para view mode (efeito do preset)
+ */
+export const WSI_SCORE_PRESETS = [
+  { key: "rigorous" as const,    label: "Rigoroso",    score: 8.4, desc: "Alta exigência",              descView: "Só aprovados automaticamente" },
+  { key: "recommended" as const, label: "Recomendado", score: 7.6, desc: "Equilíbrio qualidade/volume", descView: "Inclui revisão manual" },
+  { key: "flexible" as const,    label: "Flexível",    score: 6.0, desc: "Mais candidatos em revisão",  descView: "Todos acima do corte" },
+] as const
+
+export type WsiScorePresetKey = typeof WSI_SCORE_PRESETS[number]["key"]
+
+/** Converte preset key → score numérico. Fallback recommended (7.6) se key desconhecida. */
+export function wsiPresetToScore(preset: WsiScorePresetKey | string): number {
+  return WSI_SCORE_PRESETS.find(p => p.key === preset)?.score ?? 7.6
+}
+
 
 export type WsiClassification =
   | 'excepcional'

@@ -1,8 +1,8 @@
 "use client"
 
-
 import { formatBRL } from "@/lib/pricing"
-import { useState, useEffect, useRef, useCallback } from "react"
+import { useState, useCallback } from "react"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { liaApi, HttpError } from "@/services/lia-api"
 import type { Job } from "@/components/jobs"
 
@@ -24,15 +24,6 @@ interface UseJobsDataReturn {
   }
 }
 
-/**
- * Translates a fetch failure into a user-actionable message.
- *
- * Distinguishes (task #345):
- *   - 429 rate-limit ("muitas requisições — tentando novamente em Xs")
- *   - 504 / timeout ("backend demorando para responder")
- *   - 502 / 503 / network ("sem conexão com o servidor")
- *   - Other HTTP errors (preserves status)
- */
 export function describeJobsLoadError(error: unknown): string {
   if (error instanceof HttpError) {
     if (error.status === 429) {
@@ -58,47 +49,25 @@ export function describeJobsLoadError(error: unknown): string {
   return error instanceof Error ? error.message : 'Falha ao carregar vagas.'
 }
 
-export function useJobsData(): UseJobsDataReturn {
-  const mountedRef = useRef(false)
-  const inflightRef = useRef<Promise<void> | null>(null)
-  const [hasMounted, setHasMounted] = useState(false)
-  const [backendJobs, setBackendJobs] = useState<Job[]>([])
-  const [isLoadingJobs, setIsLoadingJobs] = useState(true)
-  const [jobsError, setJobsError] = useState<string | null>(null)
-  const [jobsRefreshKey, setJobsRefreshKey] = useState(0)
-  const [dashboardStats, setDashboardStats] = useState<Record<string, unknown> | null>(null)
-  const [isLoadingStats, setIsLoadingStats] = useState(true)
-  const [isExternalSourceFallback, setIsExternalSourceFallback] = useState(false)
+interface JobsQueryData {
+  jobs: Job[]
+  stats: Record<string, unknown> | null
+  isExternalSourceFallback: boolean
+}
 
-  useEffect(() => {
-    mountedRef.current = true
-    setHasMounted(true)
-    return () => { mountedRef.current = false }
-  }, [])
+async function fetchJobsData(): Promise<JobsQueryData> {
+  console.debug('[useJobsData] fetching job vacancies...')
+  const [response, overviewDataRaw] = await Promise.allSettled([
+    liaApi.listJobVacancies(undefined, 0, 50),
+    liaApi.getJobVacanciesOverview(),
+  ])
+  const jobsResult = response.status === 'fulfilled' ? response.value : null
+  const overviewResult = overviewDataRaw.status === 'fulfilled' ? overviewDataRaw.value : null
+  console.debug('[useJobsData] responses received, jobs items:', jobsResult?.items?.length ?? 'none')
 
-  const loadBackendJobs = useCallback(async (): Promise<void> => {
-    if (!mountedRef.current) return
-    // Concurrency guard (task #345): if a load is already in flight, callers
-    // join the same promise instead of spawning parallel requests that would
-    // amplify rate-limits.
-    if (inflightRef.current) return inflightRef.current
-
-    const run = async () => {
-      try {
-        setIsLoadingJobs(true)
-        setJobsError(null)
-
-        console.debug('[useJobsData] fetching job vacancies...')
-        const response = await liaApi.listJobVacancies(undefined, 0, 50)
-        console.debug('[useJobsData] response received, items:', response?.items?.length ?? 'none')
-
-      if (!mountedRef.current) return
-
-      if (!response || !response.items) {
-        throw new Error('Invalid response format')
-      }
-
-      setIsExternalSourceFallback(response.source === 'local-fallback')
+  if (!jobsResult || !jobsResult.items) {
+    throw new Error('Invalid response format')
+  }
 
       const stageMapping: Record<string, Job['stage']> = {
         'Planejamento': 'Planejamento',
@@ -109,7 +78,7 @@ export function useJobsData(): UseJobsDataReturn {
         'Finalização': 'Finalização',
         'Encerrada': 'Encerrada'
       }
-      const convertedJobs: Job[] = response.items.map((jv_raw, index: number) => { try { const jv = jv_raw as unknown as Record<string, unknown>
+      const convertedJobs: Job[] = jobsResult.items.map((jv_raw, index: number) => { try { const jv = jv_raw as unknown as Record<string, unknown>
         const funnelData = (jv.funnel_data as Record<string, number>) || { total: 0, screening: 0, interview: 0, final: 0, hired: 0 }
         return {
           id: index + 1,
@@ -203,14 +172,11 @@ export function useJobsData(): UseJobsDataReturn {
       }
       }).filter((j): j is Job => j !== null)
 
-      console.debug('[useJobsData] transform complete, valid jobs:', convertedJobs.length)
-      setBackendJobs(convertedJobs)
-      setIsLoadingJobs(false)
-
+  let stats: Record<string, unknown> | null = null
       try {
-        const overviewData = await liaApi.getJobVacanciesOverview()
-        if (!mountedRef.current) return
-        const stats = {
+        const overviewData = overviewResult
+        if (!overviewData) throw new Error("overviewData null")
+        stats = {
           total: overviewData.active_jobs.total + (overviewData.all_jobs.hired_last_90d || 0),
           ativas: overviewData.active_jobs.total,
           urgentes: overviewData.active_jobs.by_urgency?.['alta'] || 0,
@@ -229,11 +195,8 @@ export function useJobsData(): UseJobsDataReturn {
           tendenciaSemanal: overviewData.all_jobs.trend_weeks,
           insights: overviewData.insights,
         }
-        setDashboardStats(stats)
-        setIsLoadingStats(false)
       } catch {
-        if (!mountedRef.current) return
-        const stats = {
+        stats = {
           total: convertedJobs.length,
           ativas: convertedJobs.filter(job => job.status === 'Ativa').length,
           urgentes: convertedJobs.filter(job => job.urgencyLevel >= 4).length,
@@ -252,61 +215,90 @@ export function useJobsData(): UseJobsDataReturn {
           tendenciaSemanal: [],
           insights: [],
         }
-        setDashboardStats(stats)
-        setIsLoadingStats(false)
       }
-      } catch (error) {
-        if (!mountedRef.current) return
-        const message = describeJobsLoadError(error)
-        console.error(
-          '[useJobsData] loadBackendJobs failed:',
-          error instanceof HttpError
-            ? `HttpError ${error.status} (${error.message})`
-            : error instanceof Error
-              ? `${error.name}: ${error.message}`
-              : error,
-        )
-        setJobsError(message)
-        setIsLoadingStats(false)
-        setIsLoadingJobs(false)
-      }
+
+  if (!stats) {
+    stats = {
+      total: convertedJobs.length,
+      ativas: convertedJobs.filter(job => job.status === 'Ativa').length,
+      urgentes: convertedJobs.filter(job => job.urgencyLevel >= 4).length,
+      paralisadas: convertedJobs.filter(job => job.status === 'Paralisada').length,
+      concluidas: convertedJobs.filter(job => job.status === 'Concluída').length,
+      canceladas: convertedJobs.filter(job => job.status === 'Cancelada').length,
+      noFunil: convertedJobs.reduce((sum, job) => sum + ((job as unknown as { funnel?: { total?: number } }).funnel?.total || 0), 0),
+      entrevistasRecentes: 0,
+      ofertas: convertedJobs.filter(job => (job as unknown as { stage?: string }).stage === 'Oferta').length,
+      ttfMedio: 0,
+      taxaConversao: 0,
+      atRisco: 0,
+      pipelineVazio: 0,
+      deadlineProximo: 0,
+      porDepartamento: {},
+      tendenciaSemanal: [],
+      insights: [],
     }
+  }
 
-    const promise = run().finally(() => {
-      inflightRef.current = null
-    })
-    inflightRef.current = promise
-    return promise
-  }, [])
+  return {
+    jobs: convertedJobs,
+    stats,
+    isExternalSourceFallback: jobsResult.source === 'local-fallback',
+  }
+}
 
-  useEffect(() => {
-    if (!hasMounted) return
-    loadBackendJobs()
-  }, [hasMounted, jobsRefreshKey, loadBackendJobs])
+const JOBS_QUERY_KEY = ['jobs'] as const
 
-  useEffect(() => {
-    const onFocus = () => {
-      // Only refetch on focus when there is an error AND no load is currently
-      // in flight — prevents the focus listener from amplifying load on the
-      // backend while a retry is already happening (task #345).
-      if (mountedRef.current && jobsError && !inflightRef.current) {
-        loadBackendJobs()
-      }
-    }
-    window.addEventListener('focus', onFocus)
-    return () => window.removeEventListener('focus', onFocus)
-  }, [jobsError, loadBackendJobs])
+export function useJobsData(): UseJobsDataReturn {
+  const queryClient = useQueryClient()
+  const [jobsRefreshKey, setJobsRefreshKeyState] = useState(0)
+
+  const { data, isLoading, error, refetch } = useQuery<JobsQueryData>({
+    queryKey: [JOBS_QUERY_KEY[0], jobsRefreshKey],
+    queryFn: fetchJobsData,
+    staleTime: 30_000,
+    refetchOnWindowFocus: (query) => !!query.state.error,
+    retry: (failureCount, err) => {
+      if (err instanceof HttpError && err.status >= 400 && err.status < 500 && err.status !== 429) return false
+      return failureCount < 2
+    },
+  })
+
+  const setJobsRefreshKey = useCallback(
+    (updater: number | ((prev: number) => number)) => {
+      const next = typeof updater === 'function' ? updater(jobsRefreshKey) : updater
+      setJobsRefreshKeyState(next)
+    },
+    [jobsRefreshKey],
+  ) as React.Dispatch<React.SetStateAction<number>>
+
+  const setBackendJobs = useCallback(
+    (updater: Job[] | ((prev: Job[]) => Job[])) => {
+      queryClient.setQueryData(
+        [JOBS_QUERY_KEY[0], jobsRefreshKey],
+        (prev: JobsQueryData | undefined) => {
+          if (!prev) return prev
+          const nextJobs = typeof updater === 'function' ? updater(prev.jobs) : updater
+          return { ...prev, jobs: nextJobs }
+        },
+      )
+    },
+    [queryClient, jobsRefreshKey],
+  ) as React.Dispatch<React.SetStateAction<Job[]>>
+
+  const loadBackendJobs = useCallback(async (): Promise<void> => {
+    await refetch()
+  }, [refetch])
 
   return {
     state: {
-      backendJobs,
-      isLoadingJobs,
-      jobsError,
-      hasMounted,
+      backendJobs: data?.jobs ?? [],
+      isLoadingJobs: isLoading,
+      jobsError: error ? describeJobsLoadError(error) : null,
+      hasMounted: true,
       jobsRefreshKey,
-      dashboardStats,
-      isLoadingStats,
-      isExternalSourceFallback,
+      dashboardStats: data?.stats ?? null,
+      isLoadingStats: isLoading,
+      isExternalSourceFallback: data?.isExternalSourceFallback ?? false,
     },
     actions: {
       setBackendJobs,

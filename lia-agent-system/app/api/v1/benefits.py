@@ -18,6 +18,7 @@ from app.domains.company.repositories.benefit_template_repository import Benefit
 from app.domains.company.repositories.benefit_repository import BenefitRepository
 from app.models.company import Benefit, BenefitTemplate
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.errors import LIAError
 
 logger = logging.getLogger(__name__)
 
@@ -159,7 +160,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error fetching benefit templates: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/seed-templates", response_model=None)
@@ -205,7 +206,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await db.rollback()
         logger.error(f"Error seeding benefit templates: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/templates/{template_id}", response_model=BenefitTemplateResponse)
@@ -230,7 +231,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error fetching benefit template: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 def parse_csv_file(content: bytes) -> list[dict[str, str]]:
@@ -367,7 +368,7 @@ async def download_benefits_import_template(company_id: str = Depends(require_co
         raise
     except Exception as e:
         logger.error(f"Error generating benefits import template: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/import", response_model=BenefitImportResponse)
@@ -498,4 +499,4 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
     except Exception as e:
         await db.rollback()
         logger.error(f"Error importing benefits: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")

@@ -14,6 +14,8 @@ import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen, fireEvent, cleanup } from "@testing-library/react"
 import { NextIntlClientProvider } from "next-intl"
 import { VacancyPreview } from "../vacancy-preview"
+import ptBRMessages from "../../../../messages/pt-BR.json"
+import enMessages from "../../../../messages/en.json"
 
 // Stub liaApi.getJobVacancy so we don't hit the network. We don't care about
 // the resolved value here — the component must render synchronously.
@@ -293,5 +295,24 @@ describe("VacancyPreview — UX primitives", () => {
     )
     fireEvent.click(screen.getByLabelText("Próxima vaga"))
     expect(onNavigate).toHaveBeenCalledWith(1)
+  })
+})
+
+
+describe("VacancyPreview — i18n canonical contract (real messages — guards openStatus regression)", () => {
+  // Harness fix: o teste antes validava apenas contra a fixture local `messages`,
+  // mascarando chaves ausentes em messages/*.json reais (caso openStatus,
+  // MISSING_MESSAGE em /pt/recrutar). Aqui validamos as chaves USADAS pelo card
+  // contra os arquivos canonicos pt-BR.json E en.json.
+  const usedKeys = Object.keys(messages.pipelineOverview.vacancyCard)
+
+  it.each(usedKeys)("pt-BR.json resolve pipelineOverview.vacancyCard.%s", (k) => {
+    const v = (ptBRMessages as Record<string, any>).pipelineOverview?.vacancyCard?.[k]
+    expect(typeof v).toBe("string")
+  })
+
+  it.each(usedKeys)("en.json resolve pipelineOverview.vacancyCard.%s", (k) => {
+    const v = (enMessages as Record<string, any>).pipelineOverview?.vacancyCard?.[k]
+    expect(typeof v).toBe("string")
   })
 })

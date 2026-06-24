@@ -4,12 +4,19 @@ API endpoints for affirmative action management.
 from typing import Any
 from uuid import UUID
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db, get_tenant_db
-from app.shared.services.affirmative_service import AffirmativeService
+from app.shared.services.affirmative_service import (
+    AffirmativeService,
+    AffirmativeConsentRequiredError,
+)
+from lia_models.candidate import Candidate
+from lia_models.job_vacancy import JobVacancy
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 from app.shared.types import WeDoBaseModel
 from typing import Annotated
@@ -30,6 +37,9 @@ class CriteriaResponse(BaseModel):
 class EligibilityResponse(BaseModel):
     status: str
     message: str
+    eligible: bool | None = None
+    requires_document: bool | None = None
+    document_types: list[str] | None = None
 
 
 class PendingDocumentsResponse(BaseModel):
@@ -93,8 +103,23 @@ async def check_eligibility(
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Check if candidate is eligible for affirmative vacancy."""
-    AffirmativeService(db)
-    return {"status": "pending", "message": "Eligibility check requires candidate and vacancy data"}
+    service = AffirmativeService(db)
+    candidate = (await db.execute(
+        select(Candidate).where(Candidate.id == UUID(request.candidate_id), Candidate.company_id == company_id)
+    )).scalar_one_or_none()
+    vacancy = (await db.execute(
+        select(JobVacancy).where(JobVacancy.id == UUID(request.vacancy_id), JobVacancy.company_id == company_id)
+    )).scalar_one_or_none()
+    if candidate is None or vacancy is None:
+        raise HTTPException(404, "Candidato ou vaga nao encontrados para esta empresa")
+    result = service.check_candidate_eligibility(candidate, vacancy)
+    return {
+        "status": "eligible" if result.get("eligible") else "not_eligible",
+        "message": result.get("reason", "Elegibilidade avaliada"),
+        "eligible": result.get("eligible"),
+        "requires_document": result.get("requires_document"),
+        "document_types": result.get("document_types"),
+    }
 
 
 @router.get("/pending-documents/{company_id}", response_model=PendingDocumentsResponse)
@@ -107,7 +132,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
     """Get all pending document uploads for a company."""
     service = AffirmativeService(db)
     vacancy_uuid = UUID(vacancy_id) if vacancy_id else None
-    documents = service.get_pending_documents(company_id, vacancy_uuid)
+    documents = await service.get_pending_documents(company_id, vacancy_uuid)
     return {"documents": documents, "count": len(documents)}
 
 
@@ -122,7 +147,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Create a document upload request with 24h deadline."""
     service = AffirmativeService(db)
-    document = service.create_document_request(
+    document = await service.create_document_request(
         candidate_id=UUID(candidate_id),
         vacancy_id=UUID(vacancy_id),
         company_id=company_id,
@@ -140,7 +165,7 @@ company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """LIA automated verification of document."""
     service = AffirmativeService(db)
-    document = service.verify_document_lia(UUID(document_id), verification_result)
+    document = await service.verify_document_lia(UUID(document_id), verification_result)
     return {"status": document.status, "verified": document.verified_by_lia}
 
 
@@ -153,7 +178,7 @@ company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Recruiter manual verification of document."""
     service = AffirmativeService(db)
-    document = service.verify_document_recruiter(
+    document = await service.verify_document_recruiter(
         document_id=UUID(request.document_id),
         recruiter_email=recruiter_email,
         approved=request.approved,
@@ -170,7 +195,60 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Check and mark expired documents."""
     service = AffirmativeService(db)
-    count = service.check_expired_documents(company_id)
+    count = await service.check_expired_documents(company_id)
     return {"expired_count": count}
+
+@router.post("/documents/{document_id}/upload", response_model=DocumentVerifyLiaResponse)
+async def upload_affirmative_document(
+    document_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
+    file: UploadFile = File(...),
+    document_type: str = Form(...),
+    db: AsyncSession = Depends(get_db),
+    company_id: str = Depends(require_company_id),
+):
+    """Upload multipart do documento afirmativo. Grava em disco e chama o service
+    (que valida consent LGPD + prazo). Path-traversal mitigado: document_id e UUID-gated
+    e o filename e sanitizado."""
+    from pathlib import Path as _P
+    safe_name = (file.filename or "documento").replace("/", "_").replace("\\", "_").replace("..", "_")
+    content = await file.read()
+    if len(content) > 10 * 1024 * 1024:
+        raise HTTPException(413, "Arquivo excede 10MB")
+    upload_dir = _P("uploads/affirmative") / str(document_id)
+    upload_dir.mkdir(parents=True, exist_ok=True)
+    with open(upload_dir / safe_name, "wb") as fh:
+        fh.write(content)
+    url = f"/api/v1/affirmative/documents/download/{document_id}/{safe_name}"
+    service = AffirmativeService(db)
+    try:
+        document = await service.upload_document(UUID(document_id), url, file.filename or safe_name, document_type)
+    except AffirmativeConsentRequiredError as e:
+        raise HTTPException(403, str(e))
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    return {"status": document.status, "verified": document.verified_by_lia}
+
+
+@router.get("/documents/download/{document_id}/{filename}")
+async def download_affirmative_document(
+    document_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
+    filename: str,
+    db: AsyncSession = Depends(get_db),
+    company_id: str = Depends(require_company_id),
+):
+    """Download do documento sensível — RBAC: so o tenant dono pode baixar."""
+    from pathlib import Path as _P
+    from lia_models.affirmative_audit import CandidateAffirmativeDocument
+    doc = (await db.execute(
+        select(CandidateAffirmativeDocument).where(CandidateAffirmativeDocument.id == UUID(document_id))
+    )).scalar_one_or_none()
+    if doc is None or doc.company_id != company_id:
+        raise HTTPException(404, "Documento nao encontrado")
+    safe_name = filename.replace("/", "_").replace("..", "_")
+    path = _P("uploads/affirmative") / str(document_id) / safe_name
+    if not path.exists():
+        raise HTTPException(404, "Arquivo nao encontrado")
+    return FileResponse(str(path))
+
 
 reorder_collection_before_item(router)

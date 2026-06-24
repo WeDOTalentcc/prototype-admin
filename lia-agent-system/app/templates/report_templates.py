@@ -243,14 +243,14 @@ class ReportTemplates:
             
             <div style="text-align: center; margin-top: 24px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
                 <a href="#" style="display: inline-block; background-color: #2563eb; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: bold;">
-                    Abrir Plataforma LIA
+                    Abrir WeDOTalent
                 </a>
             </div>
         </div>
         
         <div style="background-color: #f9fafb; padding: 16px; text-align: center; font-size: 12px; color: #6b7280;">
             <p style="margin: 0;">Este briefing foi gerado automaticamente pela LIA</p>
-            <p style="margin: 4px 0 0 0;">{company_name} • Plataforma LIA</p>
+            <p style="margin: 4px 0 0 0;">{company_name} • WeDOTalent</p>
         </div>
     </div>
 </body>

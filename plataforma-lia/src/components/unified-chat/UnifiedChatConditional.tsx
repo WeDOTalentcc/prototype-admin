@@ -9,13 +9,16 @@ import { UnifiedChat } from "./UnifiedChat"
 import type { ChatMode } from "./unified-chat-types"
 
 import { isAuthRoute } from "@/lib/auth-routes"
+import { getPersisted } from "@/lib/lia-persistence"
+import { useAuthStore } from "@/stores/auth-store"
 
 export function UnifiedChatConditional() {
   const pathname = usePathname()
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
   const { isOpen, open, close, splitView, hasInlineChat } = useLiaFloat()
   const [chatMode, setChatMode] = useState<ChatMode>(() => {
     if (typeof window === "undefined") return "sidebar"
-    const stored = localStorage.getItem("lia-chat-mode")
+    const stored = getPersisted<string>("lia-chat-mode", "sidebar")
     if (stored === "floating") return "floating"
     return "sidebar"
   })
@@ -56,10 +59,14 @@ export function UnifiedChatConditional() {
   }, [isOpen, open, close])
 
   if (isAuthRoute(pathname ?? "")) return null
+  if (!isAuthenticated) return null
 
   const showFloating = isOpen && chatMode === "floating" && !hasInlineChat
   const showSidebarOverlay = isOpen && chatMode === "sidebar" && !hasInlineChat && !hasDashboardShell
-  const showFullscreen = isOpen && chatMode === "fullscreen" && !hasInlineChat
+  // isOpen is intentionally excluded: enterFullscreen() sets isOpen=false as a non-destructive
+  // hide (preserves dynamicPanel/entityContext), but fullscreen mode should render regardless.
+  // The X close button resets chatMode→sidebar via lia:chat-mode-changed, hiding this correctly.
+  const showFullscreen = chatMode === "fullscreen" && !hasInlineChat
 
   return (
     <>

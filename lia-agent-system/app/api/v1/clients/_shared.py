@@ -16,8 +16,8 @@ from pydantic import BaseModel, Field
 
 from app.auth.dependencies import get_current_active_user
 from app.auth.models import User, UserRole
-from app.domains.clients.dependencies import get_client_repo
-from app.domains.clients.repositories.client_account_repository import ClientAccountRepository
+from app.repositories.dependencies import get_client_repo
+from app.repositories.client_account_repository import ClientAccountRepository
 from app.domains.communication.services.email_service import EmailService, get_email_service
 from app.domains.job_management.services.template_seeder import clone_templates_for_client
 from app.models.client_account import CLIENT_STATUS_OPTIONS, COMPANY_SIZE_OPTIONS, ClientAccount, ClientStatus

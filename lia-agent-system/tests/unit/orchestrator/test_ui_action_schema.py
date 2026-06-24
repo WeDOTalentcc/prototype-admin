@@ -27,11 +27,20 @@ def test_global_action_types_match_fe_canonical_list():
     assert set(GLOBAL_UI_ACTION_TYPES) == {
         "navigate_to",
         "open_modal",
+        "close_modal",
         "open_offer_review",
         "wizard_step",
         "open_panel",
+        "close_panel",
         "scroll_to",
-        "settings_open_tab",  # WT-2022 Fase 4: bridge chat -> SettingsPageEnhanced
+        "settings_open_tab",
+        "open_communication_modal",
+        "open_schedule_modal",
+        "open_screening_modal",
+        "apply_table_state",
+        "select_rows",
+        "bulk_execute",
+        "start_wizard_seeded",
     }
 
 
@@ -142,3 +151,23 @@ def test_ui_action_drops_extra_fields():
         {"type": "navigate_to", "params": {"page": "/x"}, "leak": "should-go"}
     )
     assert not hasattr(a, "leak")
+
+
+# ─── apply_table_state (Fase 2 slice 1 — ponte in-page) ──────────────────
+
+
+def test_validate_global_apply_table_state():
+    result = validate_global_ui_action_params(
+        "apply_table_state",
+        {"surface": "candidates", "patch": {"search": "x"}},
+    )
+    assert result is not None
+    assert result.surface == "candidates"
+    assert result.patch == {"search": "x"}
+
+
+def test_validate_global_apply_table_state_rejects_bad_surface():
+    result = validate_global_ui_action_params(
+        "apply_table_state", {"surface": "jobs", "patch": {}}
+    )
+    assert result is None

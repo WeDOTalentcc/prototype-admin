@@ -487,15 +487,6 @@ __all__ = (
 )
 
 
-# W4-041 (2026-05-23): Tier 6 canary gate observability.
-# Spike em invocations + flag_state=off = users sendo gated out (canary working).
-# Spike em flag_state=on com baixa hit rate downstream = Tier 6 underperforming.
-tier6_invocations_total = _make_counter(
-    "tier6_invocations_total",
-    "Count of Tier 6 (AutonomousReActAgent) gate evaluations in CascadedRouter.",
-    ("company_id_hash", "flag_state"),
-)
-
 
 # Sprint 12.3-A (2026-05-24): Phase 2 V1 fallback canary observability.
 # Tracks invocations of legacy Orchestrator.process_request (Phase 2 V1 fallback).

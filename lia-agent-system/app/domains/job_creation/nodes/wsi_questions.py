@@ -30,6 +30,31 @@ from app.domains.job_creation.helpers.llm_exceptions import (
 logger = logging.getLogger(__name__)
 
 
+def _wsi_source_decision(state: JobCreationState) -> tuple[str, list]:
+    """Pure (sem LLM/graph): decide a FONTE das perguntas WSI. PR-B2b.
+
+    - 'resume'     : perguntas ja aprovadas (resume path).
+    - 'reuse_seed' : clone — reaproveitar perguntas da vaga origem
+                     (state['seed_wsi_questions'], estacionadas por
+                     apply_seed_to_state). Apresentadas no HITL #2; a
+                     FairnessGuard L4 do node roda nelas (re-check free) e o
+                     gate existente oferece aprovar/editar/gerar-novas — e o
+                     "perguntar ao recrutador" sem nova state-machine.
+    - 'generate'   : gerar via LLM (default / 'gerar novas').
+
+    wsi_regenerate_pending (recrutador escolheu 'gerar novas' no gate) forca
+    'generate' — por isso o reuse so dispara na PRIMEIRA entrada do estagio
+    (wsi_questions ainda vazio).
+    """
+    if state.get("wsi_regenerate_pending"):
+        return ("generate", [])
+    if state.get("questions_approved") is not None and state.get("wsi_questions"):
+        return ("resume", list(state.get("wsi_questions") or []))
+    if not state.get("wsi_questions") and state.get("seed_wsi_questions"):
+        return ("reuse_seed", list(state.get("seed_wsi_questions") or []))
+    return ("generate", [])
+
+
 def wsi_questions_node(state: JobCreationState) -> JobCreationState:
     """F6: Generate WSI screening questions via LLM.
 
@@ -101,8 +126,15 @@ def wsi_questions_node(state: JobCreationState) -> JobCreationState:
     # mesmo que `questions_approved` ou `wsi_questions` ainda estejam
     # populados de um turno anterior. O marker é limpo no fim do node.
     _force_regen = bool(state.get("wsi_regenerate_pending"))
-    if (not _force_regen) and state.get("questions_approved") is not None and state.get("wsi_questions"):
-        questions_data = state["wsi_questions"]
+    _wsi_src, _wsi_seed_data = _wsi_source_decision(state)
+    _reused_from_source = False
+    if _wsi_src == "resume":
+        questions_data = list(state.get("wsi_questions") or [])
+    elif _wsi_src == "reuse_seed":
+        # PR-B2b: clone — reaproveitar perguntas da vaga origem. A FairnessGuard
+        # L4 abaixo roda nelas; o gate da aprovar/editar/gerar-novas.
+        questions_data = list(_wsi_seed_data)
+        _reused_from_source = True
     else:
         jd_enriched_dict = state.get("jd_enriched", {})
 
@@ -293,7 +325,7 @@ def wsi_questions_node(state: JobCreationState) -> JobCreationState:
     # renderizar um aviso de revisão ANTES de aprovar.
     _distribution_gap: Dict[str, Any] | None = None
     try:
-        from app.domains.job_creation.graph import _get_question_distribution as _gqd
+        from app.domains.job_creation.helpers.wsi_distribution import block_distribution as _gqd
         _dist_mode = state.get("screening_mode", "compact") or "compact"
         _dist_seniority = state.get("seniority_resolved", "pleno") or "pleno"
         _expected_dist = _gqd(_dist_mode, _dist_seniority)
@@ -369,6 +401,14 @@ def wsi_questions_node(state: JobCreationState) -> JobCreationState:
             locals().get("wsi_questions_fallback_reason", None),
         ),
     }
+    # PR-B2b: ao reaproveitar perguntas da vaga origem, a mensagem deixa claro e
+    # o gate existente oferece aprovar/editar/gerar-novas (o "perguntar").
+    if _reused_from_source:
+        _wsi_stage_data["message"] = (
+            f"Reaproveitei {len(questions_data)} pergunta(s) de triagem da vaga "
+            "de origem. Quer manter (aprovar), editar, ou gerar novas?"
+        )
+        _wsi_stage_data["wsi_reused_from_source"] = True
     if _wsi_dropped:
         _wsi_stage_data["fairness_warning"] = {
             "kind": "questions_dropped",

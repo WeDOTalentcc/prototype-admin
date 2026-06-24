@@ -40,7 +40,7 @@ export function InterviewCard({
     return (
       <button
         onClick={() => onOpenJob(interview)}
-        className="text-xs font-medium text-wedo-cyan-dark dark:text-wedo-cyan-dark hover:text-wedo-cyan-dark dark:hover:text-wedo-cyan-dark hover:underline truncate cursor-pointer"
+        className="text-xs font-medium text-lia-text-secondary dark:text-wedo-cyan-dark hover:text-wedo-cyan-dark dark:hover:text-wedo-cyan-dark hover:underline truncate cursor-pointer"
         title="Abrir vaga no kanban"
       >
         {interview.jobCode && <span className="font-[Inter,sans-serif] mr-0.5">{interview.jobCode}</span>}
@@ -168,7 +168,7 @@ export function InterviewCard({
           {renderCandidateInfo()}
 
           {variant === 'past' && interview.cancelReason && (
-            <p className="text-xs text-lia-text-disabled italic mt-1.5">
+            <p className="text-xs text-lia-text-muted italic mt-1.5">
               {interview.cancelReason}
             </p>
           )}

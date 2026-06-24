@@ -164,6 +164,30 @@ export function WebsiteProposalCard({ data }: { data: WebsiteProposalCardData })
     )
   }
 
+  // Edita uma chave de um campo cujo value e objeto (ex: Big Five OCEAN).
+  // setFieldValue so tratava string/array; objetos viravam read-only (sem
+  // Pencil) e nao podiam ser editados nem salvos corretamente.
+  const setFieldObjectValue = (
+    blkKey: ProposalBlockKey,
+    fkey: string,
+    objKey: string,
+    val: unknown,
+  ) => {
+    setBlocks((prev) =>
+      prev.map((b) => {
+        if (b.key !== blkKey) return b
+        return {
+          ...b,
+          fields: b.fields.map((f) => {
+            if (f.key !== fkey) return f
+            if (f.value === null || typeof f.value !== "object" || Array.isArray(f.value)) return f
+            return { ...f, value: { ...(f.value as Record<string, unknown>), [objKey]: val } }
+          }),
+        }
+      }),
+    )
+  }
+
   const handleSave = async (mode: "all" | "selected") => {
     // Guard: dupla interação rápida ou re-click após erro de um bloco.
     if (savingRef.current) return
@@ -285,14 +309,49 @@ export function WebsiteProposalCard({ data }: { data: WebsiteProposalCardData })
                   const id = fieldId(blk.key, f.key)
                   const isEditing = editing.has(id)
                   const display = fmtValue(f.value)
-                  const isObject = !isEditing && typeof f.value === "object" && !Array.isArray(f.value)
+                  const isObjectField = f.value !== null && typeof f.value === "object" && !Array.isArray(f.value)
                   return (
                     <li key={f.key} className="text-xs flex items-start gap-2">
                       <span className="text-lia-text-secondary min-w-[120px] pt-1">
                         {f.label}:
                       </span>
                       <div className="flex-1 flex items-start gap-1">
-                        {isEditing && !isObject ? (
+                        {isObjectField ? (
+                          isEditing ? (
+                            <div className="flex-1 grid grid-cols-1 gap-1" data-testid={`field-obj-${id}`}>
+                              {Object.entries(f.value as Record<string, unknown>).map(([ok, ov]) => (
+                                <label key={ok} className="flex items-center gap-1">
+                                  <span className="text-lia-text-tertiary capitalize min-w-[110px] text-[11px]">
+                                    {ok.replace(/_/g, " ")}
+                                  </span>
+                                  <Input
+                                    type={typeof ov === "number" ? "number" : "text"}
+                                    value={ov === null || ov === undefined ? "" : String(ov)}
+                                    onChange={(e) =>
+                                      setFieldObjectValue(
+                                        blk.key,
+                                        f.key,
+                                        ok,
+                                        typeof ov === "number" ? Number(e.target.value) : e.target.value,
+                                      )
+                                    }
+                                    className="h-6 text-[11px]"
+                                    data-testid={`field-obj-input-${id}-${ok}`}
+                                  />
+                                </label>
+                              ))}
+                            </div>
+                          ) : (
+                            <span
+                              className="text-lia-text-primary flex-1 break-words text-[11px]"
+                              data-testid={`field-value-${id}`}
+                            >
+                              {Object.entries(f.value as Record<string, unknown>)
+                                .map(([k2, v2]) => `${k2.replace(/_/g, " ")}: ${v2}`)
+                                .join(" · ")}
+                            </span>
+                          )
+                        ) : isEditing ? (
                           <Input
                             value={display}
                             onChange={(e) => setFieldValue(blk.key, f.key, e.target.value)}
@@ -304,10 +363,10 @@ export function WebsiteProposalCard({ data }: { data: WebsiteProposalCardData })
                             className="text-lia-text-primary flex-1 break-words"
                             data-testid={`field-value-${id}`}
                           >
-                            {isObject ? JSON.stringify(f.value).slice(0, 80) : display}
+                            {display}
                           </span>
                         )}
-                        {!isObject && (
+                        {(
                           <button
                             type="button"
                             onClick={() => {

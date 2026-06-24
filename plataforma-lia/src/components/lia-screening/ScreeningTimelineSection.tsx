@@ -47,7 +47,7 @@ export function ScreeningTimelineSection() {
             </div>
 
             <div className="flex items-start gap-4">
-              <div className="w-8 h-8 bg-wedo-purple/15 dark:bg-wedo-purple/20 rounded-full flex items-center justify-center text-wedo-purple text-sm font-bold">
+              <div className="w-8 h-8 bg-wedo-purple/15 dark:bg-wedo-purple/20 rounded-full flex items-center justify-center text-wedo-purple-text text-sm font-bold">
                 3
               </div>
               <div className="flex-1">
@@ -58,7 +58,7 @@ export function ScreeningTimelineSection() {
             </div>
 
             <div className="flex items-start gap-4">
-              <div className="w-8 h-8 bg-wedo-orange/15 dark:bg-wedo-orange/10/20 rounded-full flex items-center justify-center text-wedo-orange text-sm font-bold">
+              <div className="w-8 h-8 bg-wedo-orange/15 dark:bg-wedo-orange/10/20 rounded-full flex items-center justify-center text-wedo-orange-text text-sm font-bold">
                 4
               </div>
               <div className="flex-1">
@@ -90,8 +90,8 @@ export function ScreeningTimelineSection() {
               </div>
             </div>
             <div className="p-4 bg-wedo-orange/10 dark:bg-wedo-orange/10/20 rounded-xl border border-wedo-orange/30">
-              <div className="font-medium text-wedo-orange dark:text-wedo-orange mb-2">Se Não Aprovado</div>
-              <div className="space-y-1 text-sm text-wedo-orange dark:text-wedo-orange">
+              <div className="font-medium text-wedo-orange-text dark:text-wedo-orange mb-2">Se Não Aprovado</div>
+              <div className="space-y-1 text-sm text-wedo-orange-text dark:text-wedo-orange">
                 <div>• Feedback construtivo personalizado</div>
                 <div>• Inclusão no banco de talentos</div>
                 <div>• Convite para vagas futuras</div>

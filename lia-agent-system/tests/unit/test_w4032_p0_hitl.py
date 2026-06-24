@@ -35,18 +35,6 @@ def test_ats_integration_hitl_action_types():
     assert expected.issubset(set(ATSIntegrationReActAgent._HITL_ACTION_TYPES))
 
 
-def test_autonomous_hitl_action_types():
-    """W4-032 P0 · autonomous declara _HITL_ACTION_TYPES canonical."""
-    from app.domains.autonomous.agents.autonomous_react_agent import (
-        AutonomousReActAgent,
-    )
-    expected = {
-        "autonomous_delegate", "autonomous_action",
-        "cross_domain_action", "tier6_fallback_action",
-    }
-    assert expected.issubset(set(AutonomousReActAgent._HITL_ACTION_TYPES))
-
-
 def test_kanban_hitl_action_types():
     """W4-032 P0 · kanban declara _HITL_ACTION_TYPES canonical."""
     from app.domains.recruiter_assistant.agents.kanban_react_agent import (
@@ -190,7 +178,6 @@ def test_p0_agents_import_helper():
     """W4-032 P0 · cada agent file importa o helper."""
     files = [
         "app/domains/ats_integration/agents/ats_integration_react_agent.py",
-        "app/domains/autonomous/agents/autonomous_react_agent.py",
         "app/domains/recruiter_assistant/agents/kanban_react_agent.py",
     ]
     repo_root = Path(__file__).resolve().parents[2]

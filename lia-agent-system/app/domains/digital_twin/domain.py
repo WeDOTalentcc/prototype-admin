@@ -207,29 +207,25 @@ class DigitalTwinDomain(ComplianceDomainPrompt):
 
             async for db in get_db():
                 try:
-                    from sqlalchemy import select, text as sql_text
-                    candidate_row = await db.execute(sql_text(
-                        "SELECT name, role_name, technical_skills, years_of_experience "
-                        "FROM candidates WHERE id = :cid AND company_id = :coid LIMIT 1"
-                    ), {"cid": candidate_id, "coid": company_id})
-                    c = candidate_row.fetchone()
+                    from app.domains.candidates.repositories.candidate_repository import (
+                        CandidateRepository,
+                    )
+                    c = await CandidateRepository(db).get_by_id_str(
+                        candidate_id, company_id=company_id
+                    )
                     if c:
                         candidate_profile = {
-                            "name": c[0], "role_name": c[1],
-                            "skills": c[2] or [], "experience": c[3],
+                            "name": c.name, "role_name": getattr(c, "role_name", None),
+                            "skills": getattr(c, "technical_skills", None) or [],
+                            "experience": getattr(c, "years_of_experience", None),
                         }
                 except Exception as e:
                     logger.debug("[DigitalTwin] Candidate lookup fallback: %s", e)
 
-                from lia_models.digital_twin import DigitalTwin
-                from sqlalchemy import select as sa_select
-                twin_result = await db.execute(
-                    sa_select(DigitalTwin).where(
-                        DigitalTwin.id == twin_id,
-                        DigitalTwin.company_id == company_id,
-                    )
+                from app.domains.agent_studio.repositories.digital_twin_repository import (
+                    DigitalTwinRepository as _DtRepo,
                 )
-                twin = twin_result.scalar_one_or_none()
+                twin = await _DtRepo(db).get_by_id(twin_id=twin_id, company_id=company_id)
                 if not twin:
                     return DomainResponse.error_response(
                         error="Digital Twin não encontrado ou não pertence a esta empresa.",
@@ -238,12 +234,15 @@ class DigitalTwinDomain(ComplianceDomainPrompt):
 
                 if job_id:
                     try:
-                        job_row = await db.execute(sql_text(
-                            "SELECT title, description FROM jobs WHERE id = :jid AND company_id = :cid LIMIT 1"
-                        ), {"jid": job_id, "cid": company_id})
-                        j = job_row.fetchone()
+                        from app.domains.job_management.repositories.job_vacancy_crud_repository import (
+                            JobVacancyCRUDRepository as _JvRepo,
+                        )
+                        import uuid as _uuid
+                        j = await _JvRepo(db).get_vacancy_by_id_and_company(
+                            _uuid.UUID(job_id), company_id
+                        )
                         if j:
-                            job_context = {"title": j[0], "description": (j[1] or "")[:500]}
+                            job_context = {"title": j.title, "description": (j.description or "")[:500]}
                     except Exception:
                         pass
 
@@ -307,19 +306,16 @@ class DigitalTwinDomain(ComplianceDomainPrompt):
     async def _handle_list_twins(self, params: dict[str, Any], context: DomainContext) -> DomainResponse:
         try:
             from app.core.database import get_db
-            from lia_models.digital_twin import DigitalTwin
-            from sqlalchemy import select
+            from app.domains.agent_studio.repositories.digital_twin_repository import (
+                DigitalTwinRepository as _DtRepo,
+            )
 
             company_id = context.tenant_id
 
             async for db in get_db():
-                result = await db.execute(
-                    select(DigitalTwin)
-                    .where(DigitalTwin.company_id == company_id, DigitalTwin.is_active == True)
-                    .order_by(DigitalTwin.created_at.desc())
-                    .limit(20)
+                twins = await _DtRepo(db).list_by_company(
+                    company_id=company_id, is_active=True, limit=20
                 )
-                twins = result.scalars().all()
                 break
 
             if not twins:
@@ -394,15 +390,10 @@ class DigitalTwinDomain(ComplianceDomainPrompt):
             audio_bytes = audio_data if isinstance(audio_data, bytes) else audio_data.encode("utf-8")
 
             async for db in get_db():
-                from lia_models.digital_twin import DigitalTwin
-                from sqlalchemy import select as sa_select
-                twin_check = await db.execute(
-                    sa_select(DigitalTwin).where(
-                        DigitalTwin.id == twin_id,
-                        DigitalTwin.company_id == company_id,
-                    )
+                from app.domains.agent_studio.repositories.digital_twin_repository import (
+                    DigitalTwinRepository as _DtRepo,
                 )
-                if not twin_check.scalar_one_or_none():
+                if not await _DtRepo(db).get_by_id(twin_id=twin_id, company_id=company_id):
                     return DomainResponse.error_response(
                         error="Digital Twin não encontrado ou não pertence a esta empresa.",
                         domain_id=self.domain_id, action_id="index_twin_audio",
@@ -473,15 +464,10 @@ class DigitalTwinDomain(ComplianceDomainPrompt):
             company_id = context.tenant_id
 
             async for db in get_db():
-                from lia_models.digital_twin import DigitalTwin
-                from sqlalchemy import select as sa_select
-                result = await db.execute(
-                    sa_select(DigitalTwin).where(
-                        DigitalTwin.id == twin_id,
-                        DigitalTwin.company_id == company_id,
-                    )
+                from app.domains.agent_studio.repositories.digital_twin_repository import (
+                    DigitalTwinRepository as _DtRepo,
                 )
-                twin = result.scalar_one_or_none()
+                twin = await _DtRepo(db).get_by_id(twin_id=twin_id, company_id=company_id)
                 if not twin:
                     return DomainResponse.error_response(
                         error="Digital Twin não encontrado ou não pertence a esta empresa.",

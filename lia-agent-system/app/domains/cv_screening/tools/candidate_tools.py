@@ -23,6 +23,7 @@ from app.tools.context_helpers import (
     require_company_id_from_context,
     require_company_id_from_obj,
 )
+from app.shared.tool_guards import validate_uuid_params
 
 if TYPE_CHECKING:
     from app.tools.executor import ToolExecutionContext
@@ -66,6 +67,23 @@ async def update_candidate_stage(
     Returns:
         Result with success status and message
     """
+    # F3: HITL gate — mover candidato é mutação; requer confirmação ANTES de qualquer side-effect.
+    # Padrão canonical: hitl_preflight ANTES de context_or_raise para que o bloqueio
+    # funcione mesmo sem _context (ex: testes sem tenant) — dormante com LIA_HITL_GATE off.
+    from app.shared.hitl.hitl_approval_context import hitl_preflight
+    _hitl_block = hitl_preflight(
+        tool="update_candidate_stage",
+        domain="cv_screening",
+        message="Mover candidato de etapa é uma ação que requer confirmação. Confirme para prosseguir.",
+        data={"candidate_id": candidate_id, "target_stage": target_stage, "job_id": job_id},
+    )
+    if _hitl_block is not None:
+        return _hitl_block
+
+    err = validate_uuid_params(candidate_id=candidate_id, **({} if job_id is None else {"job_id": job_id}))
+    if err:
+        return err
+
     context = context_or_raise(kwargs, "update_candidate_stage")
 
     company_id = require_company_id_from_obj(context, "update_candidate_stage")
@@ -113,9 +131,29 @@ async def update_candidate_stage(
                 
                 if vacancy_candidate:
                     previous_stage = vacancy_candidate.stage or "N/A"
-                    vacancy_candidate.stage = target_stage
-                    vacancy_candidate.status = target_stage.lower().replace(" ", "_")
-                    vacancy_candidate.updated_at = datetime.utcnow()
+                    # R1-canonical: route stage write through pipeline_stage_service (P-SSOT + P-GUARD).
+                    # Lazy import avoids circular dependency.
+                    from app.domains.recruiter_assistant.services.pipeline_stage_service import (  # noqa: PLC0415
+                        FairnessBlockedError as _FairnessBlockedError,
+                        pipeline_stage_service as _pss,
+                    )
+                    try:
+                        await _pss.transition_candidate(
+                            vacancy_candidate_id=str(vacancy_candidate.id),
+                            to_stage=target_stage,
+                            triggered_by="llm_tool",
+                            triggered_by_user_id=user_id,
+                            reason=notes,
+                            source_agent="update_candidate_stage",
+                        )
+                    except _FairnessBlockedError as _fb:
+                        return {
+                            "success": False,
+                            "error": "fairness_blocked",
+                            "message": _fb.message,
+                            "educational_message": _fb.message,
+                            "compliance": ["Lei 9.029/95", "CLT Art. 373-A"],
+                        }
                 else:
                     # TENANT-EXEMPT: INTENTIONAL cross-tenant probe. After the
                     # tenant-scoped query above returned None, this checks whether
@@ -201,6 +239,10 @@ async def add_candidate_to_vacancy(
     Returns:
         Result with success status and message
     """
+    err = validate_uuid_params(candidate_id=candidate_id, job_id=job_id)
+    if err:
+        return err
+
     context = context_or_raise(kwargs, "add_candidate_to_vacancy")
 
     company_id = require_company_id_from_obj(context, "add_candidate_to_vacancy")
@@ -325,12 +367,20 @@ async def add_candidate_to_vacancy(
                     "error": "candidate_already_in_vacancy"
                 }
             
+            # Task #1306: resolve the structural stage link at creation so the
+            # SLA detector can join by id instead of fragile name matching.
+            from app.shared.services.stage_id_resolver import resolve_recruitment_stage_id
+            initial_stage_id = await resolve_recruitment_stage_id(
+                db, str(company_id), initial_stage
+            )
+
             vacancy_candidate = VacancyCandidate(
                 vacancy_id=UUID(job_id),
                 candidate_id=UUID(candidate_id),
                 company_id=company_id,
                 source=source or "manual",
                 stage=initial_stage,
+                recruitment_stage_id=initial_stage_id,
                 status="sourced",
                 added_by=user_id,
                 notes=notes,
@@ -361,6 +411,16 @@ async def add_candidate_to_vacancy(
                 criteria_used=["manual_add"],
                 candidate_id=candidate_id, job_vacancy_id=job_id,
             )
+
+            # Teams fire-and-forget hook (candidatura)
+            try:
+                import asyncio as _at
+                from app.domains.communication.services.teams_proactivity_engine import _safe_teams_hook as _sth, teams_proactivity_engine as _te
+                _lp = _at.get_event_loop()
+                if _lp.is_running():
+                    _lp.create_task(_sth(_te.on_candidate_applied, candidate_id=candidate_id, candidate_name=candidate_name, vacancy_id=job_id, vacancy_title=job_title, company_id=str(company_id)))
+            except Exception:
+                pass
 
             return {
                 "success": True,
@@ -485,6 +545,15 @@ async def reject_candidate(
     Returns:
         Result with success status, requires confirmation for dangerous action
     """
+    from app.shared.hitl.hitl_approval_context import hitl_preflight
+    _hitl_block = hitl_preflight(tool="reject_candidate", domain="cv_screening", data={"candidate_id": candidate_id, "job_id": job_id, "reason": reason})
+    if _hitl_block is not None:
+        return _hitl_block
+
+    err = validate_uuid_params(candidate_id=candidate_id, job_id=job_id)
+    if err:
+        return err
+
     logger.info(f"❌ Rejecting candidate {candidate_id} from job {job_id}")
     
     fg_implicit = []
@@ -630,83 +699,90 @@ async def shortlist_candidate(
     notes: str | None = None,
     **kwargs
 ) -> dict[str, Any]:
-    """
-    Add a candidate to the shortlist for a job vacancy.
-    
-    Args:
-        candidate_id: UUID of the candidate
-        job_id: UUID of the job vacancy
-        priority: Priority level ('high', 'normal', 'low')
-        notes: Optional notes about why they're shortlisted
-        
-    Returns:
-        Result with success status and message
-    """
-    logger.info(f"⭐ Shortlisting candidate {candidate_id} for job {job_id}")
-    
+    """Add a candidate to the shortlist for a job vacancy — REAL DB UPDATE."""
+    err = validate_uuid_params(candidate_id=candidate_id, job_id=job_id)
+    if err:
+        return err
+
+    context = context_or_raise(kwargs, "shortlist_candidate")
+    company_id = require_company_id_from_obj(context, "shortlist_candidate")
+
+    logger.info(f"shortlist_candidate: candidate={candidate_id} job={job_id} company={company_id}")
+
     try:
-        from sqlalchemy import select
+        from sqlalchemy import text as sa_text
 
         from app.core.database import AsyncSessionLocal
-        
+
         async with AsyncSessionLocal() as db:
-            try:
-                from app.models.candidate import Candidate
-                
-                # TENANT-EXEMPT: tool invoked via tool_registry; tenant boundary
-                # enforced by Postgres RLS (Task #1143). TODO(harness): refactor
-                # to accept company_id via **kwargs from tool_handler.
-                result = await db.execute(
-                    select(Candidate).where(Candidate.id == UUID(candidate_id))
-                )
-                candidate = result.scalar_one_or_none()
-                
-                candidate_name = getattr(candidate, 'name', 'Candidato') if candidate else 'Candidato'
-                
-                priority_emoji = {"high": "🔥", "normal": "⭐", "low": "📌"}.get(priority, "⭐")
-                
-                return {
-                    "success": True,
-                    "message": f"{priority_emoji} {candidate_name} foi adicionado à shortlist com prioridade {priority}.",
-                    "action_taken": "shortlist_candidate",
-                    "affected_entities": [candidate_id],
-                    "data": {
-                        "candidate_id": candidate_id,
-                        "candidate_name": candidate_name,
-                        "job_id": job_id,
-                        "priority": priority,
-                        "notes": notes,
-                        "shortlisted_at": datetime.utcnow().isoformat()
-                    }
-                }
-                
-            except Exception as e:
-                # P1 audit 2026-05-20: REGRA 4 CLAUDE.md — fail-loud quando shortlist
-                # NÃO foi persistida. Anteriormente retornava success=True com
-                # simulated=True, mascarando que a ação não ocorreu no DB.
-                logger.exception(
-                    "[candidate_tools] shortlist_candidate FAILED (DB issue) — failing LOUD"
-                )
+            check = await db.execute(
+                sa_text(
+                    "SELECT status, stage FROM vacancy_candidates "
+                    "WHERE candidate_id = :candidate_id "
+                    "AND vacancy_id = :job_id "
+                    "AND company_id = :company_id "
+                    "LIMIT 1"
+                ),
+                {"candidate_id": candidate_id, "job_id": job_id, "company_id": company_id},
+            )
+            row = check.mappings().first()
+            if not row:
                 return {
                     "success": False,
-                    "fallback_used": True,
-                    "needs_manual_review": True,
-                    "action_taken": None,
-                    "message": (
-                        "Não foi possível adicionar à shortlist no banco. "
-                        "A ação NÃO foi executada. Tente novamente ou peça suporte."
-                    ),
-                    "error": f"Database access failed: {str(e)}",
-                    "data": {"candidate_id": candidate_id, "job_id": job_id, "priority": priority},
+                    "message": f"Candidato {candidate_id} nao encontrado na vaga {job_id}.",
+                    "error": "candidate_not_in_vacancy",
                 }
-                
+
+            previous_status = row["status"]
+
+            result = await db.execute(
+                sa_text(
+                    "UPDATE vacancy_candidates "
+                    "SET status = 'shortlisted', updated_at = NOW() "
+                    "WHERE candidate_id = :candidate_id "
+                    "AND vacancy_id = :job_id "
+                    "AND company_id = :company_id"
+                ),
+                {"candidate_id": candidate_id, "job_id": job_id, "company_id": company_id},
+            )
+            await db.commit()
+
+            return {
+                "success": True,
+                "message": f"Candidato adicionado a shortlist (era {previous_status}).",
+                "action_taken": "shortlist_candidate",
+                "affected_entities": [candidate_id],
+                "data": {
+                    "candidate_id": candidate_id,
+                    "job_id": job_id,
+                    "previous_status": previous_status,
+                    "new_status": "shortlisted",
+                    "rows_updated": result.rowcount,
+                },
+            }
+
     except Exception as e:
-        logger.error(f"❌ Error shortlisting candidate: {e}", exc_info=True)
+        logger.exception("[shortlist_candidate] FAILED — failing LOUD")
         return {
             "success": False,
-            "message": f"❌ Erro ao adicionar candidato à shortlist: {str(e)}",
-            "error": str(e)
+            "message": "Nao foi possivel adicionar a shortlist. Acao NAO executada.",
+            "error": str(e),
         }
+
+async def _fetch_candidate_name_map_local(candidate_ids: list[str], company_id: str = "") -> dict[str, str]:
+    """Fetch {id: name} map for bulk result labels. Fail-open: returns {} on error."""
+    if not candidate_ids:
+        return {}
+    try:
+        from app.core.database import AsyncSessionLocal
+        from app.domains.candidates.repositories.candidate_repository import CandidateRepository
+        async with AsyncSessionLocal() as _sess:
+            _repo = CandidateRepository(_sess)
+            _candidates = await _repo.list_by_ids(candidate_ids, company_id=company_id or None)
+            return {str(c.id): (c.name or str(c.id)) for c in _candidates}
+    except Exception as _e:
+        logger.debug("[candidate_tools] _fetch_candidate_name_map fail-open: %s", _e)
+        return {}
 
 
 async def bulk_update_candidates_stage(
@@ -729,6 +805,10 @@ async def bulk_update_candidates_stage(
         Result with success counts and details
     """
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
+    from app.shared.hitl.hitl_approval_context import hitl_preflight
+    _hitl_block = hitl_preflight(tool="bulk_update_candidates_stage", domain="cv_screening", data={"candidate_count": len(candidate_ids), "target_stage": target_stage, "job_id": job_id})
+    if _hitl_block is not None:
+        return _hitl_block
     logger.info(f"🔄 Bulk moving {len(candidate_ids)} candidates to stage: {target_stage}")
     
     success_count = 0
@@ -746,18 +826,30 @@ async def bulk_update_candidates_stage(
         else:
             failed_ids.append(cid)
     
+    _failed_set = set(failed_ids)
+    # F5 nomes reais no BulkResultReport (fail-open: cai em UUID se lookup falhar)
+    _name_map = await _fetch_candidate_name_map_local(candidate_ids)
     return {
         "success": len(failed_ids) == 0,
         "message": f"✅ {success_count}/{len(candidate_ids)} candidatos movidos para '{target_stage}'.",
         "action_taken": "bulk_update_candidates_stage",
         "affected_entities": candidate_ids,
         "data": {
+            "ui_action": "bulk_execute",
+            "ui_action_params": {
+                "action": "bulk_update_candidates_stage",
+                "title": f"Candidatos movidos para '{target_stage}'",
+                "results": [
+                    {"id": cid, "name": _name_map.get(cid, cid), "ok": cid not in _failed_set}
+                    for cid in candidate_ids
+                ],
+            },
             "total": len(candidate_ids),
             "success_count": success_count,
             "failed_count": len(failed_ids),
             "failed_ids": failed_ids,
-            "target_stage": target_stage
-        }
+            "target_stage": target_stage,
+        },
     }
 
 
@@ -778,65 +870,69 @@ async def add_to_list(
     Returns:
         Result with success status and message
     """
+    err = validate_uuid_params(candidate_id=candidate_id, list_id=list_id)
+    if err:
+        return err
+
     context = context_or_raise(kwargs, "add_to_list")
 
     company_id = require_company_id_from_obj(context, "add_to_list")
 
     user_id = context.user_id
     
-    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
-    logger.info(f"📋 Adding candidate {candidate_id} to list {list_id} (company: {company_id})")
-    
+    logger.info(f"add_to_list: candidate={candidate_id} list={list_id} company={company_id}")
+
     try:
-        from sqlalchemy import select
+        import uuid as _uuid
 
         from app.core.database import AsyncSessionLocal
-        from app.models.candidate import Candidate
-        
+        from app.repositories.candidate_list_repository import CandidateListRepository
+
         async with AsyncSessionLocal() as db:
-            # TENANT-EXEMPT: tool invoked via tool_registry; tenant boundary
-            # enforced by Postgres RLS (Task #1143). TODO(harness): refactor
-            # to accept company_id via **kwargs from tool_handler.
-            cand_result = await db.execute(
-                select(Candidate).where(Candidate.id == UUID(candidate_id))
-            )
-            candidate = cand_result.scalar_one_or_none()
-            
-            if not candidate:
+            repo = CandidateListRepository(db)
+
+            lst = await repo.get_list(_uuid.UUID(list_id), company_id)
+            if not lst:
                 return {
                     "success": False,
-                    "message": f"Candidato não encontrado: {candidate_id}",
-                    "error": "candidate_not_found"
+                    "message": f"Lista {list_id} nao encontrada ou nao pertence a esta empresa.",
+                    "error": "list_not_found_or_forbidden",
                 }
-            
-            candidate_name = getattr(candidate, 'name', 'Candidato')
-            
-            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
-            logger.info(f"✅ Added {candidate_id} to list {list_id}")
-            
+
+            added = await repo.bulk_add_members(
+                list_id=_uuid.UUID(list_id),
+                candidate_uuids=[_uuid.UUID(candidate_id)],
+                added_by=user_id,
+                notes=notes,
+                source="chat_tool",
+            )
+            await repo.touch_list(lst)
+            await db.commit()
+
+            member_count = await repo.count_members(_uuid.UUID(list_id))
+
             return {
                 "success": True,
-                "message": f"📋 {candidate_name} foi adicionado à lista.",
+                "message": f"Candidato adicionado a lista \"{lst.name}\" ({member_count} membros).",
                 "action_taken": "add_to_list",
                 "affected_entities": [candidate_id, list_id],
                 "data": {
                     "candidate_id": candidate_id,
-                    "candidate_name": candidate_name,
                     "list_id": list_id,
-                    "notes": notes,
+                    "list_name": lst.name,
+                    "added_count": added,
+                    "total_members": member_count,
                     "added_by": user_id,
-                    "added_at": datetime.utcnow().isoformat()
-                }
+                },
             }
-                
+
     except Exception as e:
-        logger.error(f"❌ Error adding candidate to list: {e}", exc_info=True)
+        logger.exception("[add_to_list] FAILED — failing LOUD")
         return {
             "success": False,
-            "message": f"❌ Erro ao adicionar candidato à lista: {str(e)}",
-            "error": str(e)
+            "message": "Nao foi possivel adicionar a lista. Acao NAO executada.",
+            "error": str(e),
         }
-
 
 async def wsi_screening(
     candidate_id: str,
@@ -862,6 +958,10 @@ async def wsi_screening(
     Returns:
         Result with success status and screening session details
     """
+    err = validate_uuid_params(candidate_id=candidate_id, job_id=job_id)
+    if err:
+        return err
+
     context = context_or_raise(kwargs, "wsi_screening")
 
     company_id = require_company_id_from_obj(context, "wsi_screening")
@@ -996,6 +1096,10 @@ async def hide_candidate(
     Returns:
         Result with success status and message
     """
+    err = validate_uuid_params(candidate_id=candidate_id, **({} if job_id is None else {"job_id": job_id}))
+    if err:
+        return err
+
     context = context_or_raise(kwargs, "hide_candidate")
 
     company_id = require_company_id_from_obj(context, "hide_candidate")
@@ -1148,7 +1252,7 @@ UPDATE_CANDIDATE_STAGE_SCHEMA = {
     "properties": {
         "candidate_id": {
             "type": "string",
-            "description": "UUID of the candidate to move"
+            "description": "UUID do candidato - use o campo id retornado por search_candidates. Nunca use o nome do candidato como ID."
         },
         "target_stage": {
             "type": "string",
@@ -1156,7 +1260,7 @@ UPDATE_CANDIDATE_STAGE_SCHEMA = {
         },
         "job_id": {
             "type": "string",
-            "description": "Optional UUID of the job vacancy"
+            "description": "UUID da vaga (opcional) - use o campo id retornado por search_jobs. Nunca use o titulo da vaga como ID."
         },
         "notes": {
             "type": "string",
@@ -1175,11 +1279,11 @@ ADD_CANDIDATE_TO_VACANCY_SCHEMA = {
     "properties": {
         "candidate_id": {
             "type": "string",
-            "description": "UUID of the candidate"
+            "description": "UUID do candidato - use o campo id retornado por search_candidates. Nunca use o nome como ID."
         },
         "job_id": {
             "type": "string",
-            "description": "UUID of the job vacancy"
+            "description": "UUID da vaga - use o campo id retornado por search_jobs. Nunca use o titulo como ID."
         },
         "initial_stage": {
             "type": "string",
@@ -1203,11 +1307,11 @@ REJECT_CANDIDATE_SCHEMA = {
     "properties": {
         "candidate_id": {
             "type": "string",
-            "description": "UUID of the candidate to reject"
+            "description": "UUID do candidato a reprovar - use o campo id retornado por search_candidates. Nunca use o nome como ID."
         },
         "job_id": {
             "type": "string",
-            "description": "UUID of the job vacancy"
+            "description": "UUID da vaga - use o campo id retornado por search_jobs. Nunca use o titulo como ID."
         },
         "reason": {
             "type": "string",
@@ -1231,11 +1335,11 @@ SHORTLIST_CANDIDATE_SCHEMA = {
     "properties": {
         "candidate_id": {
             "type": "string",
-            "description": "UUID of the candidate"
+            "description": "UUID do candidato - use o campo id retornado por search_candidates. Nunca use o nome como ID."
         },
         "job_id": {
             "type": "string",
-            "description": "UUID of the job vacancy"
+            "description": "UUID da vaga - use o campo id retornado por search_jobs. Nunca use o titulo como ID."
         },
         "priority": {
             "type": "string",
@@ -1257,7 +1361,7 @@ BULK_UPDATE_CANDIDATES_STAGE_SCHEMA = {
         "candidate_ids": {
             "type": "array",
             "items": {"type": "string"},
-            "description": "List of candidate UUIDs to move"
+            "description": "Lista de UUIDs de candidatos - cada item deve ser o campo id retornado por search_candidates. Nunca use nomes como IDs."
         },
         "target_stage": {
             "type": "string",
@@ -1265,7 +1369,7 @@ BULK_UPDATE_CANDIDATES_STAGE_SCHEMA = {
         },
         "job_id": {
             "type": "string",
-            "description": "Optional job vacancy ID"
+            "description": "UUID da vaga (opcional) - use o campo id retornado por search_jobs. Nunca use o titulo como ID."
         },
         "notes": {
             "type": "string",
@@ -1280,7 +1384,7 @@ ADD_TO_LIST_SCHEMA = {
     "properties": {
         "candidate_id": {
             "type": "string",
-            "description": "UUID of the candidate to add to the list"
+            "description": "UUID do candidato a adicionar a lista - use o campo id retornado por search_candidates. Nunca use o nome como ID."
         },
         "list_id": {
             "type": "string",
@@ -1299,11 +1403,11 @@ WSI_SCREENING_SCHEMA = {
     "properties": {
         "candidate_id": {
             "type": "string",
-            "description": "UUID of the candidate to screen"
+            "description": "UUID do candidato para triagem - use o campo id retornado por search_candidates. Nunca use o nome como ID."
         },
         "job_id": {
             "type": "string",
-            "description": "UUID of the job vacancy"
+            "description": "UUID da vaga - use o campo id retornado por search_jobs. Nunca use o titulo como ID."
         },
         "screening_type": {
             "type": "string",
@@ -1331,11 +1435,11 @@ HIDE_CANDIDATE_SCHEMA = {
     "properties": {
         "candidate_id": {
             "type": "string",
-            "description": "UUID of the candidate to hide"
+            "description": "UUID do candidato a ocultar - use o campo id retornado por search_candidates. Nunca use o nome como ID."
         },
         "job_id": {
             "type": "string",
-            "description": "UUID of the job vacancy (required if hide_globally is False)"
+            "description": "UUID da vaga (obrigatorio se hide_globally=False) - use o campo id retornado por search_jobs. Nunca use o titulo como ID."
         },
         "reason": {
             "type": "string",
@@ -1479,3 +1583,36 @@ def register_candidate_tools() -> None:
     ))
     
     logger.info("✅ Registered 8 candidate tools")
+
+
+def get_candidate_mutation_tools() -> list[ToolDefinition]:
+    """Getter de mutações de candidato para o agente federado (recruiter_copilot).
+
+    Retorna ToolDefinitions para update_candidate_stage e reject_candidate,
+    ambas gateadas via hitl_preflight (F3, 2026-06-09). Usadas como source
+    "cv_screening" no _FEDERATION_SPEC do recruiter_copilot.
+
+    Fonte única: usa as mesmas funções handler e schemas do registro global
+    para não criar divergência.
+    """
+    return [
+        ToolDefinition(
+            name="update_candidate_stage",
+            description=(
+                "Move um candidato para uma etapa diferente no pipeline de recrutamento. "
+                "Use para mover entre etapas como Triagem, Entrevistas, Oferta, Contratado. "
+                "Requer confirmação (HITL) quando LIA_HITL_GATE está ativado."
+            ),
+            parameters_schema=UPDATE_CANDIDATE_STAGE_SCHEMA,
+            handler=_wrap_update_candidate_stage,
+        ),
+        ToolDefinition(
+            name="reject_candidate",
+            description=(
+                "Rejeita um candidato de uma vaga. Ação sensível com confirmação obrigatória. "
+                "Use com cuidado — envia feedback de rejeição ao candidato."
+            ),
+            parameters_schema=REJECT_CANDIDATE_SCHEMA,
+            handler=reject_candidate,
+        ),
+    ]

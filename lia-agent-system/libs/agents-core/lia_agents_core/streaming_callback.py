@@ -14,9 +14,10 @@ Uso nos agentes LangGraph nativos (Fase 3):
     await agent.astream(input, config={"callbacks": [callback]})
 """
 import asyncio
+import contextvars
 import logging
 import time
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Awaitable, Callable, Dict, List, Optional, Union
 from uuid import UUID
 
 from app.shared.pii_masking import get_masked_logger
@@ -34,6 +35,32 @@ except ImportError:
         _LANGCHAIN_AVAILABLE = False
 
 logger = get_masked_logger(__name__)
+
+# wire-B (2026-06-06): transporte SSE para eventos de atividade.
+# O StreamingCallback emite tool_started/tool_finished/reasoning_step só pro
+# ws_manager (_send). O chat lateral ao vivo roda em SSE e nao escutava nada
+# disso -> "Pensando" estatico. O handler SSE registra um sink (contextvar,
+# espelha _llm_streaming_callback) e _send repassa os frames de atividade.
+_SSE_FORWARD_TYPES = {"tool_started", "tool_finished", "reasoning_step", "token", "token_done"}
+_sse_frame_sink: contextvars.ContextVar[Optional[Callable[[Dict[str, Any]], Awaitable[None]]]] = (
+    contextvars.ContextVar("_sse_frame_sink", default=None)
+)
+
+
+def set_sse_frame_sink(fn: Callable[[Dict[str, Any]], Awaitable[None]]) -> Any:
+    """Registra o sink SSE (async callable que recebe um frame ja serializado).
+
+    Retorna o token p/ reset (chamar reset_sse_frame_sink no cleanup do turno).
+    """
+    return _sse_frame_sink.set(fn)
+
+
+def reset_sse_frame_sink(token: Any) -> None:
+    """Limpa o sink SSE. Defensivo: nunca levanta."""
+    try:
+        _sse_frame_sink.reset(token)
+    except Exception:
+        pass
 
 
 class StreamingCallback(BaseCallbackHandler):
@@ -72,6 +99,11 @@ class StreamingCallback(BaseCallbackHandler):
         self._start_time = time.time()
         # run_id -> (tool_name, start_epoch) for tool duration tracking (Fase 1)
         self._tool_starts: Dict[Any, tuple] = {}
+        # wire-B (2026-06-06): captura o sink SSE AGORA (no contexto da task,
+        # que tem o contextvar setado). Usa instance-attr em _send — NAO
+        # contextvar — porque o langchain pode despachar on_tool_start/end de
+        # uma THREAD (run_coroutine_threadsafe), onde contextvar nao propaga.
+        self._sse_sink = _sse_frame_sink.get(None)
 
     def on_llm_new_token(
         self,
@@ -217,6 +249,22 @@ class StreamingCallback(BaseCallbackHandler):
         except Exception as exc:
             logger.debug("[StreamingCallback] reasoning_step send falhou: %s", exc)
 
+
+    async def emit_reasoning_step_async(self, label: str, detail: str = "") -> None:
+        """Async variant: directly awaits _send so the frame lands in sse_queue
+        BEFORE the caller puts _done.  Use this for the composing step (after
+        _run_graph) where create_task ordering would otherwise lose the frame.
+        """
+        try:
+            from app.shared.chat_event_serializer import serialize_reasoning_step
+            text = self._summarize(label)
+            if text:
+                await self._send(
+                    serialize_reasoning_step(label=text, detail=detail or "")
+                )
+        except Exception as exc:
+            logger.debug("[StreamingCallback] reasoning_step_async falhou: %s", exc)
+
     @staticmethod
     def _tool_name(serialized: Any, kwargs: Dict[str, Any]) -> str:
         try:
@@ -265,7 +313,7 @@ class StreamingCallback(BaseCallbackHandler):
                 )
 
     async def _send(self, data: Dict[str, Any]) -> None:
-        """Envia dados ao WebSocket via ws_manager."""
+        """Entrega o frame ao WS (ws_manager) e, em SSE, ao sink registrado."""
         try:
             from app.api.v1.ws_manager import ws_manager
             await ws_manager.send_to_session(self.session_id, data)
@@ -273,3 +321,17 @@ class StreamingCallback(BaseCallbackHandler):
             logger.debug(
                 "[StreamingCallback] send error session=%s: %s", self.session_id, exc
             )
+        # wire-B (2026-06-06): repassa frames de ATIVIDADE pro transporte SSE via
+        # instance-attr (capturado no __init__, no contexto da task).
+        try:
+            _is_activity = isinstance(data, dict) and data.get("type") in _SSE_FORWARD_TYPES
+            if _is_activity:
+                import threading as _thr
+                logger.info(
+                    "[SSE-SINK-DBG] _send type=%s sink_present=%s thread=%s",
+                    data.get("type"), self._sse_sink is not None, _thr.current_thread().name,
+                )
+            if _is_activity and self._sse_sink is not None:
+                await self._sse_sink(data)
+        except Exception as exc:
+            logger.debug("[StreamingCallback] sse sink forward falhou: %s", exc)

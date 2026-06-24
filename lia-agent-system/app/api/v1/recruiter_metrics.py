@@ -15,6 +15,7 @@ from app.core.auth import get_current_user_or_demo
 from app.core.database import get_db
 from app.shared.services.recruiter_metrics_service import recruiter_metrics_service
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.errors import LIAError
 from typing import Annotated
 from fastapi import Path
 from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
@@ -49,7 +50,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"get_recruiter_summary failed: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="Erro ao calcular métricas do recrutador")
+        raise LIAError(message="Erro ao calcular métricas do recrutador")
 
 
 @router.get("/{recruiter_id}/backlog", response_model=None)
@@ -82,7 +83,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"get_recruiter_backlog failed: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="Erro ao buscar backlog do recrutador")
+        raise LIAError(message="Erro ao buscar backlog do recrutador")
 
 
 @router.get("/{recruiter_id}/benchmark", response_model=None)
@@ -111,6 +112,6 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"get_recruiter_benchmark failed: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="Erro ao calcular benchmark do recrutador")
+        raise LIAError(message="Erro ao calcular benchmark do recrutador")
 
 reorder_collection_before_item(router)

@@ -65,6 +65,7 @@ export function useReturnEvents({
   const [isPolling, setIsPolling] = useState(false)
   const [useSSE, setUseSSE] = useState(true)
   const lastPollTimestamp = useRef<string>(new Date().toISOString())
+  const reconnectAttemptRef = useRef(0)
 const slaConfig: SLAConfig = useMemo(() => ({ ...DEFAULT_SLA_DAYS, ...customSlaConfig }), [customSlaConfig])
 
   const processEvent = useCallback((event: ReturnEvent) => {
@@ -175,6 +176,7 @@ const slaConfig: SLAConfig = useMemo(() => ({ ...DEFAULT_SLA_DAYS, ...customSlaC
         eventSource = new EventSource(url)
 
         eventSource.onopen = () => {
+          reconnectAttemptRef.current = 0
           if (fallbackInterval) {
             clearInterval(fallbackInterval)
             fallbackInterval = null
@@ -186,14 +188,20 @@ const slaConfig: SLAConfig = useMemo(() => ({ ...DEFAULT_SLA_DAYS, ...customSlaC
             const newEvent: ReturnEvent = JSON.parse(event.data)
             setEvents(prev => [newEvent, ...prev].slice(0, 100))
             processEvent(newEvent)
-          } catch {}
+          } catch (error) {
+            console.error("[use-return-events] Error:", error)
+          }
         }
 
         eventSource.onerror = () => {
           eventSource?.close()
           eventSource = null
           startPollingFallback()
-          reconnectTimer = setTimeout(connectSSE, 10000)
+          const attempt = reconnectAttemptRef.current
+          const backoffMs = Math.min(500 * Math.pow(2, attempt), 30000)
+          const jitterMs = Math.random() * 1000
+          reconnectAttemptRef.current = attempt + 1
+          reconnectTimer = setTimeout(connectSSE, backoffMs + jitterMs)
         }
       } catch {
         startPollingFallback()

@@ -1,7 +1,10 @@
 "use client";
 
 import { HITLConfirmCard } from "@/components/lia-float/HITLConfirmCard";
-import { SwitchTaskModal } from "@/components/lia-float/SwitchTaskModal";
+import {
+  BackgroundAgentsStatus,
+  type BackgroundTask,
+} from "@/components/lia-float/BackgroundAgentsStatus";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,6 +18,7 @@ import {
 import { buttonVariants } from "@/components/ui/button";
 import type { ChatSuggestionMetadata } from "@/components/ui/chat-workflow-reels";
 import { useLiaChatContext, useLiaFloat } from "@/contexts/lia-float-context";
+import { fullscreenTransitionEvents } from "./mode-transition";
 import { useNavigationIntent } from "@/hooks/shared/use-navigation-intent";
 import { cn } from "@/lib/utils";
 import {
@@ -25,11 +29,14 @@ import { useAuthStore } from "@/stores/auth-store";
 import { useChatStateStore } from "@/stores/chat-state-store";
 import { useRecentItemsStore } from "@/stores/recent-items-store";
 import { useUIPreferencesStore, type LiaRecentItem } from "@/stores/ui-preferences-store";
+import { ToolActivateContext } from "@/contexts/ToolSurfaceContext";
+import { useLiaPanelStore } from "@/stores/lia-panel-store";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { requestRegeneration } from "@/services/lia-api/feedback-api";
+import { requestRegeneration, reportImplicitSignal } from "@/services/lia-api/feedback-api";
+import { classifyImplicitSignal } from "./implicit-feedback-detect";
 import { deleteChatConversation } from "./deleteChatConversation";
 import { UnifiedChatEmptyState } from "./UnifiedChatEmptyState";
 import { UnifiedChatHeader } from "./UnifiedChatHeader";
@@ -55,6 +62,9 @@ import {
   SPLIT_STAGES,
 } from "./wizard/DynamicContextPanel";
 import { ProgressiveDisclosure } from "./wizard/ProgressiveDisclosure";
+import { WizardDock } from "./wizard/WizardDock";
+import { WizardFullscreenPromptCard } from "./wizard/WizardFullscreenPromptCard";
+import { wizardPanelVisibility } from "./wizard/panel-visibility";
 import { WizardProgressBar } from "./wizard/WizardProgressBar";
 import { PipelineTemplateSuggestion } from "./wizard/PipelineTemplateSuggestion";
 import { WizardPipelineTemplateStagePanel } from "./wizard/WizardPipelineTemplateStagePanel";
@@ -63,7 +73,17 @@ import { useWizardFlow } from "./wizard/useWizardFlow";
 import { useWizardIntegration } from "./wizard/useWizardIntegration";
 import { formatWizardSavedLabel } from "./wizard/wizard-saved-label";
 import { STAGE_PILL_LABELS, type WizardStage } from "./wizard/wizard-types";
+import { AnimatePresence, motion } from "framer-motion";
 import { getPersisted, setPersisted } from "@/lib/lia-persistence";
+import {
+  ARROW_STEP,
+  ARROW_STEP_LARGE,
+  FLOATING_DRAG_THRESHOLD,
+  FLOATING_RESET_EVENT,
+  clampFloatingPosition,
+  defaultFloatingPosition,
+  type Point,
+} from "./floating-position";
 
 const DEFINIR_REGEX = /^\/(?:definir|glossario|glossário)(?:\s+(.+))?$/i;
 
@@ -113,6 +133,15 @@ function getStoredPanelWidth(): number {
   return PANEL_DEFAULT_WIDTH;
 }
 
+// Guarda de auto-escalada pra tela cheia — ESCOPO POR CONVERSA, NÍVEL DE MÓDULO.
+//
+// Bug 2026-06-05 (defesa em profundidade): a escalada bolha→fullscreen deve
+// disparar NO MÁXIMO uma vez por sessão de wizard. Um `useRef(false)` por
+// instância NÃO basta: ao navegar pra página "Conversar", `UnifiedChatConditional`
+// troca o branch renderizado de <UnifiedChat>, REMONTANDO o componente — o ref
+// reseta pra false e a escalada re-dispara no próximo turno (fechando o painel
+// F3 (Manus): auto-escalada removida — consentimento explícito via WizardFullscreenPromptCard.
+
 interface Props {
   renderMode?: "inline" | "overlay";
   initialMode?: ChatMode;
@@ -160,6 +189,15 @@ export function wizardUpdateToMessage(updates: Record<string, unknown>): string 
   if ("platforms" in updates) return "Plataformas: " + (updates.platforms as string[]).join(", ")
   if ("auto_screen" in updates) return "Auto-triagem: " + (updates.auto_screen ? "ativada" : "desativada")
   if ("questions" in updates) return "Atualizar perguntas de elegibilidade"
+  if ("is_affirmative" in updates) {
+    if (!updates.is_affirmative) return "Desativar vaga afirmativa"
+    const criteriaLabels: Record<string, string> = {
+      gender: "Gênero (Mulheres)", race_ethnicity: "Raça/Etnia", disability: "PcD",
+      lgbtqia: "LGBTQIA+", age: "50+", indigenous: "Indígenas", refugee: "Refugiados",
+    }
+    const primary = criteriaLabels[String(updates.affirmative_criteria_primary ?? "")] || ""
+    return "Confirmar vaga afirmativa" + (primary ? ": " + primary : "")
+  }
   // Fase 5b — edições de competência no painel (chips). O texto é só o espelho
   // legível; os dados estruturados viajam em context.right_panel_form e o
   // backend (intake_gate) lê confirmed_* com precedência sobre a sugestão.
@@ -201,12 +239,29 @@ export function UnifiedChat({
   const [mode, setMode] = useState<ChatMode>(initialMode ?? getStoredMode());
   const [inputText, setInputText] = useState("");
   const [attachedFile, setAttachedFile] = useState<File | null>(null);
-  const [showSwitchTask, setShowSwitchTask] = useState(false);
-  const autoFullscreenDone = useRef(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [sidebarWidthPx, setSidebarWidthPx] = useState(getStoredWidth);
   const [isResizing, setIsResizing] = useState(false);
   const widthRef = useRef(sidebarWidthPx);
+
+  // Task #1291 — floating window drag position. `null` means "docked at the
+  // default bottom-right corner" (rendered via `bottom-4 right-4`). A non-null
+  // value is an explicit top-left applied via inline style. The position is
+  // intentionally EPHEMERAL: it lives only in component state, never in
+  // localStorage. Because UnifiedChat stays mounted across soft navigation
+  // (the provider sits above the router), dragging survives page changes; a
+  // full reload remounts the component and resets back to the corner.
+  const [floatingPosition, setFloatingPosition] = useState<Point | null>(null);
+  const [isFloatingDragging, setIsFloatingDragging] = useState(false);
+  const floatingContainerRef = useRef<HTMLDivElement>(null);
+  const floatingDragRef = useRef<{
+    startX: number;
+    startY: number;
+    baseX: number;
+    baseY: number;
+    moved: boolean;
+  } | null>(null);
+  const resetFloatingPosition = useCallback(() => setFloatingPosition(null), []);
   // Fase 5b — acumula os campos estruturados do painel (ficha viva) para enviar
   // como context.right_panel_form no próximo turno (loop real dos chips).
   const collectedDataRef = useRef<Record<string, unknown>>({});
@@ -269,6 +324,127 @@ export function UnifiedChat({
     };
   }, [isResizing]);
 
+  // Task #1291 — keep the floating window visible after the browser is
+  // resized: re-clamp a custom position back inside the viewport.
+  useEffect(() => {
+    const handleResize = () => {
+      setFloatingPosition((prev) => {
+        if (!prev) return prev;
+        const next = clampFloatingPosition(prev);
+        if (next.x === prev.x && next.y === prev.y) return prev;
+        return next;
+      });
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Task #1291 — global reset hook (mirrors the bubble). Any surface can
+  // dispatch FLOATING_RESET_EVENT to dock the window back at the corner.
+  useEffect(() => {
+    const handleReset = () => setFloatingPosition(null);
+    window.addEventListener(FLOATING_RESET_EVENT, handleReset);
+    return () => window.removeEventListener(FLOATING_RESET_EVENT, handleReset);
+  }, []);
+
+  // Task #1291 — drag the floating window by its header. We use document-level
+  // listeners (not setPointerCapture) so clicks on the header's own buttons
+  // keep working; the drag only engages once the pointer crosses the movement
+  // threshold, so a plain click never moves the window.
+  const handleFloatingHeaderPointerDown = useCallback(
+    (e: React.PointerEvent) => {
+      if (e.button !== 0) return;
+      // Ignore interactive controls inside the header (buttons, inputs, links,
+      // menu items) so their clicks/typing are never hijacked by a drag.
+      if (
+        (e.target as HTMLElement).closest(
+          "button, input, textarea, a, select, [role='menuitem'], [contenteditable='true']",
+        )
+      ) {
+        return;
+      }
+      const rect = floatingContainerRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      floatingDragRef.current = {
+        startX: e.clientX,
+        startY: e.clientY,
+        baseX: rect.left,
+        baseY: rect.top,
+        moved: false,
+      };
+
+      const handleMove = (ev: PointerEvent) => {
+        const drag = floatingDragRef.current;
+        if (!drag) return;
+        const dx = ev.clientX - drag.startX;
+        const dy = ev.clientY - drag.startY;
+        if (
+          !drag.moved &&
+          (Math.abs(dx) > FLOATING_DRAG_THRESHOLD ||
+            Math.abs(dy) > FLOATING_DRAG_THRESHOLD)
+        ) {
+          drag.moved = true;
+          setIsFloatingDragging(true);
+          document.body.style.userSelect = "none";
+        }
+        if (!drag.moved) return;
+        setFloatingPosition(
+          clampFloatingPosition({ x: drag.baseX + dx, y: drag.baseY + dy }),
+        );
+      };
+      const handleUp = () => {
+        floatingDragRef.current = null;
+        setIsFloatingDragging(false);
+        document.body.style.userSelect = "";
+        document.removeEventListener("pointermove", handleMove);
+        document.removeEventListener("pointerup", handleUp);
+        document.removeEventListener("pointercancel", handleUp);
+      };
+      document.addEventListener("pointermove", handleMove);
+      document.addEventListener("pointerup", handleUp);
+      document.addEventListener("pointercancel", handleUp);
+    },
+    [],
+  );
+
+  // Task #1291 — keyboard accessibility: move the focused header/handle with
+  // the arrow keys (Shift = larger step), mirroring the bubble.
+  const handleFloatingHeaderKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      // Don't steal arrows from controls inside the header (rename input etc).
+      if (
+        (e.target as HTMLElement).closest(
+          "button, input, textarea, a, select, [contenteditable='true']",
+        )
+      ) {
+        return;
+      }
+      const arrowMap: Record<string, [number, number]> = {
+        ArrowUp: [0, -1],
+        ArrowDown: [0, 1],
+        ArrowLeft: [-1, 0],
+        ArrowRight: [1, 0],
+      };
+      const delta = arrowMap[e.key];
+      if (!delta) return;
+      e.preventDefault();
+      const step = e.shiftKey ? ARROW_STEP_LARGE : ARROW_STEP;
+      setFloatingPosition((prev) => {
+        const base =
+          prev ??
+          defaultFloatingPosition({
+            width: window.innerWidth,
+            height: window.innerHeight,
+          });
+        return clampFloatingPosition({
+          x: base.x + delta[0] * step,
+          y: base.y + delta[1] * step,
+        });
+      });
+    },
+    [],
+  );
+
   const authUser = useAuthStore((s) => s.user);
   const tc = useTranslations("common");
   const userName = authUser?.name || authUser?.email || tc("defaultUserName");
@@ -277,11 +453,18 @@ export function UnifiedChat({
     isOpen,
     open,
     close,
+    enterFullscreen,
+    navigateToChat,
     contextPage,
     dynamicPanel,
     openDynamicPanel,
     closeDynamicPanel,
-  } = useLiaFloat();
+    wizardPanelMode,
+    setWizardPanelMode,
+    wizardConsentDeclined,
+    setWizardConsentDeclined,
+    registerNewConversationGuard,
+    requestNewConversation,} = useLiaFloat();
 
   const {
     chatMessages,
@@ -303,6 +486,7 @@ export function UnifiedChat({
     chatHitlPending,
     chatBackgroundTasks,
     chatSessionId,
+    chatPlanProgressSteps,
     seedBackgroundTask,
     clearBackgroundTask,
   } = useLiaChatContext();
@@ -372,7 +556,10 @@ export function UnifiedChat({
         const snap = await fetchWizardSessionState(chatSessionId);
         if (cancelled) return;
         if (!snap || !snap.active || !snap.current_stage) {
-          wizardReset();
+          // Bug #1a guard: SSE may have already opened panel while GET was in-flight.
+          // lastDynamicPanelRef tracks the last non-null panel state — skip reset
+          // if a live panel is already active to avoid closing a wizard mid-turn.
+          if (!lastDynamicPanelRef.current?.stage) wizardReset();
           return;
         }
         wizardHandleStagePayload({
@@ -446,10 +633,13 @@ export function UnifiedChat({
     setWizardSavedAt(new Date());
   }, [wizardStage, wizardCompleteness]);
   useEffect(() => {
-    if (!wizardActive) return;
+    if (!wizardActive) {
+      closeDynamicPanel(); // flush stale panel on wizard end
+      return;
+    }
     const id = setInterval(() => setSavedTick((n) => n + 1), 30_000);
     return () => clearInterval(id);
-  }, [wizardActive]);
+  }, [wizardActive, closeDynamicPanel]);
   const wizardSavedLabel = formatWizardSavedLabel(
     wizardSavedAt,
     new Date(),
@@ -583,11 +773,46 @@ export function UnifiedChat({
       return;
     }
     if (!firstUserMessageRef.current) firstUserMessageRef.current = text;
+
+    // Task #1299 — IMPLICIT feedback capture (outside the wizard only). Compare
+    // the just-sent message against the prior LIA answer to detect an edited
+    // reuse (correction_delta) or a topic switch away from a substantive answer
+    // (abandonment). Fire-and-forget telemetry: the backend re-applies the
+    // FairnessGuard gate + conservative criterion and is the authoritative
+    // decision point; a network blip here must never affect the chat send.
+    if (!dynamicPanel && chatSessionId) {
+      const priorLia = [...chatMessages]
+        .reverse()
+        .find((m) => m.sender === "lia" && (m.content ?? "").trim().length > 0);
+      if (priorLia) {
+        const signal = classifyImplicitSignal(priorLia.content, text);
+        if (signal === "correction_delta") {
+          void reportImplicitSignal("correction_delta", {
+            sessionId: chatSessionId,
+            messageId: priorLia.id,
+            originalResponse: priorLia.content,
+            usedText: text,
+            messageContext: { lia_response: priorLia.content },
+          }).catch(() => {});
+        } else if (signal === "abandonment") {
+          void reportImplicitSignal("abandonment", {
+            sessionId: chatSessionId,
+            messageId: priorLia.id,
+            abandonedResponse: priorLia.content,
+            nextUserMessage: text,
+            messageContext: { lia_response: priorLia.content },
+          }).catch(() => {});
+        }
+      }
+    }
+
     sendChatMessage(text);
     setInputText("");
     setAttachedFile(null);
 
-    detectNavIntent(text).then((result) => {
+    // Fix defect #8: skip navigation intent when wizard is active —
+    // mid-wizard messages should not trigger page navigation hints.
+    if (!dynamicPanel) detectNavIntent(text).then((result) => {
       // BUG-18 fix: 0.85 era muito alto — frases naturais como "me leva pra vagas"
       // atingiam no máximo ~0.70 mesmo após fix do dampening no backend.
       // 0.65 captura imperativos de navegação sem falso-positivar perguntas genéricas.
@@ -609,7 +834,7 @@ export function UnifiedChat({
         );
       }
     });
-  }, [inputText, sendChatMessage, detectNavIntent, handleSlashCommand]);
+  }, [inputText, sendChatMessage, detectNavIntent, handleSlashCommand, dynamicPanel, chatSessionId, chatMessages]);
 
   const handleSuggestionClick = useCallback(
     (prompt: string, metadata?: ChatSuggestionMetadata) => {
@@ -642,7 +867,7 @@ export function UnifiedChat({
   const handleRegenerate = useCallback(
     async (messageId: string) => {
       if (!chatSessionId) {
-        toast.error("Nao foi possivel regenerar — sessao indisponivel");
+        toast.error("Não foi possível regenerar — sessão indisponível");
         return;
       }
       try {
@@ -655,7 +880,7 @@ export function UnifiedChat({
         );
       } catch (err) {
         const detail = err instanceof Error ? err.message : "erro desconhecido";
-        toast.error("Nao foi possivel gerar novamente", { description: detail });
+        toast.error("Não foi possível gerar novamente", { description: detail });
       }
     },
     [chatSessionId, sendChatMessage],
@@ -727,25 +952,26 @@ export function UnifiedChat({
     resolver?.(decision);
   }, []);
 
-  // Task #1128 — "Nova conversa": clears wizard AND switches to a fresh
-  // conversation. Triggered by the sidebar/slash command "/nova-conversa".
-  // Task #1133 — quando há wizard ativo, exige confirmação antes de
-  // descartar o rascunho (mesmo modal canônico do "Cancelar wizard").
+  // Register wizard guard in context so ANY caller of requestNewConversation()
+  // (IASidebar, slash commands, etc.) gets wizard protection automatically.
+  useEffect(() => {
+    registerNewConversationGuard(async () => {
+      const proceed = await requireWizardCancelConfirm("new-chat");
+      if (!proceed) return false;
+      return await resetCurrentWizardSession();
+    });
+    return () => registerNewConversationGuard(null);
+  }, [registerNewConversationGuard, requireWizardCancelConfirm, resetCurrentWizardSession]);
+
+  // Task #1128 — "Nova conversa": delegates to context's canonical
+  // requestNewConversation (which calls our registered wizard guard),
+  // then cleans up local-only state (input text, attached file).
   const handleNewChat = useCallback(async () => {
-    const proceed = await requireWizardCancelConfirm("new-chat");
-    if (!proceed) return;
-    const ok = await resetCurrentWizardSession();
+    const ok = await requestNewConversation();
     if (!ok) return;
-    switchChatContext("general", { conversationId: null, resetConversation: true });
-    setChatMessages([]);
     setInputText("");
     setAttachedFile(null);
-  }, [
-    requireWizardCancelConfirm,
-    resetCurrentWizardSession,
-    switchChatContext,
-    setChatMessages,
-  ]);
+  }, [requestNewConversation]);
 
   // Task #1128 — "Cancelar wizard": kills the wizard checkpoint but
   // PRESERVES the current `conversation_id` / chat thread. The recruiter
@@ -794,14 +1020,7 @@ export function UnifiedChat({
   ]);
 
   // Switch to a different conversation
-  const handleSelectSession = useCallback(
-    async (sessionId: string) => {
-      setChatConversationId(sessionId);
-      await loadChatHistory(sessionId);
-      setShowSwitchTask(false);
-    },
-    [setChatConversationId, loadChatHistory],
-  );
+
 
   const currentModeRef = useRef(mode);
   currentModeRef.current = mode;
@@ -835,43 +1054,57 @@ export function UnifiedChat({
         }),
       );
       if (newMode === "fullscreen") {
-        close();
-        window.dispatchEvent(
-          new CustomEvent("lia:navigate-chat-page", { detail: {} }),
-        );
-      } else if (newMode === "floating") {
+        // Transição NÃO-destrutiva: esconde o overlay flutuante SEM zerar
+        // `dynamicPanel`/`entityContext`. Usar `close()` aqui (dismiss canônico)
+        // derrubava o painel do wizard a cada escalada pra tela cheia
+        // (bug 2026-06-05). O overlay já some sozinho em mode === "fullscreen".
+        enterFullscreen();
+      } else {
         open();
-      } else if (newMode === "sidebar") {
-        open();
-        if (prevMode === "fullscreen") {
-          window.dispatchEvent(
-            new CustomEvent("lia:leave-fullscreen-chat", {
-              detail: { targetMode: newMode },
-            }),
-          );
-        }
+      }
+      // Transicao de/para a TELA CHEIA (pagina "Conversar"). Regra unica e
+      // testavel (mode-transition.ts): entrar -> lia:navigate-chat-page;
+      // SAIR para qualquer modo -> lia:leave-fullscreen-chat.
+      // Bug 2026-06-04: o caminho floating nao disparava o leave, entao a
+      // ChatPageFullscreen ficava montada (hasInlineChat=true) e o chat
+      // renderizava quebrado dentro do container relative da pagina.
+      for (const ev of fullscreenTransitionEvents(prevMode, newMode)) {
+        window.dispatchEvent(new CustomEvent(ev.type, { detail: ev.detail }));
       }
     },
-    [close, open],
+    [close, enterFullscreen, open],
   );
 
-  // Wizard de alto esforco (criar vaga) sai do chat lateral e vai para a
-  // tela cheia automaticamente -- uma vez por sessao de wizard. Enterprise
-  // pattern (Salesforce/Jira/HubSpot): chat lateral e entry point; a criacao
-  // estruturada acontece no canvas dedicado. handleModeChange("fullscreen")
-  // ja e o bridge canonico (close() + lia:navigate-chat-page) -- nao criamos
-  // rota concorrente. Respeita renderMode "inline" (chat embutido nao migra).
-  useEffect(() => {
-    if (
-      dynamicPanel?.stage === "intake" &&
-      mode !== "fullscreen" &&
-      renderMode !== "inline" &&
-      !autoFullscreenDone.current
-    ) {
-      autoFullscreenDone.current = true;
-      handleModeChange("fullscreen");
+  // When the user explicitly closes an overlay chat (via X button), reset chatMode
+  // to "sidebar" so UnifiedChatConditional can transition from showFullscreen=true
+  // back to the bubble. Without this, chatMode stays "fullscreen" after close and
+  // the fullscreen panel re-appears (since showFullscreen no longer checks isOpen).
+  const handleClose = useCallback(() => {
+    close();
+    if (renderMode === "overlay") {
+      window.dispatchEvent(
+        new CustomEvent("lia:chat-mode-changed", {
+          detail: { mode: "sidebar", prevMode: mode },
+        }),
+      );
+      setPersisted(MODE_STORAGE_KEY, "sidebar");
     }
-  }, [dynamicPanel?.stage, mode, renderMode, handleModeChange]);
+  }, [close, mode, renderMode]);
+
+  // RRP (AD8): blocos wide/panel pedem expansao p/ tela cheia via evento.
+  // handleModeChange e o bridge canonico (setMode + persist + transicoes);
+  // o renderer (deeply nested) nao o alcanca por prop, entao usa evento.
+  useEffect(() => {
+    const onRequest = (e: Event) => {
+      const next = (e as CustomEvent).detail?.mode as ChatMode | undefined;
+      if (next) handleModeChange(next);
+    };
+    window.addEventListener("lia:request-chat-mode", onRequest);
+    return () => window.removeEventListener("lia:request-chat-mode", onRequest);
+  }, [handleModeChange]);
+
+  // Wizard de alto esforco (criar vaga) sai do chat lateral/bolha e vai para a
+  // F3 (Manus): auto-escalada removida. Consentimento explícito via WizardFullscreenPromptCard.
 
   const handleFileButtonClick = useCallback(() => {
     fileInputRef.current?.click();
@@ -892,8 +1125,29 @@ export function UnifiedChat({
     chatMessages.find((m) => m.sender === "user")?.content?.slice(0, 40) ||
     null;
   const hasMessages = chatMessages.length > 0;
-  const hasDynamicPanel =
-    !!dynamicPanel && SPLIT_STAGES.includes(dynamicPanel.stage as WizardStage);
+  const { showPanel: hasDynamicPanel, showDock: hasWizardDock } = wizardPanelVisibility({
+    stage: dynamicPanel?.stage,
+    mode: wizardPanelMode,
+  });
+  // F3: DynamicContextPanel só monta em fullscreen
+  const hasDynamicPanelFull = hasDynamicPanel && mode === "fullscreen";
+  const liaPanelStore = useLiaPanelStore();
+  const handleActivateTool = useCallback(
+    (callId: string) => {
+      if (chatConversationId) {
+        liaPanelStore.openForToolCall(callId, chatConversationId);
+      }
+      setWizardPanelMode("expanded");
+    },
+    [chatConversationId, liaPanelStore, setWizardPanelMode],
+  );
+  // F3: mostra card de consentimento quando em SPLIT_STAGE fora de fullscreen
+  const showConsentCard =
+    wizardActive &&
+    !!dynamicPanel?.stage &&
+    SPLIT_STAGES.includes(dynamicPanel.stage as WizardStage) &&
+    mode !== "fullscreen" &&
+    !wizardConsentDeclined;
   const activeTaskLabel = dynamicPanel?.stage
     ? (WIZARD_STAGE_LABELS[dynamicPanel.stage] ?? dynamicPanel.stage)
     : null;
@@ -903,11 +1157,25 @@ export function UnifiedChat({
   const isInline = renderMode === "inline";
   const effectiveMode: ChatMode = isInline ? "sidebar" : mode;
 
-  const dynamicPanelWidth = hasDynamicPanel ? dynamicPanelWidthPx : 0;
+  const dynamicPanelWidth = hasDynamicPanelFull ? dynamicPanelWidthPx : 0;
   const inlineWidth = isInline ? sidebarWidthPx + dynamicPanelWidth : undefined;
+
+  // Task #1291 — when the floating window has been dragged, drop the static
+  // `bottom-4 right-4` dock and drive position from inline `left/top` instead.
+  const isFloating = !isInline && mode === "floating";
+  const hasCustomFloatingPos = isFloating && floatingPosition !== null;
+  const floatingStyle: React.CSSProperties | undefined = hasCustomFloatingPos
+    ? {
+        left: `${floatingPosition!.x}px`,
+        top: `${floatingPosition!.y}px`,
+        right: "auto",
+        bottom: "auto",
+      }
+    : undefined;
 
   return (
     <div
+      ref={floatingContainerRef}
       className={cn(
         "flex bg-lia-bg-primary relative overflow-hidden",
         isInline
@@ -916,7 +1184,10 @@ export function UnifiedChat({
             ? "fixed inset-0 z-50"
             : mode === "sidebar"
               ? "fixed top-2 right-2 bottom-2 z-40 border border-lia-border-subtle rounded-md"
-              : "fixed bottom-4 right-4 w-[360px] h-[520px] z-30 rounded-md border border-lia-border-subtle",
+              : cn(
+                  "fixed w-[360px] h-[520px] z-30 rounded-md border border-lia-border-subtle",
+                  !hasCustomFloatingPos && "bottom-4 right-4",
+                ),
         className,
       )}
       style={
@@ -924,7 +1195,7 @@ export function UnifiedChat({
           ? { width: `${inlineWidth}px` }
           : !isInline && mode === "sidebar"
             ? { width: `${sidebarWidthPx + dynamicPanelWidth}px` }
-            : undefined
+            : floatingStyle
       }
       data-chat-mode={effectiveMode}
       data-render-mode={renderMode}
@@ -942,52 +1213,47 @@ export function UnifiedChat({
       )}
       {/* Chat column */}
       <div className="flex flex-col flex-1 min-w-0">
-        {/* Header */}
-        <UnifiedChatHeader
-          mode={effectiveMode}
-          onModeChange={handleModeChange}
-          onClose={close}
-          onNewChat={handleNewChat}
-          onSwitchTask={() => setShowSwitchTask(true)}
-          conversationTitle={conversationTitle}
-          isConnected={chatIsConnected}
-          transportMode={chatTransportMode}
-          isReconnecting={chatIsReconnecting}
-          onDelete={handleDeleteConversation}
-          activeTaskLabel={activeTaskLabel}
-          autoSaveLabel={wizardSavedLabel}
-          showOpenJobButton={
-            wizardActive &&
-            !hasDynamicPanel &&
-            !!lastDynamicPanelRef.current &&
-            SPLIT_STAGES.includes(
-              lastDynamicPanelRef.current.stage as WizardStage,
-            )
-          }
-          onOpenJob={reopenLastPanel}
-        />
+        {/* Header — in floating mode it doubles as the drag handle. */}
+        <div
+          onPointerDown={isFloating ? handleFloatingHeaderPointerDown : undefined}
+          onKeyDown={isFloating ? handleFloatingHeaderKeyDown : undefined}
+          tabIndex={isFloating ? 0 : undefined}
+          role={isFloating ? "toolbar" : undefined}
+          aria-label={isFloating ? "Arrastar janela da IA (use as setas para mover)" : undefined}
+          data-testid={isFloating ? "floating-drag-handle" : undefined}
+          className={cn(
+            isFloating &&
+              "touch-none select-none cursor-grab focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan/50 focus-visible:ring-inset",
+            isFloatingDragging && "cursor-grabbing",
+          )}
+        >
+          <UnifiedChatHeader
+            mode={effectiveMode}
+            onModeChange={handleModeChange}
+            onClose={handleClose}
+            onNewChat={handleNewChat}
+            conversationTitle={conversationTitle}
+            isConnected={chatIsConnected}
+            transportMode={chatTransportMode}
+            isReconnecting={chatIsReconnecting}
+            onDelete={handleDeleteConversation}
+            activeTaskLabel={activeTaskLabel}
+            autoSaveLabel={wizardSavedLabel}
+            showResetFloatingButton={hasCustomFloatingPos}
+            onResetFloatingPosition={resetFloatingPosition}
+            showOpenJobButton={
+              wizardActive &&
+              !hasDynamicPanel &&
+              !!lastDynamicPanelRef.current &&
+              SPLIT_STAGES.includes(
+                lastDynamicPanelRef.current.stage as WizardStage,
+              )
+            }
+            onOpenJob={reopenLastPanel}
+          />
+        </div>
 
-        {/* Wizard progress bar — sticky at the top of the feed while the
-            "Criar nova vaga" wizard is active. Mounts on the first
-            `wizard_stage` event and unmounts at `done`/`handoff`. */}
-        {wizardActive && (
-          <div
-            className="border-b border-lia-border-subtle"
-            role="status"
-            aria-live="polite"
-            aria-label="Progresso do wizard de criação de vaga"
-            data-testid="wizard-progress-bar"
-          >
-            <WizardProgressBar
-              currentStage={wizardStage}
-              completeness={wizardCompleteness}
-              stageHistory={wizardHistory}
-              degradedStages={wizardDegradedStages}
-              compact={effectiveMode === "floating"}
-              onCancelWizard={handleCancelWizard}
-            />
-          </div>
-        )}
+
 
         {/* Sprint Pipeline Templates Gap #6 (2026-05-26) — render auto-suggest card no chat.
             Card aparece quando backend graph (intake_node ou jd_enrichment_node) emite
@@ -1094,21 +1360,47 @@ export function UnifiedChat({
 
         {/* Content area */}
         {hasMessages ? (
-          <UnifiedMessageList
-            mode={effectiveMode}
-            messages={chatMessages}
-            isStreaming={chatIsStreaming}
-            streamingContent={chatStreamingContent}
-            isThinking={chatIsThinking}
-            thinkingSteps={chatThinkingSteps}
-            userName={userName}
-            onChipClick={(value) => sendChatMessage(value)}
-            onRegenerate={handleRegenerate}
-          />
+          <ToolActivateContext.Provider value={hasDynamicPanelFull ? handleActivateTool : null}>
+            <UnifiedMessageList
+              mode={effectiveMode}
+              messages={chatMessages}
+              isStreaming={chatIsStreaming}
+              streamingContent={chatStreamingContent}
+              isThinking={chatIsThinking}
+              thinkingSteps={chatThinkingSteps}
+              userName={userName}
+              conversationId={chatConversationId}
+              onChipClick={(value) => sendChatMessage(value)}
+              onRegenerate={handleRegenerate}
+              onOpenPanel={() => setWizardPanelMode("expanded")}
+              planProgressSteps={chatPlanProgressSteps}
+            />
+          </ToolActivateContext.Provider>
         ) : (
           <UnifiedChatEmptyState
             mode={effectiveMode}
             onSuggestionClick={handleSuggestionClick}
+          />
+        )}
+
+        {/* F4 Background Agents Status — shows multi-step plan progress */}
+        {chatBackgroundTasks.length > 0 && (
+          <BackgroundAgentsStatus
+            tasks={chatBackgroundTasks.map((t) => ({
+              id: t.task_id,
+              type: t.task_type,
+              label: t.label,
+              status: t.status,
+              progress: t.progress,
+              message: t.message,
+              result: t.result,
+            } as BackgroundTask))}
+            onViewResult={(task) => {
+              // F5: result is in the conversation bubble — scroll chat to bottom.
+              const el = document.querySelector("[data-chat-messages-end]")
+              el?.scrollIntoView({ behavior: "smooth" })
+              void task
+            }}
           />
         )}
 
@@ -1125,7 +1417,7 @@ export function UnifiedChat({
         )}
 
         {/* Progressive disclosure tips (wizard active) */}
-        {hasDynamicPanel && (
+        {hasDynamicPanelFull && (
           <ProgressiveDisclosure
             currentStage={(dynamicPanel?.stage as WizardStage) ?? null}
             interactionCount={
@@ -1133,6 +1425,49 @@ export function UnifiedChat({
             }
           />
         )}
+
+        {/* F3: Consent card — aparece em sidebar/floating quando wizard está em SPLIT_STAGE */}
+        <AnimatePresence>
+          {showConsentCard && (
+            <WizardFullscreenPromptCard
+            onAccept={() => {
+              if (isInline) navigateToChat(chatConversationId ?? undefined);
+              else handleModeChange("fullscreen");
+            }}
+            onDecline={() => setWizardConsentDeclined(true)}
+            />
+          )}
+        </AnimatePresence>
+
+        {/* Wizard Dock (Manus F1) — thumbnail minimizado quando mode="docked" */}
+        <AnimatePresence>
+          {hasWizardDock && dynamicPanel && dynamicPanel.stage && (
+            <WizardDock
+            stage={dynamicPanel.stage}
+            stageLabel={WIZARD_STAGE_LABELS[dynamicPanel.stage] ?? dynamicPanel.stage}
+            requiresApproval={dynamicPanel.requires_approval ?? false}
+            onExpand={() => setWizardPanelMode("expanded")}
+            progressBar={
+              <WizardProgressBar
+                currentStage={wizardStage}
+                completeness={wizardCompleteness}
+                stageHistory={wizardHistory}
+                degradedStages={wizardDegradedStages}
+                compact
+                onCancelWizard={handleCancelWizard}
+              />
+            }
+            thumbnail={
+              <div className="w-full h-full bg-gradient-to-br from-wedo-cyan/10 to-wedo-purple/10 flex flex-col gap-1 p-2">
+                <div className="text-[8px] font-semibold text-lia-text-primary truncate">
+                  {WIZARD_STAGE_LABELS[dynamicPanel.stage] ?? dynamicPanel.stage}
+                </div>
+                <div className="flex-1 rounded bg-lia-bg-secondary/50" />
+              </div>
+            }
+            />
+          )}
+        </AnimatePresence>
 
         {/* Input */}
         <UnifiedChatInput
@@ -1155,8 +1490,14 @@ export function UnifiedChat({
       </div>
 
       {/* Split View: DynamicContextPanel — wider in fullscreen to use available space */}
-      {hasDynamicPanel && (
-        <div
+      <AnimatePresence>
+      {hasDynamicPanelFull && (
+        <motion.div
+          key="wizard-panel"
+          initial={{ opacity: 0, x: 24 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: 24 }}
+          transition={{ type: "spring", stiffness: 300, damping: 30 }}
           className="flex-shrink-0 flex p-2 relative"
           style={{ width: dynamicPanelWidthPx }}
         >
@@ -1170,32 +1511,47 @@ export function UnifiedChat({
           >
             <div className="absolute left-0.5 top-1/2 -translate-y-1/2 w-0.5 h-8 rounded-full bg-lia-border-subtle group-hover:bg-wedo-cyan transition-colors" />
           </div>
-          <div className="flex-1 min-w-0 rounded-xl border border-lia-border-subtle bg-lia-bg-primary shadow-lg shadow-black/10 overflow-hidden">
-          <DynamicContextPanel
-            stage={(dynamicPanel?.stage as WizardStage) ?? null}
-            data={dynamicPanel?.data ?? {}}
-            requiresApproval={dynamicPanel?.requires_approval ?? false}
-            onApprove={() => sendApproval(true)}
-            onReject={() => sendApproval(false)}
-            onClose={closeDynamicPanel}
-            onUpdate={(updates) => {
-              collectedDataRef.current = mergeCollectedData(collectedDataRef.current, updates)
-              sendChatMessage(wizardUpdateToMessage(updates), undefined, undefined, {
-                right_panel_form: collectedDataRef.current,
-              })
-            }}
-          />
+          <div className="flex-1 min-w-0 rounded-xl border border-lia-border-subtle bg-lia-bg-primary shadow-lg shadow-black/10 overflow-hidden flex flex-col">
+            <div className="flex-1 min-h-0 overflow-auto">
+              <DynamicContextPanel
+                stage={(dynamicPanel?.stage as WizardStage) ?? null}
+                data={dynamicPanel?.data ?? {}}
+                requiresApproval={dynamicPanel?.requires_approval ?? false}
+                onApprove={() => sendApproval(true)}
+                onReject={() => sendApproval(false)}
+                onClose={() => setWizardPanelMode("docked")}
+                onUpdate={(updates) => {
+                  collectedDataRef.current = mergeCollectedData(collectedDataRef.current, updates)
+                  sendChatMessage(wizardUpdateToMessage(updates), undefined, undefined, {
+                    right_panel_form: collectedDataRef.current,
+                  })
+                }}
+              />
+            </div>
+            {wizardStage && (
+              <div
+                className="border-t border-lia-border-subtle flex-shrink-0"
+                role="status"
+                aria-live="polite"
+                aria-label="Progresso do wizard de criação de vaga"
+                data-testid="wizard-progress-bar"
+              >
+                <WizardProgressBar
+                  currentStage={wizardStage}
+                  completeness={wizardCompleteness}
+                  stageHistory={wizardHistory}
+                  degradedStages={wizardDegradedStages}
+                  compact
+                  onCancelWizard={handleCancelWizard}
+                />
+              </div>
+            )}
           </div>
-        </div>
+        </motion.div>
       )}
+      </AnimatePresence>
 
-      {/* Switch Task Modal (⌘K) */}
-      <SwitchTaskModal
-        isOpen={showSwitchTask}
-        onClose={() => setShowSwitchTask(false)}
-        onSelectSession={handleSelectSession}
-        currentSessionId={chatConversationId}
-      />
+
 
       {/*
         Task #1133 — modal canônico de confirmação ao cancelar wizard

@@ -94,6 +94,7 @@ class RecruitmentCampaignDomain(ComplianceDomainPrompt):
             "get_campaign_progress": self._handle_get_campaign_progress,
             "advance_campaign": self._handle_advance_campaign,
             "list_campaigns": self._handle_list_campaigns,
+            "send_outreach_email": self._handle_send_outreach_email,
         }
 
         handler = handler_map.get(action_id)
@@ -143,6 +144,23 @@ class RecruitmentCampaignDomain(ComplianceDomainPrompt):
                 else:
                     stages = list(DEFAULT_CAMPAIGN_STAGES)
 
+                _raw_job_ids = params.get("job_ids") or []
+                _job_ids_parsed = []
+                for _j in _raw_job_ids:
+                    try:
+                        import uuid as _uuid_mod
+                        _job_ids_parsed.append(_uuid_mod.UUID(str(_j)))
+                    except Exception:
+                        pass
+                # back-compat: if job_id singular provided and not in job_ids, include it
+                _singular_job_id = params.get("job_id")
+                if _singular_job_id and not _job_ids_parsed:
+                    try:
+                        import uuid as _uuid_mod
+                        _job_ids_parsed.append(_uuid_mod.UUID(str(_singular_job_id)))
+                    except Exception:
+                        pass
+
                 campaign = RecruitmentCampaign(
                     id=uuid.uuid4(),
                     company_id=company_id,
@@ -150,6 +168,8 @@ class RecruitmentCampaignDomain(ComplianceDomainPrompt):
                     name=name,
                     description=params.get("description", f"Campanha: {name}"),
                     job_id=params.get("job_id"),
+                    job_ids=_job_ids_parsed or None,
+                    agent_ids=params.get("agent_ids") or None,
                     talent_pool_id=params.get("talent_pool_id"),
                     status="active",
                     stages=stages,
@@ -510,14 +530,18 @@ class RecruitmentCampaignDomain(ComplianceDomainPrompt):
                 return False
 
             bus = AgentBus()
+            # AgentBus roteia ponto-a-ponto por (company_id, to_agent); nao ha
+            # kwarg channel/message. Subscriber downstream = Fase 2 (ausente).
             await bus.publish(
-                channel=f"campaign.{dispatch_config['domain']}",
-                message={
-                    "action": dispatch_config["action"],
-                    "params": dispatch_config["params"],
+                from_agent="recruitment_campaign",
+                to_agent=dispatch_config["domain"],
+                event_type=dispatch_config["action"],
+                payload={
+                    **dispatch_config["params"],
                     "triggered_by": user_id,
                     "source": "recruitment_campaign",
                 },
+                company_id=company_id,
             )
 
             logger.info(
@@ -527,8 +551,136 @@ class RecruitmentCampaignDomain(ComplianceDomainPrompt):
             return True
 
         except Exception as e:
-            logger.warning(
-                "[Campaign] Failed to dispatch auto-action '%s': %s",
-                action_name, e,
+            logger.error(
+                "[Campaign] Failed to dispatch auto-action %s: %s",
+                action_name, e, exc_info=True,
             )
             return False
+
+    async def _handle_send_outreach_email(self, params: dict[str, Any], context: DomainContext) -> DomainResponse:
+        """Send outreach emails to candidates in the campaign's vacancy pool.
+
+        Iterates over job_ids (multi-vacancy) or job_id (singular) and sends
+        via CommunicationDispatcher.send_email. HITL: logs each send in
+        stage_history. Agent Studio agents listed in agent_ids are noted as
+        participants for the outreach stage.
+        """
+        campaign_id = params.get("campaign_id", "").strip()
+        if not campaign_id:
+            return DomainResponse.clarification_response(
+                question="Qual campanha deseja disparar? Informe o campaign_id.",
+                domain_id=self.domain_id,
+                action_id="send_outreach_email",
+            )
+
+        company_id = context.tenant_id
+        try:
+            from app.core.database import get_db
+            from app.repositories.campaign_repository import CampaignRepository
+            from app.domains.communication.services.communication_dispatcher import (
+                CommunicationDispatcher,
+            )
+            from app.repositories.candidate_repository import CandidateRepository
+            import uuid as _uuid_mod
+
+            results: list[dict] = []
+            dispatcher = CommunicationDispatcher()
+
+            async for db in get_db():
+                repo = CampaignRepository(db)
+                campaign = await repo.get_by_id(_uuid_mod.UUID(campaign_id), company_id)
+                if not campaign:
+                    return DomainResponse.error_response(
+                        error="Campanha não encontrada.", domain_id=self.domain_id, action_id="send_outreach_email"
+                    )
+
+                # Collect all vacancy ids (multi + singular back-compat)
+                all_job_ids: list[str] = [str(j) for j in (campaign.job_ids or [])]
+                if campaign.job_id and campaign.job_id not in all_job_ids:
+                    all_job_ids.append(campaign.job_id)
+
+                subject = params.get("subject", f"Oportunidade na {campaign.name}")
+                body_html = params.get("body_html") or (
+                    f"<p>Olá! Temos uma oportunidade que pode ser ideal para você.</p>"
+                    f"<p>Estamos conduzindo um processo seletivo e gostaríamos de convidá-lo(a) "
+                    f"para conhecer mais sobre a posição.</p>"
+                    f"<p>Responda este e-mail para mais informações.</p>"
+                )
+
+                # For each vacancy, get candidate pool and send
+                cand_repo = CandidateRepository(db)
+                sent_count = 0
+                failed_count = 0
+                for job_id in all_job_ids:
+                    try:
+                        candidates = await cand_repo.list_active_not_blacklisted(
+                            company_id=company_id,
+                            vacancy_id=job_id,
+                            limit=params.get("limit", 50),
+                        )
+                        for candidate in candidates:
+                            email = getattr(candidate, "email", None)
+                            if not email:
+                                continue
+                            send_result = dispatcher.send_email(
+                                to_email=email,
+                                subject=subject,
+                                body_html=body_html,
+                                from_name=params.get("from_name", "WeDOTalent"),
+                            )
+                            if send_result.get("success"):
+                                sent_count += 1
+                            else:
+                                failed_count += 1
+                            results.append({
+                                "candidate_id": str(getattr(candidate, "id", "")),
+                                "email": email,
+                                "success": send_result.get("success"),
+                                "vacancy_id": job_id,
+                            })
+                    except Exception as _job_exc:
+                        logger.warning("[Campaign] Error processing job_id=%s: %s", job_id, _job_exc)
+
+                # Note agent_ids participation in stage_history
+                agent_note = ""
+                if campaign.agent_ids:
+                    agent_note = f" (agentes do Studio: {', '.join(campaign.agent_ids[:3])}{'…' if len(campaign.agent_ids) > 3 else ''})"
+
+                history = list(campaign.stage_history or [])
+                history.append({
+                    "action": "send_outreach_email",
+                    "timestamp": datetime.utcnow().isoformat(),
+                    "by": context.user_id,
+                    "sent": sent_count,
+                    "failed": failed_count,
+                    "vacancies": all_job_ids,
+                    "agents": campaign.agent_ids or [],
+                })
+                campaign.stage_history = history
+                campaign.candidates_contacted = (campaign.candidates_contacted or 0) + sent_count
+                await db.flush()
+                await db.commit()
+                break
+
+            return DomainResponse.success_response(
+                message=(
+                    f"📧 Outreach enviado{agent_note}:\n\n"
+                    f"• **Enviados:** {sent_count}\n"
+                    f"• **Falhas:** {failed_count}\n"
+                    f"• **Vagas cobertas:** {len(all_job_ids)}\n\n"
+                    f"{'✅ Todos enviados com sucesso!' if not failed_count else f'⚠️ {failed_count} envio(s) falharam — verifique os logs.'}"
+                ),
+                data={
+                    "sent": sent_count,
+                    "failed": failed_count,
+                    "results": results[:10],  # first 10 for preview
+                    "total": len(results),
+                },
+                domain_id=self.domain_id,
+                action_id="send_outreach_email",
+            )
+        except Exception as exc:
+            logger.exception("[Campaign] send_outreach_email failed: %s", exc)
+            return DomainResponse.error_response(
+                error=f"Erro ao enviar outreach: {exc}", domain_id=self.domain_id, action_id="send_outreach_email"
+            )

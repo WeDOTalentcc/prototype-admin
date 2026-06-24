@@ -50,6 +50,7 @@ from app.shared.pii_masking import mask_pii
 from fastapi import Depends
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+from app.shared.errors import LIAError, LIAInternalError
 from typing import Annotated
 from fastapi import Path
 from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
@@ -142,7 +143,7 @@ async def initiate_voice_screening(
         raise
     except Exception as e:
         logger.error("[TWILIO VOICE API] Initiate call error: %s", e)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
     fallback = None
     if session_obj.status in ("fallback", "failed"):
@@ -191,7 +192,7 @@ async def twiml_greeting(
         return _twiml_response(twiml)
     except (TwilioVoiceError, TwilioVoiceUnconfiguredError) as e:
         logger.error("[TWILIO VOICE] Greeting TwiML error: %s", e)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 def _parse_consent_speech(speech: str) -> bool:
@@ -276,7 +277,7 @@ async def twiml_consent_response(
             )
         except (TwilioVoiceError, TwilioVoiceUnconfiguredError) as e:
             logger.error("[TWILIO VOICE] Stream TwiML error: %s", e)
-            raise HTTPException(status_code=500, detail=str(e))
+            raise LIAError(message="Erro interno do servidor")
     else:
         twiml = twilio_voice_service.generate_end_twiml(
             message=(
@@ -636,10 +637,7 @@ async def end_call(session_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)
                 finalization = await voice_screening_orchestrator.finalize_screening(session_id, db=db)
                 return {"success": True, "session_id": session_id, "result": finalization}
             else:
-                raise HTTPException(
-                    status_code=500,
-                    detail=result.get("error", "Failed to end call"),
-                )
+                raise LIAInternalError(result.get("error", "Failed to end call"))
 
         return {"success": True, "session_id": session_id, "message": "No active call to end"}
 
@@ -770,7 +768,7 @@ async def generate_voip_token(request_body: VoIPTokenRequest, ) -> VoIPTokenResp
         raise
     except Exception as e:
         logger.error("[TWILIO VOIP] Token generation failed: %s", e)
-        raise HTTPException(status_code=500, detail=f"Failed to generate VoIP token: {e}")
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/twilio-voice/voip-connect", response_model=None)
@@ -821,7 +819,7 @@ async def twiml_voip_connect(
         return _twiml_response(twiml)
     except (TwilioVoiceError, TwilioVoiceUnconfiguredError) as e:
         logger.error("[TWILIO VOIP] VoIP connect TwiML error: %s", e)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/twilio-voice/health", response_model=None)

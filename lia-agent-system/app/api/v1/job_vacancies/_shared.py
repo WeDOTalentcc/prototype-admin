@@ -10,8 +10,12 @@ __all__ = [
     "SATURATION_EXCLUDED_STATUSES",
     "ADHERENCE_THRESHOLD",
     "VALID_SCREENING_STATUSES",
+    "VALID_PRIORITIES",
+    "URGENCY_LEVELS",
+    "WORK_MODEL_OPTIONS",
+    "EMPLOYMENT_TYPE_OPTIONS",
+    "SENIORITY_OPTIONS",
     # helpers
-    "generate_lia_metrics",
     "_calculate_days_between",
     "_is_job_at_risk",
     "derive_screening_status",
@@ -80,41 +84,32 @@ ADHERENCE_THRESHOLD = 55.0
 
 VALID_SCREENING_STATUSES = {"not_configured", "not_started", "active", "paused", "completed"}
 
+# --- Dropdown option vocabularies (FastAPI canonical — Rails fora do fluxo) ---
+# Onda 1 (audit 2026-06-06): fonte única para GET /job-vacancies/options.
+# Valores são as strings canônicas PT que o formulário FE persiste
+# (ver plataforma-lia/src/components/jobs/job-edit-tab + helpers/vacancy_vocab.py).
+VALID_PRIORITIES = ["alta", "média", "baixa"]
+
+URGENCY_LEVELS = [
+    {"id": 1, "name": "1 — Muito baixa"},
+    {"id": 2, "name": "2 — Baixa"},
+    {"id": 3, "name": "3 — Média"},
+    {"id": 4, "name": "4 — Alta"},
+    {"id": 5, "name": "5 — Crítica"},
+]
+
+WORK_MODEL_OPTIONS = ["remoto", "híbrido", "presencial"]
+
+EMPLOYMENT_TYPE_OPTIONS = ["CLT", "PJ", "Estágio", "Freelancer", "Temporário"]
+
+SENIORITY_OPTIONS = [
+    "Estágio", "Júnior", "Pleno", "Sênior",
+    "Especialista", "Coordenador", "Gerente", "Diretor",
+]
+
 # =============================================
 # HELPER FUNCTIONS
 # =============================================
-
-def generate_lia_metrics(funnel_data: dict | None) -> dict:
-    """Generate LIA performance metrics based on funnel data."""
-    import random
-
-    if not funnel_data:
-        return {
-            "pipeline_lia": 0,
-            "triagens_agendadas": 0,
-            "triagens_realizadas": 0,
-            "sem_resposta": 0,
-            "entrevistas_agendadas": 0
-        }
-
-    total = funnel_data.get("total", 0)
-    screening = funnel_data.get("screening", 0)
-    interview = funnel_data.get("interview", 0)
-
-    pipeline_base = int(total * random.uniform(0.75, 0.95)) if total > 0 else 0
-    triagens_agendadas = int(screening * random.uniform(0.60, 0.85)) if screening > 0 else 0
-    triagens_realizadas = int(triagens_agendadas * random.uniform(0.70, 0.90)) if triagens_agendadas > 0 else 0
-    sem_resposta = int(total * random.uniform(0.10, 0.25)) if total > 0 else 0
-    entrevistas_agendadas = int(interview * random.uniform(0.70, 0.90)) if interview > 0 else 0
-
-    return {
-        "pipeline_lia": pipeline_base,
-        "triagens_agendadas": triagens_agendadas,
-        "triagens_realizadas": triagens_realizadas,
-        "sem_resposta": sem_resposta,
-        "entrevistas_agendadas": entrevistas_agendadas
-    }
-
 
 def _calculate_days_between(start_date: datetime | None, end_date: datetime | None) -> int:
     """Calculate days between two dates, handling None values."""
@@ -161,7 +156,15 @@ def derive_screening_status(screening_config: dict) -> str:
     if status.get("enabled", False):
         return "active"
 
-    has_config = bool(screening_config.get("wsi_skills")) or bool(screening_config.get("settings"))
+    # P1-3 (audit 2026-06-05): a forma do wizard/grafo grava screening_questions
+    # (sem wsi_skills/settings). Sem isto, vaga configurada pelo chat aparece
+    # como "Configurar" (not_configured). derive_screening_status é o produtor
+    # único do sinal — fix aqui conserta lista + detalhe + preview de uma vez.
+    has_config = (
+        bool(screening_config.get("wsi_skills"))
+        or bool(screening_config.get("settings"))
+        or bool(screening_config.get("screening_questions"))
+    )
     if has_config:
         return "not_started"
 
@@ -206,6 +209,51 @@ def generate_slug(title: str, company_name: str = "") -> str:
 # SHARED PYDANTIC SCHEMAS
 # =============================================
 
+
+
+# ── Stakeholder validation (T10) ──────────────────────────────────────────
+
+import re as _re_mod
+
+_EMAIL_RE = _re_mod.compile(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
+_VALID_STAKEHOLDER_ROLES = {
+    # roles novos (canonical)
+    "ta_lead", "area_manager", "area_director", "technical_interviewer",
+    # roles legados mantidos como alias (backward compat)
+    "hr_bp", "dept_head", "committee_member", "interviewer", "other",
+}
+
+
+def _validate_stakeholders_list(v: list[dict] | None) -> list[dict] | None:
+    if v is None:
+        return v
+    if not isinstance(v, list):
+        raise ValueError("stakeholders deve ser uma lista")
+    if len(v) > 20:
+        raise ValueError("Maximo de 20 stakeholders por vaga")
+    validated = []
+    for i, item in enumerate(v):
+        if not isinstance(item, dict):
+            raise ValueError(f"stakeholders[{i}] deve ser um objeto")
+        name = item.get("name")
+        email = item.get("email")
+        role = item.get("role", "other")
+        if not name or not isinstance(name, str) or len(name.strip()) < 2:
+            raise ValueError(f"stakeholders[{i}].name e obrigatorio (min 2 chars)")
+        if not email or not isinstance(email, str) or not _EMAIL_RE.match(email.strip()):
+            raise ValueError(f"stakeholders[{i}].email invalido: {email!r}")
+        if role and role not in _VALID_STAKEHOLDER_ROLES:
+            raise ValueError(
+                f"stakeholders[{i}].role invalido: {role!r}. "
+                f"Aceitos: {sorted(_VALID_STAKEHOLDER_ROLES)}"
+            )
+        validated.append({
+            "name": name.strip(),
+            "email": email.strip().lower(),
+            "role": role or "other",
+        })
+    return validated
+
 class JobVacancyCreate(WeDoBaseModel):
     """Schema for creating a job vacancy directly (not via conversation)."""
     title: str = Field(..., min_length=1, max_length=255)
@@ -232,6 +280,7 @@ class JobVacancyCreate(WeDoBaseModel):
     manager_email: str | None = None
     recruiter: str | None = None
     recruiter_email: str | None = None
+    stakeholders: list[dict] | None = None
     is_confidential: bool = False
     visibility: str = "public"
     access_list: list[str] | None = []
@@ -255,6 +304,11 @@ class JobVacancyCreate(WeDoBaseModel):
     affirmative_document_types: list[str] | None = []
     bonus_range: dict | None = None
     conversation_id: str | None = None
+
+    @field_validator("stakeholders", mode="before")
+    @classmethod
+    def _validate_stakeholders(cls, v):
+        return _validate_stakeholders_list(v)
 
 
 class JobVacancyUpdate(WeDoBaseModel):
@@ -281,6 +335,7 @@ class JobVacancyUpdate(WeDoBaseModel):
     manager_email: str | None = None
     recruiter: str | None = None
     recruiter_email: str | None = None
+    stakeholders: list[dict] | None = None
     is_confidential: bool | None = None
     visibility: str | None = None
     access_list: list[str] | None = None
@@ -304,6 +359,27 @@ class JobVacancyUpdate(WeDoBaseModel):
     affirmative_document_required: bool | None = None
     affirmative_document_types: list[str] | None = None
     enriched_jd: dict | None = None
+    city: str | None = None
+    # Onda 1 (audit 2026-06-06): prazos da vaga + urgência são features REAIS
+    # (prazos alimentam job_alert_service/notifications; urgência é exibida/filtrável).
+    # As colunas já existem no model; o setattr-loop genérico do update persiste.
+    urgency_level: int | None = None
+    open_date: datetime | None = None
+    deadline: datetime | None = None
+    deadline_screening: datetime | None = None
+    deadline_shortlist: datetime | None = None
+    deadline_closing: datetime | None = None
+
+    # GAP-05-004: Optimistic locking control field.
+    # When provided, the update is rejected (HTTP 409) if the DB updated_at
+    # has changed since the client last read the vacancy.  Not a DB column;
+    # the endpoint pops it before persisting.
+    expected_updated_at: datetime | None = None
+
+    @field_validator("stakeholders", mode="before")
+    @classmethod
+    def _validate_stakeholders(cls, v):
+        return _validate_stakeholders_list(v)
 
 
 class JobVacancyResponse(BaseModel):
@@ -312,6 +388,7 @@ class JobVacancyResponse(BaseModel):
     title: str
     department: str | None = None
     location: str | None = None
+    city: str | None = None
     work_model: str | None = None
     employment_type: str | None = None
     seniority_level: str | None = None
@@ -373,6 +450,7 @@ class JobVacancyResponse(BaseModel):
     manager_email: str | None = None
     recruiter: str | None = None
     recruiter_email: str | None = None
+    stakeholders: list[dict] | None = []
     is_confidential: bool = False
     visibility: str = "public"
     access_list: list[str] | None = []
@@ -570,3 +648,150 @@ def run_fairness_guard_on_jd(
 # Backward-compat alias: job-vacancy handlers historically imported
 # JOB_ID_PATH_PATTERN from here. It IS the canonical dual-ID pattern.
 JOB_ID_PATH_PATTERN = DUAL_ID_PATH_PATTERN
+
+
+# ─── Faixa salarial herdada da empresa (read-time enrichment, audit 2026-06-06) ─
+# Paulo: a faixa salarial da vaga deve ser HERDADA da empresa (Configuracoes ->
+# Faixas Salariais por Nivel) em TODO lugar (lista, detalhe), nao so quando o
+# recrutador edita+salva. Resolve a banda por nivel + departamento + contrato e
+# preenche salary_range das vagas SEM faixa explicita. Enriquecimento em tempo
+# de LEITURA — nunca commitado (GET nao da commit). Faixa explicita sempre vence.
+def _salary_range_is_empty(sr) -> bool:
+    if not sr or not isinstance(sr, dict):
+        return True
+    if sr.get("undisclosed"):  # "A combinar" explicito — nao herda da empresa
+        return False
+    return not sr.get("min") and not sr.get("max")
+
+
+def _band_to_salary_range(band) -> dict:
+    return {
+        "min": band.min,
+        "max": band.max,
+        "currency": band.currency or "BRL",
+        "source": "company_salary_band",
+        "inherited": True,
+    }
+
+
+async def resolve_inherited_salary_ranges(db, company_id, vacancies) -> None:
+    """Preenche salary_range das vagas SEM faixa explicita com a banda cadastrada
+    da empresa, casada por nivel + departamento + contrato. UMA leitura das
+    bandas (sem N+1). Mutacao in-memory read-time (sem commit). Audit 2026-06-06."""
+    if not company_id or company_id in ("default", "unknown"):
+        return
+    needing = [
+        v for v in vacancies
+        if _salary_range_is_empty(getattr(v, "salary_range", None))
+        and getattr(v, "seniority_level", None)
+    ]
+    if not needing:
+        return
+    from app.domains.company.repositories.salary_band_repository import (
+        SalaryBandRepository,
+    )
+
+    repo = SalaryBandRepository(db)
+    try:
+        bands = await repo.list_for_company(company_id, active_only=True)
+    except Exception:  # fail-open — sem banda, faixa fica como esta
+        return
+    if not bands:
+        return
+    for v in needing:
+        band = repo.match_from_bands(
+            bands,
+            seniority_level=v.seniority_level,
+            department=getattr(v, "department", None),
+            contract_type=getattr(v, "employment_type", None),
+        )
+        if band and band.min is not None:
+            v.salary_range = _band_to_salary_range(band)
+
+
+__all__.append("resolve_inherited_salary_ranges")
+
+
+def _benefit_to_inherited_dict(b) -> dict:
+    return {
+        "id": str(b.id),
+        "name": b.name,
+        "category": b.category,
+        "description": getattr(b, "description", None),
+        "icon": getattr(b, "icon", None),
+        "value": getattr(b, "value", None),
+        "value_type": getattr(b, "value_type", None),
+        "is_mandatory": bool(getattr(b, "is_mandatory", False)),
+        "inherited": True,
+        "source": "company_benefit",
+    }
+
+
+async def resolve_inherited_benefits(db, company_id, vacancies) -> None:
+    """Preenche benefits das vagas SEM beneficios explicitos com os beneficios
+    da empresa casados por nivel + departamento + contrato (+ os is_mandatory).
+    Mutacao in-memory read-time (sem commit). Fail-open. Audit 2026-06-06 (FASE 1).
+    Espelha resolve_inherited_salary_ranges; wirado so no detalhe (sem N+1)."""
+    if not company_id or company_id in ("default", "unknown"):
+        return
+    needing = [v for v in vacancies if not (getattr(v, "benefits", None) or [])]
+    if not needing:
+        return
+    from app.domains.company.repositories.company_benefit_repository import (
+        CompanyBenefitRepository,
+    )
+
+    repo = CompanyBenefitRepository(db)
+    for v in needing:
+        try:
+            pairs = await repo.list_matching(
+                str(company_id),
+                seniority_level=getattr(v, "seniority_level", None),
+                department=getattr(v, "department", None),
+                contract_type=getattr(v, "employment_type", None),
+            )
+        except Exception:  # noqa: BLE001 — fail-open por vaga
+            continue
+        inherited = [
+            _benefit_to_inherited_dict(b)
+            for (b, matches) in pairs
+            if matches or getattr(b, "is_mandatory", False)
+        ]
+        if inherited:
+            v.benefits = inherited
+
+
+__all__.append("resolve_inherited_benefits")
+
+# ─── Vacancy salary PII gate (audit 2026-06-06) ──────────────────────────────
+
+async def load_role_pii_defaults(db, company_id: str) -> dict:
+    from app.domains.hiring_policy.repositories.hiring_policy_repository import HiringPolicyRepository
+    try:
+        policy = await HiringPolicyRepository(db).get_by_company(company_id)
+        return (getattr(policy, "pii_visibility_defaults", None) or {}) if policy else {}
+    except Exception:  # fail-open — visibility check should never block reads
+        return {}
+
+
+def apply_vacancy_salary_visibility(vacancy_dict: dict, current_user, role_defaults=None) -> dict:
+    """Mask vacancy salary fields when vacancy_salary visibility is hidden.
+
+    Mutates and returns the dict. Adds vacancy_salary_masked flag.
+    Default: visible (True). Fail-open to avoid breaking reads.
+    """
+    from app.shared.rbac.pii_field_resolver import resolve_field_visibility
+    visible = resolve_field_visibility(current_user, role_defaults or {}, "vacancy_salary", default=True)
+    if visible:
+        vacancy_dict["vacancy_salary_masked"] = False
+        return vacancy_dict
+    for key in ("salary", "salary_range", "salary_min", "salary_max"):
+        if key in vacancy_dict:
+            vacancy_dict[key] = None
+    vacancy_dict["vacancy_salary_masked"] = True
+    return vacancy_dict
+
+
+__all__.append("load_role_pii_defaults")
+__all__.append("apply_vacancy_salary_visibility")
+

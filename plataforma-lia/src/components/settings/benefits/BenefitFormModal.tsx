@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 /**
  * BenefitFormModal — cadastro/edicao de beneficio da empresa.
  *
@@ -28,6 +29,7 @@ import { textStyles } from "@/lib/design-tokens"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { FormField } from "@/components/ui/form-field"
 import { Textarea } from "@/components/ui/textarea"
 import {
   Select,
@@ -120,6 +122,9 @@ export function BenefitFormModal({
   history,
   historyLoading,
 }: BenefitFormModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('benefit-form', open)
+
   const t = useTranslations("settings.benefits")
   const { departments: companyDepartments, loading: deptsLoading } = useDepartmentsList()
   const {
@@ -184,36 +189,28 @@ export function BenefitFormModal({
             {/* SECAO 1 — BASICO                                       */}
             {/* ===================================================== */}
             <BenefitFormSection title="Identificação básica" isFirst>
-              <div>
-                <Label htmlFor="name" className={textStyles.label}>
-                  {t("benefitName")} <span className="text-status-error">*</span>
-                </Label>
+              <FormField label={t("benefitName")} required labelClassName={textStyles.label}>
                 <Input
-                  id="name"
                   value={editingBenefit.name}
                   onChange={(e) =>
                     setEditingBenefit({ ...editingBenefit, name: e.target.value })
                   }
                   placeholder={t("benefitNamePlaceholder")}
-                  className="mt-1 rounded-md text-sm"
+                  className="rounded-md text-sm"
                 />
-              </div>
+              </FormField>
 
-              <div>
-                <Label htmlFor="description" className={textStyles.label}>
-                  {t("descriptionLabel")}
-                </Label>
+              <FormField label={t("descriptionLabel")} labelClassName={textStyles.label}>
                 <Textarea
-                  id="description"
                   value={editingBenefit.description}
                   onChange={(e) =>
                     setEditingBenefit({ ...editingBenefit, description: e.target.value })
                   }
                   placeholder={t("descriptionPlaceholder")}
-                  className="mt-1 rounded-md text-sm"
+                  className="rounded-md text-sm"
                   rows={2}
                 />
-              </div>
+              </FormField>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>

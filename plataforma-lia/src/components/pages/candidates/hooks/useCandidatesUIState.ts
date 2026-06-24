@@ -113,6 +113,7 @@ export function useCandidatesUIState() {
   const [unifiedModalOpen, setUnifiedModalOpen] = useState(false)
   const [unifiedModalType, setUnifiedModalType] = useState<CommunicationType>('email')
   const [unifiedModalCandidate, setUnifiedModalCandidate] = useState<Candidate | null>(null)
+  const [unifiedModalSelectedCandidates, setUnifiedModalSelectedCandidates] = useState<Array<{ id: string; name: string; email?: string; phone?: string; avatar?: string }>>([])
   const [showQuickViewModal, setShowQuickViewModal] = useState(false)
   const [showComparisonModal, setShowComparisonModal] = useState(false)
   const [selectedCandidateForAction, setSelectedCandidateForAction] = useState<Candidate | null>(null)
@@ -128,6 +129,9 @@ export function useCandidatesUIState() {
   const [rubricEvaluationData, setRubricEvaluationData] = useState<Record<string, unknown> | null>(null)
   const [showSendEmailModal, setShowSendEmailModal] = useState(false)
   const [emailCandidateSelected, setEmailCandidateSelected] = useState<Candidate | null>(null)
+  // GAP-07-007 — Schedule Message Modal
+  const [showScheduleMessageModal, setShowScheduleMessageModal] = useState(false)
+  const [scheduleMessageCandidate, setScheduleMessageCandidate] = useState<Candidate | null>(null)
   const [showCVPreviewModal, setShowCVPreviewModal] = useState(false)
   const [parsedCVData, setParsedCVData] = useState<ParsedCVResponse | null>(null)
   const [showAddToListModal, setShowAddToListModal] = useState(false)
@@ -182,6 +186,7 @@ export function useCandidatesUIState() {
     unifiedModalOpen, setUnifiedModalOpen,
     unifiedModalType, setUnifiedModalType,
     unifiedModalCandidate, setUnifiedModalCandidate,
+    unifiedModalSelectedCandidates, setUnifiedModalSelectedCandidates,
     showQuickViewModal, setShowQuickViewModal,
     showComparisonModal, setShowComparisonModal,
     selectedCandidateForAction, setSelectedCandidateForAction,
@@ -197,6 +202,8 @@ export function useCandidatesUIState() {
     rubricEvaluationData, setRubricEvaluationData,
     showSendEmailModal, setShowSendEmailModal,
     emailCandidateSelected, setEmailCandidateSelected,
+    showScheduleMessageModal, setShowScheduleMessageModal,
+    scheduleMessageCandidate, setScheduleMessageCandidate,
     showCVPreviewModal, setShowCVPreviewModal,
     parsedCVData, setParsedCVData,
     showAddToListModal, setShowAddToListModal,

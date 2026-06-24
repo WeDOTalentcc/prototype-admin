@@ -23,10 +23,16 @@ const mockFetch = vi.fn()
 const originalFetch = global.fetch
 beforeEach(() => {
   vi.clearAllMocks()
+  // Isolamento de transporte: o Secret NEXT_PUBLIC_CHAT_TRANSPORT=sse do ambiente
+  // Replit (Fase C SSE-e2e, 2026-06-04) ligaria o early-return SSE em
+  // useChatMessages e pularia os branches WS/REST que estes testes exercitam.
+  // Fixamos vazio para selecionar o caminho WS/REST de forma determinística.
+  vi.stubEnv("NEXT_PUBLIC_CHAT_TRANSPORT", "")
   global.fetch = mockFetch as unknown as typeof fetch
 })
 afterEach(() => {
   vi.restoreAllMocks()
+  vi.unstubAllEnvs()
   global.fetch = originalFetch
 })
 
@@ -72,7 +78,10 @@ describe("useChatMessages — REST fallback", () => {
       "/api/backend-proxy/chat/message",
       expect.objectContaining({ method: "POST" }),
     )
-    expect(onMessageComplete).toHaveBeenCalledWith("Olá!")
+    // Contrato canonical (PR-D): onMessageComplete recebe
+    // (content, executionPlan?, extras?). O conteúdo entregue à UI é o 1º
+    // argumento; os demais são metadata opcional (ui_action etc.).
+    expect(onMessageComplete.mock.calls[0][0]).toBe("Olá!")
     expect(result.current.conversationId).toBe("conv-99")
     expect(opts.clearTokens).toHaveBeenCalled()
     expect(opts.setIsThinking).toHaveBeenCalledWith(true)
@@ -118,7 +127,8 @@ describe("useChatMessages — REST fallback", () => {
     })
     expect(hitlRef.current).toEqual(pending)
     // Quando há content, ele também é passado pra UI (bolha + cartão de aprovação).
-    expect(onMessageComplete).toHaveBeenCalledWith("Confirma criar a vaga?")
+    // (content, executionPlan?, extras?) — checamos o conteúdo (1º arg).
+    expect(onMessageComplete.mock.calls[0][0]).toBe("Confirma criar a vaga?")
   })
 
   it("HTTP 401 → bolha pt-BR de auth, sem tentar parsear JSON", async () => {
@@ -261,6 +271,35 @@ describe("useChatMessages — REST fallback", () => {
     expect(onMessageComplete).toHaveBeenCalledWith(
       expect.stringMatching(/não retornou/i),
     )
+  })
+})
+
+describe("useChatMessages — transporte SSE via flag (Fase C 2026-06-04)", () => {
+  it("flag NEXT_PUBLIC_CHAT_TRANSPORT=sse → roteia por sendMessageViaSSE e pula WS/REST", async () => {
+    // Override do stub vazio do beforeEach: liga o transporte SSE.
+    vi.stubEnv("NEXT_PUBLIC_CHAT_TRANSPORT", "sse")
+
+    const sendMessageViaSSE = vi.fn()
+    const wsSend = vi.fn(() => true)
+    const opts = makeOptions({
+      isConnected: true,
+      transportMode: "ws",
+      wsSend,
+      sendMessageViaSSE,
+    })
+    const { result } = renderHook(() => useChatMessages(opts))
+
+    await act(async () => {
+      await result.current.sendMessage("oi via sse", "recruiter_assistant")
+    })
+
+    // O early-return da flag roteia o turno por SSE e pula WS e REST por completo.
+    expect(sendMessageViaSSE).toHaveBeenCalledTimes(1)
+    expect(wsSend).not.toHaveBeenCalled()
+    expect(mockFetch).not.toHaveBeenCalled()
+    // Defesa anti-silent-drop: passa um callback de fallback REST como 6º argumento.
+    const fallbackArg = sendMessageViaSSE.mock.calls[0][5]
+    expect(typeof fallbackArg).toBe("function")
   })
 })
 

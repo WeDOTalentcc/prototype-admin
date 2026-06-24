@@ -104,9 +104,9 @@ export function JobScreeningSection({
                               Descrição da Vaga
                             </h5>
                             {collapsedPreviewSections.includes('descricao') ? (
-                              <ChevronDown className="w-3.5 h-3.5 text-lia-text-disabled transition-transform motion-reduce:transition-none" />
+                              <ChevronDown className="w-3.5 h-3.5 text-lia-text-muted transition-transform motion-reduce:transition-none" />
                             ) : (
-                              <ChevronUp className="w-3.5 h-3.5 text-lia-text-disabled transition-transform motion-reduce:transition-none" />
+                              <ChevronUp className="w-3.5 h-3.5 text-lia-text-muted transition-transform motion-reduce:transition-none" />
                             )}
                           </div>
                           {!collapsedPreviewSections.includes('descricao') && (
@@ -125,9 +125,9 @@ export function JobScreeningSection({
                             Competências Avaliadas
                           </h5>
                           {collapsedPreviewSections.includes('competencias') ? (
-                            <ChevronDown className="w-3.5 h-3.5 text-lia-text-disabled transition-transform motion-reduce:transition-none" />
+                            <ChevronDown className="w-3.5 h-3.5 text-lia-text-muted transition-transform motion-reduce:transition-none" />
                           ) : (
-                            <ChevronUp className="w-3.5 h-3.5 text-lia-text-disabled transition-transform motion-reduce:transition-none" />
+                            <ChevronUp className="w-3.5 h-3.5 text-lia-text-muted transition-transform motion-reduce:transition-none" />
                           )}
                         </div>
                         {!collapsedPreviewSections.includes('competencias') && (<>
@@ -135,8 +135,16 @@ export function JobScreeningSection({
                           const technicalSkills = ((previewJob.technicalRequirements || []) as unknown[])
                             .map((tr) => normalizeTechnicalRequirement(tr))
                             .filter((s): s is string => Boolean(s))
-                          const behavioralSkills = ((previewJob.behavioralCompetencies || []) as BehavioralCompetency[]).map((bc: BehavioralCompetency) => typeof bc === 'string' ? bc : bc.competency || bc.name).filter(Boolean)
-                          const responsibilitySkills = (previewJob.requirements || [] as Requirement[]).map((r: Requirement) => typeof r === 'string' ? r : r.requirement || r.text || r.name).filter(Boolean)
+                          const behavioralSkills = ((previewJob.behavioralCompetencies || []) as BehavioralCompetency[]).map((bc: BehavioralCompetency) => {
+                            if (typeof bc === 'string') return bc
+                            const s = bc.competency || bc.name
+                            return typeof s === 'string' ? s : null
+                          }).filter(Boolean)
+                          const responsibilitySkills = (previewJob.requirements || [] as Requirement[]).map((r: Requirement) => {
+                            if (typeof r === "string") return r.trim() || null
+                            const s = r.requirement ?? r.text ?? r.name
+                            return typeof s === "string" && s.trim() ? s.trim() : null
+                          }).filter((s): s is string => typeof s === "string")
                           const hasData = technicalSkills.length > 0 || behavioralSkills.length > 0 || responsibilitySkills.length > 0
 
                           if (!hasData) {
@@ -159,7 +167,7 @@ export function JobScreeningSection({
                                   <span className="text-micro font-medium text-lia-text-tertiary uppercase tracking-wide">Técnicas</span>
                                   <div className="flex flex-wrap gap-1.5 mt-1">
                                     {(technicalSkills as string[]).map((skill: string) => (
-                                      <Chip variant="neutral" muted key={`screening-bucket-2-${skill}`} className="bg-wedo-cyan/10 dark:bg-wedo-cyan/30 text-wedo-cyan-dark dark:text-wedo-cyan-dark text-[0.625rem] leading-none px-1.5 py-0.5 font-medium border border-wedo-cyan/30">
+                                      <Chip variant="neutral" muted key={`screening-bucket-2-${skill}`} className="bg-wedo-cyan/10 dark:bg-wedo-cyan/30 text-wedo-cyan-text dark:text-wedo-cyan-dark text-[0.625rem] leading-none px-1.5 py-0.5 font-medium border border-wedo-cyan/30">
                                         {skill}
                                       </Chip>
                                     ))}
@@ -171,7 +179,7 @@ export function JobScreeningSection({
                                   <span className="text-micro font-medium text-lia-text-tertiary uppercase tracking-wide">Comportamentais</span>
                                   <div className="flex flex-wrap gap-1.5 mt-1">
                                     {(behavioralSkills as string[]).map((skill: string) => (
-                                      <Chip variant="neutral" muted key={`screening-bucket-3-${skill}`} className="bg-wedo-purple/10 dark:bg-wedo-purple/30 text-wedo-purple dark:text-wedo-purple text-[0.625rem] leading-none px-1.5 py-0.5 font-medium border border-wedo-purple/30">
+                                      <Chip variant="neutral" muted key={`screening-bucket-3-${skill}`} className="bg-wedo-purple/10 dark:bg-wedo-purple/30 text-wedo-purple-text dark:text-wedo-purple text-[0.625rem] leading-none px-1.5 py-0.5 font-medium border border-wedo-purple/30">
                                         {skill}
                                       </Chip>
                                     ))}
@@ -182,8 +190,8 @@ export function JobScreeningSection({
                                 <div>
                                   <span className="text-micro font-medium text-lia-text-tertiary uppercase tracking-wide">Responsabilidades</span>
                                   <div className="flex flex-wrap gap-1.5 mt-1">
-                                    {(responsibilitySkills as string[]).slice(0, 8).map((skill: string) => (
-                                      <Chip variant="warning" muted key={`screening-bucket-4-${skill}`} className="bg-status-warning/10 dark:bg-status-warning/30 text-[0.625rem] leading-none px-1.5 py-0.5 font-medium">
+                                    {responsibilitySkills.slice(0, 8).map((skill, idx) => (
+                                      <Chip variant="warning" muted key={`screening-bucket-4-${idx}`} className="bg-status-warning/10 dark:bg-status-warning/30 text-[0.625rem] leading-none px-1.5 py-0.5 font-medium">
                                         {skill}
                                       </Chip>
                                     ))}
@@ -193,7 +201,7 @@ export function JobScreeningSection({
                             </div>
                           )
                         })()}
-                        <p className="text-micro text-lia-text-disabled mt-2 flex items-center gap-1">
+                        <p className="text-micro text-lia-text-muted mt-2 flex items-center gap-1">
                           <Lightbulb className="w-3 h-3" />
                           Extraídas automaticamente do perfil da vaga via metodologia WSI
                         </p>
@@ -207,9 +215,9 @@ export function JobScreeningSection({
                             Idiomas
                           </h5>
                           {collapsedPreviewSections.includes('idiomas') ? (
-                            <ChevronDown className="w-3.5 h-3.5 text-lia-text-disabled transition-transform motion-reduce:transition-none" />
+                            <ChevronDown className="w-3.5 h-3.5 text-lia-text-muted transition-transform motion-reduce:transition-none" />
                           ) : (
-                            <ChevronUp className="w-3.5 h-3.5 text-lia-text-disabled transition-transform motion-reduce:transition-none" />
+                            <ChevronUp className="w-3.5 h-3.5 text-lia-text-muted transition-transform motion-reduce:transition-none" />
                           )}
                         </div>
                         {!collapsedPreviewSections.includes('idiomas') && (
@@ -248,9 +256,9 @@ export function JobScreeningSection({
                             Remuneração e Benefícios
                           </h5>
                           {collapsedPreviewSections.includes('remuneracao') ? (
-                            <ChevronDown className="w-3.5 h-3.5 text-lia-text-disabled transition-transform motion-reduce:transition-none" />
+                            <ChevronDown className="w-3.5 h-3.5 text-lia-text-muted transition-transform motion-reduce:transition-none" />
                           ) : (
-                            <ChevronUp className="w-3.5 h-3.5 text-lia-text-disabled transition-transform motion-reduce:transition-none" />
+                            <ChevronUp className="w-3.5 h-3.5 text-lia-text-muted transition-transform motion-reduce:transition-none" />
                           )}
                         </div>
                         {!collapsedPreviewSections.includes('remuneracao') && (
@@ -319,9 +327,9 @@ export function JobScreeningSection({
                             Etapas do Processo
                           </h5>
                           {collapsedPreviewSections.includes('etapas') ? (
-                            <ChevronDown className="w-3.5 h-3.5 text-lia-text-disabled transition-transform motion-reduce:transition-none" />
+                            <ChevronDown className="w-3.5 h-3.5 text-lia-text-muted transition-transform motion-reduce:transition-none" />
                           ) : (
-                            <ChevronUp className="w-3.5 h-3.5 text-lia-text-disabled transition-transform motion-reduce:transition-none" />
+                            <ChevronUp className="w-3.5 h-3.5 text-lia-text-muted transition-transform motion-reduce:transition-none" />
                           )}
                         </div>
                         {!collapsedPreviewSections.includes('etapas') && (
@@ -331,7 +339,7 @@ export function JobScreeningSection({
                                 {previewJob.hiringProcess.map((step: string, idx: number) => (
                                   <React.Fragment key={`step-${idx}`}>
                                     {idx > 0 && (
-                                      <ChevronRight className="w-3 h-3 text-lia-text-disabled flex-shrink-0" />
+                                      <ChevronRight className="w-3 h-3 text-lia-text-muted flex-shrink-0" />
                                     )}
                                     <div className="flex items-center gap-1 px-2 py-1 bg-lia-bg-secondary border border-lia-border-subtle rounded-xl flex-shrink-0">
                                       <span className="text-micro font-medium text-lia-text-secondary">{step}</span>
@@ -346,7 +354,7 @@ export function JobScreeningSection({
                                   .map((stage: InterviewStage, idx: number) => (
                                     <React.Fragment key={`stage-${idx}`}>
                                       {idx > 0 && (
-                                        <ChevronRight className="w-3 h-3 text-lia-text-disabled flex-shrink-0" />
+                                        <ChevronRight className="w-3 h-3 text-lia-text-muted flex-shrink-0" />
                                       )}
                                       <div className="flex items-center gap-1 px-2 py-1 bg-lia-bg-secondary border border-lia-border-subtle rounded-xl flex-shrink-0">
                                         {stage.liaAssisted && (
@@ -393,9 +401,9 @@ export function JobScreeningSection({
                             </Chip>
                           </h5>
                           {collapsedPreviewSections.includes('fluxo-resumido') ? (
-                            <ChevronDown className="w-3.5 h-3.5 text-lia-text-disabled transition-transform motion-reduce:transition-none" />
+                            <ChevronDown className="w-3.5 h-3.5 text-lia-text-muted transition-transform motion-reduce:transition-none" />
                           ) : (
-                            <ChevronUp className="w-3.5 h-3.5 text-lia-text-disabled transition-transform motion-reduce:transition-none" />
+                            <ChevronUp className="w-3.5 h-3.5 text-lia-text-muted transition-transform motion-reduce:transition-none" />
                           )}
                         </div>
                         {!collapsedPreviewSections.includes('fluxo-resumido') && (
@@ -425,9 +433,9 @@ export function JobScreeningSection({
                             </Chip>
                           </h5>
                           {collapsedPreviewSections.includes('fluxo-wsi') ? (
-                            <ChevronDown className="w-3.5 h-3.5 text-lia-text-disabled transition-transform motion-reduce:transition-none" />
+                            <ChevronDown className="w-3.5 h-3.5 text-lia-text-muted transition-transform motion-reduce:transition-none" />
                           ) : (
-                            <ChevronUp className="w-3.5 h-3.5 text-lia-text-disabled transition-transform motion-reduce:transition-none" />
+                            <ChevronUp className="w-3.5 h-3.5 text-lia-text-muted transition-transform motion-reduce:transition-none" />
                           )}
                         </div>
 
@@ -558,8 +566,8 @@ export function JobScreeningSection({
                                           <p className="text-micro text-lia-text-secondary italic">
                                             {block.description}
                                           </p>
-                                          <p className="text-micro text-lia-text-disabled mt-1">
-                                            Gerenciado automaticamente pela LIA
+                                          <p className="text-micro text-lia-text-muted mt-1">
+                                            Gerenciado automaticamente pela IA
                                           </p>
                                         </div>
                                       )
@@ -605,24 +613,24 @@ export function JobScreeningSection({
                                               <div className="flex items-center gap-2 flex-wrap">
                                                 {item.skill_targeted && (
                                                   <span className="inline-flex items-center gap-0.5 text-micro text-lia-text-tertiary">
-                                                    <Target className="w-2.5 h-2.5 text-lia-text-disabled" />
+                                                    <Target className="w-2.5 h-2.5 text-lia-text-muted" />
                                                     {item.skill_targeted}
                                                   </span>
                                                 )}
                                                 <span className="inline-flex items-center gap-0.5 text-micro text-lia-text-tertiary">
-                                                  <MessageSquare className="w-2.5 h-2.5 text-lia-text-disabled" />
+                                                  <MessageSquare className="w-2.5 h-2.5 text-lia-text-muted" />
                                                   {item.type === 'eliminatory' ? 'Sim/Não' 
                                                     : ((item as Record<string, unknown>).options as unknown[] | undefined)?.length ? 'Múltipla escolha'
                                                     : 'Texto livre'}
                                                 </span>
                                                 {(item as Record<string, unknown>).weight != null && (
                                                   <span className="inline-flex items-center gap-0.5 text-micro text-lia-text-tertiary">
-                                                    <BarChart3 className="w-2.5 h-2.5 text-lia-text-disabled" />
+                                                    <BarChart3 className="w-2.5 h-2.5 text-lia-text-muted" />
                                                     Peso {typeof (item as Record<string, unknown>).weight === 'number' ? ((item as Record<string, unknown>).weight as number).toFixed(2) : String((item as Record<string, unknown>).weight)}
                                                   </span>
                                                 )}
                                                 <span className="inline-flex items-center gap-0.5 text-micro text-lia-text-tertiary">
-                                                  <Clock className="w-2.5 h-2.5 text-lia-text-disabled" />
+                                                  <Clock className="w-2.5 h-2.5 text-lia-text-muted" />
                                                   {item.type === 'eliminatory' ? '30s' : '2 min'}
                                                 </span>
                                               </div>
@@ -652,9 +660,9 @@ export function JobScreeningSection({
                               {(screeningConfig?.scheduling?.auto_enabled ?? true) ? 'Ativo' : 'Inativo'}
                             </Chip>
                             {collapsedPreviewSections.includes('agendamento') ? (
-                              <ChevronDown className="w-3.5 h-3.5 text-lia-text-disabled transition-transform motion-reduce:transition-none" />
+                              <ChevronDown className="w-3.5 h-3.5 text-lia-text-muted transition-transform motion-reduce:transition-none" />
                             ) : (
-                              <ChevronUp className="w-3.5 h-3.5 text-lia-text-disabled transition-transform motion-reduce:transition-none" />
+                              <ChevronUp className="w-3.5 h-3.5 text-lia-text-muted transition-transform motion-reduce:transition-none" />
                             )}
                           </div>
                         </div>
@@ -697,9 +705,9 @@ export function JobScreeningSection({
                             Canais de Comunicação
                           </h5>
                           {collapsedPreviewSections.includes('canais') ? (
-                            <ChevronDown className="w-3.5 h-3.5 text-lia-text-disabled transition-transform motion-reduce:transition-none" />
+                            <ChevronDown className="w-3.5 h-3.5 text-lia-text-muted transition-transform motion-reduce:transition-none" />
                           ) : (
-                            <ChevronUp className="w-3.5 h-3.5 text-lia-text-disabled transition-transform motion-reduce:transition-none" />
+                            <ChevronUp className="w-3.5 h-3.5 text-lia-text-muted transition-transform motion-reduce:transition-none" />
                           )}
                         </div>
 

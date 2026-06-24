@@ -195,3 +195,58 @@ def generate_fallback_suggestions(query: str) -> list[PremiumSuggestion]:
         ])
     
     return suggestions[:8]
+
+
+
+class RecentSuggestion(BaseModel):
+    text: str
+    category: str
+
+
+class RecentSuggestionsResponse(BaseModel):
+    suggestions: list[RecentSuggestion]
+
+
+@router.get("/recent", response_model=RecentSuggestionsResponse)
+async def get_recent_suggestions(
+    limit: int = Query(3, ge=1, le=10),
+    company_id: str = Depends(get_verified_company_id),
+    db: AsyncSession = Depends(get_db),
+    _company_gate: str = Depends(require_company_id),
+    x_user_id: str | None = None,
+):
+    suggestions: list[RecentSuggestion] = []
+
+    if x_user_id and x_user_id not in ("", "anonymous", "default_user"):
+        try:
+            result = await db.execute(
+                text(
+                    "SELECT query, MAX(created_at) AS last_used"
+                    " FROM search_history"
+                    " WHERE company_id = :company_id AND user_id = :user_id"
+                    " GROUP BY query ORDER BY last_used DESC LIMIT :limit"
+                ),
+                {"company_id": company_id, "user_id": x_user_id, "limit": limit},
+            )
+            for row in result.fetchall():
+                suggestions.append(RecentSuggestion(text=row[0], category="recent"))
+        except Exception as exc:
+            logger.debug("search_history lookup failed: %s", exc)
+
+    if not suggestions:
+        try:
+            result = await db.execute(
+                text(
+                    "SELECT name FROM search_archetypes"
+                    " WHERE (company_id = :company_id OR company_id IS NULL)"
+                    " AND is_active = true"
+                    " ORDER BY usage_count DESC, created_at DESC LIMIT :limit"
+                ),
+                {"company_id": company_id, "limit": limit},
+            )
+            for row in result.fetchall():
+                suggestions.append(RecentSuggestion(text=row[0], category="archetype"))
+        except Exception as exc:
+            logger.debug("search_archetypes lookup failed: %s", exc)
+
+    return RecentSuggestionsResponse(suggestions=suggestions)

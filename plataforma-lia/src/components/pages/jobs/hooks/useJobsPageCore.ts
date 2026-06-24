@@ -107,6 +107,7 @@ export function useJobsPageCore(props: JobsPageProps) {
     onChatOpened,
     pendingChatOpen,
     setActiveFilter: filtersActions.setActiveFilter,
+    openCompareModal: bulkActions.requestJobCompare,
     loadBackendJobs,
   })
 
@@ -535,6 +536,8 @@ export function useJobsPageCore(props: JobsPageProps) {
     handleJobToggleStatus: bulkActions.handleJobToggleStatus,
     handleJobAssignRecruiter: bulkActions.handleJobAssignRecruiter,
     getSelectedJobsHaveActiveStatus: bulkActions.getSelectedJobsHaveActiveStatus,
+    handleJobArchive: bulkActions.handleJobArchive,
+    isArchivingJobs: bulkState.isArchivingJobs,
 
     // --- chat (orquestrador LIA + abertura do chat flutuante unificado) ---
     liaMessages: chatState.liaMessages,

@@ -16,6 +16,7 @@ from app.schemas.company import (
     ApproverUpdate,
 )
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.errors import LIAError
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +43,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error listing approvers: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/approvers", response_model=ApproverResponse)
@@ -78,7 +79,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error creating approver: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.put("/approvers/{approver_id}", response_model=ApproverResponse)
@@ -103,7 +104,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error updating approver: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.delete("/approvers/{approver_id}", response_model=None)
@@ -122,4 +123,39 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error deleting approver: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise LIAError(message="Erro interno do servidor")
+
+
+@router.get("/users/search")
+async def search_platform_users(
+    q: str = Query(..., min_length=1, description="Search term (name or email)"),
+    limit: int = Query(10, ge=1, le=50),
+    company_id: str = Depends(require_company_id),
+):
+    """Search internal platform users by name or email — TIPO A approver selection.
+
+    Multi-tenancy: company_id from JWT via Depends(require_company_id).
+    Returns [{id, name, email, role}] for active users in the same company.
+    """
+    from app.core.database import get_db as _get_db
+    from app.repositories.client_user_repository import ClientUserRepository
+    import uuid as _uuid
+
+    try:
+        cid = _uuid.UUID(str(company_id))
+    except ValueError:
+        return []
+
+    async for _db in _get_db():
+        repo = ClientUserRepository(_db)
+        users = await repo.list_users(cid, search=q, limit=limit, status="active")
+        return [
+            {
+                "id": str(u.id),
+                "name": u.name or "",
+                "email": u.email or "",
+                "role": u.role or "",
+            }
+            for u in users
+        ]
+    return []

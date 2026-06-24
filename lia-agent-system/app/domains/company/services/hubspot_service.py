@@ -17,7 +17,7 @@ from hubspot.crm.deals import SimplePublicObjectInputForCreate as DealInput
 from hubspot.crm.deals.exceptions import ApiException as DealApiException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.domains.clients.repositories.client_account_repository import (
+from app.repositories.client_account_repository import (
     ClientAccountRepository,
 )
 from lia_models.client_account import ClientAccount

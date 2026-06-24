@@ -21,9 +21,10 @@ import { sanitizeHtml } from "@/lib/sanitize"
 import { MessageFeedback } from "@/components/chat/message-feedback"
 import { AudioRecordButton } from "@/components/ui/audio-record-button"
 import { useRouter } from "next/navigation"
-import { ThinkingDots } from "@/components/ui/thinking-dots"
+import { AgentActivityTimeline } from "@/components/unified-chat/AgentActivityTimeline"
 import { useUIPreferencesStore } from "@/stores/ui-preferences-store"
 import { ContextBadge } from "@/components/lia-float/ContextBadge"
+import { ComplianceBadge } from "@/components/lia-float/ComplianceBadge"
 
 const CATEGORY_COLORS: Record<string, { icon: string; bg: string; border: string; hoverBg: string }> = {
   vagas: { icon: 'var(--lia-text-secondary)', bg: 'var(--lia-bg-secondary)', border: 'var(--lia-border-subtle)', hoverBg: 'var(--lia-bg-tertiary)' },
@@ -43,6 +44,8 @@ export function LiaSuperPrompt() {
     chatConversationId,
     setChatConversationId,
     chatIsStreaming,
+    chatIsThinking,
+    chatThinkingSteps,
     chatStreamingContent,
     chatIsCreating,
     sendChatMessage,
@@ -62,16 +65,34 @@ export function LiaSuperPrompt() {
   const [showHistory, setShowHistory] = useState(false)
   const [recentChats, setRecentChats] = useState<Array<{ id: string; title: string; timestamp: number }>>([])
   const [contextDismissed, setContextDismissed] = useState(false)
-  useEffect(() => { setContextDismissed(false) }, [contextPage])
-
-  const inputRef = useRef<HTMLTextAreaElement>(null)
-  const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const conversationId = chatConversationId ?? sharedConversationId
   const messages = sharedMessages
   const isCreating = chatIsCreating
   const isStreaming = chatIsStreaming
+  const isThinking = chatIsThinking
+  const thinkingSteps = chatThinkingSteps
   const streamingContent = chatStreamingContent
+
+  // AgentActivityTimeline lifecycle — mirrors UnifiedMessageList.
+  // ON when thinking/streaming starts; OFF after timeline fires onFinished.
+  const [liveActive, setLiveActive] = useState(false)
+  useEffect(() => {
+    if (isThinking || isStreaming) {
+      setLiveActive(true)
+    }
+  }, [isThinking, isStreaming])
+  // Failsafe: force-clear if onFinished never fires (e.g. timeline never mounts)
+  useEffect(() => {
+    if (!liveActive || isThinking || isStreaming) return
+    const t = setTimeout(() => setLiveActive(false), 3000)
+    return () => clearTimeout(t)
+  }, [liveActive, isThinking, isStreaming])
+  useEffect(() => { setContextDismissed(false) }, [contextPage])
+
+  const inputRef = useRef<HTMLTextAreaElement>(null)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+
   const initConversation = initChatConversation
   const loadHistory = useCallback(async (id: string) => {
     const history = await loadChatHistory(id)
@@ -228,14 +249,14 @@ export function LiaSuperPrompt() {
                 <div className="flex rounded-lg overflow-hidden border">
                   <button
                     onClick={() => setActiveTab("conversa")}
-                    className={`flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium transition-colors motion-reduce:transition-none border-r border-lia-border-subtle ${activeTab === "conversa" ? "bg-lia-bg-secondary text-wedo-cyan" : "bg-transparent text-lia-text-tertiary"}`}
+                    className={`flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium transition-colors motion-reduce:transition-none border-r border-lia-border-subtle ${activeTab === "conversa" ? "bg-lia-bg-secondary text-wedo-cyan-text" : "bg-transparent text-lia-text-tertiary"}`}
                   >
                     <MessageSquare className="w-3.5 h-3.5" />
                     Conversa
                   </button>
                   <button
                     onClick={() => setActiveTab("controle")}
-                    className={`flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium transition-colors motion-reduce:transition-none ${activeTab === "controle" ? "bg-lia-bg-secondary text-wedo-cyan" : "bg-transparent text-lia-text-tertiary"}`}
+                    className={`flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium transition-colors motion-reduce:transition-none ${activeTab === "controle" ? "bg-lia-bg-secondary text-wedo-cyan-text" : "bg-transparent text-lia-text-tertiary"}`}
                   >
                     <LayoutDashboard className="w-3.5 h-3.5" />
                     Centro de Controle
@@ -265,7 +286,7 @@ export function LiaSuperPrompt() {
                   onClick={handleToggleHistory}
                   className={`p-2 rounded-lg transition-colors motion-reduce:transition-none ${
  showHistory
-                      ? "text-wedo-cyan bg-lia-bg-tertiary"
+                      ? "text-wedo-cyan-text bg-lia-bg-tertiary"
                       : "lia-text-secondary hover:text-lia-text-secondary hover:bg-lia-interactive-hover"
                   }`}
                   title="Histórico de conversas"
@@ -348,7 +369,7 @@ export function LiaSuperPrompt() {
                               Sua assistente de recrutamento inteligente. Qual das tarefas abaixo quer que eu execute para você?
                             </p>
                             {hasContextualData && (
-                              <p className="text-xs text-wedo-cyan font-medium">
+                              <p className="text-xs text-lia-text-secondary font-medium">
                                 Sugestões personalizadas baseadas na sua atividade recente
                               </p>
                             )}
@@ -425,18 +446,14 @@ export function LiaSuperPrompt() {
                             </div>
                           )}
 
-                          {isStreaming && !streamingContent && (
-                            <div className="flex items-start gap-2.5">
-                              <div className="flex-shrink-0 pt-1">
-                                <div className="w-7 h-7 rounded-full flex items-center justify-center">
-                                  <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
-                                </div>
-                              </div>
-                              <div className="bg-lia-bg-primary border border-lia-border-subtle rounded-[14px] rounded-bl-[4px] p-4">
-                                <div className="flex items-center gap-1.5">
-                                  <ThinkingDots dotClassName="bg-wedo-cyan" size="lg" />
-                                </div>
-                              </div>
+                          {liveActive && (
+                            <div className="mt-1">
+                              <AgentActivityTimeline
+                                fallbackSteps={thinkingSteps}
+                                showFallback={isThinking && !streamingContent}
+                                completed={!isThinking && !isStreaming}
+                                onFinished={() => setLiveActive(false)}
+                              />
                             </div>
                           )}
 
@@ -483,6 +500,7 @@ export function LiaSuperPrompt() {
                           <Send className="w-4 h-4" />
                         </button>
                       </div>
+                      <ComplianceBadge />
                     </div>
                   </div>
                 </div>

@@ -1,6 +1,6 @@
 'use client'
 
-// WT-2022 P1.LIB: Biblioteca LIA e showcase estatico ate decisao produto sobre
+// WT-2022 P1.LIB: Biblioteca de Comandos e showcase estatico ate decisao produto sobre
 // implementar RAG real sobre knowledge_base. usageCount/relatedCommands sao
 // mockados (16 cards hardcoded). TODO: substituir por dados reais OU remover
 // metricas da UI. Banner "Em desenvolvimento" no topo sinaliza ao usuario.
@@ -158,7 +158,7 @@ export default function LiaLibraryPage({ onNavigate }: LiaLibraryPageProps) {
 
   const executeCommand = (command: string, title: string) => {
     if (onNavigate) {
-      onNavigate('Chat com LIA')
+      onNavigate('Chat com IA')
       setTimeout(() => {
         window.dispatchEvent(new CustomEvent('lia-execute-command', {
           detail: { command, title }
@@ -169,7 +169,7 @@ export default function LiaLibraryPage({ onNavigate }: LiaLibraryPageProps) {
 
   const handlePromptSubmit = (value: string) => {
     if (onNavigate && value.trim()) {
-      onNavigate('Chat com LIA')
+      onNavigate('Chat com IA')
       setTimeout(() => {
         window.dispatchEvent(new CustomEvent('lia-library-prompt', {
           detail: { prompt: value }
@@ -199,13 +199,13 @@ export default function LiaLibraryPage({ onNavigate }: LiaLibraryPageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-lia-bg-primary dark:bg-lia-bg-primary">
+    <div className="h-full overflow-y-auto bg-lia-bg-primary dark:bg-lia-bg-primary">
       <div className="p-2.5 max-w-full">
 
         {/* WT-2022 P1.LIB: banner warning - feature parcialmente implementada */}
         <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6" role="status">
           <p className="text-sm text-yellow-800">
-            <strong>Em desenvolvimento:</strong> Os comandos abaixo sao exemplos de uso da LIA.
+            <strong>Em desenvolvimento:</strong> Os comandos abaixo sao exemplos de uso.
             Estatisticas de uso e busca dinamica serao habilitadas em versao futura.
           </p>
         </div>
@@ -215,7 +215,7 @@ export default function LiaLibraryPage({ onNavigate }: LiaLibraryPageProps) {
           <div>
             <h1 className="text-xl font-semibold text-lia-text-primary mb-1 flex items-center gap-2">
               <BookOpen className="w-5 h-5 text-lia-text-secondary" />
-              Biblioteca LIA
+              Biblioteca de Comandos
             </h1>
             <p className="text-sm font-open-sans text-lia-text-secondary">
               Repositório de comandos inteligentes para recrutamento
@@ -246,7 +246,7 @@ export default function LiaLibraryPage({ onNavigate }: LiaLibraryPageProps) {
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-lia-text-primary" />
             <input
               type="text"
-              placeholder="Descreva sua necessidade ou pergunte à LIA..."
+              placeholder="Descreva sua necessidade ou pergunte à IA..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               onKeyDown={(e) => {
@@ -322,7 +322,7 @@ export default function LiaLibraryPage({ onNavigate }: LiaLibraryPageProps) {
                       className="shrink-0 p-1 -m-1 rounded-xl hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none"
                     >
                       <Star 
-                        className={`w-4 h-4 ${isFavorite ? 'fill-current text-wedo-orange' : 'text-lia-text-tertiary'}`}
+                        className={`w-4 h-4 ${isFavorite ? 'fill-current text-wedo-orange-text' : 'text-lia-text-tertiary'}`}
                       />
                     </button>
                   </div>
@@ -383,7 +383,7 @@ export default function LiaLibraryPage({ onNavigate }: LiaLibraryPageProps) {
                 Nenhum comando encontrado
               </h3>
               <p className="text-sm font-open-sans text-lia-text-primary mb-4">
-                Tente ajustar os filtros ou descreva sua necessidade para a LIA
+                Tente ajustar os filtros ou descreva sua necessidade para a IA
               </p>
               <Button
                 onClick={() => {

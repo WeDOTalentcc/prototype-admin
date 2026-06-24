@@ -175,7 +175,7 @@ def test_bigfive_node_emits_wizard_step_audit(monkeypatch, captured_audit_calls)
                 agreeableness=0.5, stability=0.7,
             )
 
-        def rank_traits(self, profile, seniority):
+        def rank_traits(self, profile, seniority, **kwargs):
             return []
 
     monkeypatch.setattr(graph_mod, "_get_wsi_generator", lambda: _StubGen())

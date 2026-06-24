@@ -3,19 +3,15 @@
 import { useEffect, useState } from "react"
 import { useSearchParams, useRouter, usePathname } from "next/navigation"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { HubHeader } from "@/components/settings/_shared"
-import { CreditosIaTab } from "./consumo/CreditosIaTab"
-import { PearchTab } from "./consumo/PearchTab"
-import { BillingTab } from "./consumo/BillingTab"
-import { AgentesTab } from "./consumo/AgentesTab"
+import { PlanoTab } from "./consumo/PlanoTab"
+import { ConsumoUnificadoTab } from "./consumo/ConsumoUnificadoTab"
+import { FaturasTab } from "./consumo/FaturasTab"
+import { CobrancaTab } from "./consumo/CobrancaTab"
 import { ConsumptionDrilldownModal } from "./consumo/ConsumptionDrilldownModal"
 
 /**
  * Estado canonical compartilhado do drilldown de consumo (Onda 5.2).
- *
- * Backend aceita filtrar por agent_type OU studio_agent_id. O state aqui
- * carrega ambos para que callers (CreditosIaTab via BudgetAlertsList,
- * AgentesTab via BarChart) usem o mesmo modal sem reimplementar logica.
+ * Elevado ao hub para que CreditosIaTab e AgentesTab usem o mesmo modal.
  */
 export interface DrilldownState {
   agentType: string | null
@@ -28,13 +24,11 @@ const EMPTY_DRILLDOWN: DrilldownState = {
 }
 
 export function ConsumoHub() {
-  const [activeTab, setActiveTab] = useState("ia")
-  // Onda 5.2 — state elevado: ConsumoHub e o owner unico do drilldown modal.
+  const [activeTab, setActiveTab] = useState("plano")
   const [drilldown, setDrilldown] = useState<DrilldownState>(EMPTY_DRILLDOWN)
 
   // Onda 5.3 — leitura do query param ?filter={studioAgentId}.
-  // Vindo da pagina KPIs do Studio. Apos processar, limpa o param para evitar
-  // re-trigger em refresh manual.
+  // Vindo da página KPIs do Studio. Após processar, limpa o param.
   const searchParams = useSearchParams()
   const router = useRouter()
   const pathname = usePathname()
@@ -42,10 +36,9 @@ export function ConsumoHub() {
 
   useEffect(() => {
     if (!filterParam) return
-    // Auto-seleciona aba Agentes + abre o drilldown filtrado por studio_agent_id.
-    setActiveTab("agentes")
+    // Auto-seleciona sub-tab Consumo + abre drilldown filtrado por studio_agent_id.
+    setActiveTab("consumo")
     setDrilldown({ agentType: null, studioAgentId: filterParam })
-    // Limpa o param da URL (mantem section=consumo).
     if (searchParams && pathname) {
       const params = new URLSearchParams(searchParams.toString())
       params.delete("filter")
@@ -68,33 +61,32 @@ export function ConsumoHub() {
 
   return (
     <div className="space-y-6">
-      <HubHeader
-        title="Consumo"
-        description="Créditos de IA, buscas Pearch, atividade dos agentes e faturamento."
-      />
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-4 max-w-lg">
-          <TabsTrigger value="ia">Créditos IA</TabsTrigger>
-          <TabsTrigger value="pearch">Pearch</TabsTrigger>
-          <TabsTrigger value="agentes">Agentes</TabsTrigger>
-          <TabsTrigger value="billing">Billing</TabsTrigger>
+          <TabsTrigger value="plano">Plano</TabsTrigger>
+          <TabsTrigger value="consumo">Consumo</TabsTrigger>
+          <TabsTrigger value="faturas">Faturas</TabsTrigger>
+          <TabsTrigger value="cobranca">Dados de Pagamento</TabsTrigger>
         </TabsList>
-        <TabsContent value="ia" className="mt-6">
-          <CreditosIaTab onOpenDrilldown={openDrilldown} />
+
+        <TabsContent value="plano" className="mt-6">
+          <PlanoTab />
         </TabsContent>
-        <TabsContent value="pearch" className="mt-6">
-          <PearchTab />
+
+        <TabsContent value="consumo" className="mt-6">
+          <ConsumoUnificadoTab onOpenDrilldown={openDrilldown} />
         </TabsContent>
-        <TabsContent value="agentes" className="mt-6">
-          <AgentesTab onOpenDrilldown={openDrilldown} />
+
+        <TabsContent value="faturas" className="mt-6">
+          <FaturasTab />
         </TabsContent>
-        <TabsContent value="billing" className="mt-6">
-          <BillingTab />
+
+        <TabsContent value="cobranca" className="mt-6">
+          <CobrancaTab />
         </TabsContent>
       </Tabs>
 
-      {/* Onda 5.2 — modal canonical unico, owned pelo Hub.
-          Callers em qualquer tab abrem via openDrilldown(). */}
+      {/* Onda 5.2 — modal canonical único, owned pelo Hub. */}
       <ConsumptionDrilldownModal
         agentType={drilldown.agentType}
         studioAgentId={drilldown.studioAgentId}

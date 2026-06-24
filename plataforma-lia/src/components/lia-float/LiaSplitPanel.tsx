@@ -14,7 +14,6 @@ import React, { useState, useEffect, useRef, useCallback } from "react"
 import { Brain, X, ExternalLink, Loader2, Send } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useLiaFloat, useLiaChatContext } from "@/contexts/lia-float-context"
-import { ThinkingDots } from "@/components/ui/thinking-dots"
 import { formatMessageTime, type LiaChatMessage } from "@/hooks/chat/lia-chat-connection-types"
 import { ChatBubbleBase } from "@/components/chat/chat-bubble-base"
 
@@ -167,7 +166,7 @@ export function LiaSplitPanel({ onNavigate }: LiaSplitPanelProps) {
               LIA
             </span>
             {splitView.page && (
-              <span className="text-xs text-lia-text-disabled leading-tight">
+              <span className="text-xs text-lia-text-muted leading-tight">
                 {splitView.page}
               </span>
             )}
@@ -320,9 +319,7 @@ function SplitStreamingBubble({ content }: { content: string }) {
   return (
     <ChatBubbleBase sender="lia">
       {content === "..." ? (
-        <span className="flex gap-1 items-center h-5">
-          <ThinkingDots dotClassName="bg-lia-border-medium" size="md" />
-        </span>
+        <span className="text-xs text-lia-text-secondary animate-pulse motion-reduce:animate-none">Pensando…</span>
       ) : (
         <p className="text-xs leading-relaxed text-lia-text-primary whitespace-pre-wrap">{content}</p>
       )}

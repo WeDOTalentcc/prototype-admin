@@ -1,168 +1,106 @@
-"""
-Test Workforce consolidation — Sistema C -> B redirect.
-P2 Audit 2026-05-24: _import_workforce_plan_impl deve criar PlannedHeadcount
-em Sistema B alem de escrever em additional_data (Sistema C).
+"""Workforce consolidation — chat import delegates to the canonical producer.
+
+Track B / Fase 2 (2026-06-05): _import_workforce_plan_impl no longer writes
+PlannedHeadcount inline. It delegates Sistema B to the canonical producer
+import_planned_headcounts (which resolves department NAME->FK — covered by
+tests/unit/test_headcount_import_service.py) and keeps Sistema C (JSON blob) as
+the SOX before-state. A producer failure now surfaces HONESTLY (success=False),
+replacing the previous silent-swallow behavior (CLAUDE.md REGRA 4).
 """
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
+REG = "app.domains.company_settings.agents.company_tool_registry"
+
+
+def _cp_mock():
+    cp = MagicMock()
+    cp.get_workforce_plan = AsyncMock(return_value=None)
+    cp.upsert_workforce_plan = AsyncMock()
+    return cp
+
 
 @pytest.mark.asyncio
-async def test_import_workforce_plan_creates_planned_headcounts():
-    """Ao receber plan_data, criar PlannedHeadcount records no Sistema B."""
-    mock_wf_repo = MagicMock()
-    mock_wf_repo.list_hiring_plans = AsyncMock(return_value=[])
-    mock_plan = MagicMock()
-    mock_plan.id = "plan-uuid-123"
-    mock_wf_repo.create_hiring_plan = AsyncMock(return_value=mock_plan)
-    mock_wf_repo.create_headcount = AsyncMock(return_value=MagicMock())
-
-    mock_cp_repo = MagicMock()
-    mock_cp_repo.get_workforce_plan = AsyncMock(return_value=None)
-    mock_cp_repo.upsert_workforce_plan = AsyncMock()
-
+async def test_chat_import_delegates_to_canonical_producer():
+    producer = AsyncMock(return_value={
+        "created": 2, "resolved_departments": ["Engenharia"],
+        "unresolved_departments": [], "plan_id": "p1", "fiscal_year": 2026,
+    })
+    cp = _cp_mock()
     plan_data = [
-        {"department": "Engenharia", "role": "Dev Backend", "quantity": 2, "deadline": "2026-09-01", "seniority": "Pleno"},
-        {"department": "Produto", "role": "Product Manager", "quantity": 1},
+        {"department": "Engenharia", "role": "Dev Backend", "quantity": 2},
+        {"department": "Produto", "role": "PM", "quantity": 1},
     ]
-
-    with patch(
-        "app.domains.company_settings.agents.company_tool_registry.WorkforceRepository",
-        return_value=mock_wf_repo,
-    ), patch(
-        "app.domains.company_settings.agents.company_tool_registry.CompanyProfileRepository",
-        return_value=mock_cp_repo,
+    with patch(f"{REG}.import_planned_headcounts", producer), patch(
+        f"{REG}.CompanyProfileRepository", return_value=cp
     ):
-        from app.domains.company_settings.agents.company_tool_registry import _import_workforce_plan_impl
-        result = await _import_workforce_plan_impl(
-            session=AsyncMock(),
-            company_id="test-company-uuid",
-            plan_data=plan_data,
+        from app.domains.company_settings.agents.company_tool_registry import (
+            _import_workforce_plan_impl,
         )
-
+        result = await _import_workforce_plan_impl(
+            session=AsyncMock(), company_id="c1", plan_data=plan_data
+        )
     assert result["success"] is True
-    # create_headcount called once per item
-    assert mock_wf_repo.create_headcount.call_count == 2
-    # Sistema C also preserved
-    assert mock_cp_repo.upsert_workforce_plan.called
-    # create_hiring_plan called because list returned empty
-    assert mock_wf_repo.create_hiring_plan.called
+    producer.assert_awaited_once()
+    assert producer.await_args.kwargs["items"] == plan_data
+    assert producer.await_args.kwargs["source"] == "chat"
+    assert not cp.upsert_workforce_plan.called  # Sistema C removido (Fase 3)
+    assert result["data"]["headcounts_created"] == 2
 
 
 @pytest.mark.asyncio
-async def test_import_workforce_plan_uses_existing_hiring_plan():
-    """Se ja existe HiringPlan para o ano, reutilizar em vez de criar novo."""
-    mock_wf_repo = MagicMock()
-    existing_plan = MagicMock()
-    existing_plan.id = "existing-plan-uuid"
-    mock_wf_repo.list_hiring_plans = AsyncMock(return_value=[existing_plan])
-    mock_wf_repo.create_hiring_plan = AsyncMock()
-    mock_wf_repo.create_headcount = AsyncMock(return_value=MagicMock())
-
-    mock_cp_repo = MagicMock()
-    mock_cp_repo.get_workforce_plan = AsyncMock(return_value=None)
-    mock_cp_repo.upsert_workforce_plan = AsyncMock()
-
-    with patch(
-        "app.domains.company_settings.agents.company_tool_registry.WorkforceRepository",
-        return_value=mock_wf_repo,
-    ), patch(
-        "app.domains.company_settings.agents.company_tool_registry.CompanyProfileRepository",
-        return_value=mock_cp_repo,
+async def test_chat_import_surfaces_unresolved_departments():
+    producer = AsyncMock(return_value={
+        "created": 1, "resolved_departments": [],
+        "unresolved_departments": ["Marte"], "plan_id": "p1", "fiscal_year": 2026,
+    })
+    cp = _cp_mock()
+    with patch(f"{REG}.import_planned_headcounts", producer), patch(
+        f"{REG}.CompanyProfileRepository", return_value=cp
     ):
-        from app.domains.company_settings.agents.company_tool_registry import _import_workforce_plan_impl
-        await _import_workforce_plan_impl(
-            session=AsyncMock(),
-            company_id="test-company-uuid",
-            plan_data=[{"role": "Dev", "quantity": 1}],
+        from app.domains.company_settings.agents.company_tool_registry import (
+            _import_workforce_plan_impl,
         )
-
-    # Must NOT create new plan when one already exists
-    mock_wf_repo.create_hiring_plan.assert_not_called()
-    # Must use existing plan
-    mock_wf_repo.create_headcount.assert_called_once()
-    # Verify the headcount_data passed includes the correct hiring_plan_id
-    call_kwargs = mock_wf_repo.create_headcount.call_args
-    headcount_data = call_kwargs.kwargs.get("headcount_data") or call_kwargs[1].get("headcount_data") or call_kwargs[0][0]
-    assert headcount_data["hiring_plan_id"] == "existing-plan-uuid"
-
-
-@pytest.mark.asyncio
-async def test_import_workforce_plan_empty_data_returns_error():
-    """plan_data vazio retorna success=False sem criar records."""
-    with patch(
-        "app.domains.company_settings.agents.company_tool_registry.WorkforceRepository",
-    ) as mock_wf_class, patch(
-        "app.domains.company_settings.agents.company_tool_registry.CompanyProfileRepository",
-    ):
-        from app.domains.company_settings.agents.company_tool_registry import _import_workforce_plan_impl
         result = await _import_workforce_plan_impl(
-            session=AsyncMock(),
-            company_id="test-company-uuid",
-            plan_data=[],
+            session=AsyncMock(), company_id="c1",
+            plan_data=[{"department": "Marte", "role": "X", "quantity": 1}],
         )
+    assert result["success"] is True
+    assert result["data"]["unresolved_departments"] == ["Marte"]
+    assert "Marte" in result["message"]
 
+
+@pytest.mark.asyncio
+async def test_chat_import_empty_data_returns_error():
+    producer = AsyncMock()
+    cp = _cp_mock()
+    with patch(f"{REG}.import_planned_headcounts", producer), patch(
+        f"{REG}.CompanyProfileRepository", return_value=cp
+    ):
+        from app.domains.company_settings.agents.company_tool_registry import (
+            _import_workforce_plan_impl,
+        )
+        result = await _import_workforce_plan_impl(
+            session=AsyncMock(), company_id="c1", plan_data=[]
+        )
     assert result["success"] is False
-    mock_wf_class.return_value.create_headcount.assert_not_called()
+    producer.assert_not_awaited()
 
 
 @pytest.mark.asyncio
-async def test_import_workforce_plan_deadline_parsed_to_month_year():
-    """deadline ISO string e mapeado corretamente para target_month/target_year."""
-    mock_wf_repo = MagicMock()
-    existing_plan = MagicMock()
-    existing_plan.id = "plan-uuid"
-    mock_wf_repo.list_hiring_plans = AsyncMock(return_value=[existing_plan])
-    mock_wf_repo.create_headcount = AsyncMock(return_value=MagicMock())
-
-    mock_cp_repo = MagicMock()
-    mock_cp_repo.get_workforce_plan = AsyncMock(return_value=None)
-    mock_cp_repo.upsert_workforce_plan = AsyncMock()
-
-    with patch(
-        "app.domains.company_settings.agents.company_tool_registry.WorkforceRepository",
-        return_value=mock_wf_repo,
-    ), patch(
-        "app.domains.company_settings.agents.company_tool_registry.CompanyProfileRepository",
-        return_value=mock_cp_repo,
+async def test_chat_import_producer_failure_surfaces_honestly():
+    """Producer failure -> success=False (was silently swallowed before Fase 2)."""
+    producer = AsyncMock(side_effect=Exception("DB connection error"))
+    cp = _cp_mock()
+    with patch(f"{REG}.import_planned_headcounts", producer), patch(
+        f"{REG}.CompanyProfileRepository", return_value=cp
     ):
-        from app.domains.company_settings.agents.company_tool_registry import _import_workforce_plan_impl
-        await _import_workforce_plan_impl(
-            session=AsyncMock(),
-            company_id="test-company-uuid",
-            plan_data=[{"role": "Dev", "quantity": 1, "deadline": "2027-03-15"}],
+        from app.domains.company_settings.agents.company_tool_registry import (
+            _import_workforce_plan_impl,
         )
-
-    call_kwargs = mock_wf_repo.create_headcount.call_args
-    hc_data = call_kwargs.kwargs.get("headcount_data") or call_kwargs[1].get("headcount_data") or call_kwargs[0][0]
-    assert hc_data["target_month"] == 3
-    assert hc_data["target_year"] == 2027
-
-
-@pytest.mark.asyncio
-async def test_import_workforce_plan_sistema_b_failure_does_not_break_result():
-    """Falha no Sistema B nao propaga erro — resultado ainda e success=True."""
-    mock_wf_repo = MagicMock()
-    mock_wf_repo.list_hiring_plans = AsyncMock(side_effect=Exception("DB connection error"))
-
-    mock_cp_repo = MagicMock()
-    mock_cp_repo.get_workforce_plan = AsyncMock(return_value=None)
-    mock_cp_repo.upsert_workforce_plan = AsyncMock()
-
-    with patch(
-        "app.domains.company_settings.agents.company_tool_registry.WorkforceRepository",
-        return_value=mock_wf_repo,
-    ), patch(
-        "app.domains.company_settings.agents.company_tool_registry.CompanyProfileRepository",
-        return_value=mock_cp_repo,
-    ):
-        from app.domains.company_settings.agents.company_tool_registry import _import_workforce_plan_impl
         result = await _import_workforce_plan_impl(
-            session=AsyncMock(),
-            company_id="test-company-uuid",
+            session=AsyncMock(), company_id="c1",
             plan_data=[{"role": "Dev", "quantity": 1}],
         )
-
-    # Sistema C committed OK, success should be True despite Sistema B failure
-    assert result["success"] is True
-    assert mock_cp_repo.upsert_workforce_plan.called
+    assert result["success"] is False
+    assert "Falha" in result["message"]

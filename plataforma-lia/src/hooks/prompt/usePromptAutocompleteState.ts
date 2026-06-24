@@ -90,7 +90,8 @@ export function usePromptAutocompleteState({
         setAutocompleteSuggestions(suggestions)
         setShowAutocomplete(suggestions.length > 0)
       }
-    } catch {
+    } catch (error) {
+      console.error("[usePromptAutocompleteState] Error:", error)
     }
   }, [])
 

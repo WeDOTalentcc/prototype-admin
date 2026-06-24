@@ -285,16 +285,16 @@ export const EVENT_CATEGORIES: Record<
 > = {
   candidates: {
     label: "Candidatos",
-    color: "bg-wedo-cyan/15 text-wedo-cyan-dark",
+    color: "bg-wedo-cyan/15 text-wedo-cyan-text",
   },
-  jobs: { label: "Vagas", color: "bg-wedo-purple/15 text-wedo-purple" },
+  jobs: { label: "Vagas", color: "bg-wedo-purple/15 text-wedo-purple-text" },
   interviews: {
     label: "Entrevistas",
     color: "bg-status-success/15 text-status-success",
   },
   offers: {
     label: "Propostas",
-    color: "bg-wedo-orange/15 text-wedo-orange",
+    color: "bg-wedo-orange/15 text-wedo-orange-text",
   },
   ats: { label: "ATS", color: "bg-lia-bg-tertiary text-lia-text-primary" },
   agents: {

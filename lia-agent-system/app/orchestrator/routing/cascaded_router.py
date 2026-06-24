@@ -429,7 +429,10 @@ class CascadedRouter:
             }) as _t3_span:
                 try:
                     _t0 = time.perf_counter()
-                    vector_hit = await self._vector_cache.get(message)
+                    vector_hit = await self._vector_cache.get(
+                        message,
+                        company_id=(_company_id_for_cache if _company_id_for_cache != "__unknown__" else None),
+                    )
                     if vector_hit:
                         _elapsed_ms = (time.perf_counter() - _t0) * 1000
                         self._stats["vector_hits"] += 1
@@ -513,6 +516,7 @@ class CascadedRouter:
                         await self._vector_cache.set(
                             message,
                             {"domain_id": result.domain_id, "confidence": result.confidence, "source": result.source},
+                            company_id=(_company_id_for_cache if _company_id_for_cache != "__unknown__" else None),
                         )
                     except Exception:
                         pass
@@ -569,7 +573,7 @@ class CascadedRouter:
                         _t5_span.set_attribute("hit", "false")
                         _t5_span.set_attribute("below_threshold", "true")
                         logger.info(
-                            "CascadedRouter: Tier 5 confidence %.2f < %.2f for '%s...' — falling to Tier 6",
+                            "CascadedRouter: Tier 5 confidence %.2f < %.2f for '%s...' — falling to Tier 7 (Tier 6 removed Sprint 12.3-B)",
                             cascade_result.confidence, _TIER5_MIN_CONFIDENCE, message[:40],
                         )
                     else:
@@ -585,7 +589,8 @@ class CascadedRouter:
                             try:
                                 await self._vector_cache.set(
                                     message,
-                                    {
+                                    company_id=(_company_id_for_cache if _company_id_for_cache != "__unknown__" else None),
+                                    result={
                                         "domain_id": cascade_result.domain_id,
                                         "confidence": cascade_result.confidence,
                                         "source": cascade_result.source,
@@ -630,8 +635,7 @@ class CascadedRouter:
         # via env AUTONOMOUS_REACT_ENABLED + flag per-tenant tier6_canary_enabled.
         # Em prod env nunca foi SET (default false) -- Tier 6 invocations = 0 nos canary metrics.
         # Decisão: estrutura removida do hot path (low-risk, env-gated already-off).
-        # autonomous_react_agent.py file mantido (5 test files + agent_chat_ws.py import
-        # via @register_agent decorator dependem dele importável). Cleanup em Sprint 12.6.
+        # autonomous_react_agent.py e test files removidos em T13 (Sprint 12.6).
         # Refs: PHASE_2_V1_ARCHITECTURE_AUDIT.md (decisão Batch 1), W4-041 (canary doc).
 
         # Tier 7 — Studio Agent Matcher (custom agents bound to current context)
@@ -640,6 +644,11 @@ class CascadedRouter:
         _ctx_pool_id = _ctx.get("talent_pool_id")
         _ctx_company_id = _ctx.get("company_id")
 
+        # Tier 7 dual-mode (Fase C.2 2026-06-09):
+        #   Federated mode (LIA_FEDERATED_PRIMARY=true): emit ScopeHint for first-party
+        #     agents and tenant deployments alike. The scope resolver already augmented
+        #     the federated agent tool set via studio_scope_extension; no runtime fork.
+        #   Legacy mode: instantiate CustomAgentRuntime directly (unchanged behavior).
         if (_ctx_job_id or _ctx_pool_id) and _ctx_company_id:
             async with _tracer.start_span("router.tier7_studio_agent", attributes={
                 "tier_name": "tier7_studio_agent", "service": "cascaded_router",
@@ -647,6 +656,57 @@ class CascadedRouter:
             }) as _t7_span:
                 try:
                     _t0 = time.perf_counter()
+                    from app.tools.scope_config import federated_primary_enabled as _fed_enabled
+                    _is_federated_mode = _fed_enabled()
+
+                    # --- Federated fast path: domain-based first-party/deployment check ---
+                    if _is_federated_mode:
+                        _classified_domain = (context or {}).get("classified_domain") or ""
+                        if _classified_domain:
+                            from app.orchestrator.studio_scope_extension import get_studio_covered_domains
+                            if _classified_domain in get_studio_covered_domains():
+                                from app.orchestrator.routing.scope_hint import ScopeHint
+                                from app.domains.agent_studio.repositories.custom_agent_repository import (
+                                    CustomAgentRepository,
+                                )
+                                from lia_config.database import AsyncSessionLocal
+                                async with AsyncSessionLocal() as _hint_db:
+                                    _agent_repo = CustomAgentRepository(_hint_db)
+                                    _fp_agents = await _agent_repo.list_active_for_context(
+                                        company_id=_ctx_company_id,
+                                        domain=_classified_domain,
+                                        include_first_party=True,
+                                    )
+                                if _fp_agents:
+                                    _matched = _fp_agents[0]
+                                    _is_fp = (
+                                        getattr(getattr(_matched, "agent_type", None), "value", "")
+                                        == "first_party"
+                                    )
+                                    _scope_hint = ScopeHint(
+                                        domain=_classified_domain,
+                                        source="studio_first_party" if _is_fp else "studio_deployment",
+                                        tools=list(_matched.allowed_tools or []),
+                                    )
+                                    _elapsed_ms = (time.perf_counter() - _t0) * 1000
+                                    self._stats["studio_agent_hits"] += 1
+                                    _t7_span.set_attribute("hit", "true")
+                                    _t7_span.set_attribute("mode", "federated_scope_hint")
+                                    _t7_span.set_attribute("domain", _classified_domain)
+                                    _t7_span.set_attribute("agent_id", str(getattr(_matched, "id", "")))
+                                    _t7_span.set_attribute("latency_ms", f"{_elapsed_ms:.2f}")
+                                    logger.info(
+                                        "CascadedRouter: Tier 7 (federated) ScopeHint domain=%s"
+                                        " agent=%s in %.0fms",
+                                        _classified_domain,
+                                        getattr(_matched, "name", ""),
+                                        _elapsed_ms,
+                                    )
+                                    # ScopeHint is NOT a RouteResult; callers check isinstance.
+                                    # The federated agent continues with augmented scope.
+                                    return _scope_hint
+
+                    # --- Legacy / deployment-based path (also handles federated fallback) ---
                     from app.services.agent_deployment_service import agent_deployment_service
                     from lia_config.database import AsyncSessionLocal
 
@@ -679,6 +739,35 @@ class CascadedRouter:
                             _studio_agent = _agent_result.scalar_one_or_none()
 
                             if _studio_agent and _studio_agent.status == "active":
+                                if _is_federated_mode:
+                                    # Federated + deployment: emit ScopeHint, skip runtime fork.
+                                    from app.orchestrator.routing.scope_hint import ScopeHint
+                                    _dep_domains = list(_studio_agent.domains or [])
+                                    _dep_domain = _dep_domains[0] if _dep_domains else "general"
+                                    _dep_hint = ScopeHint(
+                                        domain=_dep_domain,
+                                        source="studio_deployment",
+                                        tools=list(_studio_agent.allowed_tools or []),
+                                    )
+                                    _elapsed_ms = (time.perf_counter() - _t0) * 1000
+                                    self._stats["studio_agent_hits"] += 1
+                                    await agent_deployment_service.record_execution(
+                                        _studio_db, str(_dep.id)
+                                    )
+                                    await _studio_db.commit()
+                                    _t7_span.set_attribute("hit", "true")
+                                    _t7_span.set_attribute("mode", "federated_scope_hint_deployment")
+                                    _t7_span.set_attribute("agent_id", str(_studio_agent.id))
+                                    _t7_span.set_attribute("latency_ms", f"{_elapsed_ms:.2f}")
+                                    logger.info(
+                                        "CascadedRouter: Tier 7 (federated dep) ScopeHint agent=%s"
+                                        " in %.0fms",
+                                        _studio_agent.name,
+                                        _elapsed_ms,
+                                    )
+                                    return _dep_hint
+
+                                # Legacy mode: instantiate CustomAgentRuntime directly.
                                 from app.domains.agent_studio.custom_agent_runtime import get_or_create_runtime
 
                                 _runtime = get_or_create_runtime(
@@ -720,8 +809,11 @@ class CascadedRouter:
                                 _t7_span.set_attribute("latency_ms", f"{_elapsed_ms:.2f}")
 
                                 logger.info(
-                                    "CascadedRouter: Tier 7 (studio) resolved '%s...' via agent=%s in %.0fms",
-                                    message[:40], _studio_agent.name, _elapsed_ms,
+                                    "CascadedRouter: Tier 7 (legacy) resolved '%s...' via agent=%s"
+                                    " in %.0fms",
+                                    message[:40],
+                                    _studio_agent.name,
+                                    _elapsed_ms,
                                 )
 
                                 _studio_result = RouteResult(
@@ -749,7 +841,6 @@ class CascadedRouter:
                     _t7_span.set_attribute("hit", "false")
                     _t7_span.set_attribute("error_detail", str(_studio_exc))
                     logger.warning("CascadedRouter: Tier 7 (studio) failed: %s", _studio_exc)
-
         # Fallback final — clarification_needed (Gap #2)
         async with _tracer.start_span("router.fallback_clarification", attributes={
             "tier_name": "fallback_clarification", "service": "cascaded_router", "match_type": "clarification",
@@ -807,9 +898,8 @@ class CascadedRouter:
         return route_result
 
     # _route_via_autonomous_agent — REMOVED in Sprint 12.3-B (2026-05-24).
-    # Helper invocava AutonomousReActAgent via Tier 6 do hot path do router.
+    # Helper invocava AutonomousReActAgent via Tier 6 (removido em T13).
     # Tier 6 removido (env never set in prod). Helper era dead code.
-    # autonomous_react_agent.py module mantido para tests + agent_chat_ws.py
     # imports — cleanup completo em Sprint 12.6.
 
     async def _route_via_llm_cascade(
@@ -901,3 +991,20 @@ class CascadedRouter:
 
     def __repr__(self) -> str:
         return f"<CascadedRouter cache_size={len(self._memory_cache)} stats={self._stats}>"
+
+
+_ROUTER_SINGLETON: "CascadedRouter | None" = None
+
+
+def get_router() -> "CascadedRouter":
+    """Returns the process-level singleton CascadedRouter.
+
+    Keeps the in-process LRU cache alive across SSE turns so Tier-1 hits
+    work in practice (previously a new CascadedRouter() per request made
+    the LRU useless). Thread-safety: CPython GIL covers dict reads/writes;
+    async workers share one event loop per process so no concurrent mutation.
+    """
+    global _ROUTER_SINGLETON
+    if _ROUTER_SINGLETON is None:
+        _ROUTER_SINGLETON = CascadedRouter()
+    return _ROUTER_SINGLETON

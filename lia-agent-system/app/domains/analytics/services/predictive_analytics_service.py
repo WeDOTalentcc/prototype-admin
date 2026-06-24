@@ -708,7 +708,7 @@ class PredictiveAnalyticsService:
         try:
             result = await db.execute(
                 # TENANT-EXEMPT: predictive analytics aggregate; cross-tenant model training data, LGPD-safe per ADR-LGPD-001 §3 (anonymized aggregate, MIN_SAMPLES gate upstream)
-                select(JobVacancy).where(JobVacancy.status == 'active').limit(10)
+                select(JobVacancy).where(JobVacancy.status.in_(["Ativa", "Active", "active", "open", "Open", "Em Andamento"])).limit(10)  # fix: canonical PT-BR statuses (was 'active' → 0 rows; Bug 2026-06-08)
             )
             return result.scalars().all()
         except Exception as e:

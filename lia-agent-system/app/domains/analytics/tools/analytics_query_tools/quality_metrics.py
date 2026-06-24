@@ -5,11 +5,14 @@ from typing import Any
 from uuid import UUID
 
 from ._base import analytics_db, error_response, extract_context, success_response
+from app.shared.tool_guards import validate_uuid_params
+from app.shared.tool_handler import tool_handler
 from app.tools.context_helpers import require_company_id_from_context
 
 logger = logging.getLogger(__name__)
 
 
+@tool_handler("analytics")
 async def get_stakeholder_metrics(
     job_id: str | None = None,
     period: str = "month",
@@ -27,6 +30,11 @@ async def get_stakeholder_metrics(
         delayed_decisions, stakeholder_bottlenecks
     """
     company_id = require_company_id_from_context(kwargs, "get_stakeholder_metrics")
+
+    if job_id:
+        _err = validate_uuid_params(job_id=job_id)
+        if _err:
+            return _err
 
     logger.info(f"👥 Getting stakeholder metrics (company: {company_id}, job: {job_id})")
 
@@ -158,6 +166,7 @@ async def get_stakeholder_metrics(
         return error_response(f"❌ Erro ao buscar métricas de stakeholders: {str(e)}", e)
 
 
+@tool_handler("analytics")
 async def get_hiring_quality(
     period: str = "quarter",
     department_id: str | None = None,
@@ -187,7 +196,7 @@ async def get_hiring_quality(
         async with analytics_db() as db:
             conditions = [
                 JobVacancy.company_id == company_id,
-                JobVacancy.status == 'Fechada',
+                JobVacancy.status == 'Concluída',
                 JobVacancy.closed_at >= start_date
             ]
 
@@ -233,6 +242,7 @@ async def get_hiring_quality(
         return error_response(f"❌ Erro ao buscar métricas de qualidade: {str(e)}", e)
 
 
+@tool_handler("analytics")
 async def get_prediction_metrics(
     job_id: str,
     **kwargs
@@ -247,6 +257,10 @@ async def get_prediction_metrics(
         Predictions including success probability, estimated close date, and risk factors
     """
     company_id = require_company_id_from_context(kwargs, "get_prediction_metrics")
+
+    _err = validate_uuid_params(job_id=job_id)
+    if _err:
+        return _err
 
     logger.info(f"🔮 Getting prediction metrics for job {job_id} (company: {company_id})")
 

@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import React, { useState, useMemo } from "react"
 import {
   Dialog,
@@ -65,6 +66,9 @@ export function JobAssignRecruiterModal({
   recruiters,
   onAssign,
 }: JobAssignRecruiterModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('job-assign-recruiter', isOpen)
+
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedRecruiterId, setSelectedRecruiterId] = useState<string | null>(null)
   const [notifyRecruiter, setNotifyRecruiter] = useState(true)
@@ -189,7 +193,7 @@ export function JobAssignRecruiterModal({
                       htmlFor="notify"
                       className="text-xs text-lia-text-primary cursor-pointer flex items-center gap-1"
                     >
-                      <Megaphone className="w-3 h-3 text-lia-text-disabled" />
+                      <Megaphone className="w-3 h-3 text-lia-text-muted" />
                       Notificar recrutador sobre atribuição
                     </Label>
                   </div>
@@ -206,7 +210,7 @@ export function JobAssignRecruiterModal({
                       htmlFor="transfer"
                       className="text-xs text-lia-text-primary cursor-pointer flex items-center gap-1"
                     >
-                      <Mail className="w-3 h-3 text-lia-text-disabled" />
+                      <Mail className="w-3 h-3 text-lia-text-muted" />
                       Transferir comunicações pendentes
                     </Label>
                   </div>
@@ -221,7 +225,7 @@ export function JobAssignRecruiterModal({
                     </div>
                     <div>
                       <h5 className="text-xs font-semibold text-lia-text-primary mb-0.5">
-                        Sugestão da LIA
+                        Sugestão automática
                       </h5>
                       <p className="text-xs text-lia-text-primary leading-relaxed">
                         Recomendo <strong>{recommendedRecruiter.name}</strong> ({recommendedRecruiter.active_jobs_count ?? 0} vagas, {recommendedRecruiter.performance_score ?? 0}% perf.)
@@ -237,7 +241,7 @@ export function JobAssignRecruiterModal({
                 Selecionar Recrutador
               </h4>
               <div className="relative mb-2">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-lia-text-disabled" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-lia-text-muted" />
                 <Input
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}

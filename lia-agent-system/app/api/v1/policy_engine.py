@@ -119,7 +119,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error listing policies: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.post("/business-rules", response_model=BusinessRuleResponse, summary="Create business rule")
@@ -151,7 +151,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error creating business rule: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.get("/business-rules/{rule_id}", response_model=BusinessRuleResponse, summary="Get business rule")
@@ -179,7 +179,7 @@ async def get_business_rule(
         raise
     except Exception as e:
         logger.error(f"Error getting business rule: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 @router.put("/business-rules/{rule_id}", response_model=BusinessRuleResponse, summary="Update business rule")
@@ -207,7 +207,7 @@ async def update_business_rule(
         raise
     except Exception as e:
         logger.error(f"Error updating business rule: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 @router.delete("/business-rules/{rule_id}", summary="Delete business rule", response_model=None)
@@ -233,7 +233,7 @@ async def delete_business_rule(
         raise
     except Exception as e:
         logger.error(f"Error deleting business rule: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 @router.post("/rate-limit-rules", response_model=RateLimitRuleResponse, summary="Create rate limit rule")
@@ -263,7 +263,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error creating rate limit rule: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.put("/rate-limit-rules/{rule_id}", response_model=RateLimitRuleResponse, summary="Update rate limit rule")
@@ -291,7 +291,7 @@ async def update_rate_limit_rule(
         raise
     except Exception as e:
         logger.error(f"Error updating rate limit rule: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 @router.post("/escalation-rules", response_model=EscalationRuleResponse, summary="Create escalation rule")
@@ -322,7 +322,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error creating escalation rule: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.put("/escalation-rules/{rule_id}", response_model=EscalationRuleResponse, summary="Update escalation rule")
@@ -350,7 +350,7 @@ async def update_escalation_rule(
         raise
     except Exception as e:
         logger.error(f"Error updating escalation rule: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.post("/evaluate", response_model=PolicyEvaluateResponse, summary="Evaluate policy")
@@ -388,7 +388,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error evaluating policy: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.post("/check-rate-limit", response_model=RateLimitCheckResponse, summary="Check rate limit")
@@ -412,7 +412,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error checking rate limit: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.post("/trigger-escalation", response_model=EscalationTriggerResponse, summary="Trigger escalation")
@@ -435,7 +435,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error triggering escalation: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.post(
@@ -481,7 +481,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
         raise
     except Exception as e:
         logger.error(f"Error applying sector defaults for {company_id}: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.post("/seed", response_model=PolicySeedResponse, summary="Seed default policies")
@@ -519,7 +519,7 @@ async def seed_default_policies(
         raise
     except Exception as e:
         logger.error(f"Error seeding policies: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.get("/evaluation-logs", response_model=list[PolicyEvaluationLogResponse], summary="Get evaluation logs")
@@ -548,7 +548,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting evaluation logs: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.get("/escalation-logs", response_model=list[EscalationLogResponse], summary="Get escalation logs")
@@ -575,7 +575,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting escalation logs: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.post("/escalation-logs/{log_id}/resolve", summary="Resolve an escalation", response_model=None)
@@ -600,6 +600,6 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error resolving escalation: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 reorder_collection_before_item(router)

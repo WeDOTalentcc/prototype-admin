@@ -122,7 +122,7 @@ export function QuickViewModal({
                   {getStatusLabel(candidate.status)}
                 </Chip>
                 <div className={`px-2 py-1 rounded-full text-micro font-bold ${getScoreColor(candidate.liaAnalysis?.score || candidate.score)}`}>
-                  {candidate.liaAnalysis?.score || candidate.score}% LIA
+                  {candidate.liaAnalysis?.score || candidate.score}% IA
                 </div>
               </div>
             </div>
@@ -154,7 +154,7 @@ export function QuickViewModal({
             {[
               { id: 'overview', label: 'Visão Geral', icon: Eye },
               { id: 'experience', label: 'Experiência', icon: Briefcase },
-              { id: 'analysis', label: 'Análise LIA', icon: TrendingUp }
+              { id: 'analysis', label: 'Análise de IA', icon: TrendingUp }
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -333,7 +333,7 @@ export function QuickViewModal({
                   <div className="bg-lia-bg-secondary dark:bg-lia-bg-elevated border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl p-4">
                     <h3 className="text-xs font-medium text-lia-text-secondary mb-2 flex items-center gap-2">
                       <TrendingUp className="w-4 h-4" />
-                      Recomendação da LIA
+                      Recomendação de IA
                     </h3>
                     <p className="text-xs text-lia-text-primary">{candidate.liaAnalysis.recommendation}</p>
                   </div>

@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import React, { useState } from"react"
 import { DEMO_VALUES } from"@/lib/pricing"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from"@/components/ui/dialog"
@@ -41,9 +42,11 @@ interface LIAAnalysis {
 
 
 export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('add-candidate', isOpen)
+
   const [activeTab, setActiveTab] = useState("basic")
-  const [isAnalyzing, setIsAnalyzing] = useState(false)
-  const [liaAnalysis, setLiaAnalysis] = useState<LIAAnalysis | null>(null)
+  const [liaAnalysis] = useState<LIAAnalysis | null>(null)
   const [skills, setSkills] = useState<string[]>([])
   const [newSkill, setNewSkill] = useState("")
 
@@ -85,32 +88,8 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
     setSkills(skills.filter(s => s !== skill))
   }
 
-  const handleLIAAnalysis = async () => {
-    setIsAnalyzing(true)
-
-    // Simular análise da LIA
-    setTimeout(() => {
-      setLiaAnalysis({
-        score: Math.floor(Math.random() * 30) + 70,
-        fitScore: Math.floor(Math.random() * 30) + 70,
-        strengths: ["Experiência sólida na área","Habilidades técnicas alinhadas","Boa formação acadêmica"
-        ],
-        improvements: ["Verificar disponibilidade para início","Alinhar expectativa salarial"
-        ],
-        recommendation:"Candidato com alto potencial. Recomendo prosseguir com entrevista.",
-        suggestedSkills: ["React","TypeScript","Node.js","AWS"],
-        culturalFit: 85,
-        technicalFit: 88,
-        softSkills: {
-          communication: 82,
-          teamwork: 87,
-          leadership: 75,
-          problemSolving: 90
-        }
-      })
-      setIsAnalyzing(false)
-    }, 2000)
-  }
+  // P0-2: handleLIAAnalysis (analise fabricada via Math.random) removido.
+  // Nao apresentar IA falsa; a analise real ocorre na ficha do candidato.
 
   const handleSubmit = () => {
     const newCandidate = {
@@ -147,7 +126,6 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
       about:""
     })
     setSkills([])
-    setLiaAnalysis(null)
     setActiveTab("basic")
 
     onClose()
@@ -162,7 +140,7 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
             Adicionar Novo Candidato
           </DialogTitle>
           <DialogDescription>
-            Cadastre um novo candidato no funil de talentos. A LIA irá analisar automaticamente o perfil.
+            Cadastre um novo candidato no funil de talentos.
           </DialogDescription>
         </DialogHeader>
 
@@ -171,7 +149,7 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
             <TabsTrigger value="basic">Dados Básicos</TabsTrigger>
             <TabsTrigger value="professional">Profissional</TabsTrigger>
             <TabsTrigger value="skills">Habilidades</TabsTrigger>
-            <TabsTrigger value="analysis">Análise LIA</TabsTrigger>
+            <TabsTrigger value="analysis">Análise de Compatibilidade</TabsTrigger>
           </TabsList>
 
           <div className="flex-1 overflow-y-auto px-1">
@@ -449,9 +427,9 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                 </div>
                 {liaAnalysis?.suggestedSkills && (
                   <div className="mt-3 p-3 bg-lia-bg-tertiary rounded-xl">
-                    <p className="text-xs text-wedo-cyan-dark mb-2 flex items-center gap-1">
+                    <p className="text-xs text-lia-text-muted mb-2 flex items-center gap-1">
                       <Brain className="w-3 h-3 text-wedo-cyan" />
-                      Sugestões da LIA baseadas no perfil:
+                      Sugestões baseadas no perfil:
                     </p>
                     <div className="flex flex-wrap gap-2">
                       {liaAnalysis.suggestedSkills.map((skill: string) => (
@@ -513,23 +491,10 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                   <CardContent className="pt-6">
                     <div className="text-center py-8">
                       <LIAIcon size="lg" className="mx-auto mb-4 opacity-50" />
-                      <h3 className="text-lg font-semibold mb-2 text-lia-text-primary">Análise Inteligente com LIA</h3>
+                      <h3 className="text-lg font-semibold mb-2 text-lia-text-primary">Análise de Compatibilidade</h3>
                       <p className="text-sm text-lia-text-primary mb-4">
-                        A LIA irá analisar o perfil do candidato e fornecer insights valiosos
+                        A análise de compatibilidade fica disponível na ficha do candidato após o cadastro.
                       </p>
-                      <Button onClick={handleLIAAnalysis} disabled={isAnalyzing}>
-                        {isAnalyzing ? (
-                          <>
-                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin motion-reduce:animate-none mr-2" />
-                            Analisando...
-                          </>
-                        ) : (
-                          <>
-                            <Brain className="w-4 h-4 mr-2 text-wedo-cyan" />
-                            Iniciar Análise
-                          </>
-                        )}
-                      </Button>
                     </div>
                   </CardContent>
                 </Card>
@@ -575,7 +540,7 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                           <span className="text-sm text-lia-text-primary">Fit Técnico</span>
                           <Zap className="w-4 h-4 text-wedo-purple" />
                         </div>
-                        <div className="text-2xl font-semibold text-wedo-purple">{liaAnalysis.technicalFit}%</div>
+                        <div className="text-2xl font-semibold text-wedo-purple-text">{liaAnalysis.technicalFit}%</div>
                         <div className="w-full bg-lia-interactive-active rounded-full h-1.5 mt-2">
                           <div
                             className="bg-wedo-purple h-1.5 rounded-full"
@@ -609,12 +574,12 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                       <CardContent className="pt-4">
                         <div className="flex items-center gap-2 mb-3">
                           <AlertCircle className="w-4 h-4 text-wedo-orange" />
-                          <h4 className="font-semibold text-wedo-orange">Pontos de Atenção</h4>
+                          <h4 className="font-semibold text-wedo-orange-text">Pontos de Atenção</h4>
                         </div>
                         <ul className="space-y-1">
                           {(liaAnalysis.improvements || []).map((improvement: string, index: number) => (
-                            <li key={`improvement-${index}`} className="text-sm text-wedo-orange flex items-start gap-2">
-                              <span className="text-wedo-orange mt-0.5">•</span>
+                            <li key={`improvement-${index}`} className="text-sm text-wedo-orange-text flex items-start gap-2">
+                              <span className="text-wedo-orange-text mt-0.5">•</span>
                               {improvement}
                             </li>
                           ))}
@@ -628,9 +593,9 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                     <CardContent className="pt-4">
                       <div className="flex items-center gap-2 mb-2">
                         <LIAIcon size="sm" />
-                        <h4 className="font-semibold text-wedo-cyan-dark">Recomendação da LIA</h4>
+                        <h4 className="font-semibold text-wedo-cyan-text">Recomendação</h4>
                       </div>
-                      <p className="text-sm text-wedo-cyan-dark">{liaAnalysis.recommendation}</p>
+                      <p className="text-sm text-lia-text-muted">{liaAnalysis.recommendation}</p>
                     </CardContent>
                   </Card>
 

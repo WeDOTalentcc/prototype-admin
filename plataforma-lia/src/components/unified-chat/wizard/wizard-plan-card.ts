@@ -27,6 +27,7 @@ import {
  * Mirrors `WizardProgressBar.VISIBLE_STAGES`.
  */
 export const PLAN_VISIBLE_STAGES: readonly WizardStage[] = [
+  "intake",
   "jd_enrichment",
   "competency",
   "wsi_questions",

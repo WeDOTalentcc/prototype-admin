@@ -4,6 +4,7 @@ import type { EmailTemplate, AiResultModal } from './CommunicationHub.types'
 import { TEMPLATE_GROUPS } from './CommunicationHub.constants'
 import { apiFetch } from '@/lib/api/api-fetch'
 import { notifyChatOfSettingsUpdate } from '@/lib/api/settings-notify'
+import { useAiPersona } from "@/hooks/company/use-ai-persona"
 
 // ---------------------------------------------------------------------------
 // Reducer state & actions
@@ -214,6 +215,8 @@ async function fetchWeeklyDigestPreference(): Promise<boolean> {
 // ---------------------------------------------------------------------------
 
 export function useCommunicationHub(activeSubsection?: string) {
+  const { persona } = useAiPersona()
+  const personaName = persona?.name ?? "IA"
   const [state, dispatch] = useReducer(communicationHubReducer, {
     ...initialState,
     activeTab: activeSubsection || "templates",
@@ -537,7 +540,7 @@ export function useCommunicationHub(activeSubsection?: string) {
         }
       } else {
         const errorData = await response.json().catch(() => ({}))
-        showError(errorData.details?.detail || "Erro ao ajustar template com a LIA")
+        showError(errorData.details?.detail || `Erro ao ajustar template com ${personaName}`)
       }
     } catch {
       showError("Erro ao conectar com o servico de IA")
@@ -560,7 +563,7 @@ export function useCommunicationHub(activeSubsection?: string) {
         : null,
     })
     showSuccess(
-      "Ajustes da LIA aplicados. Clique em \"Salvar\" para confirmar as alteracoes.",
+      `Ajustes de ${personaName} aplicados. Clique em \"Salvar\" para confirmar as alteracoes.`,
       5000
     )
     dispatch({ type: "SET_AI_RESULT_MODAL", payload: null })

@@ -160,10 +160,12 @@ class EmailService:
         recipient_email: str,
         variables: dict[str, Any],
         candidate_id: str | None = None,
+        vacancy_id: str | None = None,
         send_immediately: bool = True,
         created_by: str | None = None,
         subject_override: str | None = None,
-        body_override: str | None = None
+        body_override: str | None = None,
+        cc: list[str] | None = None,
     ) -> EmailLog:
         """
         Send an email using a template.
@@ -193,6 +195,10 @@ class EmailService:
             template_subject = str(subj) if subj else ""
             template_body_html = str(html) if html else ""
             template_body_text = str(text) if text else ""
+            if cc is None:
+                raw_cc = getattr(template, 'cc_emails', None)
+                if raw_cc:
+                    cc = [str(e) for e in raw_cc if e]
         else:
             logger.warning(
                 f"Template {template_id} not found — using overrides or default fallback"
@@ -205,10 +211,10 @@ class EmailService:
         body_to_use: str = body_override if body_override else template_body_html
 
         if not subject_to_use:
-            subject_to_use = "Notificação — Plataforma LIA"
+            subject_to_use = "Notificação — WeDOTalent"
         if not body_to_use:
             candidate_name = variables.get("candidate_name", "")
-            body_to_use = f"<p>Olá{(' ' + candidate_name) if candidate_name else ''},</p><p>Esta é uma notificação da Plataforma LIA.</p>"
+            body_to_use = f"<p>Olá{(' ' + candidate_name) if candidate_name else ''},</p><p>Esta é uma notificação do WeDOTalent.</p>"
         
         rendered_subject, subject_missing = self.render_template(subject_to_use, variables)
         rendered_html, html_missing = self.render_template(body_to_use, variables)
@@ -258,11 +264,28 @@ class EmailService:
         
         if send_immediately:
             try:
+                # GAP-07-008: build RFC 2822 threading headers when candidate context is available
+                _threading_headers: dict = {}
+                if candidate_id:
+                    from app.domains.communication.services.email_threading import build_threading_headers
+                    _company_ctx = ""
+                    try:
+                        from app.middleware.auth_enforcement import _current_company_id
+                        _company_ctx = _current_company_id.get("") or ""
+                    except Exception:
+                        pass
+                    _threading_headers = build_threading_headers(
+                        candidate_id=candidate_id,
+                        company_id=_company_ctx or "unknown",
+                        vacancy_id=vacancy_id,
+                    )
                 success = await self._send_email_provider(
                     to_email=recipient_email,
                     subject=rendered_subject,
                     body_html=rendered_html,
-                    body_text=rendered_text
+                    body_text=rendered_text,
+                    cc=cc or None,
+                    headers=_threading_headers or None,
                 )
                 
                 if success:
@@ -293,7 +316,9 @@ class EmailService:
         body_text: str | None = None,
         from_email: str | None = None,
         client_id: str | None = None,
-        client_config: dict[str, Any] | None = None
+        client_config: dict[str, Any] | None = None,
+        cc: list[str] | None = None,
+        headers: dict[str, str] | None = None,
     ) -> bool:
         """
         Send email using Mailgun as primary provider with automatic Resend fallback.
@@ -334,7 +359,9 @@ class EmailService:
                 subject=subject,
                 html_content=body_html,
                 text_content=body_text,
-                from_email=from_email
+                from_email=from_email,
+                cc=cc,
+                headers=headers,
             )
 
             if result.success:
@@ -396,15 +423,15 @@ class EmailService:
         """
         NOTIFICATION_CONFIG = {
             "invitation": {
-                "subject": "Você foi convidado para a Plataforma LIA",
+                "subject": "Você foi convidado para o WeDOTalent",
                 "template_name": "Convite de Usuário"
             },
             "password_reset": {
-                "subject": "Redefinição de Senha - Plataforma LIA",
+                "subject": "Redefinição de Senha — WeDOTalent",
                 "template_name": "Recuperação de Senha"
             },
             "email_verification": {
-                "subject": "Verifique seu Email - Plataforma LIA",
+                "subject": "Verifique seu Email — WeDOTalent",
                 "template_name": "Verificação de Email"
             }
         }
@@ -676,8 +703,8 @@ class EmailService:
                     except Exception as tracking_error:
                         try:
                             await db.rollback()
-                        except Exception:
-                            pass
+                        except Exception as rb_err:
+                            logger.debug("[email] db.rollback() also failed during tracking update: %s", rb_err)
                         logger.warning(f"⚠️ Failed to update welcome_email tracking: {tracking_error}")
             else:
                 # pii-logs ok: PII (nome/email candidate ou recruiter) mascarado em runtime via PIIMaskingFilter (LGPD Art.46)
@@ -687,8 +714,8 @@ class EmailService:
         except Exception as e:
             try:
                 await db.rollback()
-            except Exception:
-                pass
+            except Exception as rb_err:
+                logger.debug("[email] db.rollback() also failed during welcome email: %s", rb_err)
             # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
             logger.error(f"Error sending welcome email to {primary_email}: {e}")
             return False

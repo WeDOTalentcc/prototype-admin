@@ -47,6 +47,11 @@ class TenantLLMConfig(Base):
 
     is_active = Column(Boolean, default=True)
 
+    # Sprint D (2026-06-13): override de tier por dominio
+    # {"screening": {"tier": "heavy", "threshold": 0.70}}
+    # NULL = usa DOMAIN_TIER_DEFAULTS da plataforma
+    tier_policies = Column(JSON, nullable=True, default=dict)
+
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     created_by = Column(String(255), nullable=True)

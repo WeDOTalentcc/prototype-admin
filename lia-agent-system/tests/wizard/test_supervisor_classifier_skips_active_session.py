@@ -58,6 +58,8 @@ def _enable_supervisor_env(monkeypatch):
     monkeypatch.setenv("LIA_WIZARD_SUPERVISOR_CLASSIFIER", "1")
     monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key-not-used")
     monkeypatch.delenv("AI_INTEGRATIONS_ANTHROPIC_API_KEY", raising=False)
+    # Fase 8: default flipped to orchestrator ON. Force graph legado path.
+    monkeypatch.setenv("LIA_WIZARD_ORCHESTRATOR", "0")
 
 
 async def _drive(monkeypatch, *, prior_stage, user_message):
@@ -73,6 +75,7 @@ async def _drive(monkeypatch, *, prior_stage, user_message):
         wizard_session_service as wss_mod,
     )
     WSS = wss_mod.WizardSessionService
+    WSS._dotenv_cache = {}
 
     # Fake prior_state with the target stage (mid-flow if active).
     prior_state = (

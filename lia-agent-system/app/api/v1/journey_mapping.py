@@ -10,11 +10,12 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field, ConfigDict
 
-from app.domains.journey_mapping.dependencies import get_journey_mapping_repo
-from app.domains.journey_mapping.repositories.journey_mapping_repository import JourneyMappingRepository
+from app.repositories.dependencies import get_journey_mapping_repo
+from app.repositories.journey_mapping_repository import JourneyMappingRepository
 from app.domains.ai.services.llm import llm_service
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 from app.shared.types import WeDoBaseModel
+from app.shared.errors import LIAError
 
 logger = logging.getLogger(__name__)
 
@@ -353,7 +354,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error completing wizard: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/blueprint", response_model=JourneyBlueprintResponse)
@@ -374,7 +375,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error fetching journey blueprint: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/blueprint", response_model=JourneyBlueprintResponse)
@@ -402,7 +403,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error creating journey blueprint: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.put("/blueprint/{blueprint_id}", response_model=JourneyBlueprintResponse)
@@ -429,7 +430,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error updating journey blueprint: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/wizard/step", response_model=JourneyBlueprintResponse)
@@ -454,7 +455,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error saving wizard step: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/steps", response_model=list[JourneyStepResponse])
@@ -475,7 +476,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error fetching journey steps: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/steps", response_model=JourneyStepResponse)
@@ -499,7 +500,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error creating journey step: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.put("/steps/{step_id}", response_model=JourneyStepResponse)
@@ -530,7 +531,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error updating journey step: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.delete("/steps/{step_id}", response_model=None)
@@ -559,7 +560,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error deleting journey step: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/integrations", response_model=list[JourneyIntegrationResponse])
@@ -580,7 +581,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error fetching journey integrations: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/integrations", response_model=JourneyIntegrationResponse)
@@ -604,7 +605,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error creating journey integration: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.put("/integrations/{integration_id}", response_model=JourneyIntegrationResponse)
@@ -634,7 +635,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error updating journey integration: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/ai/recommendations", response_model=AIRecommendationsResponse)
@@ -753,4 +754,4 @@ Responda em formato JSON com as chaves: summary, recommendations (lista), sugges
         raise
     except Exception as e:
         logger.error(f"Error generating AI recommendations: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")

@@ -27,7 +27,6 @@ import {
   WizardBackendUnavailableError,
 } from "./useWizardSessionApi"
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const _typecheck_imports = [
   fetchWizardSessionState,
   resetWizardSession,

@@ -759,6 +759,42 @@ ACTIONABLE_INTENTS: dict[str, dict[str, Any]] = {
         "param_labels": {},
         "clarification_prompts": {},
     },
+    # --- UC-P1-G: ghost capabilities fixed (2026-06-14) ---
+    # These 3 intent keys match capability_map.yaml exactly so Rail A
+    # intent_hint resolves correctly to the domain handler action_id.
+    "listar_talent_pools": {
+        "domain_id": "talent_pool",
+        "action_id": "list_talent_pools",
+        "required_params": [],
+        "optional_params": ["status"],
+        "risk_level": "low",
+        "requires_confirmation": False,
+        "param_labels": {},
+        "clarification_prompts": {},
+    },
+    "consultar_consumo": {
+        "domain_id": "agent_studio",
+        "action_id": "get_studio_consumption",
+        "required_params": [],
+        "optional_params": ["days"],
+        "risk_level": "low",
+        "requires_confirmation": False,
+        "param_labels": {"days": "dias"},
+        "clarification_prompts": {},
+    },
+    "criar_a_partir_de_template": {
+        "domain_id": "job_management",
+        "action_id": "create_from_template",
+        "required_params": ["template_id"],
+        "optional_params": ["job_title", "department"],
+        "risk_level": "medium",
+        "requires_confirmation": True,
+        "param_labels": {"template_id": "template"},
+        "clarification_prompts": {
+            "template_id": "Qual template deseja usar para criar a vaga?",
+        },
+    },
+
 }
 
 CONFIRMATION_PATTERNS = [

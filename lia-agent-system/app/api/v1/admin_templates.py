@@ -14,7 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.dependencies import require_admin
 from app.auth.models import User
 from app.core.database import get_db, get_tenant_db
-from app.domains.admin.repositories.admin_template_repository import (
+from app.repositories.admin_template_repository import (
     AdminTemplateRepository,
 )
 from app.models.email_template import EmailTemplate
@@ -24,6 +24,7 @@ from app.shared.types import WeDoBaseModel
 from typing import Annotated
 from fastapi import Path
 from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
+from app.shared.errors import LIAError
 
 logger = logging.getLogger(__name__)
 
@@ -116,7 +117,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error listing system templates: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("", response_model=SystemTemplateResponse, status_code=201)
@@ -153,7 +154,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await db.rollback()
         logger.error(f"Error creating system template: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/{template_id}", response_model=SystemTemplateResponse)
@@ -176,7 +177,7 @@ company_id: str = Depends(require_company_id)):
         raise HTTPException(status_code=400, detail="Invalid template ID format")
     except Exception as e:
         logger.error(f"Error getting system template: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.put("/{template_id}", response_model=SystemTemplateResponse)
@@ -214,7 +215,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await db.rollback()
         logger.error(f"Error updating system template: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.delete("/{template_id}", response_model=None)
@@ -241,7 +242,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await db.rollback()
         logger.error(f"Error deleting system template: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/{template_id}/publish", response_model=PublishResult)
@@ -285,6 +286,6 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await db.rollback()
         logger.error(f"Error publishing template: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 reorder_collection_before_item(router)

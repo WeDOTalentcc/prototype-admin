@@ -15,10 +15,30 @@ from lia_agents_core.tool_adapter import ToolOutput
 from app.core.database import AsyncSessionLocal
 from app.shared.compliance.fairness_guard import FairnessGuard
 from app.shared.tool_handler import tool_handler
+from app.domains.recruiter_assistant.services.pipeline_stage_service import (
+    pipeline_stage_service,
+    FairnessBlockedError,
+)
 
 logger = logging.getLogger(__name__)
 
 _fairness_guard = FairnessGuard()
+
+async def _fetch_candidate_name_map(candidate_ids: list[str], company_id: str) -> dict[str, str]:
+    """Fetch {id: name} map for bulk result labels. Fail-open: returns {} on error."""
+    if not candidate_ids:
+        return {}
+    try:
+        from app.domains.candidates.repositories.candidate_repository import CandidateRepository
+        async with AsyncSessionLocal() as _sess:
+            _repo = CandidateRepository(_sess)
+            _candidates = await _repo.list_by_ids(candidate_ids, company_id=company_id)
+            return {str(c.id): (c.name or str(c.id)) for c in _candidates}
+    except Exception as _e:
+        import logging as _lg
+        _lg.getLogger(__name__).debug("[kanban_tools] _fetch_candidate_name_map fail-open: %s", _e)
+        return {}
+
 
 
 @tool_handler("kanban")
@@ -85,9 +105,6 @@ async def _wrap_get_pipeline_benchmarks(**kwargs: Any) -> dict[str, Any]:
         f"vacancy={vacancy_id} company={company_id}"
     )
 
-    per_stage_metrics = {}
-    company_averages = {}
-
     try:
         # W1-004-B (2026-05-23): SQL inline → RecruiterMetricsRepository (ADR-001).
         # _require_company_id fail-closed garante zero cross-tenant aggregation.
@@ -97,6 +114,8 @@ async def _wrap_get_pipeline_benchmarks(**kwargs: Any) -> dict[str, Any]:
 
         async with AsyncSessionLocal() as session:
             repo = RecruiterMetricsRepository(session)
+            per_stage_metrics = {}
+            company_averages = {}
             if vacancy_id:
                 per_stage_metrics = await repo.avg_days_per_stage_for_vacancy(
                     vacancy_id=vacancy_id, company_id=company_id
@@ -108,6 +127,10 @@ async def _wrap_get_pipeline_benchmarks(**kwargs: Any) -> dict[str, Any]:
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[kanban_tools] SQL error in get_pipeline_benchmarks: {e}")
+        return {
+            "success": False,
+            "message": "Não consegui consultar os benchmarks do pipeline agora. Tente novamente em instantes.",
+        }
 
     status_map = {}
     for stage_name, metrics in per_stage_metrics.items():
@@ -320,6 +343,7 @@ async def _wrap_get_at_risk_candidates(**kwargs: Any) -> dict[str, Any]:
 
     company_id = kwargs["company_id"]
     min_risk_level = kwargs.get("min_risk_level", "medium")
+    limit = min(int(kwargs.get("limit", 15)), 50)
 
     candidates = await early_warning_service.get_at_risk_candidates(
         company_id=company_id,
@@ -332,7 +356,7 @@ async def _wrap_get_at_risk_candidates(**kwargs: Any) -> dict[str, Any]:
         "success": True,
         "total": len(candidates),
         "summary": summary,
-        "candidates": candidates[:15],
+        "candidates": candidates[:limit],
         "message": (
             f"{summary['by_risk_level']['critical']} candidato(s) em risco crítico, "
             f"{summary['by_risk_level']['high']} alto risco, "
@@ -409,9 +433,6 @@ async def _wrap_get_pipeline_summary(**kwargs: Any) -> dict[str, Any]:
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[kanban_tools] get_pipeline_summary called for vacancy={vacancy_id or 'all'}")
 
-    stages: dict[str, int] = {}
-    total = 0
-    hired = 0
     try:
         async with AsyncSessionLocal() as session:
             repo = RecruiterMetricsRepository(session)
@@ -424,12 +445,27 @@ async def _wrap_get_pipeline_summary(**kwargs: Any) -> dict[str, Any]:
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[kanban_tools] get_pipeline_summary DB error: {e}")
+        return {
+            "success": False,
+            "message": "Não consegui consultar o resumo do pipeline agora. Tente novamente em instantes.",
+        }
 
     conversion = round(hired / total * 100, 1) if total > 0 else 0.0
+    _rrp_blocks = []
+    try:
+        if stages:
+            from app.shared.rrp_ranking_builder import build_pipeline_funnel_block
+            _rrp_blocks = build_pipeline_funnel_block(
+                f"Pipeline ({vacancy_id or 'todas as vagas'})",
+                stages, total, conversion,
+            )
+    except Exception as _e:
+        logger.warning(f"[kanban_tools] funnel block skipped: {_e}")
     return {
         "success": True,
         "data": {"vacancy_id": vacancy_id or "all", "total_candidates": total,
-                 "stages": stages, "conversion_rate": conversion},
+                 "stages": stages, "conversion_rate": conversion,
+                 "response_blocks": _rrp_blocks or None},
         "message": f"Pipeline: {total} candidatos distribuidos em {len(stages)} etapas. Conversao: {conversion}%.",
     }
 
@@ -447,7 +483,6 @@ async def _wrap_get_stage_metrics(**kwargs: Any) -> dict[str, Any]:
     company_id = kwargs.get("company_id", "")
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[kanban_tools] get_stage_metrics called: stage={stage} vacancy={vacancy_id or 'all'}")
-    metrics: dict[str, Any] = {"stage": stage, "vacancy_id": vacancy_id or "all"}
     try:
         async with AsyncSessionLocal() as session:
             repo = RecruiterMetricsRepository(session)
@@ -462,6 +497,10 @@ async def _wrap_get_stage_metrics(**kwargs: Any) -> dict[str, Any]:
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[kanban_tools] get_stage_metrics DB error: {e}")
+        return {
+            "success": False,
+            "message": "Não consegui consultar as métricas da etapa agora. Tente novamente em instantes.",
+        }
     return {
         "success": True,
         "data": metrics,
@@ -483,8 +522,6 @@ async def _wrap_list_stage_candidates(**kwargs: Any) -> dict[str, Any]:
     limit = int(kwargs.get("limit", 20))
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[kanban_tools] list_stage_candidates called: stage={stage} vacancy={vacancy_id or 'all'}")
-    candidates = []
-    total = 0
     if not company_id:
         return {"error": "company_id is required", "success": False}
     try:
@@ -496,6 +533,10 @@ async def _wrap_list_stage_candidates(**kwargs: Any) -> dict[str, Any]:
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[kanban_tools] list_stage_candidates DB error: {e}")
+        return {
+            "success": False,
+            "message": "Não consegui listar os candidatos da etapa agora. Tente novamente em instantes.",
+        }
     return {
         "success": True,
         "data": {"stage": stage, "vacancy_id": vacancy_id or "all",
@@ -701,6 +742,8 @@ async def _wrap_suggest_movements(**kwargs: Any) -> dict[str, Any]:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"[kanban_tools] suggest_movements error: {e}", exc_info=True)
         return {"success": False, "error": str(e), "message": "Erro ao gerar sugestoes de movimentacao."}
+    limit = min(int(kwargs.get("limit", 10)), 50)
+    suggestions = suggestions[:limit]
     return {
         "success": True,
         "data": {"stage": stage or "all", "vacancy_id": vacancy_id or "all",
@@ -711,38 +754,91 @@ async def _wrap_suggest_movements(**kwargs: Any) -> dict[str, Any]:
 
 @tool_handler("kanban")
 async def _wrap_batch_move_candidates(**kwargs: Any) -> dict[str, Any]:
-    """Move multiple candidates to a target stage (real DB UPDATE)."""
-    # W1-004-B (2026-05-23): SQL inline → RecruiterMetricsRepository (ADR-001).
-    from app.domains.recruiter_assistant.repositories.recruiter_metrics_repository import (
-        RecruiterMetricsRepository,
-    )
-
+    """Move multiple candidates to a target stage via pipeline_stage_service (D2, 2026-06-19)."""
+    # R1-D2 (2026-06-19): migrated from RecruiterMetricsRepository (repo bypass method)
+    # (raw-SQL P-GUARD bypass) to pipeline_stage_service per-candidate loop.
+    # Fairness gate + audit + history + STAGE_CHANGED event enforced per-candidate.
     candidate_ids = kwargs.get("candidate_ids", [])
     target_stage = kwargs.get("target_stage", "")
     vacancy_id = kwargs.get("vacancy_id", "")
     company_id = kwargs.get("company_id", "")
     reason = kwargs.get("reason", "")
+    # F3: HITL gate — batch move é mutação sensível; dormante com LIA_HITL_GATE off.
+    from app.shared.hitl.hitl_approval_context import hitl_preflight as _hitl_preflight
+    _hitl_block = _hitl_preflight(
+        tool="batch_move_candidates",
+        domain="kanban",
+        message="Mover candidatos em lote é uma ação que requer confirmação.",
+        data={"candidate_count": len(candidate_ids), "target_stage": target_stage},
+    )
+    if _hitl_block is not None:
+        return _hitl_block
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[kanban_tools] batch_move_candidates called: candidates={len(candidate_ids)} target={target_stage}")
     if not candidate_ids or not target_stage:
         return {"success": False, "data": {}, "message": "Parametros 'candidate_ids' e 'target_stage' sao obrigatorios."}
+    # R1-D2: per-candidate loop via pipeline_stage_service (fairness gate + audit + history).
+    # Raw SQL bypass removed on 2026-06-19. SEV1 P-GUARD closed.
+    # SEV1 P-GUARD closed: target_stage now passes through fairness gate on every transition.
+    MAX_BULK_CANDIDATES = 50  # N sequential service calls — cap to avoid unbounded latency
+    if len(candidate_ids) > MAX_BULK_CANDIDATES:
+        return {
+            "success": False,
+            "data": {},
+            "message": (
+                f"Limite de {MAX_BULK_CANDIDATES} candidatos por operacao bulk. "
+                f"Enviados: {len(candidate_ids)}. Divida em lotes menores."
+            ),
+        }
+
     moved = 0
-    try:
-        async with AsyncSessionLocal() as session:
-            repo = RecruiterMetricsRepository(session)
-            moved = await repo.bulk_update_candidate_stage(
-                vacancy_id=vacancy_id, company_id=company_id,
-                candidate_ids=candidate_ids, new_stage=target_stage
+    _failed_ids: dict[str, str] = {}  # id -> reason text (educational_message or error context)
+    for cid in candidate_ids:
+        try:
+            await pipeline_stage_service.transition_candidate(
+                vacancy_candidate_id=str(cid),
+                to_stage=target_stage,
+                triggered_by="batch_move_kanban_tool",
+                source_agent="kanban_tool_registry",
+                reason=reason or f"Batch move → {target_stage}",
+                context={"company_id": company_id, "job_vacancy_id": vacancy_id},
             )
-    except Exception as e:
-        # rollback handled automatically by `async with AsyncSessionLocal()`
-        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
-        logger.error(f"[kanban_tools] batch_move_candidates error: {e}", exc_info=True)
-        return {"success": False, "error": str(e), "message": "Erro ao mover candidatos em lote."}
+            moved += 1
+        except FairnessBlockedError as _fb:
+            # P-FAILLOUD: propagate educational_message verbatim so recruiter sees WHY
+            logger.warning(f"[kanban_tools] batch_move FAIRNESS blocked cid={cid}: {_fb}")
+            _failed_ids[str(cid)] = _fb.message or "Rejeicao bloqueada por criterio de fairness (Lei 9.029/95)"
+        except PermissionError as _pe:
+            logger.warning(f"[kanban_tools] batch_move PERMISSION denied cid={cid}: {_pe}")
+            _failed_ids[str(cid)] = "Sem permissao para mover este candidato"
+        except Exception as _ex:
+            logger.warning(f"[kanban_tools] batch_move partial failure cid={cid}: {_ex}")
+            _failed_ids[str(cid)] = f"Erro interno: {type(_ex).__name__} — {str(_ex)[:80]}"
+    # F5 bulk_execute producer: emite ui_action para FE abrir BulkResultReport.
+    _name_map = await _fetch_candidate_name_map(candidate_ids, company_id)
+    _ui_results = [
+        {
+            "id": cid,
+            "name": _name_map.get(cid, cid),
+            "ok": cid not in _failed_ids,
+            **({"reason": _failed_ids[cid]} if cid in _failed_ids else {}),
+        }
+        for cid in candidate_ids
+    ]
     return {
         "success": True,
-        "data": {"moved_count": moved, "target_stage": target_stage,
-                 "candidate_ids": candidate_ids, "reason": reason},
+        "data": {
+            "ui_action": "bulk_execute",
+            "ui_action_params": {
+                "action": "batch_move_candidates",
+                "title": f"Candidatos movidos para '{target_stage}'",
+                "results": _ui_results,
+            },
+            "moved_count": moved,
+            "target_stage": target_stage,
+            "candidate_ids": candidate_ids,
+            "reason": reason,
+        },
         "message": f"{moved} candidatos movidos para '{target_stage}'.",
     }
 
@@ -751,15 +847,33 @@ async def _wrap_batch_move_candidates(**kwargs: Any) -> dict[str, Any]:
 async def _wrap_send_batch_communication(**kwargs: Any) -> dict[str, Any]:
     """Send communication to multiple candidates."""
     candidate_ids = kwargs.get("candidate_ids", [])
+    company_id = kwargs.get("company_id", "")
     channel = kwargs.get("channel", "email")
     template = kwargs.get("template", "")
+    # F3: HITL gate -- comunicacao em lote e acao sensivel (outreach); dormante com LIA_HITL_GATE off.
+    from app.shared.hitl.hitl_approval_context import hitl_preflight as _hitl_preflight
+    _hitl_block = _hitl_preflight(
+        tool="send_batch_communication",
+        domain="kanban",
+        message="Enviar comunicacao em lote requer confirmacao.",
+        data={"candidate_count": len(candidate_ids), "channel": channel},
+    )
+    if _hitl_block is not None:
+        return _hitl_block
     logger.info(
         f"[kanban_tools] send_batch_communication called: candidates={len(candidate_ids)} "
         f"channel={channel}"
     )
+    _comm_name_map = await _fetch_candidate_name_map(candidate_ids, company_id)
     return {
         "success": True,
         "data": {
+            "ui_action": "bulk_execute",
+            "ui_action_params": {
+                "action": "send_batch_communication",
+                "title": f"Comunicação via {channel} enviada",
+                "results": [{"id": cid, "name": _comm_name_map.get(cid, cid), "ok": True} for cid in candidate_ids],
+            },
             "sent_count": len(candidate_ids),
             "channel": channel,
             "template": template,
@@ -832,7 +946,6 @@ async def _wrap_view_candidate_full_profile(**kwargs: Any) -> dict[str, Any]:
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[kanban_tools] view_candidate_full_profile called for candidate={candidate_id}")
 
-    profile: dict[str, Any] = {"candidate_id": candidate_id, "profile_loaded": False}
     try:
         async with AsyncSessionLocal() as session:
             repo = CandidatePipelineRepository(session)
@@ -849,6 +962,10 @@ async def _wrap_view_candidate_full_profile(**kwargs: Any) -> dict[str, Any]:
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[kanban_tools] view_candidate_full_profile DB error: {e}")
+        return {
+            "success": False,
+            "message": "Não consegui carregar o perfil do candidato agora. Tente novamente em instantes.",
+        }
 
     return {
         "success": True,
@@ -970,6 +1087,8 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             "properties": {
                 "stage": {"type": "string", "description": "Etapa especifica (opcional, padrao: todas)"},
                 "days_threshold": {"type": "integer", "description": "Limite de dias para considerar estagnado (opcional, padrao: 7)"},
+                "vacancy_id": {"type": "string", "description": "ID da vaga (opcional, padrao: todas as vagas)"},
+                "limit": {"type": "integer", "description": "Numero maximo de candidatos (padrao: 15)"},
             },
             "required": [],
         },
@@ -999,6 +1118,7 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             "properties": {
                 "stage": {"type": "string", "description": "Etapa de origem para sugestoes"},
                 "vacancy_id": {"type": "string", "description": "ID da vaga (opcional)"},
+                "limit": {"type": "integer", "description": "Numero maximo de sugestoes (padrao: 10)"},
             },
             "required": ["stage"],
         },
@@ -1204,6 +1324,8 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
                     "description": "Nível mínimo de risco a retornar: medium (padrão), high ou critical.",
                     "enum": ["medium", "high", "critical"],
                 },
+                "vacancy_id": {"type": "string", "description": "ID da vaga (opcional, padrao: todas as vagas)"},
+                "limit": {"type": "integer", "description": "Numero maximo de candidatos (padrao: 15)"},
             },
             "required": [],
         },
@@ -1287,3 +1409,41 @@ def get_kanban_tools(stage: str = "") -> list[ToolDefinition]:
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.debug(f"[kanban_tools] Stage '{stage}' tools: {[t.name for t in tools]}")
     return tools
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Opção C — registro global com namespace de domínio (2026-06-18)
+# ─────────────────────────────────────────────────────────────────────────────
+
+def register_kanban_global() -> int:
+    """Registra as tools de kanban/pipeline no tool_registry global.
+
+    Apenas 'get_pipeline_prediction' recebe prefixo 'kb_' para evitar
+    conflito com o homônimo de jobs_mgmt (Opção C — namespace de domínio,
+    2026-06-18). Tools únicas mantêm o nome original.
+    Segue o padrão de register_ui_tools_global() (ui_tool_registry.py).
+    Chamada por app/tools/__init__.py:initialize_tools().
+
+    Renames:
+        get_pipeline_prediction → kb_pipeline_prediction
+    """
+    from app.tools.registry import ToolDefinition as _G
+    from app.tools.registry import tool_registry as _reg
+
+    _RENAMES: dict[str, str] = {
+        "get_pipeline_prediction": "kb_pipeline_prediction",
+    }
+
+    n = 0
+    for td in TOOL_DEFINITIONS:
+        _reg.register(
+            _G(
+                name=_RENAMES.get(td.name, td.name),
+                description=td.description,
+                parameters_schema=td.parameters,
+                handler=td.function,
+                allowed_agents=["recruiter_assistant", "orchestrator"],
+            )
+        )
+        n += 1
+    return n

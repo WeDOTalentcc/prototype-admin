@@ -102,12 +102,12 @@ const SOURCE_LABELS: Record<string, { label: string; icon: typeof Building; colo
   company_history: {
     label:"Histórico da empresa",
     icon: TrendingUp,
-    color:"text-wedo-cyan-dark",
+    color:"text-lia-text-secondary",
   },
   company_defaults: {
     label:"Configuração padrão",
     icon: Building,
-    color:"text-wedo-purple",
+    color:"text-lia-text-secondary",
   },
   market_benchmark: {
     label:"Referência de mercado",

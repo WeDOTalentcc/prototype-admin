@@ -1,5 +1,6 @@
 "use client";
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import React from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Chip } from "@/components/ui/chip";
@@ -38,6 +39,9 @@ export function OrgChartDialog({
   loadingOrgChart,
   setOrgChartDepartment,
 }: OrgChartDialogProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('org-chart', !!orgChartDepartment)
+
   const t = useTranslations('settings.departments');
 
   return (
@@ -71,7 +75,7 @@ export function OrgChartDialog({
             </div>
           ) : orgChartMembers.length === 0 ? (
             <div className="text-center py-12">
-              <Users className="w-12 h-12 mx-auto mb-3 text-lia-text-disabled" />
+              <Users className="w-12 h-12 mx-auto mb-3 text-lia-text-muted" />
               <p className="text-xs font-medium text-lia-text-secondary">
                 {t('orgChartNoEmployees')}
               </p>

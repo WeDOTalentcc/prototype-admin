@@ -81,7 +81,7 @@ export function AISuggestionBadge({
             )}
           >
             <Brain className="h-3 w-3 text-wedo-cyan" />
-            LIA
+            IA
           </Chip>
         </PopoverTrigger>
         <PopoverContent className="w-64 p-3" align="start">

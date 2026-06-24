@@ -1,8 +1,10 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { CheckCircle2, Clock, Send, Loader2, XCircle, ChevronDown } from "lucide-react"
 import { useTranslations } from "next-intl"
+import { toast } from "@/lib/toast"
 
 interface Job {
   id: string
@@ -27,7 +29,6 @@ export function AlignmentStatusCard({ jobId, jobs = [] }: AlignmentStatusCardPro
   const [selectedJobId, setSelectedJobId] = useState<string | null>(jobId)
   const [alignment, setAlignment] = useState<AlignmentState | null>(null)
   const [loading, setLoading] = useState(true)
-  const [actionLoading, setActionLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [email, setEmail] = useState("")
   const [name, setName] = useState("")
@@ -38,29 +39,35 @@ export function AlignmentStatusCard({ jobId, jobs = [] }: AlignmentStatusCardPro
     if (jobId && !selectedJobId) setSelectedJobId(jobId)
   }, [jobId, selectedJobId])
 
+  const queryClient = useQueryClient()
+  const { data: alignmentData, isLoading: alignmentLoading, error: alignmentError, refetch: refetchAlignment } = useQuery({
+    queryKey: ["manager-alignments", selectedJobId],
+    queryFn: async () => {
+      if (!selectedJobId) return null
+      const res = await fetch(
+        `/api/backend-proxy/manager-alignments?job_vacancy_id=${encodeURIComponent(selectedJobId)}&limit=1`,
+        { credentials: "include" }
+      )
+      if (!res.ok) throw new Error("Erro ao carregar alinhamentos")
+      const data = await res.json()
+      const list = Array.isArray(data?.alignments) ? data.alignments : []
+      return list.length > 0 ? list[0] : null
+    },
+    enabled: !!selectedJobId,
+    staleTime: 60_000,
+  })
+
   useEffect(() => {
-    if (!selectedJobId) { setLoading(false); return }
-    setAlignment(null)
+    setAlignment(alignmentData ?? null)
+  }, [alignmentData])
+
+  useEffect(() => {
     setShowForm(false)
-    setLoading(true)
-    fetch(
-      `/api/backend-proxy/manager-alignments?job_vacancy_id=${encodeURIComponent(selectedJobId)}&limit=1`,
-      { credentials: "include" }
-    )
-      .then(r => r.ok ? r.json() : null)
-      .then(data => {
-        const list = Array.isArray(data?.alignments) ? data.alignments : []
-        if (list.length > 0) setAlignment(list[0])
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false))
   }, [selectedJobId])
 
-  const handleRequest = async () => {
-    if (!email || !selectedJobId) return
-    setActionLoading(true)
-    setError(null)
-    try {
+  const { mutate: sendAlignment, isPending: actionLoading, error: mutationError } = useMutation({
+    mutationFn: async () => {
+      if (!email || !selectedJobId) throw new Error("Email e vaga são obrigatórios")
       const res = await fetch("/api/backend-proxy/manager-alignments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -75,14 +82,20 @@ export function AlignmentStatusCard({ jobId, jobs = [] }: AlignmentStatusCardPro
         const e = await res.json()
         throw new Error(e.detail || "Erro ao solicitar alinhamento")
       }
-      const data = await res.json()
+      return res.json()
+    },
+    onSuccess: (data) => {
       setAlignment(data)
       setShowForm(false)
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Erro ao solicitar")
-    } finally {
-      setActionLoading(false)
-    }
+      queryClient.invalidateQueries({ queryKey: ["manager-alignments", selectedJobId] })
+    },
+    onError: (err) => {
+      toast.error("Erro", err instanceof Error ? err.message : "Erro ao solicitar alinhamento")
+    },
+  })
+
+  const handleRequest = () => {
+    sendAlignment()
   }
 
   const jobSelector = jobs.length > 1 ? (
@@ -102,7 +115,7 @@ export function AlignmentStatusCard({ jobId, jobs = [] }: AlignmentStatusCardPro
     </div>
   ) : null
 
-  if (loading) {
+  if (alignmentLoading) {
     return (
       <div>
         {jobSelector}
@@ -126,8 +139,8 @@ export function AlignmentStatusCard({ jobId, jobs = [] }: AlignmentStatusCardPro
         <div className="p-4 space-y-3">
           <div className="flex items-center gap-3 rounded-xl border border-lia-border-subtle p-3.5 bg-lia-bg-secondary">
             <div className="flex-shrink-0">
-              {isApproved && <CheckCircle2 className="w-5 h-5 text-wedo-green" />}
-              {isPending && <Clock className="w-5 h-5 text-wedo-orange" />}
+              {isApproved && <CheckCircle2 className="w-5 h-5 text-wedo-green-text" />}
+              {isPending && <Clock className="w-5 h-5 text-wedo-orange-text" />}
               {(isRejected || isExpired) && <XCircle className="w-5 h-5 text-lia-text-tertiary" />}
             </div>
             <div className="flex-1 min-w-0">

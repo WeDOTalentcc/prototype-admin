@@ -66,7 +66,7 @@ async def _wrap_suggest_skills(**kwargs: Any) -> dict[str, Any]:
             """),
             {"role_pattern": f"%{role}%", "company_id": company_id},
         )
-        rows = result.mappings().all()
+        rows = result.mappings().all()[:limit]
 
     if not rows:
         return {
@@ -654,6 +654,7 @@ async def _wrap_rank_candidates(**kwargs: Any) -> dict[str, Any]:
     vacancy_id = kwargs.get("vacancy_id", "")
     company_id = kwargs.get("company_id", "")  # P0.A canonical (handoff site 1 + 2)
 
+    limit = min(int(kwargs.get("limit", 10)), 50)
     if not shortlist_id and not vacancy_id:
         return {"success": False, "data": {}, "message": "Informe 'shortlist_id' ou 'vacancy_id' para gerar o ranking."}
 
@@ -1193,6 +1194,10 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             "properties": {
                 "shortlist_id": {"type": "string", "description": "ID da shortlist"},
                 "vacancy_id": {"type": "string", "description": "ID da vaga para ranking por vacancy_candidates"},
+                "limit": {
+                    "type": "integer",
+                    "description": "Numero maximo de candidatos no ranking (padrao: 10, max: 50)",
+                },
             },
             "required": [],
         },
@@ -1474,6 +1479,14 @@ async def _wrap_rag_search(**kwargs) -> dict:
                 "summary": (getattr(r, "summary", "") or "")[:200],
                 "id": str(getattr(r, "id", "")),
             })
+        if not candidates:
+            from app.orchestrator.context.empty_result_guidance import build_empty_result_guidance
+            _g = build_empty_result_guidance("candidato", {"query": query})
+            return {
+                "success": True,
+                "data": {"candidates": [], "total": 0, "search_type": "hybrid_rag", **_g},
+                "message": _g.get("guidance") or "Nenhum candidato via busca semantica com esse criterio.",
+            }
         return {
             "success": True,
             "data": {"candidates": candidates, "total": result.total_found, "search_type": "hybrid_rag"},
@@ -1543,3 +1556,45 @@ def get_stage_tools(stage: str) -> list[ToolDefinition]:
 
 
 
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Opção C — registro global com namespace de domínio (2026-06-18)
+# ─────────────────────────────────────────────────────────────────────────────
+
+def register_sourcing_global() -> int:
+    """Registra as tools de sourcing no tool_registry global.
+
+    Tools com nomes conflitantes recebem prefixo 'sourcing_' (Opção C —
+    namespace de domínio, 2026-06-18). Tools únicas mantêm o nome original.
+    Segue o padrão de register_ui_tools_global() (ui_tool_registry.py).
+    Chamada por app/tools/__init__.py:initialize_tools().
+
+    Renames:
+        search_candidates  → sourcing_search_candidates
+        compare_candidates → sourcing_compare_candidates
+        generate_report    → sourcing_generate_report
+    """
+    from app.tools.registry import ToolDefinition as _G
+    from app.tools.registry import tool_registry as _reg
+
+    _RENAMES: dict[str, str] = {
+        "search_candidates": "sourcing_search_candidates",
+        "compare_candidates": "sourcing_compare_candidates",
+        "generate_report": "sourcing_generate_report",
+        "rank_candidates": "sourcing_rank_candidates",
+    }
+
+    n = 0
+    for td in TOOL_DEFINITIONS:
+        _reg.register(
+            _G(
+                name=_RENAMES.get(td.name, td.name),
+                description=td.description,
+                parameters_schema=td.parameters,
+                handler=td.function,
+                allowed_agents=["recruiter_assistant", "orchestrator"],
+            )
+        )
+        n += 1
+    return n

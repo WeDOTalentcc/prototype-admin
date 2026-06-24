@@ -186,7 +186,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting usage summary: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/usage", response_model=UsageSummaryResponse, summary="Get current period usage")
@@ -202,7 +202,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting usage summary: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/usage/{client_id}", response_model=UsageSummaryResponse, summary="Get client usage (admin)")
@@ -266,7 +266,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting client usage: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/history", response_model=UsageHistoryResponse, summary="Get usage history")
@@ -318,7 +318,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting usage history: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/by-agent", response_model=UsageByAgentListResponse, summary="Get usage by agent type")
@@ -381,7 +381,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting usage by agent: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/agent-trend", response_model=AgentDailyTrendListResponse, summary="Get daily trend per agent")
@@ -418,7 +418,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting agent daily trend: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 async def _get_daily_usage_data(days: int, company_id: str, db: AsyncSession) -> UsageByDayListResponse:
@@ -467,7 +467,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting daily usage: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/by-day", response_model=UsageByDayListResponse, summary="Get daily usage")
@@ -484,7 +484,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting usage by day: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/balance", response_model=BalanceResponse, summary="Get credits balance")
@@ -517,7 +517,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting balance: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/record", response_model=AiConsumptionResponse, summary="Record AI consumption")
@@ -589,7 +589,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error recording consumption: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.put("/limits/{client_id}", response_model=BalanceResponse, summary="Update client limits (admin)")
@@ -608,8 +608,11 @@ _company_gate: str = Depends(require_company_id)):
     """
     try:
         # P0-W3-04: only admins can update limits; wedotalent_admin can update any tenant
+        # PERM-EXEMPT: limite financeiro requer verificacao multi-role (admin+wedotalent_admin)
         if current_user.role not in (UserRole.admin, UserRole.wedotalent_admin):
             raise HTTPException(status_code=403, detail="Admin access required to update limits")
+        # PERM-EXEMPT: multi-role guard, nao expressa em role_scope_filters
+        # PERM-EXEMPT: multi-role cross-company guard, nao expressa em role_scope_filters
         if (current_user.role == UserRole.admin
                 and str(current_user.company_id) != str(client_id)):
             raise HTTPException(status_code=403, detail="Access denied: can only update own company limits")
@@ -642,7 +645,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error updating limits: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 def get_user_id_from_header(
@@ -710,7 +713,7 @@ _company_gate: str = Depends(require_company_id)) -> dict[str, Any]:
         raise
     except Exception as e:
         logger.error(f"Error getting user usage: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @ai_usage_router.get("/company", summary="Get company AI usage")
@@ -747,7 +750,7 @@ _company_gate: str = Depends(require_company_id)) -> dict[str, Any]:
         raise
     except Exception as e:
         logger.error(f"Error getting company usage: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @ai_usage_router.get("/agents", summary="Get AI usage by agent type (admin)")
@@ -781,7 +784,7 @@ _company_gate: str = Depends(require_company_id)) -> dict[str, Any]:
         raise
     except Exception as e:
         logger.error(f"Error getting agents usage: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @ai_usage_router.get("/limits", summary="Get configured usage limits")
@@ -809,7 +812,7 @@ _company_gate: str = Depends(require_company_id)) -> dict[str, Any]:
         raise
     except Exception as e:
         logger.error(f"Error getting limits: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @ai_usage_router.post("/check-limits", summary="Check if within usage limits")
@@ -869,7 +872,7 @@ _company_gate: str = Depends(require_company_id)) -> dict[str, Any]:
         raise
     except Exception as e:
         logger.error(f"Error checking limits: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @ai_usage_router.get("/real-time", summary="Get real-time usage statistics")
@@ -897,7 +900,7 @@ _company_gate: str = Depends(require_company_id)) -> dict[str, Any]:
         raise
     except Exception as e:
         logger.error(f"Error getting real-time usage: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 # ============================================================================
@@ -914,6 +917,7 @@ _company_gate: str = Depends(require_company_id)) -> dict[str, Any]:
 from typing import Literal as _Literal
 
 from app.shared.types import WeDoBaseModel as _WeDoBaseModel
+from app.shared.errors import LIAError
 
 
 class ConsumptionExecutionItem(_WeDoBaseModel):

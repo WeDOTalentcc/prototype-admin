@@ -116,7 +116,7 @@ export function ProgressiveDisclosure({ currentStage, interactionCount }: Props)
     <div className="mx-4 mb-2 flex items-start gap-2 px-3 py-2 rounded-md bg-wedo-cyan/5 border border-wedo-cyan/15 animate-in fade-in slide-in-from-bottom-2 duration-300">
       <Lightbulb className="w-3.5 h-3.5 text-wedo-cyan flex-shrink-0 mt-0.5" />
       <p className="flex-1 text-xs text-lia-text-secondary leading-relaxed">
-        <span className="font-medium text-wedo-cyan">Voce sabia? </span>
+        <span className="font-medium text-wedo-cyan-text">Voce sabia? </span>
         {currentTip.text}
       </p>
       <button

@@ -1,4 +1,70 @@
 {
+  "dynamicGreetings": {
+    "timeOfDay": {
+      "morning": "Bom dia",
+      "afternoon": "Boa tarde",
+      "evening": "Boa noite"
+    },
+    "chat": {
+      "curated": [
+        "Como posso ajudar hoje?",
+        "Por onde começamos?",
+        "O que vamos resolver agora?",
+        "Pronto para encontrar o próximo talento?",
+        "Vamos recrutar com inteligência?"
+      ],
+      "curatedNamed": [
+        "Por onde começamos?",
+        "O que vamos resolver hoje?",
+        "Pronto para encontrar o próximo talento?",
+        "Vamos recrutar com inteligência?"
+      ],
+      "context": {
+        "interviewsAndFeedback": "{greeting}, {name}. Você tem {interviews, plural, one {# entrevista} other {# entrevistas}} hoje e {feedback, plural, one {# candidato aguardando} other {# candidatos aguardando}} retorno.",
+        "interviewsAndFeedbackAnon": "{greeting}. Você tem {interviews, plural, one {# entrevista} other {# entrevistas}} hoje e {feedback, plural, one {# candidato aguardando} other {# candidatos aguardando}} retorno.",
+        "interviewsToday": "{greeting}, {name}. Você tem {count, plural, one {# entrevista} other {# entrevistas}} hoje.",
+        "interviewsTodayAnon": "{greeting}. Você tem {count, plural, one {# entrevista} other {# entrevistas}} hoje.",
+        "candidatesToContact": "{greeting}, {name}. {count, plural, one {# candidato precisa} other {# candidatos precisam}} de contato hoje.",
+        "candidatesToContactAnon": "{greeting}. {count, plural, one {# candidato precisa} other {# candidatos precisam}} de contato hoje.",
+        "offersPending": "{greeting}, {name}. {count, plural, one {# proposta aguarda} other {# propostas aguardam}} sua decisão.",
+        "offersPendingAnon": "{greeting}. {count, plural, one {# proposta aguarda} other {# propostas aguardam}} sua decisão.",
+        "awaitingFeedback": "{greeting}, {name}. {count, plural, one {# candidato aguarda} other {# candidatos aguardam}} retorno de avaliação.",
+        "awaitingFeedbackAnon": "{greeting}. {count, plural, one {# candidato aguarda} other {# candidatos aguardam}} retorno de avaliação.",
+        "allClear": "{greeting}, {name}. Tudo em dia. Vamos adiantar algo?",
+        "allClearAnon": "{greeting}. Tudo em dia. Vamos adiantar algo?"
+      }
+    },
+    "funnel": {
+      "curated": [
+        "Vamos buscar de forma inteligente?",
+        "Quem você procura hoje?",
+        "Vamos encontrar o talento certo?",
+        "Descreva o perfil ideal e eu encontro."
+      ],
+      "context": {
+        "openJobsAndContacts": "Você tem {jobs, plural, one {# vaga aberta} other {# vagas abertas}} e {contacts, plural, one {# candidato a contatar} other {# candidatos a contatar}}. Por onde começamos?",
+        "openJobs": "Você tem {count, plural, one {# vaga aberta} other {# vagas abertas}}. Quer que eu encontre candidatos?",
+        "candidatesToContact": "{count, plural, one {# candidato aguarda} other {# candidatos aguardam}} contato. Ou busque um novo perfil."
+      }
+    }
+  },
+  "rrp": {
+    "showMore": "Ver mais ({count})",
+    "expandFullscreen": "Expandir em tela cheia",
+    "candidateYears": "{count} anos",
+    "candidateUnverified": "Sem parecer IA ainda",
+    "funnelTotal": "Total: {count}",
+    "funnelConversion": "Conversão: {pct}%",
+    "why": "por quê?",
+    "hide": "ocultar",
+    "confidenceLine": "Confiança: {level} — {basis}",
+    "unverifiedDefault": "Estimativa não-verificada.",
+    "weight": "(peso {pct}%)",
+    "sources": "{count, plural, one {# fonte} other {# fontes}}",
+    "showingOf": "Mostrando {shown} de {total}",
+    "unsupportedBlock": "(bloco não suportado nesta versão)",
+    "blockError": "(não consegui exibir este bloco)"
+  },
   "workflowRail": {
     "createJob": {
       "label": "Criar vaga",
@@ -176,7 +242,6 @@
     },
     "items": {
       "conversar": "Conversar",
-      "decidir": "Decidir",
       "recrutar": "Recrutar",
       "chatLia": "Chat",
       "tasks": "Tarefas",
@@ -184,8 +249,13 @@
       "talentPipeline": "Funil de Talentos",
       "newTalentSearch": "Nova busca",
       "pipelineView": "Visão do Funil",
-      "agentStudio": "Estúdio de Agentes",
-      "modules": "Módulos"
+      "modules": "Módulos",
+      "projects": "Projetos",
+      "agentes": "Agentes",
+      "marketplace": "Marketplace",
+      "decidir": "Decidir",
+      "indicadores": "Indicadores",
+      "relatorios": "Relatórios"
     },
     "filters": {
       "all": "Todas",
@@ -217,6 +287,15 @@
       "logoSmallAlt": "WeDo",
       "expandSubmenu": "Expandir submenu",
       "collapseSubmenu": "Recolher submenu"
+    },
+    "focusedJob": {
+      "label": "Em Foco",
+      "dismiss": "Fechar vaga em foco",
+      "candidates": "Candidatos",
+      "configure": "Configurar vaga",
+      "agents": "Agentes",
+      "interviews": "Entrevistas",
+      "today": "hoje"
     },
     "user": {
       "admin": "Administrador(a)",
@@ -285,8 +364,9 @@
   },
   "chat": {
     "agentActivity": {
-      "working": "Trabalhando",
-      "actions": "{count, plural, one {# ação} other {# ações}}"
+      "thinking": "Pensando",
+      "actions": "{count, plural, one {# ação} other {# ações}}",
+      "steps": "{count, plural, one {# passo} other {# passos}}"
     },
     "messageActions": {
       "copyTitle": "Copiar",
@@ -712,8 +792,6 @@
       "mentionJobCandidate": "Mencionar vaga ou candidato",
       "suggestionsTitle": "Sugestões de consulta",
       "suggestionsLabel": "Abrir sugestões de consulta",
-      "contextConfig": "Configurações de contexto",
-      "contextConfigLabel": "Configurações de conversa",
       "auto": "Auto"
     },
     "suggestionsPanel": {
@@ -726,22 +804,6 @@
       "hint": "Clique para inserir no prompt",
       "dynamicLoading": "Gerando sugestões...",
       "dynamicTitle": "Sugestões para você"
-    },
-    "contextPanel": {
-      "title": "Contexto da Conversa",
-      "helpText": "Defina o foco da conversa. No modo Vaga ou Candidato, a IA usa os dados específicos para responder com mais precisão.",
-      "clearContext": "Limpar",
-      "recentJobs": "Vagas Recentes",
-      "recentCandidates": "Candidatos Recentes",
-      "emptyHint": "Navegue por vagas ou candidatos para que apareçam aqui como atalhos.",
-      "entityJob": "Vaga",
-      "entityCandidate": "Candidato",
-      "modeGeneral": "Conversa Geral",
-      "modeGeneralDesc": "Pergunte sobre qualquer tema",
-      "modeJob": "Foco em Vaga",
-      "modeJobDesc": "A IA responde usando dados da vaga selecionada",
-      "modeCandidate": "Foco em Candidato",
-      "modeCandidateDesc": "A IA responde usando dados do candidato selecionado"
     },
     "queryCategories": {
       "metricas": "Métricas",
@@ -806,7 +868,7 @@
     "emptyState": {
       "settings": {
         "heading": "Configure sua empresa",
-        "subtitle": "Conte à LIA sobre sua empresa para personalizar todo o recrutamento.",
+        "subtitle": "Conte à IA sobre sua empresa para personalizar todo o recrutamento.",
         "chips": {
           "profile": {
             "label": "Perfil da empresa",
@@ -912,7 +974,11 @@
         "divulgacao": "Divulgação",
         "requisitos": "Requisitos",
         "targeting": "Segmentação",
-        "metricas": "Métricas"
+        "metricas": "Métricas",
+        "confidencialidade": "Confidencialidade",
+        "processo": "Processo Seletivo",
+        "tags": "Tags",
+        "timestamps": "Datas"
       }
     },
     "tableColumns": {
@@ -995,6 +1061,7 @@
       "workModel": "Modelo de Trabalho",
       "seniority": "Senioridade",
       "location": "Localização",
+      "noLocationsAvailable": "Nenhuma localização disponível",
       "department": "Departamento",
       "recruiter": "Recrutador",
       "noRecruiters": "Nenhum recrutador com vagas no momento",
@@ -1089,7 +1156,8 @@
       "Arquivada": "Arquivada"
     },
     "tabs": {
-      "agents": "Agentes"
+      "agents": "Agentes",
+      "indicators": "Indicadores"
     },
     "agents": {
       "header": "Agentes acoplados a esta vaga",
@@ -1143,7 +1211,10 @@
           "generic": "Falha ao acoplar agente. Tente novamente."
         }
       }
-    }
+    },
+    "emptyAtsTitle": "Nenhuma vaga importada do ATS",
+    "emptyAtsDescription": "Importe vagas do seu ATS (Gupy, Greenhouse ou planilha) para gerenciá-las aqui.",
+    "emptyAtsAction": "Importar vagas"
   },
   "kanban": {
     "loading": "Carregando...",
@@ -1698,7 +1769,18 @@
       "compensation": "Remuneração",
       "process": "Processo",
       "other": "Outros"
-    }
+    },
+    "sortFieldScore": "Score IA",
+    "sortFieldName": "Nome",
+    "sortFieldAppliedDate": "Data de Candidatura",
+    "sortFieldFitScore": "Aderência CV",
+    "sortFieldNotaLiaGeral": "Nota Geral IA",
+    "sortOrderAsc": "Crescente",
+    "sortOrderDesc": "Decrescente",
+    "sortLabel": "Ordenar por",
+    "scheduleMessage": "Agendar mensagem",
+    "indicators": "Indicadores",
+    "moveTo": "Mover para"
   },
   "pipeline": {
     "title": "Funil de Talentos",
@@ -1866,9 +1948,16 @@
       "openEnrichment": "Continuar enriquecimento",
       "openWsi": "Configurar WSI",
       "openApproval": "Revisar aprovação",
+      "viewApprovalStatus": "Ver status de aprovação",
       "openPublish": "Publicar vaga",
+      "openStatus": "Gerenciar status",
       "openKanban": "Abrir kanban",
-      "openClosed": "Ver encerramento"
+      "openClosed": "Ver encerramento",
+      "requestApproval": "Solicitar aprovação",
+      "duplicateJob": "Duplicar vaga",
+      "reactivateJob": "Reativar vaga",
+      "duplicateJobSuccess": "Vaga duplicada com sucesso",
+      "reactivateJobSuccess": "Vaga reativada com sucesso"
     },
     "empty": {
       "noVacancies": "Nenhuma vaga neste estágio",
@@ -1881,7 +1970,9 @@
       "title": "Estúdio de Agentes | WeDoTalent",
       "description": "Crie agentes de sourcing a partir de templates por setor. Configure calibração e automação.",
       "layoutDescription": "Crie e gerencie agentes de sourcing inteligentes",
-      "layoutTitle": "Estúdio de Agentes"
+      "layoutTitle": "Estúdio de Agentes",
+      "marketplaceTitle": "Marketplace de Agentes",
+      "marketplaceDescription": "Explore agentes prontos do marketplace WeDOTalent"
     },
     "studio": {
       "title": "Estúdio de Agentes",
@@ -1945,7 +2036,7 @@
       "myAgentsCustom": "Meus Agentes",
       "noCustomAgentsYet": "Nenhum agente criado ainda",
       "noCustomAgentsHint": "Escolha um template abaixo ou descreva para a IA o que você precisa",
-      "advancedForm": "Formulário avançado (modo técnico)",
+      "advancedForm": "Formulário técnico avançado",
       "status": {
         "active": "Ativo",
         "paused": "Pausado",
@@ -1972,8 +2063,6 @@
         "cloneReasoning": "Clone o raciocínio dos seus melhores avaliadores",
         "cloneDesc": "Capture como um especialista da equipe avalia candidatos. O Digital Twin aprende os critérios e funciona como uma \"segunda opinião\" automática na triagem.",
         "label": "Gêmeos Digitais",
-        "headerTitle": "Gêmeos Digitais",
-        "subheader": "Crie um agente IA que aprende o padrão de avaliação dos seus melhores especialistas.",
         "createCta": "Criar Gêmeo Digital",
         "emptyState": {
           "title": "Nenhum Gêmeo Digital criado ainda",
@@ -2365,7 +2454,13 @@
         "templateSectionHint": "Escolha e ajuste depois.",
         "createManualDescription": "Configure cada detalhe você mesmo: nome, instruções, ferramentas e persona. Indicado para quem já conhece os conceitos de agente.",
         "approachGroupAriaLabel": "Como criar o agente",
-        "capabilitiesLabel": "O que ela vai fazer"
+        "capabilitiesLabel": "O que ela vai fazer",
+        "channelsTitle": "Canais de atendimento",
+        "channelsHelper": "Voce pode ajustar os canais depois no card do agente.",
+        "channelVoice": "Ligacao telefonica",
+        "channelVoip": "Voz no navegador",
+        "channelWhatsapp": "WhatsApp",
+        "channelTriagemInvite": "Convite de triagem"
       },
       "sandbox": {
         "title": "Simular: {agent}",
@@ -2498,7 +2593,10 @@
         "step3Title": "Tudo pronto!",
         "step3Desc": "Acompanhe o funil de serviços e ative mais agentes quando quiser.",
         "done": "Concluir"
-      }
+      },
+      "templatesInMarketplace": "Templates disponíveis no Marketplace",
+      "templatesInMarketplaceHint": "Explore templates prontos para personalizar e criar novos agentes",
+      "viewTemplates": "Ver templates"
     },
     "status": {
       "active": "Ativo",
@@ -2536,7 +2634,11 @@
       "disableVoip": "Desabilitar voz no navegador (VoIP) no agente {name}",
       "triagemInvite": "Convite de triagem",
       "enableTriagemInvite": "Habilitar criação de convites de triagem no agente {name}",
-      "disableTriagemInvite": "Desabilitar criação de convites de triagem no agente {name}"
+      "disableTriagemInvite": "Desabilitar criação de convites de triagem no agente {name}",
+      "channelBadgeVoice": "Voz",
+      "channelBadgeVoip": "Voz Web",
+      "channelBadgeWhatsapp": "WhatsApp",
+      "channelBadgeTriagem": "Triagem"
     },
     "createModal": {
       "titleWithTemplate": "Criar Agente — {template}",
@@ -2666,7 +2768,22 @@
       "tryAnotherSearch": "Tente outro termo de busca",
       "noAgentsPublished": "O marketplace ainda não tem agentes publicados",
       "confirmUninstallTitle": "Desinstalar agente?",
-      "viewSwitcher": "Visão do marketplace"
+      "viewSwitcher": "Visão do marketplace",
+      "sectionAgents": "Agentes WeDo",
+      "sectionTemplates": "Templates",
+      "templateBadge": "Template",
+      "useTemplate": "Usar template",
+      "templateCloneSuccess": "Agente criado a partir do template",
+      "templateComingSoon": "Em breve disponível",
+      "active": "Ativo",
+      "wedoAgentsSubtitle": "Agentes oficiais da plataforma WeDOTalent",
+      "templatesSubtitle": "Personalize um template para criar seu agente",
+      "sectionRoadmap": "Em breve",
+      "roadmapSubtitle": "Recursos da plataforma em desenvolvimento",
+      "roadmapBadge": "Em breve",
+      "activate": "Ativar",
+      "uninstallSuccess": "Agente desinstalado com sucesso",
+      "uninstallError": "Erro ao desinstalar agente"
     },
     "calibration": {
       "completed": "Calibração concluída",
@@ -3036,7 +3153,11 @@
         "job_management": "Vagas",
         "automation": "Automação",
         "jobManagement": "Vagas",
-        "general": "Geral"
+        "general": "Geral",
+        "interview_intelligence": "Inteligência de Entrevistas",
+        "talent_intelligence": "Inteligência de Talentos",
+        "workforce": "Força de Trabalho",
+        "voice": "Voz"
       },
       "triggers": {
         "manual": "Manual",
@@ -3543,7 +3664,21 @@
       "hide": "Ocultar",
       "candidatesHidden": "Candidatos ocultos",
       "candidatesHiddenDesc": "{count} candidato(s) oculto(s) da pesquisa",
-      "saveToBase": "Salvar na Base ({count})"
+      "saveToBase": "Salvar na Base ({count})",
+      "addTags": "Adicionar tags",
+      "removeTags": "Remover tags",
+      "addTagsDialog": "Adicionar tags aos candidatos selecionados",
+      "removeTagsDialog": "Remover tags dos candidatos selecionados",
+      "tagInputPlaceholder": "Ex: senior, python, remoto (separar por virgula)",
+      "tagsAdded": "Tags adicionadas",
+      "tagsAddedDesc": "{count} candidato(s) atualizado(s)",
+      "tagsRemoved": "Tags removidas",
+      "tagsRemovedDesc": "{count} candidato(s) atualizado(s)",
+      "export": "Exportar",
+      "exporting": "Exportando...",
+      "exportSuccess": "Candidatos exportados com sucesso",
+      "exportFallback": "Exportado em CSV (XLSX indisponível temporariamente)",
+      "exportError": "Erro ao exportar candidatos"
     },
     "controls": {
       "sortScoreDesc": "Maior Score",
@@ -3559,7 +3694,7 @@
     },
     "loadMore": {
       "loading": "Carregando...",
-      "loadMoreCandidates": "Carregar mais 10 candidatos",
+      "loadMoreCandidates": "Carregar mais {count} candidatos",
       "showingOf": "{displayed} de {total} candidatos",
       "allLoaded": "Todos os {total} candidatos carregados"
     },
@@ -3631,7 +3766,11 @@
       "first": "Primeira",
       "previous": "Anterior",
       "next": "Próxima",
-      "last": "Última"
+      "last": "Última",
+      "searchSuggestionsTitle": "Dicas para refinar sua busca:",
+      "searchSuggestion1": "Use termos mais genéricos ou sinônimos",
+      "searchSuggestion2": "Ajuste filtros de experiência, localização ou salário",
+      "searchSuggestion3": "Tente buscar por skills específicas em vez de cargo"
     },
     "profile": {
       "avatarAlt": "Foto de {name}",
@@ -3859,7 +3998,12 @@
       "yearsOld": "{age} anos",
       "more": "+{count} mais",
       "noCredits": "Sem consumo de créditos",
-      "defaultCredits": "1 cred + R$0,05 Apify/cand"
+      "defaultCredits": "1 cred + R$0,05 Apify/cand",
+      "scoreCells": {
+        "noEvaluation": "Sem avaliação",
+        "noEvaluationDesc": "Este candidato ainda não participou de nenhum processo seletivo.",
+        "liaScoreInfo": "O Score é calculado quando o candidato é avaliado para uma vaga específica."
+      }
     },
     "scoreCells": {
       "noEvaluation": "Sem avaliação",
@@ -4005,18 +4149,10 @@
       "viewLinkedinProfile": "Ver perfil LinkedIn",
       "professionalProfile": "Perfil profissional",
       "interactionHistory": "Histórico de Interações",
-      "emailSent2Days": "📧 Email enviado há 2 dias",
-      "callScheduledTomorrow": "📞 Ligação agendada para amanhã às 14h",
       "scheduleInterview": "Agendar Entrevista",
       "evaluation": "Avaliação",
       "dragToResize": "Arraste para redimensionar",
-      "skillLeadership": "Liderança",
-      "skillCommunication": "Comunicação",
-      "skillTeamwork": "Trabalho em equipe",
-      "skillProblemSolving": "Resolução de problemas",
-      "current": "Atual",
-      "expDesc1": "Desenvolvimento de aplicações web com React, Node.js e PostgreSQL",
-      "expDesc2": "Desenvolvimento fullstack e arquitetura de sistemas"
+      "current": "Atual"
     },
     "modals": {
       "defaultJobTitle": "Vaga atual",
@@ -4581,7 +4717,43 @@
       "salaryGrantConfirmBodyRevoke": "Esta pessoa não poderá mais visualizar dados salariais. Deseja confirmar?",
       "salaryGrantConfirmActionGrant": "Conceder",
       "salaryGrantConfirmActionRevoke": "Revogar",
-      "salaryGrantConfirmCancel": "Cancelar"
+      "salaryGrantConfirmCancel": "Cancelar",
+      "piiVisibility": {
+        "title": "Visibilidade de dados sensíveis (PII)",
+        "subtitle": "Defina quais campos este usuário pode ver. Herdado segue o padrão do papel.",
+        "roleDefaultsTitle": "Visibilidade de PII por papel",
+        "roleDefaultsSubtitle": "Padrão por papel. O override por usuário acima tem prioridade.",
+        "groupSalary": "Remuneração",
+        "groupSensitive": "Dados sensíveis",
+        "stateInherited": "Herdado",
+        "stateShow": "Ver",
+        "stateHide": "Ocultar",
+        "fields": {
+          "current_salary": "Salário atual",
+          "desired_salary_min": "Pretensão salarial (mín.)",
+          "desired_salary_max": "Pretensão salarial (máx.)",
+          "salary_expectation_clt": "Pretensão CLT",
+          "salary_expectation_pj": "Pretensão PJ",
+          "salary_expectation_freelance": "Pretensão freelance",
+          "cpf": "CPF",
+          "date_of_birth": "Data de nascimento",
+          "address_street": "Endereço (rua)",
+          "address_number": "Endereço (número)",
+          "address_zip": "CEP",
+          "address_complement": "Complemento",
+          "secondary_email": "E-mail secundário",
+          "secondary_phone": "Telefone secundário",
+          "personal_emails": "E-mails pessoais",
+          "business_emails": "E-mails comerciais",
+          "best_personal_email": "Melhor e-mail pessoal",
+          "best_business_email": "Melhor e-mail comercial",
+          "vacancy_salary": "Salário da vaga"
+        },
+        "saving": "Salvando...",
+        "saveSuccess": "Padrões salvos!",
+        "saveError": "Erro ao salvar padrões.",
+        "groupVacancy": "Vaga"
+      }
     },
     "departments": {
       "title": "Departamentos",
@@ -5388,7 +5560,6 @@
       "hiringPolicies": {
         "loading": "Carregando políticas...",
         "title": "Políticas de Contratação",
-        "configured": "{pct}% configured",
         "complete": "Completo",
         "pending": "Pendente",
         "configuredStatus": "Configurado",
@@ -5432,7 +5603,6 @@
         "trigger": "Gatilho: {value}",
         "actions": "{count} actions",
         "executions": "{count} executions",
-        "successPct": "{pct}% success",
         "statusActive": "Ativo",
         "statusPaused": "Pausado",
         "edit": "Editar",
@@ -5463,7 +5633,7 @@
         "pauseAutomation": "Pausar automação",
         "builderTitleEdit": "Editar automação",
         "builderTitleNew": "Nova automação",
-        "createWithLia": "Criar com a LIA",
+        "createWithLia": "Criar com a IA",
         "deleteConfirm": "Tem certeza que deseja excluir esta automação?",
         "duplicateSuffix": "(cópia)",
         "emptyTitle": "Nenhuma automação criada",
@@ -5684,7 +5854,12 @@
         "filterWhatsapp": "WhatsApp",
         "templatesFoundCount": "{count} template(s) encontrado(s)",
         "tryAdjustFilters": "Tente ajustar os filtros.",
-        "viewing": "Visualizando"
+        "viewing": "Visualizando",
+        "newTemplate": "+ Novo Modelo",
+        "subjectPlaceholder": "Ex: {{company_name}} — Convite para Entrevista: {{job_title}}",
+        "bodyPlaceholder": "Escreva o conteúdo do email ou mensagem...",
+        "ccEmailsLabel": "Receptores adicionais (CC)",
+        "ccEmailsPlaceholder": "gestor@empresa.com, rh@empresa.com"
       },
       "signature": {
         "title": "Assinatura de Email Padrão",
@@ -5822,15 +5997,57 @@
         "cooldownAria": "Intervalo entre alertas para {type}",
         "toggleAria": "Ativar ou desativar alerta de {type}",
         "channelEmail": "E-mail",
-        "channelInApp": "No app",
+        "channelInApp": "Sino (painel)",
         "channelTeams": "Teams",
         "channelWhatsapp": "WhatsApp",
+        "groupRecruiter": "Alertas para o recrutador",
+        "groupRecruiterHint": "Notificações internas sobre o seu trabalho e o sistema.",
+        "groupCandidate": "Alertas para o candidato",
+        "groupCandidateHint": "Mensagens enviadas diretamente ao candidato.",
+        "channelsLabel": "Enviar por",
+        "cooldownLabel": "Repetir no máximo a cada",
+        "cooldownUnit": "h",
+        "disabledHint": "Ative para configurar este alerta.",
         "unit": {
           "count": "vezes",
           "hours": "horas",
           "days": "dias",
           "percent": "%"
-        }
+        },
+        "generalTitle": "Notificações gerais",
+        "generalSubtitle": "Controle quando e como receber briefings e resumos",
+        "frequencyLabel": "Frequência do briefing",
+        "frequency": {
+          "daily": "Diário",
+          "twice_daily": "2× ao dia",
+          "weekly": "Semanal",
+          "monthly": "Mensal"
+        },
+        "digestLabel": "Resumo semanal",
+        "digestHint": "Receba um consolidado das métricas toda semana",
+        "personalFrequencyTitle": "Minha frequência",
+        "personalFrequencyLabel": "Minha frequência de digest",
+        "personalFrequencyActive": "Você tem uma configuração pessoal ativa",
+        "personalFrequencyDefault": "Usando o padrão da empresa",
+        "resetToCompanyDefault": "Usar padrão da empresa",
+        "activeCount": "{active} de {total} ativos",
+        "activeCountAria": "{active} de {total} alertas ativos",
+        "viewHistory": "Ver histórico de notificações",
+        "comingSoon": "Em breve"
+      },
+      "dataChannel": {
+        "title": "Canal de Coleta de Dados",
+        "description": "Canal padrão para solicitar dados ao candidato. Pode ser sobrescrito por vaga.",
+        "channelEmail": "E-mail",
+        "channelEmailDesc": "Envia link do portal de dados por e-mail",
+        "channelWeb": "Portal Web",
+        "channelWebDesc": "Candidato acessa o portal de dados pelo link direto",
+        "channelWhatsapp": "WhatsApp",
+        "channelWhatsappDesc": "Coleta via mensagem interativa no WhatsApp",
+        "channelVoice": "Ligação por Voz",
+        "channelVoiceDesc": "Coleta via ligação telefônica com IA",
+        "saveSuccess": "Canal de coleta atualizado com sucesso",
+        "saveError": "Erro ao atualizar canal de coleta"
       }
     },
     "integrations": {
@@ -5952,7 +6169,6 @@
         "executions": "Executions",
         "approved": "Aprovado",
         "blocked": "Bloqueado",
-        "ofTotal": "{pct}% of total",
         "activeAgents": "Agentes ativos",
         "avgConfidence": "Confiança média: {pct}%",
         "executionsPerDay": "Executions per day",
@@ -5978,7 +6194,50 @@
       "googleConnectError": "Erro ao conectar com Google",
       "companyNotIdentified": "Empresa não identificada",
       "emptyCategory": "Nenhuma integração nesta categoria",
-      "emptyCategoryHint": "Novas integrações são adicionadas continuamente"
+      "emptyCategoryHint": "Novas integrações são adicionadas continuamente",
+      "embedding": {
+        "title": "Busca Semântica com IA",
+        "description": "Vetorização de texto usada em busca de candidatos, vagas similares, memória do chat e JD similar.",
+        "providerLabel": "Provedor",
+        "providerDefault": "OpenAI (padrão)",
+        "byokConfigured": "Chave própria configurada",
+        "byokManaged": "Chave gerenciada WeDO",
+        "showSurfaces": "Ver superfícies",
+        "hideSurfaces": "Ocultar",
+        "surfacesTableLabel": "Superfícies de embedding e políticas de PII",
+        "colSurface": "Superfície",
+        "colContent": "O que embeda",
+        "colPiiPolicy": "Política PII",
+        "presidioNote": "PII estruturada = nomes de entidades reconhecidos pelo Microsoft Presidio são mascarados antes de envio ao provedor de embedding.",
+        "surface": {
+          "chatMemory": {
+            "name": "Memória do chat",
+            "content": "Conversa (pergunta + resposta)",
+            "piiPolicy": "Estruturada + nomes (Presidio)"
+          },
+          "candidateSearch": {
+            "name": "Busca de candidatos",
+            "content": "Texto da busca do recrutador",
+            "piiPolicy": "Estruturada"
+          },
+          "similarJobs": {
+            "name": "Vagas similares",
+            "content": "Texto da vaga",
+            "piiPolicy": "Estruturada"
+          },
+          "jdSimilar": {
+            "name": "JD similar",
+            "content": "Descrição de cargo (JD)",
+            "piiPolicy": "Estruturada"
+          },
+          "domainContent": {
+            "name": "Conteúdo de domínio",
+            "content": "Conteúdo interno",
+            "piiPolicy": "Estruturada"
+          }
+        }
+      },
+      "tabJobBoards": "Job Boards"
     },
     "page": {
       "title": "Configurações",
@@ -6500,14 +6759,14 @@
       "ariaLabel": "Ativar integração com IA"
     },
     "consumo": {
-      "title": "Consumo",
-      "description": "Acompanhe o uso de créditos e serviços da plataforma.",
-      "sidebarLabel": "Consumo",
+      "title": "Plano e Cobrança",
+      "description": "Plano contratado, consumo de créditos, faturas e dados de cobrança.",
+      "sidebarLabel": "Plano e Cobrança",
       "tabs": {
-        "ia": "Créditos IA",
-        "pearch": "Pearch",
-        "agentes": "Agentes",
-        "billing": "Billing"
+        "plano": "Plano",
+        "consumo": "Consumo",
+        "faturas": "Faturas",
+        "cobranca": "Cobrança"
       },
       "pearch": {
         "description": "Créditos consumidos nas buscas globais de candidatos via Pearch.",
@@ -6598,8 +6857,8 @@
       "almostComplete": "Quase completo",
       "profileCompletePending": "Perfil {progress}% completo · {count} campos pendentes",
       "sectionsToReview": "{count} seções a revisar",
-      "askLiaToFillTitle": "Pedir à LIA para preencher {section}",
-      "askLiaShort": "Pedir à LIA",
+      "askLiaToFillTitle": "Pedir à IA para preencher {section}",
+      "askLiaShort": "Pedir à IA",
       "fields": {
         "blocks": {
           "basic": "Perfil da Empresa",
@@ -6636,7 +6895,7 @@
           "leadership_style": "Estilo de Liderança",
           "growth_opportunities": "Oportunidades de Crescimento",
           "team_dynamics": "Dinâmica de Equipe",
-          "evp_bullets": "EVP"
+          "evp_bullets": "EVP (Proposta de Valor)"
         },
         "tech": {
           "tech_stack": "Stack Tecnológico",
@@ -6652,6 +6911,15 @@
           "communication_channels": "Canais de Comunicação",
           "import_spreadsheet": "Importar Planilha"
         }
+      },
+      "cultureApproval": {
+        "title": "Perfil de cultura gerado automaticamente — pendente de aprovação",
+        "description": "Este perfil foi extraído do site por IA e ainda não foi revisado. Aprove para a IA usá-lo no contexto dos agentes, ou rejeite para mantê-lo fora.",
+        "approve": "Aprovar",
+        "reject": "Rejeitar",
+        "approvedToast": "Perfil de cultura aprovado — a IA já pode usá-lo.",
+        "rejectedToast": "Perfil de cultura rejeitado — segue fora do contexto dos agentes.",
+        "errorToast": "Não foi possível atualizar a aprovação. Tente novamente."
       }
     },
     "minhaEmpresaCard": {
@@ -6678,8 +6946,6 @@
         "benefitsHint": "Envie o manual de benefícios",
         "policyLabel": "Políticas de Recrutamento",
         "policyHint": "Envie o documento de políticas de RH",
-        "workforceLabel": "Workforce Planning",
-        "workforceHint": "Envie o organograma da empresa",
         "documentsLabel": "Remuneração Variável",
         "documentsHint": "Envie a política de PRV / remuneração variável"
       }
@@ -6701,10 +6967,9 @@
     },
     "workforce": {
       "importTitle": "Importar Planejamento de Workforce",
-      "importDescription": "Envie sua planilha de headcount ou descreva no chat — a LIA estrutura o planejamento.",
+      "importDescription": "Envie sua planilha de headcount ou descreva no chat — a IA estrutura o planejamento.",
       "headcountPlanning": "Planejamento de Headcount {year}",
       "synchronized": "Sincronizado",
-      "consumedByLia": "Consumido pela LIA",
       "departmentsDesc": "Departamentos e posições planejadas para o período.",
       "export": "Exportar",
       "edit": "Editar",
@@ -6722,20 +6987,8 @@
       "positionPlaceholder": "Ex: Desenvolvedor(a) Backend Sênior",
       "addPosition": "Adicionar posição",
       "addDepartment": "Adicionar departamento",
-      "uploadFailed": "Falha ao enviar o arquivo. Tente novamente.",
-      "spreadsheetPrompt": "Anexei a planilha {fileName}. Pode estruturar nosso planejamento de workforce a partir dela?",
       "describePrompt": "Quero descrever nosso planejamento de workforce. Pode me ajudar a estruturar?",
-      "pastePromptPrefix": "Aqui estão os dados do nosso planejamento:",
-      "howToSend": "Como enviar seus dados",
-      "pathsExplanation": "Escolha o caminho mais conveniente:",
-      "attachSpreadsheet": "Anexar planilha",
-      "describeInChat": "Descrever no chat",
-      "pasteData": "Colar dados",
-      "pasteDialogTitle": "Colar dados do planejamento",
-      "closeDialog": "Fechar",
-      "pasteDialogDesc": "Cole os dados de headcount (planilha, tabela ou texto livre).",
-      "pastePlaceholder": "Cole aqui os dados do planejamento...",
-      "sendToLia": "Enviar para a LIA"
+      "preferChat": "Prefere conversar? Peça à IA no chat"
     },
     "documentUpload": {
       "errors": {
@@ -6763,7 +7016,7 @@
         "idle": "Pronto",
         "uploading": "Enviando...",
         "extracting": "Extraindo dados...",
-        "sending": "Enviando para a LIA...",
+        "sending": "Enviando para a IA...",
         "done": "Concluído",
         "error": "Erro"
       },
@@ -6802,7 +7055,7 @@
         "idle": "Pronto",
         "uploading": "Enviando...",
         "extracting": "Extraindo dados...",
-        "sending": "Enviando para a LIA...",
+        "sending": "Enviando para a IA...",
         "done": "Concluído",
         "error": "Erro"
       },
@@ -6818,7 +7071,7 @@
     },
     "aiTransparency": {
       "title": "Transparência da IA",
-      "description": "Veja e ajuste como a LIA usa os dados da empresa nas decisões.",
+      "description": "Veja e ajuste como a IA usa os dados da empresa nas decisões.",
       "loading": "Carregando...",
       "errorLoad": "Erro ao carregar a configuração de transparência.",
       "errorOverride": "Erro ao salvar a alteração."
@@ -6844,8 +7097,8 @@
       "comingSoonText": "Este recurso estará disponível em breve.",
       "enableField": "Ativar campo",
       "fieldCount": "{count} campos",
-      "helpText": "Defina quais dados a LIA coleta dos candidatos.",
-      "liaCollects": "A LIA coleta",
+      "helpText": "Defina quais dados a IA coleta dos candidatos.",
+      "liaCollects": "A IA coleta",
       "required": "Obrigatório"
     },
     "liaField": {
@@ -6855,8 +7108,8 @@
       "instructionPlaceholder": "Ex: Priorize candidatos com experiência em liderança..."
     },
     "liaFields": {
-      "title": "Campos da LIA",
-      "description": "Controle quais dados a LIA usa e como ela interpreta cada campo.",
+      "title": "Campos da IA",
+      "description": "Controle quais dados a IA usa e como ela interpreta cada campo.",
       "fieldsTotal": "campos",
       "tabs": {
         "fields": "Campos",
@@ -7320,6 +7573,63 @@
         "interview_completed": "Entrevista concluída",
         "offer_sent": "Oferta enviada"
       }
+    },
+    "billing": {
+      "errors": {
+        "loadPlan": "Erro ao carregar informações do plano.",
+        "loadUsage": "Erro ao carregar dados de consumo.",
+        "loadInvoices": "Erro ao carregar faturas.",
+        "loadPaymentMethods": "Erro ao carregar métodos de pagamento."
+      },
+      "currentPlan": "Plano atual:",
+      "seats": "recrutadores",
+      "trialNotice": "Você está no período de trial. Converta agora para não perder o acesso.",
+      "usage": "Consumo do período",
+      "embeddingTokens": "Tokens de Embedding",
+      "tokens": "tokens",
+      "byokActive": "BYOK ativo — seu provedor",
+      "llmGeneralTokens": "Tokens LLM Geral",
+      "pearchCredits": "Créditos Pearch",
+      "apifyCredits": "Créditos Apify",
+      "agentExecutions": "Execuções de Agentes",
+      "executions": "exec.",
+      "credits": "créditos",
+      "searchCredits": "Créditos de busca",
+      "capReached": "Limite atingido — excedente será cobrado no próximo ciclo.",
+      "capWarning": "Atenção: {pct}% do limite utilizado.",
+      "agentsSummary": "{custom} custom · {sourcing} sourcing · {twins} digital twins · {campaigns} campanhas",
+      "invoices": "Histórico de Faturas",
+      "noInvoices": "Nenhuma fatura disponível ainda.",
+      "invoiceDate": "Data",
+      "invoiceAmount": "Valor",
+      "invoiceStatus": "Status",
+      "invoicePdf": "PDF",
+      "download": "Baixar",
+      "paymentMethod": "Meio de Pagamento",
+      "noPaymentMethod": "Nenhum meio de pagamento cadastrado.",
+      "card": "Cartão",
+      "status": {
+        "active": "Ativo",
+        "trialing": "Trial",
+        "suspended": "Suspenso",
+        "canceled": "Cancelado",
+        "past_due": "Em atraso"
+      },
+      "invoiceStatuses": {
+        "paid": "Pago",
+        "pending": "Pendente",
+        "overdue": "Vencida",
+        "failed": "Falhou"
+      },
+      "fiscalData": "Dados fiscais",
+      "fiscalDataComing": "Configuração de dados fiscais (CNPJ, razão social, endereço de cobrança) disponível em breve via painel administrativo.",
+      "descontoAlfa": "Desconto ALFA",
+      "descontoValidade": "Válido até",
+      "descontoLabel": "{pct}% de desconto no plano (ALFA)"
+    },
+    "screening": {
+      "sectionPauseControl": "Controle de Paralização",
+      "sectionScheduling": "Agendamento Automático"
     }
   },
   "publicJob": {
@@ -7526,6 +7836,7 @@
       },
       "internalMobility": {
         "talentMatching": "Correspondência de talentos internos",
+        "readinessScore": "Score de prontidão para promoção",
         "developmentPlan": "Plano de desenvolvimento individual",
         "successionMapping": "Mapeamento de sucessão"
       },
@@ -7642,7 +7953,7 @@
       "valueAria": "Opção da escala"
     },
     "messageBubble": {
-      "liaMessageAria": "Mensagem da LIA",
+      "liaMessageAria": "Mensagem da IA",
       "myMessageAria": "Sua mensagem",
       "pauseAria": "Pausar áudio",
       "playAria": "Reproduzir áudio"
@@ -7842,5 +8153,286 @@
         }
       }
     }
+  },
+  "bulkReport": {
+    "title": "{succeeded} de {total} enviados",
+    "closeButton": "Fechar",
+    "copyFailed": "Copiar lista de falhas",
+    "deliveryFailed": "Último envio falhou: {reason}"
+  },
+  "interview": {
+    "lobby": {
+      "logoAlt": "Logo de {name}",
+      "greeting": "Olá, {name}! Esta triagem é conduzida por inteligência artificial.",
+      "aiDeclarationTitle": "Triagem conduzida por {aiName}",
+      "aiDeclarationBody": "Esta triagem é conduzida por inteligência artificial. Um recrutador revisará sua candidatura antes de qualquer decisão.",
+      "practiceQuestionHint": "Uma pergunta de prática será apresentada antes de começar.",
+      "tipsTitle": "Dicas de preparação",
+      "tip1": "Escolha um local silencioso com boa conexão de internet.",
+      "tip2": "Responda com honestidade e objetividade — não há resposta certa ou errada.",
+      "tip3": "Se usar voz, fale de forma clara e pausada para melhor reconhecimento.",
+      "consentTitle": "Consentimento LGPD",
+      "disclaimerAriaLabel": "Texto completo do consentimento",
+      "disclaimerVersion": "Versão do documento: {version}",
+      "scrollToEnable": "Role até o final para habilitar o botão de aceite.",
+      "consentCheckboxLabel": "Li e concordo com o tratamento dos meus dados conforme a",
+      "privacyPolicyLink": "Política de Privacidade",
+      "affirmativeTitle": "Programa de ação afirmativa: {type}",
+      "affirmativeGeneric": "ação afirmativa",
+      "affirmativeBody": "Esta vaga possui cotas de inclusão. Ao continuar, você declara se enquadrar no critério informado no processo seletivo.",
+      "affirmativeCheckboxLabel": "Declaro que me enquadro no critério de inclusão desta vaga.",
+      "consentError": "Erro ao registrar consentimento. Por favor, tente novamente.",
+      "micDenied": "Acesso ao microfone negado. Permita o acesso nas configurações do navegador.",
+      "expiryWarning": "Este link expira em menos de 24 horas. Conclua sua triagem em breve.",
+      "groupAsync": "Resposta assíncrona",
+      "channelChatLabel": "Responder por mensagem online",
+      "channelChatDesc": "Responda no seu próprio ritmo, pelo navegador.",
+      "channelWhatsappLabel": "WhatsApp",
+      "channelWhatsappDesc": "Receba e responda as perguntas pelo WhatsApp.",
+      "groupSync": "Chamada em tempo real",
+      "channelOnlineCallLabel": "Chamada online",
+      "channelOnlineCallDesc": "Fale pelo microfone do computador ou celular agora.",
+      "channelPhoneLabel": "Chamada telefônica",
+      "channelPhoneDesc": "Receba uma ligação no seu telefone agora.",
+      "syncBadge": "tempo real"
+    }
+  },
+  "candidatePreview": {
+    "consentTab": {
+      "title": "Consentimentos LGPD",
+      "loadingMessage": "Carregando registros de consentimento...",
+      "emptyMessage": "Nenhum registro de consentimento encontrado para este candidato.",
+      "errorMessage": "Erro ao carregar consentimentos. Tente novamente.",
+      "retryButton": "Tentar novamente",
+      "exportButton": "Exportar CSV",
+      "filterAll": "Todos",
+      "statusActive": "Ativo",
+      "statusExpired": "Expirado",
+      "statusRevoked": "Revogado",
+      "statusInactive": "Inativo",
+      "columnType": "Tipo",
+      "columnPurpose": "Propósito",
+      "columnLegalBasis": "Base Legal",
+      "columnChannel": "Canal",
+      "columnDate": "Data",
+      "columnVersion": "Versão",
+      "columnStatus": "Status",
+      "columnSource": "Origem",
+      "detailPurpose": "Propósito",
+      "detailLegalBasis": "Base legal",
+      "detailChannel": "Canal",
+      "detailGrantedAt": "Data de concessão",
+      "detailExpires": "Expiração",
+      "detailRevokedAt": "Revogado em",
+      "detailVersion": "Versão",
+      "detailSource": "Origem",
+      "typeAudio": "Áudio da triagem",
+      "typeAudioRevoked": "Áudio revogado",
+      "typeSensitiveData": "Dados de ação afirmativa",
+      "typeCommunication": "Comunicação",
+      "channelChatWeb": "Chat web",
+      "channelWhatsapp": "WhatsApp",
+      "channelOnlineCall": "Chamada online",
+      "channelPhoneCall": "Chamada telefônica",
+      "channelNone": "—",
+      "tabLabel": "Consentimento",
+      "headerBadgeAudioOk": "Consent. áudio OK",
+      "headerBadgeNoAudio": "Sem consent. áudio",
+      "headerBadgeComm": "Consent. com.",
+      "profileConsentComm": "Consent. comunicação",
+      "profileConsentAudio": "Consent. áudio triagem",
+      "profileViewHistory": "→ Ver histórico"
+    },
+    "neverAnalyzed": "Nunca analisado",
+    "justNow": "Agora mesmo",
+    "minutesAgo": "Há {count} min",
+    "hoursAgo": "Há {count}h",
+    "yesterday": "Ontem",
+    "daysAgo": "Há {count} dias",
+    "errorSendMessage": "Erro ao enviar mensagem",
+    "errorSendMessageDesc": "Não foi possível conectar com a IA. Tente novamente.",
+    "errorUnknown": "Erro desconhecido",
+    "parecerGenerated": "Parecer gerado",
+    "parecerGeneratedDesc": "A IA gerou um novo parecer para o candidato.",
+    "errorGenerateParecer": "Falha ao gerar parecer",
+    "errorGenerateParecerTitle": "Erro ao gerar parecer",
+    "errorGenerateParecerDesc": "Não foi possível gerar o parecer. Tente novamente.",
+    "errorAnalysisFailed": "Falha na análise",
+    "errorAnalysisEmpty": "Resultado da análise vazio",
+    "errorSaveParecer": "Falha ao salvar parecer"
+  },
+  "vacancySearch": {
+    "title": "Buscar candidatos",
+    "subtitle": "Refine sua busca com linguagem natural. A IA irá analisar e sugerir melhorias.",
+    "vacancyChip": "Vaga: {title}",
+    "modeManual": "Buscar e selecionar",
+    "modeManualDesc": "Você escolhe quais adicionar",
+    "modeAuto": "Adicionar automaticamente",
+    "modeAutoDesc": "Sistema popula por score",
+    "modeAutoRecommended": "Recomendado",
+    "maxCandidates": "Quantidade máxima",
+    "maxCandidatesHint": "Candidatos a adicionar (máx. 30)",
+    "minScore": "Score mínimo",
+    "minScoreHint": "Apenas acima deste score",
+    "creditsLocal": "Busca local — sem custo",
+    "creditsHybrid": "Busca híbrida — ~{credits} créditos estimados",
+    "creditsGlobal": "Pearch Global — ~{credits} créditos estimados",
+    "searchButton": "Buscar candidatos",
+    "resultsTitle": "Busca de candidatos",
+    "resultsCount": "{shown} de {total} candidatos",
+    "loadMore": "Carregar mais candidatos",
+    "analyzing": "Analisando perfis encontrados... ({done} de {total} analisados)",
+    "addToVacancy": "Adicionar à Vaga ({count})",
+    "addSuccess": "Candidatos adicionados",
+    "addSuccessDesc": "{count} candidatos foram adicionados à vaga",
+    "alreadyInVacancy": "Já na vaga",
+    "noResults": "Nenhum candidato encontrado",
+    "noResultsDesc": "Tente ajustar os critérios de busca",
+    "autoConfirmTitle": "Confirmar adição automática",
+    "autoConfirmDesc": "Encontramos {count} candidatos com score ≥ {score}",
+    "autoConfirmMore": "e mais {count}...",
+    "autoConfirmAdd": "Adicionar {count} à vaga",
+    "autoSearching": "Buscando candidatos...",
+    "autoSearchingDesc": "Buscas na base global podem levar até 1 minuto",
+    "editFilters": "Editar Filtros",
+    "backToKanban": "Voltar ao kanban",
+    "headerButton": "Buscar candidatos",
+    "sourceLocal": "Busca Local",
+    "sourceHybrid": "Busca Híbrida",
+    "sourceGlobal": "Busca Global",
+    "fairnessBlocked": "Busca bloqueada por conter termos discriminatórios"
+  },
+  "candidateStatus": {
+    "errors": {
+      "linkExpiredRh": "Este link expirou. Solicite um novo link ao recrutador responsável.",
+      "loadFailed": "Não foi possível carregar suas candidaturas. Tente novamente mais tarde.",
+      "connectionError": "Erro de conexão. Verifique sua internet e tente novamente.",
+      "invalidLinkContact": "Link inválido. Entre em contato com o recrutador para obter um novo.",
+      "invalidLinkRh": "Link inválido ou corrompido. Solicite um novo link ao RH."
+    },
+    "loading": {
+      "portal": "Carregando seu portal..."
+    },
+    "errorState": {
+      "title": "Ops, algo deu errado",
+      "contactHint": "Se o problema persistir, entre em contato com o recrutador responsável pelo seu processo."
+    }
+  },
+  "portalProposta": {
+    "loading": {
+      "text": "Carregando sua proposta..."
+    },
+    "error": {
+      "title": "Proposta indisponível",
+      "invalidLink": "Este link é inválido ou a proposta não foi encontrada. Verifique o link recebido.",
+      "missingToken": "Link incompleto. Acesse o link completo enviado pelo recrutador."
+    },
+    "done": {
+      "accepted": {
+        "title": "Proposta aceita!"
+      },
+      "declined": {
+        "title": "Proposta recusada"
+      }
+    },
+    "benefit": {
+      "fallback": "Benefício"
+    },
+    "status": {
+      "draft": "Rascunho",
+      "sent": "Enviada",
+      "viewed": "Visualizada",
+      "accepted": "Aceita",
+      "declined": "Recusada",
+      "expired": "Expirada",
+      "cancelled": "Cancelada",
+      "negotiating": "Em negociação"
+    },
+    "header": {
+      "greeting": "Olá, {candidateName}! Confira os detalhes da sua proposta abaixo."
+    },
+    "details": {
+      "sectionTitle": "Detalhes da proposta",
+      "salary": {
+        "label": "Remuneração"
+      },
+      "startDate": {
+        "label": "Data de início"
+      },
+      "deadline": {
+        "label": "Prazo para resposta"
+      },
+      "negotiationRound": {
+        "label": "Rodada de negociação"
+      },
+      "benefits": {
+        "label": "Benefícios"
+      }
+    },
+    "letter": {
+      "sectionTitle": "Carta de oferta"
+    },
+    "response": {
+      "sectionTitle": "Sua resposta",
+      "error": {
+        "generic": "Erro ao enviar resposta. Tente novamente."
+      },
+      "button": {
+        "sending": "Enviando...",
+        "accept": "Aceitar proposta",
+        "decline": "Recusar",
+        "confirmDecline": "Confirmar recusa",
+        "back": "Voltar"
+      },
+      "decline": {
+        "hint": "Se desejar, compartilhe o motivo da recusa. Isso nos ajuda a melhorar futuras propostas.",
+        "notesPlaceholder": "Motivo da recusa (opcional)..."
+      }
+    },
+    "alreadyResponded": {
+      "accepted": "Você já aceitou esta proposta. Parabéns!",
+      "declined": "Você já recusou esta proposta."
+    },
+    "footer": {
+      "legal": "Este portal é operado pela WeDOTalent. Seus dados são protegidos conforme a LGPD."
+    }
+  },
+  "iaSidebar": {
+    "aria": {
+      "historyPanel": "Histórico de conversas com a LIA",
+      "collapsePanel": "Retrair painel",
+      "sessionOptions": "Opções da conversa"
+    },
+    "header": "Conversas",
+    "newConversation": "Nova conversa",
+    "search": {
+      "placeholder": "Buscar conversas...",
+      "noResults": "Nenhuma conversa encontrada"
+    },
+    "loading": "Carregando...",
+    "empty": {
+      "title": "Comece uma conversa com a LIA",
+      "hint": "Clique em \"Nova conversa\" para começar"
+    },
+    "sections": {
+      "pinned": "Fixadas",
+      "today": "Hoje",
+      "yesterday": "Ontem",
+      "older": "Anteriores"
+    },
+    "context": {
+      "pin": "Fixar",
+      "unpin": "Desafixar",
+      "rename": "Renomear",
+      "note": "Nota",
+      "archive": "Arquivar",
+      "delete": "Excluir"
+    },
+    "note": {
+      "placeholder": "Adicionar nota...",
+      "save": "Salvar (⌘↵)",
+      "cancel": "Cancelar"
+    },
+    "fallbackTitle": "Conversa"
   }
 }

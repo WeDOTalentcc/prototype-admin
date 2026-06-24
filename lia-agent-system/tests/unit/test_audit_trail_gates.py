@@ -241,7 +241,7 @@ class TestAuditTrailLangGraphPath:
     async def test_hitl_rejected_audit_called(self):
         """HITL rejected no agent_chat_ws deve registrar audit com decision=rejected."""
         import asyncio
-        from app.api.v1 import agent_chat_ws as ws_module
+        from app.api.v1 import chat_shared as ws_module
 
         # Simula o contexto em que o código de rejeição executa
         with patch("app.shared.compliance.audit_service.audit_service") as MockAudit:

@@ -5,6 +5,7 @@ Provides endpoints for administrators to manually invalidate cached data
 when needed for testing, debugging, or emergency cache clearing.
 """
 import logging
+from app.shared.errors import LIAInternalError
 
 from fastapi import APIRouter, HTTPException
 
@@ -61,10 +62,7 @@ async def invalidate_jd_cache(company_id: Annotated[str, Path(pattern=DUAL_ID_PA
         raise
     except Exception as e:
         logger.error(f"[CACHE INVALIDATION] Error invalidating JD cache for company={company_id}: {e}", exc_info=True)
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error invalidating JD cache: {str(e)}"
-        )
+        raise LIAInternalError("Internal server error")
 
 
 @router.get("/jd/metrics", response_model=None)
@@ -95,10 +93,7 @@ async def get_jd_cache_metrics(company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"[CACHE METRICS] Error retrieving metrics: {e}", exc_info=True)
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error retrieving cache metrics: {str(e)}"
-        )
+        raise LIAInternalError("Internal server error")
 
 
 @router.post("/jd/reset-metrics", response_model=None)
@@ -126,10 +121,7 @@ async def reset_jd_cache_metrics(company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"[CACHE METRICS] Error resetting metrics: {e}", exc_info=True)
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error resetting cache metrics: {str(e)}"
-        )
+        raise LIAInternalError("Internal server error")
 
 
 @router.get("/embeddings/stats", response_model=None)
@@ -158,10 +150,7 @@ async def get_embedding_cache_stats(company_id: str = Depends(require_company_id
         raise
     except Exception as e:
         logger.error(f"[EMBEDDING CACHE] Error retrieving stats: {e}", exc_info=True)
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error retrieving embedding cache stats: {str(e)}"
-        )
+        raise LIAInternalError("Internal server error")
 
 
 @router.post("/embeddings/clear", response_model=None)
@@ -189,9 +178,6 @@ async def clear_embedding_cache(company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"[EMBEDDING CACHE] Error clearing cache: {e}", exc_info=True)
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error clearing embedding cache: {str(e)}"
-        )
+        raise LIAInternalError("Internal server error")
 
 reorder_collection_before_item(router)

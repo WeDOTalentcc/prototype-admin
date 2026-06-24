@@ -13,6 +13,7 @@ from app.core.auth import get_current_user_or_demo
 from app.core.database import get_db
 from app.shared.services.journey_intelligence_service import journey_intelligence_service
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.errors import LIAError
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +45,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"get_journey_metrics failed: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="Erro ao calcular métricas de jornada")
+        raise LIAError(message="Erro ao calcular métricas de jornada")
 
 
 @router.get("/company-overview", response_model=None)
@@ -69,4 +70,4 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"get_company_overview failed: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="Erro ao calcular visão geral de jornada")
+        raise LIAError(message="Erro ao calcular visão geral de jornada")

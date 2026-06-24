@@ -22,6 +22,7 @@ from app.models import JobVacancy
 from app.shared.services.intent_classifier import IntentType, intent_classifier_service
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+from app.shared.errors import LIAError
 
 logger = logging.getLogger(__name__)
 
@@ -321,4 +322,4 @@ company_id: str = Depends(require_company_id)) -> FastTrackWizardResponse:
         raise
     except Exception as e:
         logger.error(f"Error in Fast Track wizard: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")

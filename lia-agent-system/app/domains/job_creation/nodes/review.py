@@ -7,6 +7,7 @@ Readiness check + apply company defaults from Settings.
 """
 
 import logging
+import os
 import time
 from typing import Any, Dict
 
@@ -28,6 +29,13 @@ def review_node(state: JobCreationState) -> JobCreationState:
     Calls api_client.get_company_defaults() to load recruitment policies,
     default eligibility questions, screening mode defaults, etc.
     """
+    # Tombstone: graph path is legacy. LIA_WIZARD_ORCHESTRATOR=1 is canonical.
+    if not os.environ.get("RAILS_API_URL"):
+        raise RuntimeError(
+            "review_node requer RAILS_API_URL (caminho legacy de grafo). "
+            "LIA_WIZARD_ORCHESTRATOR=1 esta ativo -- use wizard_orchestrator_service.py. "
+            "Este no nao deve ser invocado sem RAILS_API_URL definido."
+        )
     # Lazy import of helpers defined in graph.py (avoids circular import).
     from app.domains.job_creation.graph import (  # noqa: E402
         _get_api_client,

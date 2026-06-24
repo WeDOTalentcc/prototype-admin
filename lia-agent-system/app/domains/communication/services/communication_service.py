@@ -28,6 +28,7 @@ from datetime import datetime, timedelta
 from typing import Any
 
 from app.domains.communication.repositories.communication_repository import CommunicationRepository
+from app.domains.candidates.repositories.candidate_repository import CandidateRepository
 from sqlalchemy import and_, desc, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -103,6 +104,12 @@ async def _get_db(db: AsyncSession | None = None):
             await db.close()
 
 
+
+# GAP-07-005: channel -> legacy channel_opt_out JSONB flag
+_CHANNEL_TO_JSONB_FLAG: dict[str, str] = {
+    "email":    "marketing_email",
+    "whatsapp": "whatsapp",
+}
 class CommunicationService:
     """
     Comprehensive communication service for LIA recruitment platform.
@@ -196,7 +203,8 @@ class CommunicationService:
             )
             now = get_tenant_now(settings) if settings else self._get_brazil_now()
             return is_brazilian_holiday(now.date())
-        except Exception:
+        except Exception as e:
+            logger.warning("[communication] Holiday check failed, defaulting to False: %s", e, exc_info=True)
             return False
 
     def _get_next_sending_window(self, settings: dict | None = None) -> datetime:
@@ -287,8 +295,21 @@ class CommunicationService:
             company_id=company_id,
             channel_value=channel.value,
         )
-        return bool(opt_out), opt_out
-    
+        if opt_out:
+            return True, opt_out
+
+        # GAP-07-005: fallback — legacy JSONB written by email_tracking/optout handlers
+        jsonb_flag = _CHANNEL_TO_JSONB_FLAG.get(channel.value)
+        if jsonb_flag:
+            try:
+                candidate = await CandidateRepository(db).get_by_id(candidate_id)
+                if candidate and candidate.channel_opt_out and jsonb_flag in candidate.channel_opt_out:
+                    return True, None
+            except Exception:
+                logger.warning("_check_opt_out: JSONB fallback failed for %s", candidate_id)
+
+        return False, None
+
     async def _check_quarantine(
         self,
         candidate_id: str,
@@ -1079,8 +1100,8 @@ class CommunicationService:
                         template_id=rendered.get("template_id", ""),
                         context={"message_type": message_type.value, "candidate_id": candidate_id},
                     )
-                except Exception:
-                    pass
+                except Exception as e:
+                    logger.debug("[communication] template_learning record_send skipped: %s", e)
 
             return send_result
 

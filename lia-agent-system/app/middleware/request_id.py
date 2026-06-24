@@ -1,17 +1,5 @@
-"""
-Request ID Middleware - generates unique request ID per request for tracing.
-"""
-import uuid
+"""Shim de compatibilidade — re-exporta de lia_config.request_id. Não adicionar lógica aqui."""
+# SHIM: módulo movido para lia_config.request_id em 2026-06-13 (Fase 2 MONOLITH-IMPORT)
+from lia_config.request_id import RequestIdMiddleware, get_correlation_id, _current_correlation_id  # noqa: F401
 
-from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.requests import Request
-
-
-class RequestIdMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next):
-        request_id = request.headers.get("X-Request-ID", str(uuid.uuid4()))
-        request.state.request_id = request_id
-        
-        response = await call_next(request)
-        response.headers["X-Request-ID"] = request_id
-        return response
+__all__ = ["RequestIdMiddleware", "get_correlation_id", "_current_correlation_id"]

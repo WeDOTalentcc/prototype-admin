@@ -24,6 +24,7 @@ from app.shared.providers.llm_provider import (
     LLMToolCall,
     LLMToolResponse,
 )
+from app.shared.providers.llm_retry import llm_transient_retry
 from app.shared.resilience.circuit_breaker import (
     DEEPSEEK_CIRCUIT,
     circuit_breaker_decorator,
@@ -70,6 +71,7 @@ class DeepSeekLLMProvider(LLMProviderABC):
         return self._client
 
     @circuit_breaker_decorator(DEEPSEEK_CIRCUIT)
+    @llm_transient_retry
     async def generate(self, prompt, model=None, temperature=0.7, max_tokens=4096, **kwargs):
         client = self._get_client()
         response = client.chat.completions.create(
@@ -96,6 +98,7 @@ class DeepSeekLLMProvider(LLMProviderABC):
         )
 
     @circuit_breaker_decorator(DEEPSEEK_CIRCUIT)
+    @llm_transient_retry
     async def generate_with_system(
         self, system_prompt, user_message, model=None, temperature=0.7, max_tokens=4096, **kwargs
     ):
@@ -127,6 +130,7 @@ class DeepSeekLLMProvider(LLMProviderABC):
         )
 
     @circuit_breaker_decorator(DEEPSEEK_CIRCUIT)
+    @llm_transient_retry
     async def generate_with_tools(
         self, messages, tools, system_prompt=None, max_tokens=4096, **kwargs
     ):
@@ -180,6 +184,7 @@ class DeepSeekLLMProvider(LLMProviderABC):
         )
 
     @circuit_breaker_decorator(DEEPSEEK_CIRCUIT)
+    @llm_transient_retry
     async def generate_structured(
         self, messages, output_schema, system_prompt=None, max_tokens=4096, **kwargs
     ):

@@ -54,6 +54,7 @@ export const SUB_STATUS_DISPLAY_MAP: Record<string, SubStatusDisplay> = {
   approved_final: { label: 'Aprovado Final', icon: 'check-circle', color: 'green' },
 
   // conclusion_hired
+  hired: { label: 'Contratado', icon: 'check-circle', color: 'green' },
   offer_accepted: { label: 'Proposta Aceita', icon: 'check-circle', color: 'green' },
   onboarding: { label: 'Em Onboarding', icon: 'loader', color: 'amber' },
   integrated: { label: 'Integrado', icon: 'check-circle', color: 'green' },

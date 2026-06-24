@@ -25,6 +25,7 @@ class DepartmentBase(BaseModel):
     location: str | None = None
     hiring_priority: str | None = "normal"
     order: int | None = 0
+    color: str | None = None
 
 
 class DepartmentCreate(DepartmentBase):
@@ -254,6 +255,8 @@ class CompanyProfileBase(CnpjMixin, BaseModel):
     headquarters_city: str | None = None
     headquarters_state: str | None = None
     headquarters_country: str | None = "Brasil"
+    employment_types: list[str] | None = None
+    primary_employment_type: str | None = None
     address: str | None = None
     main_phone: str | None = None
     hr_phone: str | None = None
@@ -293,6 +296,8 @@ class CompanyProfileUpdate(CnpjMixin, WeDoBaseModel):
     glassdoor_url: str | None = None
     employee_count: int | None = None
     revenue_range: str | None = None
+    employment_types: list[str] | None = None
+    primary_employment_type: str | None = None
     is_active: bool | None = None
     additional_data: dict[str, Any] | None = None
 
@@ -757,7 +762,8 @@ class ApproverBase(BaseModel):
     # P0.D2 (audit Wave 2 2026-05-22): per-department routing + amount threshold.
     # Both NULL = backward-compat (company-wide, any-amount approver).
     department_id: UUID | None = None
-    can_approve_above_amount: Decimal | None = None
+    # Sprint 2 (2026-06-21): platform = usuario interno com conta; email_link = externo via magic link.
+    approval_method: str = "email_link" 
 
 
 class ApproverCreate(WeDoBaseModel):
@@ -769,7 +775,7 @@ class ApproverCreate(WeDoBaseModel):
     level: int = 1
     user_id: UUID | None = None
     department_id: UUID | None = None
-    can_approve_above_amount: Decimal | None = None
+    approval_method: str = "email_link" 
 
 
 class ApproverUpdate(WeDoBaseModel):
@@ -779,8 +785,8 @@ class ApproverUpdate(WeDoBaseModel):
     level: int | None = None
     user_id: UUID | None = None
     department_id: UUID | None = None
-    can_approve_above_amount: Decimal | None = None
     is_active: bool | None = None
+    approval_method: str | None = None
 
 
 class ApproverResponse(ApproverBase):
@@ -929,7 +935,7 @@ class CompanyUserResponse(BaseModel):
     role: str
     is_active: bool
     active_jobs_count: int
-    performance_score: int
+    performance_score: int | None = None  # P2-5: nao fabricar (era hash ficticio)
 
 
 class CompanyUsersListResponse(BaseModel):

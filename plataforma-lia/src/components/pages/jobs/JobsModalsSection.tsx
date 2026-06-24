@@ -1,39 +1,39 @@
 "use client"
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 
 import React from "react"
 import dynamic from "next/dynamic"
-import { LoadingModal } from "@/components/ui/loading"
 const JobReportModal = dynamic(() => import("@/components/job-report-modal").then(m => ({ default: m.JobReportModal })), {
   ssr: false,
-  loading: () => <LoadingModal />,
+  loading: () => null,
 })
 const JobCompareModal = dynamic(() => import("@/components/modals/job-compare-modal").then(m => ({ default: m.JobCompareModal })), {
   ssr: false,
-  loading: () => <LoadingModal />,
+  loading: () => null,
 })
 const JobPublishModal = dynamic(() => import("@/components/modals/job-publish-modal").then(m => ({ default: m.JobPublishModal })), {
   ssr: false,
-  loading: () => <LoadingModal />,
+  loading: () => null,
 })
 const JobUnpublishModal = dynamic(() => import("@/components/modals/job-unpublish-modal").then(m => ({ default: m.JobUnpublishModal })), {
   ssr: false,
-  loading: () => <LoadingModal />,
+  loading: () => null,
 })
 const JobInsightsModal = dynamic(() => import("@/components/modals/job-insights-modal").then(m => ({ default: m.JobInsightsModal })), {
   ssr: false,
-  loading: () => <LoadingModal />,
+  loading: () => null,
 })
 const JobDuplicateModal = dynamic(() => import("@/components/modals/job-duplicate-modal").then(m => ({ default: m.JobDuplicateModal })), {
   ssr: false,
-  loading: () => <LoadingModal />,
+  loading: () => null,
 })
 const JobStatusModal = dynamic(() => import("@/components/modals/job-status-modal").then(m => ({ default: m.JobStatusModal })), {
   ssr: false,
-  loading: () => <LoadingModal />,
+  loading: () => null,
 })
 const JobAssignRecruiterModal = dynamic(() => import("@/components/modals/job-assign-recruiter-modal").then(m => ({ default: m.JobAssignRecruiterModal })), {
   ssr: false,
-  loading: () => <LoadingModal />,
+  loading: () => null,
 })
 import { CreateJobModal } from "@/components/modals/create-job-modal"
 import { ScreeningChannelsModal, ScreeningSettingsModal, ScreeningSchedulingModal } from "@/components/screening-config"
@@ -96,7 +96,7 @@ export function JobsModalsSection(props: JobsModalsSectionProps) {
         isOpen={showCompareModal}
         onClose={onCloseCompareModal}
         jobs={selectedJobs.map((job) => ({
-          id: String(job.id),
+          id: job.backendId,
           code: job.jobId,
           title: job.title,
           department: job.department,
@@ -119,7 +119,7 @@ export function JobsModalsSection(props: JobsModalsSectionProps) {
         isOpen={showPublishModal}
         onClose={onClosePublishModal}
         jobs={selectedJobs.map(job => ({
-          id: String(job.id),
+          id: job.backendId,
           code: job.jobId,
           title: job.title,
           status: job.status,
@@ -135,7 +135,7 @@ export function JobsModalsSection(props: JobsModalsSectionProps) {
         isOpen={showUnpublishModal}
         onClose={onCloseUnpublishModal}
         jobs={selectedJobs.filter(job => job.is_published).map(job => ({
-          id: String(job.id),
+          id: job.backendId,
           code: job.jobId,
           title: job.title,
           status: job.status,
@@ -153,7 +153,7 @@ export function JobsModalsSection(props: JobsModalsSectionProps) {
         onClose={onCloseInsightsModal}
         onSendEmail={handleInsightsSendEmail}
         jobs={selectedJobs.map(job => ({
-          id: String(job.id),
+          id: job.backendId,
           code: job.jobId,
           title: job.title,
           status: job.status,
@@ -192,7 +192,7 @@ export function JobsModalsSection(props: JobsModalsSectionProps) {
         isOpen={showStatusModal}
         onClose={onCloseStatusModal}
         jobs={selectedJobs.map(job => ({
-          id: String(job.id),
+          id: job.backendId,
           code: job.jobId,
           title: job.title,
           status: job.status,
@@ -214,7 +214,7 @@ export function JobsModalsSection(props: JobsModalsSectionProps) {
         isOpen={showAssignRecruiterModal}
         onClose={onCloseAssignRecruiterModal}
         jobs={selectedJobs.map(job => ({
-          id: String(job.id),
+          id: job.backendId,
           code: job.jobId,
           title: job.title,
           recruiter: job.recruiter

@@ -1,4 +1,5 @@
 "use client"
+import usePersonaName from "@/hooks/company/usePersonaName"
 
 import React from "react"
 import { Card } from "@/components/ui/card"
@@ -9,7 +10,6 @@ import { AudioRecordButton } from "@/components/ui/audio-record-button"
 import { MessageFeedback } from "@/components/chat/message-feedback"
 import { cleanAgentResponse, parseChatMarkdown, escapeHtml } from "@/lib/chat-format"
 import { sanitizeHtml } from "@/lib/sanitize"
-import { ThinkingDots } from "@/components/ui/thinking-dots"
 import { toast } from "sonner"
 
 interface LiaExpandedPanelProps {
@@ -32,7 +32,7 @@ interface LiaExpandedPanelProps {
 }
 
 export function LiaExpandedPanel({
-  title = "LIA",
+  title = "IA",
   description,
   onClose,
   onNewChat,
@@ -343,7 +343,7 @@ const handleKeyDown = (e: React.KeyboardEvent) => {
             )}
           </div>
           <Button
-            className={`h-10 px-6 text-sm font-medium rounded-md ${value.trim() ? 'bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active' : 'bg-lia-bg-tertiary text-lia-text-disabled'}`}
+            className={`h-10 px-6 text-sm font-medium rounded-md ${value.trim() ? 'bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active' : 'bg-lia-bg-tertiary text-lia-text-tertiary'}`}
             
             onClick={onSubmit}
             disabled={!value.trim() || isLoading}
@@ -412,6 +412,7 @@ interface LiaChatMessageProps {
 }
 
 export function LiaChatMessage({ type, content, timestamp, messageId, sessionId }: LiaChatMessageProps) {
+  const personaName = usePersonaName()
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
   }
@@ -454,7 +455,7 @@ export function LiaChatMessage({ type, content, timestamp, messageId, sessionId 
       <div className="flex-1 flex flex-col gap-1">
         <div className="flex items-center gap-1.5 px-1">
           <span className="text-xs font-bold text-lia-text-primary" >
-            LIA
+            {personaName}
           </span>
         </div>
         <div 
@@ -485,6 +486,7 @@ export function LiaChatMessage({ type, content, timestamp, messageId, sessionId 
 }
 
 export function LiaLoadingIndicator() {
+  const personaName = usePersonaName()
   return (
     <div className="flex items-start gap-2.5">
       <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -493,13 +495,11 @@ export function LiaLoadingIndicator() {
       <div className="flex-1">
         <div className="flex items-center gap-1.5 mb-1 px-1">
           <span className="text-xs font-bold text-lia-text-primary" >
-            LIA
+            {personaName}
           </span>
         </div>
         <div className="bg-wedo-cyan/[0.04] rounded-[14px] rounded-bl-[4px] p-3 inline-block">
-          <div className="flex items-center gap-1">
-            <ThinkingDots dotClassName="bg-wedo-cyan" size="md" />
-          </div>
+          <span className="text-xs text-lia-text-secondary animate-pulse motion-reduce:animate-none">Pensando…</span>
         </div>
       </div>
     </div>

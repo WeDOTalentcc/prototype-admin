@@ -104,3 +104,35 @@ jobs:
             tests/contract/test_run_graph_streaming.py \
             --no-cov --tb=short -q
 
+
+      - name: Sub-status canonical + HITL gate sensors (BLOCKING)
+        # Auditoria 2026-06-10 (modal Mover-para-Reprovado):
+        #   - test_substatus_message_focus_canonical: SUBSTATUS_MESSAGE_FOCUS +
+        #     SubStatusPredictor falam o vocabulario CANONICAL_SUB_STATUSES (sem drift)
+        #     -> feedback de reprovacao com foco curado por motivo; substatus inferido
+        #     persistido com codigo canonico (FE exibe label/cor).
+        #   - test_rest_hitl_gate: gate HITL dormente no transition/execute
+        #     (LIA_HITL_GATE off => zero regressao; ON segura dispatch sem confirmacao).
+        working-directory: lia-agent-system
+        env:
+          APP_ENV: development
+        run: |
+          python3 -m pytest \
+            tests/test_substatus_message_focus_canonical.py \
+            tests/test_rest_hitl_gate.py \
+            tests/test_feedback_safety.py \
+            tests/test_feedback_fairness_guard.py \
+            tests/test_preview_feedback.py \
+            tests/test_send_email_fairness.py \
+            tests/test_feedback_guard.py \
+            --no-cov --tb=short -q
+
+      - name: JSON operator syntax sensor (BLOCKING)
+        # Sensor check_json_operator_syntax.py (2026-06-14).
+        # Detecta operadores JSON PostgreSQL sem aspas na chave:
+        #   BUGADO:  ->column_name   (trata como referência de coluna)
+        #   CORRETO: ->column_name (string key)
+        # Baseline 0 — qualquer regressão bloqueia CI.
+        working-directory: lia-agent-system
+        run: |
+          python3 scripts/check_json_operator_syntax.py

@@ -31,7 +31,11 @@
       "gaps": {
         "action_tool_map_broken": [],
         "tools_orphaned_no_action": [],
-        "actions_without_tool_or_handler": [],
+        "actions_without_tool_or_handler": [
+          "recalibrate_agent",
+          "pause_agent",
+          "list_sector_templates"
+        ],
         "handlers_failing_import": []
       },
       "errors": []
@@ -72,31 +76,93 @@
         "analytics_dashboard",
         "analytics_monitoring"
       ],
-      "action_tool_map": {
-        "generate_kpi_report": "analytics_generate_kpi",
-        "analyze_funnel": "analytics_analyze_funnel",
-        "job_health_check": "analytics_job_health",
-        "detect_anomalies": "analytics_detect_anomalies",
-        "compare_periods": "analytics_dashboard",
-        "forecast": "analytics_predict",
-        "suggest_strategy": "analytics_get_insights",
-        "answer_data_question": "analytics_get_insights",
-        "get_job_insights": "analytics_get_insights",
-        "generate_job_report": "analytics_generate_report",
-        "generate_candidate_report": "analytics_generate_report",
-        "get_search_analytics": "analytics_search_analytics",
-        "get_wizard_analytics": "analytics_search_analytics",
-        "predict_hiring_probability": "analytics_predict",
-        "predict_time_to_fill": "analytics_predict",
-        "predict_dropout_risk": "analytics_predict",
-        "get_dashboard_data": "analytics_dashboard",
-        "get_agent_monitoring": "analytics_monitoring"
-      },
+      "action_tool_map": {},
       "gaps": {
         "action_tool_map_broken": [],
-        "tools_orphaned_no_action": [],
-        "actions_without_tool_or_handler": [],
-        "handlers_failing_import": []
+        "tools_orphaned_no_action": [
+          "analytics_generate_kpi",
+          "analytics_analyze_funnel",
+          "analytics_job_health",
+          "analytics_detect_anomalies",
+          "analytics_get_insights",
+          "analytics_generate_report",
+          "analytics_search_analytics",
+          "analytics_predict",
+          "analytics_dashboard",
+          "analytics_monitoring"
+        ],
+        "actions_without_tool_or_handler": [
+          "generate_kpi_report",
+          "analyze_funnel",
+          "job_health_check",
+          "detect_anomalies",
+          "compare_periods",
+          "forecast",
+          "suggest_strategy",
+          "answer_data_question",
+          "get_job_insights",
+          "generate_job_report",
+          "generate_candidate_report",
+          "get_search_analytics",
+          "get_wizard_analytics",
+          "predict_hiring_probability",
+          "predict_time_to_fill",
+          "predict_dropout_risk",
+          "get_dashboard_data",
+          "get_agent_monitoring"
+        ],
+        "handlers_failing_import": [
+          {
+            "tool_id": "analytics_generate_kpi",
+            "handler": "app.domains.analytics.services.report_service.generate_kpi_report",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "analytics_analyze_funnel",
+            "handler": "app.domains.analytics.services.report_service.analyze_funnel",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "analytics_job_health",
+            "handler": "app.domains.analytics.services.report_service.job_health_check",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "analytics_detect_anomalies",
+            "handler": "app.domains.analytics.services.report_service.detect_anomalies",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "analytics_get_insights",
+            "handler": "app.domains.analytics.services.job_insights_service.get_job_insights",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "analytics_generate_report",
+            "handler": "app.domains.analytics.services.job_report_service.generate_report",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "analytics_search_analytics",
+            "handler": "app.domains.analytics.services.search_analytics_service.get_search_analytics",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "analytics_predict",
+            "handler": "app.domains.analytics.services.predictive_analytics_service.predict",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "analytics_dashboard",
+            "handler": "app.domains.analytics.services.report_service.get_dashboard_data",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "analytics_monitoring",
+            "handler": "app.domains.analytics.services.agent_monitoring_service.get_monitoring_data",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          }
+        ]
       },
       "errors": []
     },
@@ -136,31 +202,93 @@
         "ats_update_status",
         "ats_send_score"
       ],
-      "action_tool_map": {
-        "sync_candidate": "ats_sync_candidate",
-        "sync_job": "ats_sync_job",
-        "bulk_sync": "ats_sync_candidate",
-        "pull_candidates": "ats_pull_candidates",
-        "pull_jobs": "ats_pull_jobs",
-        "check_sync_status": "ats_check_status",
-        "configure_ats": "ats_list_connections",
-        "list_connections": "ats_list_connections",
-        "test_connection": "ats_test_connection",
-        "map_fields": "ats_view_sync_log",
-        "view_sync_log": "ats_view_sync_log",
-        "resolve_conflict": "ats_view_sync_log",
-        "update_status_ats": "ats_update_status",
-        "send_score_ats": "ats_send_score",
-        "sync_interview_result": "ats_send_score",
-        "enable_webhook": "ats_test_connection",
-        "disable_webhook": "ats_test_connection",
-        "view_field_mapping": "ats_view_sync_log"
-      },
+      "action_tool_map": {},
       "gaps": {
         "action_tool_map_broken": [],
-        "tools_orphaned_no_action": [],
-        "actions_without_tool_or_handler": [],
-        "handlers_failing_import": []
+        "tools_orphaned_no_action": [
+          "ats_sync_candidate",
+          "ats_sync_job",
+          "ats_pull_candidates",
+          "ats_pull_jobs",
+          "ats_check_status",
+          "ats_list_connections",
+          "ats_test_connection",
+          "ats_view_sync_log",
+          "ats_update_status",
+          "ats_send_score"
+        ],
+        "actions_without_tool_or_handler": [
+          "sync_candidate",
+          "sync_job",
+          "bulk_sync",
+          "pull_candidates",
+          "pull_jobs",
+          "check_sync_status",
+          "configure_ats",
+          "list_connections",
+          "test_connection",
+          "map_fields",
+          "view_sync_log",
+          "resolve_conflict",
+          "update_status_ats",
+          "send_score_ats",
+          "sync_interview_result",
+          "enable_webhook",
+          "disable_webhook",
+          "view_field_mapping"
+        ],
+        "handlers_failing_import": [
+          {
+            "tool_id": "ats_sync_candidate",
+            "handler": "app.domains.ats_integration.services.ats_sync_service.ats_sync_service.sync_candidate",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "ats_sync_job",
+            "handler": "app.domains.ats_integration.services.ats_sync_service.ats_sync_service.sync_job",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "ats_pull_candidates",
+            "handler": "app.domains.ats_integration.services.ats_sync_service.ats_sync_service.pull_candidates",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "ats_pull_jobs",
+            "handler": "app.domains.ats_integration.services.ats_sync_service.ats_sync_service.pull_jobs",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "ats_check_status",
+            "handler": "app.domains.ats_integration.services.ats_sync_service.ats_sync_service.check_sync_status",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "ats_list_connections",
+            "handler": "app.domains.ats_integration.services.ats_sync_service.ats_sync_service.list_connections",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "ats_test_connection",
+            "handler": "app.domains.ats_integration.services.ats_sync_service.ats_sync_service.test_connection",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "ats_view_sync_log",
+            "handler": "app.domains.ats_integration.services.ats_sync_service.ats_sync_service.view_sync_log",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "ats_update_status",
+            "handler": "app.domains.ats_integration.services.ats_sync_service.ats_sync_service.update_candidate_status",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "ats_send_score",
+            "handler": "app.domains.ats_integration.services.ats_sync_service.ats_sync_service.send_score",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          }
+        ]
       },
       "errors": []
     },
@@ -202,33 +330,95 @@
         "automation_trigger",
         "automation_view_log"
       ],
-      "action_tool_map": {
-        "create_task": "automation_create_task",
-        "list_tasks": "automation_list_tasks",
-        "complete_task": "automation_complete_task",
-        "cancel_task": "automation_cancel_task",
-        "decompose_task": "automation_create_task",
-        "plan_execution": "automation_create_task",
-        "get_next_tasks": "automation_list_tasks",
-        "create_automation": "automation_create_rule",
-        "list_automations": "automation_list_rules",
-        "enable_automation": "automation_enable_rule",
-        "disable_automation": "automation_disable_rule",
-        "trigger_automation": "automation_trigger",
-        "view_automation_log": "automation_view_log",
-        "configure_stage_automation": "automation_create_rule",
-        "predict_substatus": "automation_view_log",
-        "check_proactive_alerts": "automation_view_log",
-        "configure_alert": "automation_create_rule",
-        "schedule_recurring": "automation_create_rule",
-        "view_task_dependencies": "automation_list_tasks",
-        "run_autonomous_check": "automation_trigger"
-      },
+      "action_tool_map": {},
       "gaps": {
         "action_tool_map_broken": [],
-        "tools_orphaned_no_action": [],
-        "actions_without_tool_or_handler": [],
-        "handlers_failing_import": []
+        "tools_orphaned_no_action": [
+          "automation_create_task",
+          "automation_list_tasks",
+          "automation_complete_task",
+          "automation_cancel_task",
+          "automation_create_rule",
+          "automation_list_rules",
+          "automation_enable_rule",
+          "automation_disable_rule",
+          "automation_trigger",
+          "automation_view_log"
+        ],
+        "actions_without_tool_or_handler": [
+          "create_task",
+          "list_tasks",
+          "complete_task",
+          "cancel_task",
+          "decompose_task",
+          "plan_execution",
+          "get_next_tasks",
+          "create_automation",
+          "list_automations",
+          "enable_automation",
+          "disable_automation",
+          "trigger_automation",
+          "view_automation_log",
+          "configure_stage_automation",
+          "predict_substatus",
+          "check_proactive_alerts",
+          "configure_alert",
+          "schedule_recurring",
+          "view_task_dependencies",
+          "run_autonomous_check"
+        ],
+        "handlers_failing_import": [
+          {
+            "tool_id": "automation_create_task",
+            "handler": "app.domains.automation.services.task_service.TaskService.create_task",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "automation_list_tasks",
+            "handler": "app.domains.automation.services.task_service.TaskService.list_tasks",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "automation_complete_task",
+            "handler": "app.domains.automation.services.task_service.TaskService.complete_task",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "automation_cancel_task",
+            "handler": "app.domains.automation.services.task_service.TaskService.cancel_task",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "automation_create_rule",
+            "handler": "app.domains.automation.services.automation_service.AutomationService.create_automation",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "automation_list_rules",
+            "handler": "app.domains.automation.services.automation_service.AutomationService.list_automations",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "automation_enable_rule",
+            "handler": "app.domains.automation.services.automation_service.AutomationService.enable_automation",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "automation_disable_rule",
+            "handler": "app.domains.automation.services.automation_service.AutomationService.disable_automation",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "automation_trigger",
+            "handler": "app.domains.automation.services.automation_trigger_service.AutomationTriggerService.trigger",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "automation_view_log",
+            "handler": "app.domains.automation.services.automation_service.AutomationService.get_execution_log",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          }
+        ]
       },
       "errors": []
     },
@@ -290,23 +480,85 @@
         "communication_manage_webhook",
         "communication_data_request"
       ],
-      "action_tool_map": {
-        "send_email": "communication_send_email",
-        "send_bulk_email": "communication_send_bulk",
-        "create_template": "communication_create_template",
-        "list_templates": "communication_list_templates",
-        "preview_template": "communication_preview_template",
-        "send_whatsapp": "communication_send_whatsapp",
-        "send_teams_message": "communication_send_teams",
-        "get_communication_history": "communication_get_history",
-        "manage_webhook": "communication_manage_webhook",
-        "handle_data_request": "communication_data_request"
-      },
+      "action_tool_map": {},
       "gaps": {
         "action_tool_map_broken": [],
-        "tools_orphaned_no_action": [],
-        "actions_without_tool_or_handler": [],
-        "handlers_failing_import": []
+        "tools_orphaned_no_action": [
+          "communication_send_email",
+          "communication_send_bulk",
+          "communication_send_whatsapp",
+          "communication_send_teams",
+          "communication_create_template",
+          "communication_list_templates",
+          "communication_preview_template",
+          "communication_get_history",
+          "communication_manage_webhook",
+          "communication_data_request"
+        ],
+        "actions_without_tool_or_handler": [
+          "send_email",
+          "send_bulk_email",
+          "create_template",
+          "list_templates",
+          "preview_template",
+          "send_whatsapp",
+          "send_teams_message",
+          "get_communication_history",
+          "manage_webhook",
+          "handle_data_request"
+        ],
+        "handlers_failing_import": [
+          {
+            "tool_id": "communication_send_email",
+            "handler": "app.domains.communication.services.email_service.email_service.send_email",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "communication_send_bulk",
+            "handler": "app.domains.communication.services.email_service.email_service.send_bulk_email",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "communication_send_whatsapp",
+            "handler": "app.domains.communication.services.whatsapp_service.send_whatsapp_message",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "communication_send_teams",
+            "handler": "app.domains.communication.services.teams_service.send_teams_message",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "communication_create_template",
+            "handler": "app.domains.communication.services.email_service.email_service.create_template",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "communication_list_templates",
+            "handler": "app.domains.communication.services.email_service.email_service.list_templates",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "communication_preview_template",
+            "handler": "app.domains.communication.services.email_service.email_service.preview_template",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "communication_get_history",
+            "handler": "app.domains.communication.services.communication_history_service.get_history",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "communication_manage_webhook",
+            "handler": "app.domains.communication.services.webhook_service.manage_webhook",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "communication_data_request",
+            "handler": "app.domains.communication.services.data_request_service.handle_request",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          }
+        ]
       },
       "errors": []
     },
@@ -328,7 +580,15 @@
       "gaps": {
         "action_tool_map_broken": [],
         "tools_orphaned_no_action": [],
-        "actions_without_tool_or_handler": [],
+        "actions_without_tool_or_handler": [
+          "configure_profile",
+          "configure_culture",
+          "configure_tech_stack",
+          "configure_benefits",
+          "configure_workforce",
+          "analyze_website",
+          "process_document"
+        ],
         "handlers_failing_import": []
       },
       "errors": []
@@ -336,7 +596,7 @@
     "cv_screening": {
       "class": "CVScreeningDomain",
       "action_count": 24,
-      "tool_count": 10,
+      "tool_count": 11,
       "actions": [
         "parse_cv",
         "auto_screen",
@@ -365,6 +625,7 @@
       ],
       "tools": [
         "parse_cv",
+        "score_cv",
         "evaluate_rubric",
         "calculate_wsi",
         "generate_wsi_questions",
@@ -375,23 +636,92 @@
         "pre_qualify_candidate",
         "run_screening_pipeline"
       ],
-      "action_tool_map": {
-        "parse_cv": "parse_cv",
-        "calculate_wsi_score": "calculate_wsi",
-        "evaluate_rubric": "evaluate_rubric",
-        "generate_questions": "generate_wsi_questions",
-        "adjust_questions": "adjust_wsi_questions",
-        "voice_screening": "run_screening_pipeline",
-        "normalize_scores": "normalize_scores",
-        "assess_seniority": "assess_seniority",
-        "send_feedback": "send_candidate_feedback",
-        "pre_qualify": "pre_qualify_candidate"
-      },
+      "action_tool_map": {},
       "gaps": {
         "action_tool_map_broken": [],
-        "tools_orphaned_no_action": [],
-        "actions_without_tool_or_handler": [],
-        "handlers_failing_import": []
+        "tools_orphaned_no_action": [
+          "parse_cv",
+          "score_cv",
+          "evaluate_rubric",
+          "calculate_wsi",
+          "generate_wsi_questions",
+          "adjust_wsi_questions",
+          "normalize_scores",
+          "assess_seniority",
+          "send_candidate_feedback",
+          "pre_qualify_candidate",
+          "run_screening_pipeline"
+        ],
+        "actions_without_tool_or_handler": [
+          "parse_cv",
+          "auto_screen",
+          "calculate_wsi_score",
+          "evaluate_rubric",
+          "generate_questions",
+          "adjust_questions",
+          "voice_screening",
+          "normalize_scores",
+          "assess_seniority",
+          "send_feedback",
+          "pre_qualify"
+        ],
+        "handlers_failing_import": [
+          {
+            "tool_id": "parse_cv",
+            "handler": "app.domains.cv_screening.services.cv_parser.parse_cv",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "score_cv",
+            "handler": "app.domains.cv_screening.services.cv_scoring_service.score_cv",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "evaluate_rubric",
+            "handler": "app.domains.cv_screening.services.rubric_evaluation_service.evaluate_rubric",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "calculate_wsi",
+            "handler": "app.domains.cv_screening.services.wsi_service.calculate_wsi",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "generate_wsi_questions",
+            "handler": "app.domains.cv_screening.services.wsi_service.generate_wsi_questions_tool",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "adjust_wsi_questions",
+            "handler": "app.domains.cv_screening.services.wsi_question_adjuster.adjust_questions",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "normalize_scores",
+            "handler": "app.domains.cv_screening.services.score_normalization_service.normalize",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "assess_seniority",
+            "handler": "app.domains.cv_screening.services.seniority_resolver.resolve_seniority",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "send_candidate_feedback",
+            "handler": "app.domains.cv_screening.services.personalized_feedback_service.send_feedback",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "pre_qualify_candidate",
+            "handler": "app.domains.cv_screening.services.pre_qualification_service.pre_qualify",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "run_screening_pipeline",
+            "handler": "app.domains.cv_screening.services.wsi_screening_pipeline.run_pipeline",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          }
+        ]
       },
       "errors": []
     },
@@ -411,14 +741,20 @@
       "gaps": {
         "action_tool_map_broken": [],
         "tools_orphaned_no_action": [],
-        "actions_without_tool_or_handler": [],
+        "actions_without_tool_or_handler": [
+          "create_twin",
+          "evaluate_with_twin",
+          "list_twins",
+          "index_twin_audio",
+          "deactivate_twin"
+        ],
         "handlers_failing_import": []
       },
       "errors": []
     },
     "hiring_policy": {
       "class": "HiringPolicyDomain",
-      "action_count": 9,
+      "action_count": 8,
       "tool_count": 0,
       "actions": [
         "configure_policy",
@@ -428,8 +764,7 @@
         "configure_screening",
         "configure_automation",
         "validate_compliance",
-        "get_progress",
-        "configure_candidate_portal"
+        "get_progress"
       ],
       "tools": [],
       "action_tool_map": {},
@@ -479,23 +814,85 @@
         "scheduling_transcribe_audio",
         "scheduling_analyze_voice"
       ],
-      "action_tool_map": {
-        "schedule_interview": "scheduling_schedule_interview",
-        "reschedule_interview": "scheduling_reschedule",
-        "cancel_interview": "scheduling_cancel",
-        "check_availability": "scheduling_check_availability",
-        "generate_self_scheduling_link": "scheduling_self_scheduling_link",
-        "find_common_slots": "scheduling_find_slots",
-        "send_reminder": "scheduling_send_reminder",
-        "list_today_interviews": "scheduling_list_today",
-        "transcribe_audio": "scheduling_transcribe_audio",
-        "analyze_voice": "scheduling_analyze_voice"
-      },
+      "action_tool_map": {},
       "gaps": {
         "action_tool_map_broken": [],
-        "tools_orphaned_no_action": [],
-        "actions_without_tool_or_handler": [],
-        "handlers_failing_import": []
+        "tools_orphaned_no_action": [
+          "scheduling_schedule_interview",
+          "scheduling_reschedule",
+          "scheduling_cancel",
+          "scheduling_check_availability",
+          "scheduling_self_scheduling_link",
+          "scheduling_find_slots",
+          "scheduling_send_reminder",
+          "scheduling_list_today",
+          "scheduling_transcribe_audio",
+          "scheduling_analyze_voice"
+        ],
+        "actions_without_tool_or_handler": [
+          "schedule_interview",
+          "reschedule_interview",
+          "cancel_interview",
+          "check_availability",
+          "generate_self_scheduling_link",
+          "find_common_slots",
+          "send_reminder",
+          "list_today_interviews",
+          "transcribe_audio",
+          "analyze_voice"
+        ],
+        "handlers_failing_import": [
+          {
+            "tool_id": "scheduling_schedule_interview",
+            "handler": "app.domains.interview_scheduling.services.scheduling_service.scheduling_service.schedule_interview",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "scheduling_reschedule",
+            "handler": "app.domains.interview_scheduling.services.scheduling_service.scheduling_service.reschedule_interview",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "scheduling_cancel",
+            "handler": "app.domains.interview_scheduling.services.scheduling_service.scheduling_service.cancel_interview",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "scheduling_check_availability",
+            "handler": "app.domains.interview_scheduling.services.calendar_service.calendar_service.check_availability",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "scheduling_self_scheduling_link",
+            "handler": "app.domains.interview_scheduling.services.scheduling_service.scheduling_service.generate_self_scheduling_link",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "scheduling_find_slots",
+            "handler": "app.domains.interview_scheduling.services.calendar_service.calendar_service.find_common_slots",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "scheduling_send_reminder",
+            "handler": "app.domains.interview_scheduling.services.scheduling_service.scheduling_service.send_reminder",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "scheduling_list_today",
+            "handler": "app.domains.interview_scheduling.services.scheduling_service.scheduling_service.list_today_interviews",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "scheduling_transcribe_audio",
+            "handler": "app.services.voice_service.voice_service.transcribe_audio",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "scheduling_analyze_voice",
+            "handler": "app.services.voice_service.voice_service.transcribe_audio",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          }
+        ]
       },
       "errors": []
     },
@@ -504,17 +901,17 @@
       "action_count": 11,
       "tool_count": 0,
       "actions": [
-        "start_wizard",
-        "approve_jd",
-        "set_salary",
-        "set_screening_mode",
-        "approve_questions",
-        "set_eligibility",
-        "configure_publish",
-        "publish_job",
-        "calibrate",
-        "wizard_status",
-        "help"
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
       ],
       "tools": [],
       "action_tool_map": {},
@@ -529,8 +926,8 @@
     },
     "job_management": {
       "class": "JobManagementDomain",
-      "action_count": 30,
-      "tool_count": 12,
+      "action_count": 29,
+      "tool_count": 13,
       "actions": [
         "create_job",
         "guided_wizard",
@@ -555,7 +952,6 @@
         "generate_jd",
         "job_analytics",
         "qualify_job",
-        "list_jobs",
         "publish_job",
         "job_status_webhook",
         "search_templates",
@@ -568,6 +964,7 @@
         "update_job_vacancy",
         "close_job_vacancy",
         "pause_job_vacancy",
+        "duplicate_job_vacancy",
         "generate_job_description",
         "enrich_job_description",
         "import_job_description",
@@ -577,42 +974,150 @@
         "advance_wizard",
         "get_job_analytics"
       ],
-      "action_tool_map": {
-        "create_job": "create_job_vacancy",
-        "guided_wizard": "get_wizard_step",
-        "extract_requirements": "enrich_job_description",
-        "generate_rubrics": "enrich_job_description",
-        "update_job": "update_job_vacancy",
-        "health_check": "get_job_health",
-        "suggest_strategy": "get_job_analytics",
-        "duplicate_job": "create_job_vacancy",
-        "create_from_template": "search_job_templates",
-        "clone_job": "create_job_vacancy",
-        "close_job": "close_job_vacancy",
-        "pause_job": "pause_job_vacancy",
-        "get_benefits": "get_job_analytics",
-        "suggest_jd_improvements": "enrich_job_description",
-        "detect_criteria": "enrich_job_description",
-        "generate_wsi_questions": "enrich_job_description",
-        "advance_wizard_step": "advance_wizard",
-        "get_wizard_step_data": "get_wizard_step",
-        "enrich_jd": "enrich_job_description",
-        "import_jd": "import_job_description",
-        "generate_jd": "generate_job_description",
-        "job_analytics": "get_job_analytics",
-        "qualify_job": "get_job_health",
-        "list_jobs": "get_job_analytics",
-        "publish_job": "update_job_vacancy",
-        "job_status_webhook": "get_job_health",
-        "search_templates": "search_job_templates",
-        "apply_template": "search_job_templates",
-        "analyze_jd": "enrich_job_description",
-        "suggest_compensation": "get_job_analytics"
+      "action_tool_map": {},
+      "gaps": {
+        "action_tool_map_broken": [],
+        "tools_orphaned_no_action": [
+          "create_job_vacancy",
+          "update_job_vacancy",
+          "close_job_vacancy",
+          "pause_job_vacancy",
+          "duplicate_job_vacancy",
+          "generate_job_description",
+          "enrich_job_description",
+          "import_job_description",
+          "search_job_templates",
+          "get_job_health",
+          "get_wizard_step",
+          "advance_wizard",
+          "get_job_analytics"
+        ],
+        "actions_without_tool_or_handler": [
+          "create_job",
+          "guided_wizard",
+          "extract_requirements",
+          "generate_rubrics",
+          "update_job",
+          "health_check",
+          "suggest_strategy",
+          "duplicate_job",
+          "create_from_template",
+          "clone_job",
+          "close_job",
+          "pause_job",
+          "get_benefits",
+          "suggest_jd_improvements",
+          "detect_criteria",
+          "generate_wsi_questions",
+          "advance_wizard_step",
+          "get_wizard_step_data",
+          "enrich_jd",
+          "import_jd",
+          "generate_jd",
+          "job_analytics",
+          "qualify_job",
+          "publish_job",
+          "job_status_webhook",
+          "search_templates",
+          "apply_template",
+          "analyze_jd",
+          "suggest_compensation"
+        ],
+        "handlers_failing_import": [
+          {
+            "tool_id": "create_job_vacancy",
+            "handler": "app.domains.job_management.tools.job_tools_compat.create_job_vacancy",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "update_job_vacancy",
+            "handler": "app.domains.job_management.tools.job_tools_compat.update_job_vacancy",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "close_job_vacancy",
+            "handler": "app.domains.job_management.tools.job_tools_compat.close_job_vacancy",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "pause_job_vacancy",
+            "handler": "app.domains.job_management.tools.job_tools_compat.pause_job",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "duplicate_job_vacancy",
+            "handler": "app.domains.job_management.tools.job_tools_compat.duplicate_job_vacancy",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "generate_job_description",
+            "handler": "app.domains.job_management.services.jd_generator_service.generate_job_description",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "enrich_job_description",
+            "handler": "app.domains.job_management.services.jd_enrichment_service.enrich_job_description",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "import_job_description",
+            "handler": "app.domains.job_management.services.jd_import_service.import_job_description",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "search_job_templates",
+            "handler": "app.domains.job_management.services.job_template_service.search_job_templates",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "get_job_health",
+            "handler": "app.domains.analytics.services.job_insights_service.get_job_health",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "get_wizard_step",
+            "handler": "app.domains.job_management.services.wizard_orchestrator_service.get_wizard_step",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "advance_wizard",
+            "handler": "app.domains.job_management.services.wizard_orchestrator_service.advance_wizard",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "get_job_analytics",
+            "handler": "app.domains.analytics.services.job_analytics_prompt_service.get_job_analytics",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          }
+        ]
       },
+      "errors": []
+    },
+    "offer": {
+      "class": "OfferDomain",
+      "action_count": 6,
+      "tool_count": 0,
+      "actions": [
+        "create_offer_draft",
+        "update_offer_draft",
+        "get_offer_draft",
+        "send_offer",
+        "prepare_offer_manual_send",
+        "cancel_offer"
+      ],
+      "tools": [],
+      "action_tool_map": {},
       "gaps": {
         "action_tool_map_broken": [],
         "tools_orphaned_no_action": [],
-        "actions_without_tool_or_handler": [],
+        "actions_without_tool_or_handler": [
+          "create_offer_draft",
+          "update_offer_draft",
+          "get_offer_draft",
+          "send_offer",
+          "prepare_offer_manual_send",
+          "cancel_offer"
+        ],
         "handlers_failing_import": []
       },
       "errors": []
@@ -634,6 +1139,39 @@
         "action_tool_map_broken": [],
         "tools_orphaned_no_action": [],
         "actions_without_tool_or_handler": [],
+        "handlers_failing_import": []
+      },
+      "errors": []
+    },
+    "policy": {
+      "class": "PolicyDomain",
+      "action_count": 8,
+      "tool_count": 0,
+      "actions": [
+        "configure_policy",
+        "configure_pipeline",
+        "configure_scheduling",
+        "configure_communication",
+        "configure_screening",
+        "configure_automation",
+        "validate_compliance",
+        "get_progress"
+      ],
+      "tools": [],
+      "action_tool_map": {},
+      "gaps": {
+        "action_tool_map_broken": [],
+        "tools_orphaned_no_action": [],
+        "actions_without_tool_or_handler": [
+          "configure_policy",
+          "configure_pipeline",
+          "configure_scheduling",
+          "configure_communication",
+          "configure_screening",
+          "configure_automation",
+          "validate_compliance",
+          "get_progress"
+        ],
         "handlers_failing_import": []
       },
       "errors": []
@@ -680,23 +1218,85 @@
         "assistant_send_notification",
         "assistant_track_goals"
       ],
-      "action_tool_map": {
-        "pipeline_health": "assistant_pipeline_health",
-        "stale_candidates": "assistant_stale_candidates",
-        "move_candidate": "assistant_move_candidate",
-        "search_context": "assistant_search_context",
-        "save_memory": "assistant_save_memory",
-        "recall_memory": "assistant_recall_memory",
-        "conversation_summary": "assistant_conversation_summary",
-        "kanban_analysis": "assistant_kanban_analysis",
-        "send_notification": "assistant_send_notification",
-        "track_goals": "assistant_track_goals"
-      },
+      "action_tool_map": {},
       "gaps": {
         "action_tool_map_broken": [],
-        "tools_orphaned_no_action": [],
-        "actions_without_tool_or_handler": [],
-        "handlers_failing_import": []
+        "tools_orphaned_no_action": [
+          "assistant_pipeline_health",
+          "assistant_stale_candidates",
+          "assistant_move_candidate",
+          "assistant_search_context",
+          "assistant_save_memory",
+          "assistant_recall_memory",
+          "assistant_conversation_summary",
+          "assistant_kanban_analysis",
+          "assistant_send_notification",
+          "assistant_track_goals"
+        ],
+        "actions_without_tool_or_handler": [
+          "pipeline_health",
+          "stale_candidates",
+          "move_candidate",
+          "search_context",
+          "save_memory",
+          "recall_memory",
+          "conversation_summary",
+          "kanban_analysis",
+          "send_notification",
+          "track_goals"
+        ],
+        "handlers_failing_import": [
+          {
+            "tool_id": "assistant_pipeline_health",
+            "handler": "app.domains.recruiter_assistant.services.pipeline_service.pipeline_service.get_stale_candidates",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "assistant_stale_candidates",
+            "handler": "app.domains.recruiter_assistant.services.pipeline_service.pipeline_service.get_stale_candidates",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "assistant_move_candidate",
+            "handler": "app.domains.recruiter_assistant.services.pipeline_stage_service.pipeline_stage_service.transition_candidate",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "assistant_search_context",
+            "handler": "app.domains.recruiter_assistant.services.memory_service.memory_service.search_similar_messages",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "assistant_save_memory",
+            "handler": "app.domains.recruiter_assistant.services.memory_service.memory_service.store_message",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "assistant_recall_memory",
+            "handler": "app.domains.recruiter_assistant.services.memory_service.memory_service.search_similar_messages",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "assistant_conversation_summary",
+            "handler": "app.domains.recruiter_assistant.services.conversation_memory.ConversationMemory.update_summary",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "assistant_kanban_analysis",
+            "handler": "app.domains.recruiter_assistant.services.kanban_assistant_service.kanban_assistant_service.process_command",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "assistant_send_notification",
+            "handler": "app.services.notification_service.notification_service.send_proactive_notification",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "assistant_track_goals",
+            "handler": "app.services.goal_service.goal_service.get_user_goals",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          }
+        ]
       },
       "errors": []
     },
@@ -722,7 +1322,7 @@
     },
     "sourcing": {
       "class": "SourcingDomain",
-      "action_count": 36,
+      "action_count": 30,
       "tool_count": 10,
       "actions": [
         "search_candidates",
@@ -754,13 +1354,7 @@
         "dedup_candidates",
         "tag_candidates",
         "engagement_pipeline",
-        "schedule_outreach",
-        "update_candidate_stage",
-        "reject_candidate",
-        "shortlist_candidate",
-        "add_candidate_to_vacancy",
-        "get_candidate_stats",
-        "get_candidate_history"
+        "schedule_outreach"
       ],
       "tools": [
         "sourcing_update_candidate_stage",
@@ -775,24 +1369,105 @@
         "sourcing_get_talent_quality"
       ],
       "action_tool_map": {
-        "search_candidates": "sourcing_search_candidates",
-        "rank_candidates": "sourcing_rank_candidates",
-        "update_candidate_stage": "sourcing_update_candidate_stage",
-        "reject_candidate": "sourcing_reject_candidate",
-        "shortlist_candidate": "sourcing_shortlist_candidate",
-        "add_candidate_to_vacancy": "sourcing_add_candidate_to_vacancy",
-        "global_search": "sourcing_search_candidates",
-        "filter_candidates": "sourcing_search_candidates",
-        "compare_candidates": "sourcing_get_candidate_details",
-        "assess_market": "sourcing_get_talent_quality",
-        "get_candidate_stats": "sourcing_get_candidate_stats",
-        "get_candidate_history": "sourcing_get_candidate_history"
+        "search_candidates": "search_candidates",
+        "global_search": "pearch_search",
+        "rank_candidates": "candidate_match",
+        "filter_candidates": "boolean_search",
+        "compare_candidates": "search_candidates",
+        "assess_market": "search_analytics"
       },
       "gaps": {
-        "action_tool_map_broken": [],
-        "tools_orphaned_no_action": [],
+        "action_tool_map_broken": [
+          {
+            "action": "search_candidates",
+            "missing_tool": "search_candidates"
+          },
+          {
+            "action": "global_search",
+            "missing_tool": "pearch_search"
+          },
+          {
+            "action": "rank_candidates",
+            "missing_tool": "candidate_match"
+          },
+          {
+            "action": "filter_candidates",
+            "missing_tool": "boolean_search"
+          },
+          {
+            "action": "compare_candidates",
+            "missing_tool": "search_candidates"
+          },
+          {
+            "action": "assess_market",
+            "missing_tool": "search_analytics"
+          }
+        ],
+        "tools_orphaned_no_action": [
+          "sourcing_update_candidate_stage",
+          "sourcing_reject_candidate",
+          "sourcing_shortlist_candidate",
+          "sourcing_add_candidate_to_vacancy",
+          "sourcing_search_candidates",
+          "sourcing_rank_candidates",
+          "sourcing_get_candidate_details",
+          "sourcing_get_candidate_stats",
+          "sourcing_get_candidate_history",
+          "sourcing_get_talent_quality"
+        ],
         "actions_without_tool_or_handler": [],
-        "handlers_failing_import": []
+        "handlers_failing_import": [
+          {
+            "tool_id": "sourcing_update_candidate_stage",
+            "handler": "app.domains.cv_screening.tools.candidate_tools.update_candidate_stage",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "sourcing_reject_candidate",
+            "handler": "app.domains.cv_screening.tools.candidate_tools.reject_candidate",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "sourcing_shortlist_candidate",
+            "handler": "app.domains.cv_screening.tools.candidate_tools.shortlist_candidate",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "sourcing_add_candidate_to_vacancy",
+            "handler": "app.domains.cv_screening.tools.candidate_tools.add_candidate_to_vacancy",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "sourcing_search_candidates",
+            "handler": "app.domains.sourcing.tools.query_tools.search_candidates",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "sourcing_rank_candidates",
+            "handler": "app.domains.sourcing.tools.query_tools.rank_candidates",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "sourcing_get_candidate_details",
+            "handler": "app.domains.sourcing.tools.query_tools.get_candidate_details",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "sourcing_get_candidate_stats",
+            "handler": "app.domains.sourcing.tools.query_tools.get_candidate_stats",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "sourcing_get_candidate_history",
+            "handler": "app.domains.sourcing.tools.query_tools.get_candidate_history",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          },
+          {
+            "tool_id": "sourcing_get_talent_quality",
+            "handler": "app.domains.sourcing.tools.query_tools.get_talent_quality",
+            "error": "ImportError: cannot import name 'resolve_handler_path' from 'app.shared.tool_handler' (/home/runner/workspace/lia-agent-system/app/shared/tool_handler.py)"
+          }
+        ]
       },
       "errors": []
     },
@@ -848,11 +1523,12 @@
     "job_vacancies_analytics",
     "journey_mapping",
     "lgpd",
+    "lia_assistant",
     "notifications",
     "observability",
     "opinions",
+    "persona",
     "pipeline",
-    "policy",
     "recruitment",
     "recruitment_journey",
     "saas_metrics",
@@ -866,64 +1542,68 @@
     "workforce"
   ],
   "agent_type_mapping": {
-    "analytics": "analytics",
-    "analyst_feedback": "analytics",
-    "ats_integration": "ats_integration",
-    "ats_integrator": "ats_integration",
-    "automation": "automation",
-    "task_planner": "automation",
-    "communication": "communication",
+    "job_planner": "job_management",
+    "job_intake": "job_management",
+    "sourcing": "sourcing",
     "cv_screening": "cv_screening",
     "screening": "cv_screening",
     "wsi_evaluator": "cv_screening",
-    "company_settings": "company_settings",
-    "settings_config": "company_settings",
-    "company_profile": "company_settings",
-    "company_config": "company_settings",
-    "hiring_policy": "hiring_policy",
-    "interview_scheduling": "interview_scheduling",
     "interviewer": "interview_scheduling",
     "scheduling": "interview_scheduling",
-    "job_management": "job_management",
-    "job_planner": "job_management",
-    "job_intake": "job_management",
+    "analyst_feedback": "analytics",
+    "analytics": "analytics",
+    "communication": "communication",
+    "ats_integrator": "ats_integration",
     "recruiter_assistant": "recruiter_assistant",
-    "pipeline_transition": "pipeline_transition",
+    "task_planner": "automation",
     "kanban_search": "pipeline_transition",
     "kanban_insight": "pipeline_transition",
     "kanban_action": "pipeline_transition",
     "pipeline_context": "pipeline_transition",
     "pipeline_decision": "pipeline_transition",
     "pipeline_action": "pipeline_transition",
-    "sourcing": "sourcing",
     "sourcing_planner": "sourcing",
     "sourcing_search": "sourcing",
     "sourcing_enrich": "sourcing",
     "sourcing_engagement": "sourcing",
     "talent_pool": "talent_pool",
-    "voice_screening": "talent_pool",
     "agent_studio": "agent_studio",
-    "multi_strategy": "agent_studio",
     "digital_twin": "digital_twin",
     "recruitment_campaign": "recruitment_campaign",
+    "company_settings": "company_settings",
+    "company_profile": "company_settings",
+    "company_config": "company_settings",
+    "multi_strategy": "agent_studio",
+    "voice_screening": "talent_pool",
+    "hiring_policy": "hiring_policy",
+    "pipeline_transition": "pipeline_transition",
+    "automation": "automation",
+    "ats_integration": "ats_integration",
+    "job_creation": "job_creation",
+    "interview_scheduling": "interview_scheduling",
+    "job_management": "job_management",
+    "offer": "offer",
+    "offer_agent": "offer",
+    "send_offer": "offer",
+    "proposal_agent": "offer",
     "candidate_self_service": "candidate_self_service",
     "candidate_status": "candidate_self_service",
     "candidate_portal": "candidate_self_service",
-    "job_creation": "job_creation"
+    "settings_config": "company_settings"
   },
   "agent_types_pointing_to_unknown_domain": [],
   "gaps_by_domain": {},
   "global_summary": {
-    "total_registered": 18,
-    "total_actions": 281,
-    "total_tools": 92,
-    "domains_with_gaps": 0,
-    "broken_mappings": 0,
-    "orphan_tools": 0,
-    "actions_no_handler": 0,
-    "broken_handlers": 0
+    "total_registered": 20,
+    "total_actions": 287,
+    "total_tools": 94,
+    "domains_with_gaps": 14,
+    "broken_mappings": 6,
+    "orphan_tools": 94,
+    "actions_no_handler": 155,
+    "broken_handlers": 94
   },
-  "domain_dirs_total": 61,
+  "domain_dirs_total": 64,
   "domain_import_failures": {},
   "default_domain": "recruiter_assistant"
 }

@@ -12,7 +12,8 @@ import { useCandidateSuggestions } from "@/hooks/ai/useCandidateSuggestions"
 import { useUniversalTransition } from "@/components/kanban"
 import { usePipelineInheritance } from "@/hooks/recruitment/use-pipeline-inheritance"
 import { useRecruitmentStages } from "@/hooks/recruitment/use-recruitment-stages"
-import { enrichStagesWithSubStatuses, buildSubStatusMap } from "@/components/kanban/utils/stage-utils"
+import { useKanbanBroadcast } from "@/hooks/candidates/use-kanban-broadcast"
+import { enrichStagesWithSubStatuses, buildSubStatusMap, applyVacancyStageOverrides } from "@/components/kanban/utils/stage-utils"
 import { useReturnEvents } from "@/hooks/recruitment/use-return-events"
 import { useBulkCandidateDataRequests } from "@/hooks/candidates/use-candidate-data-requests"
 import {
@@ -36,12 +37,12 @@ export function useKanbanPageSetup({ job }: { job?: Record<string, unknown> }) {
     suggestions: aiSuggestions,
     approveSuggestion,
     rejectSuggestion,
-  } = useCandidateSuggestions(job?.id?.toString() || "")
+  } = useCandidateSuggestions(((job?.backendId || job?.id) as string | number | undefined)?.toString() || "")
 
-  const pipelineInheritance = usePipelineInheritance(job?.id?.toString())
+  const pipelineInheritance = usePipelineInheritance(((job?.backendId || job?.id) as string | number | undefined)?.toString())
 
   const { events: returnEvents, getAlertForCandidate, computeAlerts, hasAlerts } = useReturnEvents({
-    jobId: job?.id?.toString(),
+    jobId: ((job?.backendId || job?.id) as string | number | undefined)?.toString(),
     enabled: true,
     pollingIntervalMs: 30000,
   })
@@ -52,6 +53,10 @@ export function useKanbanPageSetup({ job }: { job?: Record<string, unknown> }) {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: pipelineInheritance object excluded to avoid re-runs
   }, [job?.id])
+
+
+  // GAP-09-001: real-time kanban updates via SSE broadcast
+  useKanbanBroadcast(((job?.backendId || job?.id) as string | number | undefined)?.toString())
 
   const viewMode = useKanbanStore((s) => s.viewMode)
   const setViewMode = useKanbanStore((s) => s.setViewMode)
@@ -87,20 +92,23 @@ export function useKanbanPageSetup({ job }: { job?: Record<string, unknown> }) {
   const { stages: companyPipelineStages } = useRecruitmentStages()
   useEffect(() => {
     if (!companyPipelineStages.length) return
-    const subStatusMap = buildSubStatusMap(
-      companyPipelineStages.map(s => ({
-        name: s.name,
-        sub_statuses: (s.sub_statuses || []).map(ss => ({
-          name: ss.name,
-          display_name: ss.display_name,
-          is_default: ss.is_default,
-          is_waiting: ss.is_waiting,
-          waiting_for: ss.waiting_for,
-        })),
-      }))
+    const subStatusMap = applyVacancyStageOverrides(
+      buildSubStatusMap(
+        companyPipelineStages.map(s => ({
+          name: s.name,
+          sub_statuses: (s.sub_statuses || []).map(ss => ({
+            name: ss.name,
+            display_name: ss.display_name,
+            is_default: ss.is_default,
+            is_waiting: ss.is_waiting,
+            waiting_for: ss.waiting_for,
+          })),
+        }))
+      ),
+      job?.interviewStages as Parameters<typeof applyVacancyStageOverrides>[1]
     )
     setDynamicStages(prev => enrichStagesWithSubStatuses(prev, subStatusMap))
-  }, [companyPipelineStages])
+  }, [companyPipelineStages, job?.interviewStages])
 
   const [showAddColumnPopover, setShowAddColumnPopover] = useState(false)
   const [newColumnName, setNewColumnName] = useState("")
@@ -145,7 +153,7 @@ export function useKanbanPageSetup({ job }: { job?: Record<string, unknown> }) {
     mutate: mutateDataRequests,
   } = useBulkCandidateDataRequests({
     candidateIds: allCandidateIds,
-    vacancyId: job?.id?.toString(),
+    vacancyId: ((job?.backendId || job?.id) as string | number | undefined)?.toString(),
     enabled: allCandidateIds.length > 0,
   })
 

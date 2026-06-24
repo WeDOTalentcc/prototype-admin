@@ -682,7 +682,15 @@ def create_tracked_llm(
             "openai": "gpt-4o",
         }
 
-    kwargs: dict = {"temperature": temperature, "streaming": True}
+    # P1 (audit 2026-06-05): timeout explicito nos clientes LLM. Sem isso o JD
+    # enrichment fica exposto ao default ~10min do SDK (raiz do 502/hang do wizard).
+    # Espelha app/domains/ai/services/llm.py:191. Resolucao defensiva (independe do _s acima).
+    try:
+        from app.core.config import settings as _s_timeout
+        _llm_timeout = getattr(_s_timeout, "LLM_TIMEOUT_SECONDS", 120)
+    except Exception:
+        _llm_timeout = 120
+    kwargs: dict = {"temperature": temperature, "streaming": True, "timeout": _llm_timeout}
     if max_output_tokens:
         kwargs["max_output_tokens"] = max_output_tokens
 

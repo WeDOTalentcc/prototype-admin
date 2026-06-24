@@ -42,7 +42,7 @@ export function InlineChatBridge({
   entity,
   variant = "bar",
   className,
-  label = "Perguntar à LIA sobre este contexto",
+  label = "Perguntar à IA sobre este contexto",
 }: Props) {
   const { open, openWithEntity, setChatContextType } = useLiaFloat()
 

@@ -1,3 +1,4 @@
+from app.middleware.request_id import get_correlation_id
 import logging
 import uuid
 from datetime import datetime
@@ -59,7 +60,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error listing departments: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.post("/departments", response_model=DepartmentResponse)
@@ -84,13 +85,13 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         department = await dept_repo.create(dept_data)
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Created department: {department.name}")
-        await AuditService().log_action(trace_id=str(uuid.uuid4()), company_id=company_id, action_type="department_create", actor=str(getattr(current_user, "id", "system")), target_id=str(department.id), target_type="department")  # P1-W2-06
+        await AuditService().log_action(trace_id=get_correlation_id(), company_id=company_id, action_type="department_create", actor=str(getattr(current_user, "id", "system")), target_id=str(department.id), target_type="department")  # P1-W2-06
         return department
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Error creating department: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.put("/departments/{department_id}", response_model=DepartmentResponse)
@@ -113,13 +114,13 @@ current_user: User = Depends(get_current_user_or_demo),
             raise HTTPException(status_code=404, detail="Department not found")
         # Sprint 7.2 RBAC: mutation gate
         await assert_mutation_allowed(department, current_user, resource_label="departamento")
-        await AuditService().log_action(trace_id=str(uuid.uuid4()), company_id=company_id, action_type="department_update", actor=str(getattr(current_user, "id", "system")), target_id=str(department_id), target_type="department")  # P1-W2-06
+        await AuditService().log_action(trace_id=get_correlation_id(), company_id=company_id, action_type="department_update", actor=str(getattr(current_user, "id", "system")), target_id=str(department_id), target_type="department")  # P1-W2-06
         return department
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Error updating department: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 @router.delete("/departments/{department_id}", response_model=None)
@@ -143,13 +144,13 @@ async def delete_department(
         )
         if not deleted:
             raise HTTPException(status_code=404, detail="Department not found")
-        await AuditService().log_action(trace_id=str(uuid.uuid4()), company_id=company_id, action_type="department_delete", actor=str(getattr(current_user, "id", "system")), target_id=str(department_id), target_type="department")  # P1-W2-06
+        await AuditService().log_action(trace_id=get_correlation_id(), company_id=company_id, action_type="department_delete", actor=str(getattr(current_user, "id", "system")), target_id=str(department_id), target_type="department")  # P1-W2-06
         return {"success": True, "message": "Department deleted"}
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Error deleting department: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 @router.get("/departments/{department_id}/members", response_model=list[DepartmentMemberResponse])
@@ -165,17 +166,15 @@ company_id: str = Depends(require_company_id)):
         if not department:
             raise HTTPException(status_code=404, detail="Department not found")
 
-        members = await dept_repo.list_members(department_id)
-        if include_inactive:
-            # list_members filters active; for include_inactive we need raw query
-            # Delegate to db via a broader query — acceptable since dept exists
-            pass
+        members = await dept_repo.list_members(
+            department_id, include_inactive=include_inactive
+        )
         return members
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Error listing department members: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.post("/departments/{department_id}/members", response_model=DepartmentMemberResponse)
@@ -233,7 +232,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error creating department member: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.put("/members/{member_id}", response_model=DepartmentMemberResponse)
@@ -256,13 +255,13 @@ current_user: User = Depends(get_current_user_or_demo),
             raise HTTPException(status_code=404, detail="Department member not found")
         # Sprint 7.2 RBAC: mutation gate
         await assert_mutation_allowed(member, current_user, resource_label="colaborador")
-        await AuditService().log_action(trace_id=str(uuid.uuid4()), company_id=company_id, action_type="department_member_update", actor="system", target_id=str(member_id), target_type="department_member")  # P1-W2-06
+        await AuditService().log_action(trace_id=get_correlation_id(), company_id=company_id, action_type="department_member_update", actor="system", target_id=str(member_id), target_type="department_member")  # P1-W2-06
         return member
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Error updating department member: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 @router.delete("/members/{member_id}", response_model=None)
@@ -286,13 +285,13 @@ async def delete_department_member(
         )
         if not deleted:
             raise HTTPException(status_code=404, detail="Department member not found")
-        await AuditService().log_action(trace_id=str(uuid.uuid4()), company_id=company_id, action_type="department_member_delete", actor="system", target_id=str(member_id), target_type="department_member")  # P1-W2-06
+        await AuditService().log_action(trace_id=get_correlation_id(), company_id=company_id, action_type="department_member_delete", actor="system", target_id=str(member_id), target_type="department_member")  # P1-W2-06
         return {"success": True, "message": "Department member deleted"}
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Error deleting department member: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise
 
 
 # =============================================
@@ -332,7 +331,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error listing managers: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.get("/managers/infer-email", response_model=None)
@@ -375,7 +374,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error inferring manager email: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 # =============================================
@@ -449,7 +448,7 @@ async def download_departments_import_template(company_id: str = Depends(require
         raise
     except Exception as e:
         logger.error(f"Error generating departments import template: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.get("/members/import/template", response_model=None)
@@ -476,7 +475,7 @@ async def download_members_import_template(company_id: str = Depends(require_com
         raise
     except Exception as e:
         logger.error(f"Error generating members import template: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.get("/benefits/import/template", response_model=None)
@@ -505,7 +504,7 @@ async def download_benefits_import_template(company_id: str = Depends(require_co
         raise
     except Exception as e:
         logger.error(f"Error generating benefits import template: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.post("/departments/import", response_model=DepartmentImportResponse)
@@ -598,4 +597,4 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error importing departments: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise

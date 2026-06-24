@@ -253,7 +253,7 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
     return [
       {
         id: '1',
-        title: 'Sugestão Personalizada da LIA',
+        title: 'Sugestão Personalizada de IA',
         context: context,
         content: (baseTemplates as Record<string, Record<string, unknown>>)[context]?.[channel] ?? baseTemplates.professional[channel as keyof typeof baseTemplates.professional],
         reasons: [
@@ -404,7 +404,7 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
                 onClick={() => setActiveTab('phone')}
                 className={`w-full flex items-center gap-3 p-3 rounded-md text-left transition-colors motion-reduce:transition-none ${
  activeTab === 'phone'
-                    ? 'bg-wedo-purple/10 text-wedo-purple border border-wedo-purple/30'
+                    ? 'bg-wedo-purple/10 text-wedo-purple-text border border-wedo-purple/30'
                     : 'hover:bg-lia-bg-secondary text-lia-text-primary border border-transparent'
                 }`}
               >
@@ -427,7 +427,7 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
                 </h4>
                 <div className="flex items-center gap-1 text-micro text-lia-text-secondary">
                   <Brain className="w-3 h-3 text-wedo-cyan" />
-                  <span>LIA disponível abaixo</span>
+                  <span>IA disponível abaixo</span>
                 </div>
               </div>
               <div className="grid grid-cols-3 gap-2">
@@ -452,7 +452,7 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
               <div className="flex items-center justify-between mb-3">
                 <h4 className={`${textStyles.label} flex items-center gap-2`}>
                   <Brain className="w-4 h-4 text-wedo-cyan" />
-                  LIA - Assistente Inteligente
+                  IA - Assistente Inteligente
                 </h4>
                 <div className="flex items-center gap-2">
                   <select
@@ -477,12 +477,12 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
                   {isLiaGenerating ? (
                     <>
                       <RefreshCw className="w-4 h-4 animate-spin motion-reduce:animate-none" />
-                      LIA gerando...
+                      IA gerando...
                     </>
                   ) : (
                     <>
                       <Brain className="w-4 h-4 text-wedo-cyan" />
-                      Gerar com LIA
+                      Gerar com IA
                     </>
                   )}
                 </button>

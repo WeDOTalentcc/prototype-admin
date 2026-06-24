@@ -18,6 +18,7 @@ from app.schemas.lia_profile_analysis import (
     LiaProfileAnalysisResponse,
 )
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.errors import LIAError
 from app.shared.types import WeDoBaseModel
 from typing import Annotated
 from fastapi import Path
@@ -193,7 +194,7 @@ async def generate_profile_analysis(
         raise
     except Exception as e:
         print(f"Error generating profile analysis: {e}")
-        raise HTTPException(status_code=500, detail=f"Failed to generate analysis: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/save", response_model=LiaProfileAnalysisResponse)
@@ -251,7 +252,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error saving profile analysis: {e}")
-        raise HTTPException(status_code=500, detail=f"Failed to save analysis: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/candidate/{candidate_id}", response_model=CandidateAnalysesSummary)
@@ -304,7 +305,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error fetching candidate analyses: {e}")
-        raise HTTPException(status_code=500, detail=f"Failed to fetch analyses: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.delete("/candidate/{candidate_id}/{analysis_type}", response_model=None)
@@ -329,6 +330,6 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error deleting analysis: {e}")
-        raise HTTPException(status_code=500, detail=f"Failed to delete analysis: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 reorder_collection_before_item(router)

@@ -75,10 +75,9 @@ async def _tag_candidates(params: dict[str, Any], context: dict[str, Any]):
                 tagged_count += result.rowcount
             await db.commit()
 
-        from app.orchestrator.action_handlers._handler_hooks import log_action_audit, sync_to_rails
+        from app.orchestrator.action_handlers._handler_hooks import log_action_audit
         for cid in candidate_ids:
             await log_action_audit("tag_candidates", company_id, candidate_id=str(cid))
-            await sync_to_rails("candidate_tagged", "candidate", str(cid), {"tag": tag})
 
         return ActionResult(
             status="executed",
@@ -125,16 +124,22 @@ async def _rank_candidates(params: dict[str, Any], context: dict[str, Any]):
         async with AsyncSessionLocal() as db:
             sql = """
                 SELECT c.id, c.name, c.current_title, c.seniority_level,
-                       vc.stage, vc.score, vc.lia_score
+                       vc.stage, vc.lia_score,
+                       lo.id AS opinion_id, lo.score AS op_score,
+                       lo.recommendation AS op_rec, lo.summary AS op_summary,
+                       lo.strengths AS op_strengths, lo.concerns AS op_concerns,
+                       lo.wsi_screening_id AS op_wsi_id
                 FROM vacancy_candidates vc
                 JOIN candidates c ON c.id = vc.candidate_id
+                LEFT JOIN lia_opinions lo ON lo.candidate_id = c.id
+                    AND lo.job_vacancy_id = vc.vacancy_id AND lo.is_current = true
                 WHERE vc.vacancy_id = CAST(:job_id AS uuid)
             """
             bind: dict[str, Any] = {"job_id": str(job_id), "lim": limit}
             if company_id:
                 sql += " AND vc.company_id = :co"
                 bind["co"] = str(company_id)
-            sql += " ORDER BY COALESCE(vc.lia_score, vc.score, 0) DESC LIMIT :lim"
+            sql += " ORDER BY COALESCE(vc.lia_score, 0) DESC LIMIT :lim"
             result = await db.execute(text(sql), bind)
             rows = result.fetchall()
 
@@ -146,20 +151,109 @@ async def _rank_candidates(params: dict[str, Any], context: dict[str, Any]):
                 action_type="rank_candidates",
             )
 
+        from app.shared.rrp_blocks import (
+            ComparisonTableBlock, ComparisonColumn, ComparisonRow,
+            ScoreExplainerBlock, ScoreFactor, EvidenceStackBlock, EvidenceItem,
+        )
+
+        def _as_list(v):
+            if isinstance(v, list):
+                return [str(x) for x in v if x]
+            return []
+
         lines = []
         ranked = []
+        _rows_block = []
+        _explainers = []
+        _evidence = []
         for i, row in enumerate(rows, 1):
-            score = row.lia_score or row.score or 0
-            lines.append(f"{i}. **{row.name}** — {row.current_title or 'N/A'} | Score: {score}% | Etapa: {row.stage or 'N/A'}")
+            cid = str(row.id)
+            score = row.op_score if row.op_score is not None else (row.lia_score or 0)
+            try:
+                score = float(score)
+            except (TypeError, ValueError):
+                score = 0.0
+            lines.append(f"{i}. **{row.name}** — {row.current_title or 'N/A'} | Score: {round(score)}% | Etapa: {row.stage or 'N/A'}")
             ranked.append({
-                "rank": i, "id": str(row.id), "name": row.name,
+                "rank": i, "id": cid, "name": row.name,
                 "score": score, "stage": row.stage,
             })
+            has_opinion = getattr(row, "opinion_id", None) is not None
+            score_block_id = f"score_explainer:rank:{cid}" if has_opinion else None
+            _rows_block.append(ComparisonRow(
+                entity_id=cid,
+                cells={
+                    "rank": i,
+                    "name": row.name or ("ID " + cid),
+                    "score": score,
+                    "stage": row.stage or "-",
+                },
+                score_block_id=score_block_id,
+                highlight="top" if i == 1 else None,
+            ))
+            if not has_opinion:
+                continue
+            strengths = _as_list(getattr(row, "op_strengths", None))
+            concerns = _as_list(getattr(row, "op_concerns", None))
+            factors = [
+                ScoreFactor(label=s, weight=0.0, contribution="+")
+                for s in strengths[:4]
+            ] + [
+                ScoreFactor(label=c, weight=0.0, contribution="-")
+                for c in concerns[:4]
+            ]
+            rec = getattr(row, "op_rec", None)
+            _explainers.append(ScoreExplainerBlock(
+                block_id=score_block_id,
+                role="evidence", layout="inline",
+                subject_id=cid, subject_label=row.name or cid,
+                score=max(0.0, min(100.0, score)),
+                score_label="Score LIA",
+                confidence="high" if factors else "medium",
+                confidence_basis=(rec or "Parecer LIA consolidado"),
+                factors=factors,
+                summary=(getattr(row, "op_summary", None) or "")[:280],
+                unverified=False,
+            ))
+            ev_items = [EvidenceItem(
+                source_type="internal_record",
+                ref_id=f"opinion:{row.opinion_id}",
+                label="Parecer LIA",
+            )]
+            if getattr(row, "op_wsi_id", None):
+                ev_items.append(EvidenceItem(
+                    source_type="assessment",
+                    ref_id=f"wsi:{row.op_wsi_id}",
+                    label="Entrevista WSI",
+                ))
+            _evidence.append(EvidenceStackBlock(
+                block_id=f"evidence_stack:rank:{cid}",
+                role="evidence", layout="inline",
+                items=ev_items, count=len(ev_items),
+            ))
+
+        _table = ComparisonTableBlock(
+            block_id=f"comparison_table:rank:{job_id}",
+            role="support", layout="wide",
+            title="Ranking de candidatos", entity_type="candidate",
+            columns=[
+                ComparisonColumn(key="rank", label="#", type="number"),
+                ComparisonColumn(key="name", label="Candidato", type="text"),
+                ComparisonColumn(key="score", label="Score LIA", type="score"),
+                ComparisonColumn(key="stage", label="Etapa", type="text"),
+            ],
+            rows=_rows_block,
+            default_sort={"column_key": "score", "dir": "desc"},
+            total_count=len(rows), shown_count=len(rows),
+        )
+        _rrp_blocks = [_table.model_dump(mode="json")]
+        for _b in _explainers + _evidence:
+            _rrp_blocks.append(_b.model_dump(mode="json"))
 
         return ActionResult(
             status="executed",
             message=f"**Ranking dos candidatos (Top {len(rows)}):**\n\n" + "\n".join(lines),
-            data={"candidates": ranked, "job_id": job_id},
+            data={"candidates": ranked, "job_id": job_id, "response_blocks": _rrp_blocks},
             action_type="rank_candidates",
         )
     except Exception as e:
@@ -232,10 +326,47 @@ async def _compare_candidates(params: dict[str, Any], context: dict[str, Any]):
                 "skills": skills, "location": loc,
             })
 
+        _rrp_blocks = []
+        if compared:
+            from app.shared.rrp_blocks import (
+                ComparisonTableBlock, ComparisonColumn, ComparisonRow,
+            )
+            _table = ComparisonTableBlock(
+                block_id="comparison_table:compare_candidates:"
+                + "-".join(str(c.get("id")) for c in compared),
+                role="support", layout="wide",
+                title="Comparacao de candidatos", entity_type="candidate",
+                columns=[
+                    ComparisonColumn(key="name", label="Candidato", type="text"),
+                    ComparisonColumn(key="title", label="Cargo", type="text"),
+                    ComparisonColumn(key="seniority", label="Senioridade", type="text"),
+                    ComparisonColumn(key="experience", label="Experiencia", type="text"),
+                    ComparisonColumn(key="skills", label="Skills", type="text"),
+                    ComparisonColumn(key="location", label="Local", type="text"),
+                ],
+                rows=[
+                    ComparisonRow(
+                        entity_id=str(c.get("id")),
+                        cells={
+                            "name": c.get("name") or ("ID " + str(c.get("id"))),
+                            "title": c.get("title") or "-",
+                            "seniority": c.get("seniority") or "-",
+                            "experience": (str(c.get("experience")) + " anos")
+                            if c.get("experience") else "-",
+                            "skills": c.get("skills") or [],
+                            "location": c.get("location") or "-",
+                        },
+                    )
+                    for c in compared
+                ],
+                total_count=len(compared), shown_count=len(compared),
+            )
+            _rrp_blocks = [_table.model_dump(mode="json")]
+
         return ActionResult(
             status="executed",
             message="\n".join(lines),
-            data={"candidates": compared},
+            data={"candidates": compared, "response_blocks": _rrp_blocks},
             action_type="compare_candidates",
         )
     except Exception as e:
@@ -470,9 +601,8 @@ async def _add_candidate(params: dict[str, Any], context: dict[str, Any]):
 
             await db.commit()
 
-        from app.orchestrator.action_handlers._handler_hooks import log_action_audit, sync_to_rails
+        from app.orchestrator.action_handlers._handler_hooks import log_action_audit
         await log_action_audit("add_candidate", company_id, candidate_id=candidate_id)
-        await sync_to_rails("candidate_created", "candidate", candidate_id, {"name": name, "email": email})
 
         job_info = " e vinculado à vaga" if job_id else ""
         return ActionResult(
@@ -510,7 +640,7 @@ async def _export_candidates(params: dict[str, Any], context: dict[str, Any]):
             if job_id:
                 export_sql = """
                     SELECT c.name, c.email, c.phone, c.current_title, c.current_company,
-                           vc.stage, vc.score, vc.lia_score
+                           vc.stage, vc.lia_score
                     FROM vacancy_candidates vc
                     JOIN candidates c ON c.id = vc.candidate_id
                     WHERE vc.vacancy_id = CAST(:jid AS uuid)
@@ -524,7 +654,7 @@ async def _export_candidates(params: dict[str, Any], context: dict[str, Any]):
             elif company_id:
                 result = await db.execute(text("""
                     SELECT DISTINCT c.name, c.email, c.phone, c.current_title, c.current_company,
-                           vc.stage, vc.score, vc.lia_score
+                           vc.stage, vc.lia_score
                     FROM vacancy_candidates vc
                     JOIN candidates c ON c.id = vc.candidate_id
                     WHERE vc.company_id = :co
@@ -553,7 +683,7 @@ async def _export_candidates(params: dict[str, Any], context: dict[str, Any]):
             exported.append({
                 "name": row.name, "email": row.email, "phone": row.phone,
                 "title": row.current_title, "company": row.current_company,
-                "stage": row.stage, "score": row.lia_score or row.score,
+                "stage": row.stage, "score": row.lia_score,
             })
 
         return ActionResult(
@@ -580,7 +710,7 @@ async def _favorite_candidate(params: dict[str, Any], context: dict[str, Any]):
 
         from app.core.database import AsyncSessionLocal
 
-        from app.orchestrator.action_handlers._handler_hooks import log_action_audit, resolve_candidate_by_name, sync_to_rails
+        from app.orchestrator.action_handlers._handler_hooks import log_action_audit, resolve_candidate_by_name
 
         candidate_id = params.get("candidate_id", "")
         candidate_name = params.get("candidate_name", "o candidato")
@@ -623,7 +753,6 @@ async def _favorite_candidate(params: dict[str, Any], context: dict[str, Any]):
             await db.commit()
 
         await log_action_audit("favorite_candidate", company_id, candidate_id=str(candidate_id))
-        await sync_to_rails("candidate_favorited", "candidate", str(candidate_id))
 
         return ActionResult(
             status="executed",

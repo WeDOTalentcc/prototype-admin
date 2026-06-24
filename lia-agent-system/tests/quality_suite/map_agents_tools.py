@@ -45,7 +45,6 @@ AGENT_TYPES = [
     "ats_integrator",
     "recruiter_assistant",
     "proactive_insights",
-    "autonomous",
     "communication",
     "analytics",
     "pipeline_transition",
@@ -62,7 +61,6 @@ AGENT_DOMAIN_FILES = {
     "sourcing": "app/domains/sourcing/agents/sourcing_react_agent.py",
     "cv_screening": "app/domains/cv_screening/agents/pipeline_react_agent.py",
     "wsi_evaluator": "app/domains/cv_screening/agents/avaliador_wsi_agent.py",
-    "autonomous": "app/domains/autonomous/agents/autonomous_react_agent.py",
     "communication": "app/domains/communication/agents/communication_react_agent.py",
     "analytics": "app/domains/analytics/agents/analytics_react_agent.py",
     "pipeline_transition": "app/domains/pipeline/agents/pipeline_transition_agent.py",
@@ -153,11 +151,10 @@ def build_agent_tool_map() -> dict[str, Any]:
         agent_map[agent_type] = agent_entry
 
     scope_agent_mapping = {
-        "talent_funnel": ["talent", "sourcing", "recruiter_assistant", "autonomous"],
-        "job_table": ["job_planner", "jobs_management", "analytics", "autonomous"],
-        "in_job": ["cv_screening", "pipeline_transition", "kanban", "wsi_evaluator", "autonomous"],
-        "global": ["orchestrator", "autonomous", "analytics", "communication"],
-        "universal": ["autonomous"],
+        "talent_funnel": ["talent", "sourcing", "recruiter_assistant"],
+        "job_table": ["job_planner", "jobs_management", "analytics"],
+        "in_job": ["cv_screening", "pipeline_transition", "kanban", "wsi_evaluator"],
+        "global": ["orchestrator", "analytics", "communication"],
     }
 
     for scope_name, agent_types in scope_agent_mapping.items():

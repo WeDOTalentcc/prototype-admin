@@ -107,6 +107,17 @@ def _classify_permission(state: JobCreationState, resume_msg: str):
         _cid = state.get("workspace_id") or state.get("company_id")
         _uid = state.get("user_id") or state.get("recruiter_id")
 
+        # Task #1123 fix: últimas 6 msgs do histórico → últimas 3 turnos no
+        # classificador (trunca a 300 chars por msg + 1200 total no classify).
+        # Sem isso o LLM não sabe que título/gestor já foram fornecidos e gera
+        # respostas do tipo "preciso de algumas infos básicas: qual o título?".
+        _conv_msgs = state.get("conversation_messages") or []
+        _last_turns: list[str] | None = [
+            str(m.get("content", "")).strip()
+            for m in _conv_msgs[-6:]
+            if m.get("content")
+        ] or None
+
         def _coro():
             return classifier.classify(
                 user_message=resume_msg,
@@ -116,6 +127,7 @@ def _classify_permission(state: JobCreationState, resume_msg: str):
                 hiring_policy_summary=str(state.get("hiring_policy_summary") or ""),
                 company_id=str(_cid) if _cid else None,
                 user_id=str(_uid) if _uid else None,
+                last_turns=_last_turns,
             )
 
         out = run_coro_in_threadpool(_coro, timeout=30.0)
@@ -156,6 +168,171 @@ def _classify_permission(state: JobCreationState, resume_msg: str):
             "approve" if confirmed else "off_topic",
             mode, confirmed, {}, "",
         )
+
+
+# ---------------------------------------------------------------------------
+# Sub-estado 1.5 helpers -- criacao de departamento inline (2026-06-18)
+# ---------------------------------------------------------------------------
+
+def _build_dept_creation_message(
+    dept_candidate: str,
+    existing_departments=None,
+) -> str:
+    """Monta mensagem propondo criacao do departamento nao encontrado."""
+    lines = [
+        "O departamento **{}** nao esta cadastrado na sua empresa.".format(dept_candidate),
+        "",
+        "Posso cria-lo agora. Confirme o nome e informe o que souber:",
+        "* **Codigo** (ex: RH, TI, MKT) -- opcional",
+        "* **Descricao** -- o que este departamento faz",
+        "* **Localizacao** -- qual escritorio",
+        "* **Headcount** -- quantas pessoas hoje",
+        "* **Centro de custo** -- codigo financeiro",
+        "* **Prioridade de contratacao** -- normal / alta / critica",
+        "",
+        "_O gestor informado nesta vaga sera vinculado automaticamente ao departamento._",
+        "",
+    ]
+    if existing_departments:
+        depts_str = ", ".join(list(existing_departments)[:8])
+        lines.append("Ou escolha um dos departamentos cadastrados: {}".format(depts_str))
+        lines.append("")
+    lines.append(
+        'Responda "sim" (+ campos opcionais) para criar **{}**, '
+        "ou informe o nome de um departamento existente.".format(dept_candidate)
+    )
+    return "\n".join(lines)
+
+
+def _execute_dept_creation_sync(dept_candidate, parsed, state):
+    """Executa criacao de departamento via SyncSessionLocal (psycopg2 pool).
+
+    P0 fix event-loop (2026-06-24): run_coro_in_threadpool + AsyncSessionLocal
+    sempre falhava com "Future attached to a different loop". O except setava
+    department_creation_done=True sem criar — dado fantasma.
+    Fix (a): except NAO seta done=True (fail-loud, state reflete verdade).
+    Fix (b): SyncSessionLocal com pool psycopg2 (sem conflito de event loop).
+    """
+    from lia_config.database import SyncSessionLocal
+    from sqlalchemy import text as sa_text
+    import uuid as _uuid
+
+    company_id = str(state.get("company_id") or state.get("workspace_id") or "")
+    if not company_id:
+        logger.warning("[DeptCreation] company_id not in state -- skip creation")
+        return {"department_creation_done": False, "dept_creation_error": "company_id ausente"}
+    manager_name = state.get("parsed_manager_name")
+    manager_email = state.get("parsed_manager_email")
+
+    try:
+        with SyncSessionLocal() as db:
+            db.execute(
+                sa_text("SELECT set_config('app.company_id', :cid, true)"),
+                {"cid": company_id},
+            )
+            dept_id = str(_uuid.uuid4())
+            dept_name = (parsed.get("name") or dept_candidate).strip()
+
+            cols = {
+                "id": dept_id,
+                "company_id": company_id,
+                "name": dept_name,
+                "is_active": True,
+            }
+            if parsed.get("code"):
+                cols["code"] = parsed["code"].strip().upper()
+            if parsed.get("description"):
+                cols["description"] = parsed["description"].strip()
+            if parsed.get("location"):
+                cols["location"] = parsed["location"].strip()
+            if parsed.get("headcount"):
+                cols["headcount"] = int(parsed["headcount"])
+            if parsed.get("cost_center"):
+                cols["cost_center"] = parsed["cost_center"].strip()
+            hp = (parsed.get("hiring_priority") or "normal").lower().strip()
+            if hp not in ("normal", "alta", "critica", "urgente"):
+                hp = "normal"
+            if hp != "normal":
+                cols["hiring_priority"] = hp
+            if manager_name:
+                cols["manager_name"] = manager_name.strip()
+            if manager_email:
+                cols["manager_email"] = manager_email.strip()
+
+            col_names = ", ".join(cols.keys())
+            col_params = ", ".join(f":{k}" for k in cols.keys())
+            db.execute(
+                sa_text(f"INSERT INTO departments ({col_names}) VALUES ({col_params})"),
+                cols,
+            )
+            db.commit()
+
+        logger.info("[DeptCreation] created dept=%s id=%s company=%s", dept_name, dept_id, company_id)
+        mgr_msg = ""
+        if manager_name:
+            mgr_msg = " Gestor **{}** vinculado.".format(manager_name)
+        return {
+            "parsed_department": dept_name,
+            "department_created_id": dept_id,
+            "department_creation_done": True,
+            "dept_creation_confirmation_msg": (
+                "Departamento **{}** criado com sucesso!{} "
+                "Continuando a criacao da vaga...".format(dept_name, mgr_msg)
+            ),
+        }
+    except Exception as exc:
+        logger.error("[DeptCreation] DB write failed (fail-loud): %s", exc, exc_info=True)
+        return {
+            "department_creation_done": False,
+            "dept_creation_error": str(exc)[:200],
+        }
+
+
+def _handle_department_creation_subflow(state, dept_candidate, _uq, _is_fresh, _is_initial):
+    """Sub-estado 1.5: propoe criar dept nao encontrado, aguarda confirmacao.
+
+    Returns dict of state updates, or None (interrupt emitted in runtime -- next
+    invocation will have _is_fresh_dept=True with the recruiter response).
+    """
+    from app.domains.job_creation.services.department_wizard_service import (
+        parse_dept_creation_response,
+    )
+
+    existing_depts = list(state.get("existing_departments") or [])
+    _dept_seen = state.get("intake_gate_seen_user_query") or ""
+    _is_fresh_dept = bool(_uq) and _uq != _dept_seen and not _is_initial
+
+    if _is_fresh_dept and not (state.get("intake_salary_suggested") or state.get("intake_approved")):
+        parsed = parse_dept_creation_response(_uq, dept_candidate)
+
+        if parsed["confirmed"]:
+            return _execute_dept_creation_sync(dept_candidate, parsed, state)
+
+        elif parsed.get("chosen_existing"):
+            chosen = parsed["chosen_existing"]
+            return {
+                "parsed_department": chosen,
+                "department_creation_done": True,
+                "dept_creation_confirmation_msg": "Departamento **{}** selecionado. Continuando...".format(chosen),
+            }
+
+    # Primeira vez (ou resposta ambigua): emite prompt
+    dept_msg = _build_dept_creation_message(dept_candidate, existing_depts)
+
+    if _in_graph_runtime():
+        from langgraph.types import interrupt  # type: ignore[import]
+        interrupt({
+            "type": "department_creation",
+            "stage": "intake",
+            "data": {
+                "message": dept_msg,
+                "dept_candidate": dept_candidate,
+                "existing_departments": existing_depts,
+            },
+        })
+        return None
+    else:
+        return {"dept_creation_prompt_sent": True, "dept_creation_message": dept_msg}
 
 
 def _get_missing(title: Optional[str], seniority: Optional[str], model: Optional[str]) -> List[str]:
@@ -382,34 +559,9 @@ def _ficha_data(
     message: str,
     extra: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
-    """Monta o ws_stage_payload.data CUMULATIVO da ficha viva (Fase 5).
-
-    Todas as respostas do intake_gate carregam parsed_* + screening_mode +
-    salary (+ confirmed_* quando existem) no MESMO payload, porque o
-    useWizardFlow (FE) substitui stageData por payload — não faz merge. Sem
-    isso, a ficha viva mostraria zonas OU competências, nunca as duas juntas.
-    """
-    data: Dict[str, Any] = {
-        "message": message,
-        "parsed_title": state.get("parsed_title"),
-        "parsed_seniority": state.get("parsed_seniority"),
-        "parsed_model": state.get("parsed_model"),
-        "parsed_department": state.get("parsed_department"),
-        "parsed_location": state.get("parsed_location"),
-        "parsed_employment_type": state.get("parsed_employment_type"),
-        "screening_mode": state.get("screening_mode"),
-        "salary_min": state.get("salary_min"),
-        "salary_max": state.get("salary_max"),
-        "salary_range": state.get("salary_range"),
-    }
-    _ct = state.get("confirmed_technical_competencies")
-    _cb = state.get("confirmed_behavioral_competencies")
-    if _ct or _cb:
-        data["confirmed_technical_competencies"] = _ct or []
-        data["confirmed_behavioral_competencies"] = _cb or []
-    if extra:
-        data.update(extra)
-    return data
+    """Delegate to canonical helper (Fase 8 A1)."""
+    from app.domains.job_creation.helpers.ficha_builder import build_ficha_data
+    return build_ficha_data(state, message, extra)
 
 
 def _make_ws_response(
@@ -536,6 +688,23 @@ def intake_gate_node(state: JobCreationState) -> JobCreationState:
                 "parsed_model": parsed_model,
                 "intake_gate_seen_user_query": _uq,
             })
+
+    # ═══ Sub-estado 1.5: Departamento não encontrado — criar inline ═══════════
+    dept_candidate = state.get("department_candidate_from_title")
+    dept_creation_done = state.get("department_creation_done", False)
+    if (
+        state.get("parsed_department") is None
+        and dept_candidate
+        and not dept_creation_done
+    ):
+        _dept_result = _handle_department_creation_subflow(
+            state, dept_candidate, _uq, _is_fresh, _is_initial,
+        )
+        if _dept_result is not None:
+            # Sub-fluxo retornou: pode ser interrupt (runtime) ou dict de updates.
+            # Se dict, merge e continua; se None, sub-fluxo emitiu interrupt (runtime).
+            state = {**state, **_dept_result}
+            parsed_department = state.get("parsed_department")
 
     # ═══ Sub-estado 2: Sugestão de salário + permissão ══════════════════════
     if not intake_salary_suggested:

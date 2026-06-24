@@ -9,6 +9,9 @@ import { AnalyzeWebsiteModal } from "@/components/settings/AnalyzeWebsiteModal"
 import { useLiaChatContext } from "@/contexts/lia-float-context"
 import type { ProposedSaves } from "@/lib/website-proposal-mapper"
 import { buildWebsiteProposalMessage } from "@/components/unified-chat/website-proposal-injector"
+import { useAiPersona } from "@/hooks/company/use-ai-persona"
+
+const DEFAULT_PERSONA_NAME = "LIA"
 
 /**
  * OnboardingActionOrchestrator — Task #712
@@ -88,15 +91,15 @@ const STEPS: StepDef[] = [
     key: "policy",
     actionId: "configure_hiring_policy",
     title: "Políticas de recrutamento",
-    question: "Como você quer que a LIA conduza o processo? Aprovações, triagem automática, horários permitidos.",
+    question: "Como você quer que a IA conduza o processo? Aprovações, triagem automática, horários permitidos.",
     prompt:
-      "Quero configurar as políticas de recrutamento: aprovação de oferta, triagem automática, autonomia da LIA e horários permitidos para contato.",
+      "Quero configurar as políticas de recrutamento: aprovação de oferta, triagem automática, autonomia da IA e horários permitidos para contato.",
     cta: "Configurar políticas",
   },
   {
     key: "persona",
     actionId: "configure_persona",
-    title: "Personalidade da LIA",
+    title: `Personalidade de ${DEFAULT_PERSONA_NAME}`,
     question: "Quer dar um nome ou escolher um tom de voz para a sua assistente?",
     prompt:
       "Quero personalizar a assistente: escolher um nome customizado e o tom de comunicação que combina com a nossa empresa.",
@@ -186,6 +189,8 @@ async function pushProgress(stepKey: string, status: StepStatus) {
 }
 
 export function OnboardingActionOrchestrator() {
+  const { persona } = useAiPersona()
+  const personaName = persona?.name ?? "IA"
   const [state, setState] = useState<ProgressState>(() => loadLocal())
   const { triggerAction, sendChatPrompt } = useSettingsConversational()
   // Task #1180 — passo "website" abre o modal pré-análise em vez de
@@ -284,7 +289,7 @@ export function OnboardingActionOrchestrator() {
     >
       <header className="flex items-center justify-between">
         <h2 className="text-sm font-semibold text-lia-text-primary">
-          Configurar empresa com a LIA
+          {`Configurar empresa com ${personaName}`}
         </h2>
         <span
           aria-label="Progresso"
@@ -326,7 +331,7 @@ export function OnboardingActionOrchestrator() {
                       : status === "skipped"
                         ? "bg-lia-bg-tertiary text-lia-text-disabled"
                         : isCurrent
-                          ? "border-2 border-wedo-cyan text-wedo-cyan"
+                          ? "border-2 border-wedo-cyan text-wedo-cyan-text"
                           : "bg-lia-bg-tertiary text-lia-text-disabled"
                   }`}
                 >

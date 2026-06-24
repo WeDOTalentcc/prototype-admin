@@ -294,7 +294,7 @@ def execute_kanban_task(self, agent_input_dict: dict, session_id: str, company_i
         raise self.retry(exc=exc, countdown=30)
 
 @celery_app.task(base=TenantAwareTask, name="agents.policy.execute", bind=True, max_retries=2, queue="onboarding_low")
-def execute_policy_task(self, agent_input_dict: dict, session_id: str, company_id: str, domain: str = "policy", reply_to: str = "") -> dict:
+def execute_policy_task(self, agent_input_dict: dict, session_id: str, company_id: str, domain: str = "hiring_policy", reply_to: str = "") -> dict:
     """Executa PolicyReActAgent em background (compliance, políticas)."""
     span = _celery_span("celery.task_start", "agents.policy.execute")
     span.set_attribute("company_id", company_id)

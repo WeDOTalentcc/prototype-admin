@@ -29,6 +29,7 @@ from ._shared import (
     User,
 )
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 from app.shared.types import WeDoBaseModel
 from typing import Annotated
 from fastapi import Path
@@ -83,7 +84,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error marking candidate as viewed: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/viewed/list", response_model=None)
@@ -115,7 +116,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error listing viewed candidates: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.delete("/{candidate_id}/viewed", response_model=None)
@@ -135,7 +136,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error unmarking candidate as viewed: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 # ---------------------------------------------------------------------------
@@ -198,7 +199,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error toggling favorite: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.put("/{candidate_id}/favorite", response_model=None)
@@ -231,7 +232,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error updating favorite: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/favorites/list", response_model=None)
@@ -262,7 +263,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error listing favorites: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.delete("/{candidate_id}/favorite", response_model=None)
@@ -283,7 +284,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error removing favorite: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 # ---------------------------------------------------------------------------
@@ -338,7 +339,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error toggling hidden: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/hidden/list", response_model=None)
@@ -368,7 +369,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error listing hidden candidates: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.delete("/{candidate_id}/hide", response_model=None)
@@ -389,7 +390,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error removing hidden status: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 # ---------------------------------------------------------------------------
@@ -466,6 +467,7 @@ company_id: str = Depends(require_company_id)):
         if request.job_id:
             vacancy_candidate = await vc_repo.get_for_candidate_and_job(
                 candidate_id=candidate_id, job_vacancy_id=request.job_id,
+                company_id=company_id,
             )
         if vacancy_candidate:
             current_stage = vacancy_candidate.stage
@@ -524,48 +526,40 @@ company_id: str = Depends(require_company_id)):
                 activity_description += f". Motivo: {request.reason}"
 
         if vacancy_candidate:
-            vacancy_candidate.stage = new_stage
-            vacancy_candidate.status = new_status
-            vacancy_candidate.updated_at = datetime.utcnow()
-            if request.reason:
-                vacancy_candidate.notes = (vacancy_candidate.notes or "") + f"\n[Triagem] {request.reason}"
+            # R1-canonical: route stage write through pipeline_stage_service (P-SSOT + P-GUARD).
+            # StageChangedEvent emitted by service (chain step 4 — see candidates_crud.py:948).
+            # Lazy import avoids circular dependency (service -> _shared -> candidates_crud).
+            from app.domains.recruiter_assistant.services.pipeline_stage_service import (  # noqa: PLC0415
+                FairnessBlockedError as _FairnessBlockedError,
+                pipeline_stage_service as _pss,
+            )
+            try:
+                await _pss.transition_candidate(
+                    vacancy_candidate_id=str(vacancy_candidate.id),
+                    to_stage=new_stage,
+                    to_sub_status=new_status,
+                    triggered_by="human_reviewer",
+                    triggered_by_user_id=str(request.reviewer_id) if request.reviewer_id else None,
+                    reason=request.reason,
+                    source_agent="screening_decision",
+                )
+            except _FairnessBlockedError as _fb:
+                raise HTTPException(
+                    status_code=422,
+                    detail={
+                        "error": "fairness_blocked",
+                        "message": _fb.message,
+                        "compliance": ["Lei 9.029/95", "CLT Art. 373-A"],
+                    },
+                )
+            # Extra LGPD/compliance fields not managed by canonical service.
+            await vc_repo.db.refresh(vacancy_candidate)
             if request.decision == "rejected":
                 vacancy_candidate.rejected_by_human = True
                 vacancy_candidate.human_reviewer_id = request.reviewer_id
+            if request.reason:
+                vacancy_candidate.notes = (vacancy_candidate.notes or "") + f"\n[Triagem] {request.reason}"
             await vc_repo.update(vacancy_candidate)
-
-            # Agent Studio Fase 2.5 — Onda C1.3: emite stage_changed no
-            # platform.events (decisao de triagem move o candidato de stage).
-            # REGRA 4: fail-soft mas LOUD. Multi-tenancy: company_id de
-            # vacancy_candidate.company_id (row do tenant), NUNCA do request.
-            if current_stage != new_stage:
-                try:
-                    from app.shared.messaging.platform_events import (
-                        StageChangedEvent,
-                        publish_platform_event,
-                    )
-
-                    _evt_company_id = str(
-                        getattr(vacancy_candidate, "company_id", "") or company_id
-                    )
-                    await publish_platform_event(
-                        StageChangedEvent(
-                            company_id=_evt_company_id,
-                            payload={
-                                "candidate_id": str(candidate_id),
-                                "vacancy_id": str(vacancy_candidate.vacancy_id),
-                                "from_stage": current_stage or "unknown",
-                                "to_stage": new_stage,
-                            },
-                        )
-                    )
-                except Exception as _evt_err:  # noqa: BLE001
-                    logger.error(
-                        "[C1.3] publish stage_changed (screening) failed "
-                        "(decisao prossegue): %s",
-                        _evt_err,
-                        exc_info=True,
-                    )
 
         candidate.status = new_status
         await candidate_repo.update(candidate)
@@ -657,4 +651,4 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error recording screening decision: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")

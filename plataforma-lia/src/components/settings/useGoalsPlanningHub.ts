@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, useCallback } from "react"
 import { useCompanyLiaInstructions } from "@/hooks/company/use-company-lia-instructions"
 import { useCompanyId } from "@/hooks/company/useCompanyId"
-import { DEFAULT_ALERTS, INITIAL_DEPARTMENTS, AlertConfig, WorkforceEntry, MonthlyPlanning, Position, DepartmentData } from "./goalsPlanningConstants"
+import { DEFAULT_ALERTS, INITIAL_DEPARTMENTS, AlertConfig, MonthlyPlanning, Position, DepartmentData } from "./goalsPlanningConstants"
 import { apiFetch } from "@/lib/api/api-fetch"
 
 const defaultAlerts = DEFAULT_ALERTS
@@ -24,8 +24,6 @@ export const getPositionTotal = (pos: Position) => {
 export function useGoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }: GoalsPlanningHubProps) {
   const [activeTab, setActiveTab] = useState(activeSubsection || 'workforce')
   const [alerts, setAlerts] = useState<AlertConfig[]>(defaultAlerts)
-  // TODO: conectar ao endpoint /api/backend-proxy/workforce quando disponível
-  const [workforce, setWorkforce] = useState<WorkforceEntry[]>([])
   const [briefingFrequency, setBriefingFrequency] = useState<'twice_daily' | 'daily' | 'weekly' | 'monthly'>('daily')
   const [selectedYear, setSelectedYear] = useState(2024)
 
@@ -214,25 +212,6 @@ export function useGoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection
 
   const effectiveUsers = users.length > 0 ? users : fetchedUsers
 
-  const fetchWorkforceData = useCallback(async () => {
-    try {
-      const workforceRes = await apiFetch('/api/backend-proxy/workforce')
-      if (workforceRes.ok) {
-        const workforceResult = await workforceRes.json()
-        if (Array.isArray(workforceResult) && workforceResult.length > 0) {
-          (setWorkforce as (v: unknown[]) => void)(workforceResult.map((w: Record<string, unknown>) => ({
-            month: w.month,
-            department: w.department,
-            planned: w.planned || 0,
-            actual: w.actual || 0,
-            aiSuggestion: w.ai_suggestion
-          })))
-        }
-      }
-    } catch (err) {
-    }
-  }, [])
-
   const fetchGoals = useCallback(() => {
     setGoalsRefreshKey(prev => prev + 1)
   }, [])
@@ -242,10 +221,7 @@ export function useGoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection
       try {
         setLoading(true)
         setError(null)
-        const [alertsRes, workforceRes] = await Promise.all([
-          apiFetch('/api/backend-proxy/alerts/config'),
-          apiFetch('/api/backend-proxy/workforce')
-        ])
+        const alertsRes = await apiFetch('/api/backend-proxy/alerts/config')
         if (alertsRes.ok) {
           const alertsResult = await alertsRes.json()
           if (alertsResult && Array.isArray(alertsResult.alerts)) {
@@ -261,18 +237,6 @@ export function useGoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection
             setBriefingFrequency(alertsResult.briefing_frequency)
           }
         }
-        if (workforceRes.ok) {
-          const workforceResult = await workforceRes.json()
-          if (Array.isArray(workforceResult) && workforceResult.length > 0) {
-            (setWorkforce as (v: unknown[]) => void)(workforceResult.map((w: Record<string, unknown>) => ({
-              month: w.month,
-              department: w.department,
-              planned: w.planned || 0,
-              actual: w.actual || 0,
-              aiSuggestion: w.ai_suggestion
-            })))
-          }
-        }
       } catch (err) {
       } finally {
         setLoading(false)
@@ -284,55 +248,22 @@ export function useGoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection
   const saveAlertsConfig = async () => {
     try {
       setSaving(true)
+      // (1) salva alertas na API legada (compat — apenas campos de alert, sem briefing_frequency)
       const response = await apiFetch('/api/backend-proxy/alerts/config', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           alerts: alerts.map(a => ({ id: a.id, name: a.name, description: a.description, enabled: a.enabled, channel: a.channel })),
-          briefing_frequency: briefingFrequency
         })
       })
       if (!response.ok) throw new Error('Falha ao salvar configuração de alertas')
-      setSuccessMessage('Configuração salva com sucesso!')
-      setTimeout(() => setSuccessMessage(null), 3000)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao salvar')
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  const saveWorkforceData = async () => {
-    try {
-      setSaving(true)
-      const response = await apiFetch('/api/backend-proxy/workforce', {
-        method: 'PUT',
+      // (2) salva briefing_frequency no endpoint canonical (B1 fix — canonical successor)
+      await fetch('/api/backend-proxy/hiring-policy/block', {
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          year: selectedYear,
-          entries: workforce.map(w => ({ month: w.month, department: w.department, planned: w.planned, actual: w.actual }))
-        })
+        body: JSON.stringify({ block: 'communication_rules', data: { briefing_frequency: briefingFrequency } }),
       })
-      if (!response.ok) throw new Error('Falha ao salvar planejamento')
-      // Bug 6 dispatch: notify LIA chat that workforce was updated via UI
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('lia:settings-updated', {
-          detail: {
-            actionId: 'configure_workforce',
-            section: 'workforce',
-            field: `planejamento_${selectedYear}`,
-            value: workforce.length,
-            source: 'ui',
-            ts: Date.now(),
-          },
-        }))
-      }
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('lia:settings-success', {
-          detail: { actionId: 'configure_workforce', section: 'workforce', source: 'ui' },
-        }))
-      }
-      setSuccessMessage('Planejamento salvo com sucesso!')
+      setSuccessMessage('Configuração salva com sucesso!')
       setTimeout(() => setSuccessMessage(null), 3000)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao salvar')
@@ -601,15 +532,15 @@ export function useGoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection
   return {
     activeTab, setActiveTab,
     alerts, briefingFrequency, setBriefingFrequency,
-    workforce, selectedYear, setSelectedYear,
+    selectedYear, setSelectedYear,
     liaInstructions, liaToggles,
     departments, departmentsLoaded,
     loading, saving, error, successMessage,
     goalsRefreshKey, effectiveUsers,
     isEditingWorkforce, setIsEditingWorkforce,
     isEditingAlerts, setIsEditingAlerts,
-    fetchGoals, fetchWorkforceData,
-    saveAlertsConfig, saveWorkforceData, saveDepartmentPositions,
+    fetchGoals, fetchHeadcountsForYear,
+    saveAlertsConfig, saveDepartmentPositions,
     handleLiaToggleChange, handleLiaInstructionSave,
     handleToggleAlert, handleChangeChannel,
     workforceStats, toggleDepartmentExpand,

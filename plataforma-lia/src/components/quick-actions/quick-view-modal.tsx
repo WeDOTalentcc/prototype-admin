@@ -204,7 +204,7 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
             <div className="flex items-center justify-between mb-3">
               <h4 className="text-sm font-medium text-status-success flex items-center gap-2">
                 <Brain className="w-4 h-4 text-status-success" />
-                Insights Instantâneos da LIA
+                Insights Instantâneos de IA
               </h4>
               <Button
                 variant="ghost"
@@ -222,7 +222,7 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
                   <div className="flex items-center justify-center py-4">
                     <div className="text-center">
                       <RefreshCw className="w-6 h-6 animate-spin motion-reduce:animate-none text-status-success mx-auto mb-2" />
-                      <p className="text-xs text-status-success">LIA analisando perfil...</p>
+                      <p className="text-xs text-status-success">IA analisando perfil...</p>
                     </div>
                   </div>
                 ) : liaInsights && (
@@ -300,11 +300,11 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
                       </div>
 
                       <div className="bg-lia-bg-primary rounded-xl p-3 border border-wedo-orange/30">
-                        <h5 className="text-xs font-medium text-wedo-orange mb-2 flex items-center gap-1">
+                        <h5 className="text-xs font-medium text-wedo-orange-text mb-2 flex items-center gap-1">
                           <AlertCircle className="w-3 h-3 text-wedo-orange" />
                           Pontos de Atenção:
                         </h5>
-                        <ul className="text-xs text-wedo-orange space-y-1">
+                        <ul className="text-xs text-wedo-orange-text space-y-1">
                           {liaInsights.analysis?.concerns?.slice(0, 3).map((concern: string, idx: number) => (
                             <li key={`con-${idx}`}>• {concern}</li>
                           ))}
@@ -314,7 +314,7 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
 
                     {/* Quick Data Insights */}
                     <div className="bg-lia-bg-primary rounded-xl p-3 border border-status-success/30">
-                      <h5 className="text-xs font-medium text-status-success mb-2">Métricas da LIA:</h5>
+                      <h5 className="text-xs font-medium text-status-success mb-2">Métricas:</h5>
                       <div className="grid grid-cols-3 gap-2 text-xs">
                         <div className="text-center">
                           <div className="font-semibold text-status-success">{liaInsights.dataInsights?.compatibilityScore}%</div>
@@ -398,7 +398,7 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
             <div className="space-y-4">
               <Card>
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium">Métricas LIA</CardTitle>
+                  <CardTitle className="text-sm font-medium">Métricas</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="flex items-center justify-between">
@@ -478,7 +478,7 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
                   <div className="flex items-start gap-2">
                     <div className="w-2 h-2 bg-lia-btn-primary-bg rounded-full mt-2"></div>
                     <div>
-                      <div className="text-sm font-medium">Análise LIA concluída</div>
+                      <div className="text-sm font-medium">Análise concluída</div>
                       <div className="text-xs text-lia-text-primary">Há 2 horas</div>
                     </div>
                   </div>

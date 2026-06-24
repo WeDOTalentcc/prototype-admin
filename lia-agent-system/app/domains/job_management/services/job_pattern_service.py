@@ -907,3 +907,58 @@ class JobPatternService:
 
 
 job_pattern_service = JobPatternService()
+
+
+def record_outcome_fire_and_forget(
+    company_id: str,
+    job_id: str,
+    outcome_data: dict,
+) -> None:
+    """Fire-and-forget wrapper for sync callers (e.g., LangGraph publish_node).
+
+    Spawns a daemon thread with its own asyncio event loop and calls
+    record_job_outcome() on the singleton job_pattern_service.
+    NEVER raises — failures are logged but never bubble up to the caller.
+
+    Multi-tenancy: company_id required.
+    Use case: publish_node (sync) fires async pattern learning after successful
+    job creation, without blocking the wizard response to the recruiter.
+    """
+    import logging as _logging
+    _log = _logging.getLogger(__name__)
+
+    if not company_id or not job_id:
+        _log.debug(
+            "[JobPattern.fire_and_forget] missing required fields (company=%s job=%s)",
+            bool(company_id), bool(job_id),
+        )
+        return
+
+    import threading
+
+    def _runner() -> None:
+        import asyncio
+
+        async def _run() -> None:
+            try:
+                await job_pattern_service.record_job_outcome(
+                    company_id=company_id,
+                    job_id=job_id,
+                    outcome_data=outcome_data,
+                )
+            except Exception as exc:
+                _log.warning(
+                    "[JobPattern.fire_and_forget] record failed (job_id=%s): %s",
+                    job_id, str(exc)[:200],
+                )
+
+        try:
+            asyncio.run(_run())
+        except Exception as exc:
+            _log.warning(
+                "[JobPattern.fire_and_forget] event loop error (job_id=%s): %s",
+                job_id, str(exc)[:200],
+            )
+
+    t = threading.Thread(target=_runner, daemon=True, name=f"job-pattern-{job_id[:8]}")
+    t.start()

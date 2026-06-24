@@ -1,7 +1,8 @@
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
+import { useQuery } from "@tanstack/react-query"
 import { apiFetch } from "@/lib/api/api-fetch"
+import { SETTINGS_QUERY_KEYS } from "@/hooks/settings/useSettingsBroadcast"
 
 /**
  * Taxonomy v2 canonical de beneficios (2026-05-24).
@@ -89,49 +90,42 @@ const FALLBACK_WAITING_PERIODS: BenefitWaitingPeriodItem[] = [
   { id: 730, label: "730 dias (2 anos)" },
 ]
 
-export function useBenefitTaxonomy(): BenefitTaxonomy {
-  const [categories, setCategories] = useState<BenefitCategoryItem[]>(FALLBACK_CATEGORIES)
-  const [valueTypes, setValueTypes] = useState<BenefitValueTypeItem[]>(FALLBACK_VALUE_TYPES)
-  const [waitingPeriods, setWaitingPeriods] = useState<BenefitWaitingPeriodItem[]>(
-    FALLBACK_WAITING_PERIODS,
-  )
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+const FALLBACK_DATA = {
+  categories: FALLBACK_CATEGORIES,
+  valueTypes: FALLBACK_VALUE_TYPES,
+  waitingPeriods: FALLBACK_WAITING_PERIODS,
+}
 
-  const fetchAll = useCallback(async () => {
-    setIsLoading(true)
-    setError(null)
-    try {
+export function useBenefitTaxonomy(): BenefitTaxonomy {
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: SETTINGS_QUERY_KEYS.benefitTaxonomy(),
+    queryFn: async () => {
       const [catsRes, vtypesRes, periodsRes] = await Promise.all([
         apiFetch("/api/backend-proxy/company/benefits/categories/list"),
         apiFetch("/api/backend-proxy/company/benefits/value-types/list"),
         apiFetch("/api/backend-proxy/company/benefits/waiting-periods/list"),
       ])
-
-      if (Array.isArray(catsRes)) setCategories(catsRes as BenefitCategoryItem[])
-      if (Array.isArray(vtypesRes)) setValueTypes(vtypesRes as BenefitValueTypeItem[])
-      if (Array.isArray(periodsRes))
-        setWaitingPeriods(periodsRes as BenefitWaitingPeriodItem[])
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : "Erro ao carregar taxonomia de benefícios"
-      // NAO silent fallback — sinalizamos erro mas mantemos FALLBACK_* pra UI funcionar.
-      // canonical-fix REGRA 4: erro visivel + needs_manual_review pra usuario.
-      setError(msg)
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    fetchAll()
-  }, [fetchAll])
+      const [catsData, vtypesData, periodsData] = await Promise.all([
+        catsRes.ok ? catsRes.json() : null,
+        vtypesRes.ok ? vtypesRes.json() : null,
+        periodsRes.ok ? periodsRes.json() : null,
+      ])
+      return {
+        categories: Array.isArray(catsData) ? (catsData as BenefitCategoryItem[]) : FALLBACK_CATEGORIES,
+        valueTypes: Array.isArray(vtypesData) ? (vtypesData as BenefitValueTypeItem[]) : FALLBACK_VALUE_TYPES,
+        waitingPeriods: Array.isArray(periodsData) ? (periodsData as BenefitWaitingPeriodItem[]) : FALLBACK_WAITING_PERIODS,
+      }
+    },
+    placeholderData: FALLBACK_DATA,
+    staleTime: 5 * 60_000,
+  })
 
   return {
-    categories,
-    valueTypes,
-    waitingPeriods,
+    categories: data?.categories ?? FALLBACK_CATEGORIES,
+    valueTypes: data?.valueTypes ?? FALLBACK_VALUE_TYPES,
+    waitingPeriods: data?.waitingPeriods ?? FALLBACK_WAITING_PERIODS,
     isLoading,
-    error,
-    refresh: fetchAll,
+    error: error instanceof Error ? error.message : null,
+    refresh: refetch,
   }
 }

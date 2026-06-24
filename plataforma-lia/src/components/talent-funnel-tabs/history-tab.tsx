@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import { useState } from"react"
 import { formatRelativeTime } from"@/lib/format-utils"
 import { Button } from"@/components/ui/button"

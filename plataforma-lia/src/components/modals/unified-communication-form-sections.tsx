@@ -105,14 +105,21 @@ export function InterviewSettingsSection({ interviewSettings, setInterviewSettin
           {interviewTypes.map((iType) => (
             <button
               key={iType.id}
-              onClick={() => setInterviewSettings(prev => ({ ...prev, interviewType: iType.id as typeof prev.interviewType }))}
-              className={`p-2 rounded-md border text-left transition-colors motion-reduce:transition-none ${
-                interviewSettings.interviewType === iType.id
-                  ? 'border-lia-btn-primary-bg bg-lia-bg-secondary'
-                  : 'border-lia-border-subtle hover:border-lia-border-default'
+              disabled={iType.disabled}
+              onClick={() => !iType.disabled && setInterviewSettings(prev => ({ ...prev, interviewType: iType.id as typeof prev.interviewType }))}
+              className={`relative p-2 rounded-md border text-left transition-colors motion-reduce:transition-none ${
+                iType.disabled
+                  ? 'opacity-50 cursor-not-allowed border-lia-border-subtle'
+                  : interviewSettings.interviewType === iType.id
+                    ? 'border-lia-btn-primary-bg bg-lia-bg-secondary'
+                    : 'border-lia-border-subtle hover:border-lia-border-default'
               }`}
             >
+              {iType.disabled && (
+                <span className="absolute top-0.5 right-0.5 text-micro bg-lia-bg-tertiary text-lia-text-secondary border border-lia-border-subtle rounded px-1 leading-4">Em breve</span>
+              )}
               <iType.icon className={`w-3.5 h-3.5 mb-1 ${
+                iType.disabled ? 'text-lia-text-secondary' :
                 interviewSettings.interviewType === iType.id ? 'text-lia-text-primary' : 'text-lia-text-secondary'
               }`} />
               <div className="text-micro font-medium text-lia-text-primary">{iType.name}</div>

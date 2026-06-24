@@ -21,6 +21,9 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domains.communication.services.whatsapp_meta_service import meta_whatsapp_service
+from app.domains.communication.services.communication_service import CommunicationService
+from app.domains.communication.services.communication_optout_service import CommunicationOptOutService
+from app.enums.communication import MessageChannel
 from lia_models.candidate import Candidate
 from lia_models.data_request import (
     DataFieldType,
@@ -60,6 +63,9 @@ DEFAULT_COLLECTION_MESSAGES = {
 }
 
 
+
+# GAP-07-005: WhatsApp opt-out commands (LGPD)
+_WHATSAPP_STOP_COMMANDS = frozenset({"STOP", "PARAR", "CANCELAR", "SAIR"})
 class DataRequestWhatsAppService:
     """Service for WhatsApp-based data collection."""
     
@@ -379,6 +385,32 @@ class DataRequestWhatsAppService:
         
         return {"success": False, "error": "Invalid choice", "expected": "1 ou 2"}
     
+
+    async def _handle_stop_command(self, db, data_request) -> dict:
+        """GAP-07-005: Handle WhatsApp STOP command -- cross-channel LGPD opt-out."""
+        optout_svc = CommunicationOptOutService(db)
+        try:
+            await optout_svc.revoke_all_channels(
+                company_id=str(data_request.company_id),
+                candidate_id=str(data_request.candidate_id),
+                source_channel=MessageChannel.WHATSAPP,
+                reason="whatsapp_stop_command",
+            )
+            logger.info(
+                "[WhatsApp] STOP received -- cross-channel opt-out for candidate %s",
+                data_request.candidate_id,
+            )
+        except Exception:
+            logger.error(
+                "[WhatsApp] Failed to record STOP opt-out for candidate %s",
+                data_request.candidate_id,
+                exc_info=True,
+            )
+        return {
+            "status": "opted_out",
+            "message": "Descadastro registrado. Voce nao recebera mais mensagens.",
+        }
+
     async def process_document_response(
         self,
         db: AsyncSession,
@@ -423,6 +455,10 @@ class DataRequestWhatsAppService:
         if conv_state.get("state") == WhatsAppConversationState.AWAITING_CHOICE:
             return await self.process_choice_response(db, data_request_id, message_content)
         
+        # GAP-07-005: STOP command — LGPD opt-out from WhatsApp communications
+        if message_content.strip().upper() in _WHATSAPP_STOP_COMMANDS:
+            return await self._handle_stop_command(db, data_request)
+
         if message_content.strip().upper() in ["STATUS", "ESTADO"]:
             return await self._send_status_message(db, data_request, config, phone, candidate_name)
         

@@ -502,3 +502,26 @@ Complemento i18n: `plataforma-lia/scripts/check_hardcoded_strings_in_agent_ui.py
 de Agent Studio que não passam por `useTranslations`/`t()` — o ângulo cego que
 `check_i18n_keys.py` (só valida `t()` existente) não cobre. Ratchet: zerar e
 promover a `--blocking`.
+## Rails Elimination — Estado canonical (registrado 2026-06-11)
+
+### Caminho VIVO de criação de vaga
+- **`LIA_WIZARD_ORCHESTRATOR=1`** está ativo em `.env` — é o caminho canonical.
+- Todo tráfego de criação de vaga passa por `wizard_orchestrator_service.py`.
+- Os nós LangGraph (`nodes/publish.py`, `nodes/review.py`, `nodes/calibration.py`)
+  são **dead code operacional** — tombstones adicionados (raise RuntimeError quando RAILS_API_URL ausente).
+- `JobCreationAPIClient` (`domains/job_creation/api_client.py`) só é chamado pelos nós legacy — não pelo orchestrator.
+
+### RAILS_API_URL / RAILS_BACKEND_URL
+- Ambas as variáveis **NÃO estão definidas** no ambiente Replit (confirmado 2026-06-11).
+- `RAILS_ENABLED = bool(os.environ.get("RAILS_API_URL"))` = `False` em todos os módulos.
+- Fases concluídas: Phase 1 (auth), Phase 2 (reads bias_audit+candidates+jobs), Phase 3 (adapter reads), Phase P1/P2/P3 (onboarding endpoints + tombstones + token fix).
+- `INTERNAL_API_TOKEN`: não deve ter fallback hardcoded — fail-high se ausente.
+
+### Onboarding proxy (plataforma-lia)
+- `GET /api/backend-proxy/onboarding/status` → FastAPI `GET /api/v1/onboarding/status`
+- `PATCH /api/backend-proxy/onboarding/progress` → FastAPI `PATCH /api/v1/onboarding/progress`
+- `invite / consent / settings` ainda apontam para Rails mas **não são chamados pelo FE** — retornam 503 gracefully se RAILS_BACKEND_URL ausente.
+
+### O que ainda usa Rails (para referência futura)
+- `_handler_hooks.py::sync_to_rails()` — já gateado por `if not RAILS_ENABLED: return`.
+- `api_client.py` + nós legacy — dead code, tombstoned.

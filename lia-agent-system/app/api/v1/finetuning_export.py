@@ -21,7 +21,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
 @router.post("/export/{company_id}", response_model=None)
 async def trigger_export(
     company_id: str,
-    format: str = Query(default="claude", regex="^(claude|gpt)$"),
+    format: str = Query(default="claude", pattern="^(claude|gpt)$"),
     min_quality: float = Query(default=0.7, ge=0.0, le=1.0),
     db: AsyncSession = Depends(get_db),
 _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):

@@ -4,6 +4,7 @@ const WORKOS_SSO_URL = '/api/auth/workos/sso'
 const WORKOS_SESSION_URL = '/api/auth/workos/session'
 
 const ME_REQUEST_TIMEOUT_MS = 12000
+const SSO_CHECK_TIMEOUT_MS = 8000
 
 export type AuthMethod = 'jwt' | 'sso' | 'dev-auto-login'
 
@@ -144,6 +145,7 @@ class AuthService {
       const response = await fetch(WORKOS_SESSION_URL, {
         method: 'GET',
         credentials: 'include',
+        signal: AbortSignal.timeout(SSO_CHECK_TIMEOUT_MS),
       })
 
       if (!response.ok) {
@@ -156,6 +158,7 @@ class AuthService {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
+          signal: AbortSignal.timeout(SSO_CHECK_TIMEOUT_MS),
           body: JSON.stringify({ access_token: '_sso_session_', auth_method: 'sso', is_sso: true }),
         })
       }
@@ -267,7 +270,55 @@ class AuthService {
       document.cookie = 'lia_logged_out=1; path=/; max-age=86400; SameSite=None; Secure'
     }
   }
-}
 
+
+  /**
+   * Phase 1b Rails Elimination (2026-06-10):
+   * Exchange a Rails JWT for a FastAPI JWT — transparent upgrade, no re-login needed.
+   *
+   * Called automatically when the backend returns 401 + upgrade_required=true.
+   * Stores the new FastAPI JWT in the session cookie via setTokens().
+   *
+   * @param railsToken - The current Rails JWT (from lia_access_token cookie)
+   * @returns The new FastAPI access token, or null if exchange failed
+   */
+  async exchangeRailsToken(railsToken: string): Promise<string | null> {
+    try {
+      const response = await fetch(`${AUTH_API_URL}/exchange`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rails_token: railsToken }),
+      })
+      if (!response.ok) {
+        console.warn('[Phase1b] Rails token exchange failed:', response.status)
+        return null
+      }
+      const data: { access_token: string; refresh_token: string } = await response.json()
+      await this.setTokens(data.access_token, data.refresh_token)
+      return data.access_token
+    } catch (err) {
+      console.warn('[Phase1b] Rails token exchange error:', err)
+      return null
+    }
+  }
+
+  /**
+   * Phase 1b: detect if a JWT was issued by Rails (integer user_id claim).
+   * FastAPI JWTs have sub=UUID + type="access".
+   * Rails JWTs have user_id=integer, no type claim.
+   */
+  isRailsToken(token: string): boolean {
+    try {
+      const parts = token.split('.')
+      if (parts.length !== 3) return false
+      const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf-8'))
+      return typeof payload.user_id === 'number' && !payload.type
+    } catch {
+      return false
+    }
+  }
+
+
+}
 export const authService = new AuthService()
 export default authService

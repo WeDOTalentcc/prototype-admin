@@ -13,6 +13,39 @@ from app.core.config import settings
 logger = logging.getLogger(__name__)
 
 
+TEAMS_SLASH_COMMANDS: dict[str, str] = {
+    "/ajuda":     "Quais são todas as funcionalidades que você pode me ajudar?",
+    "/help":      "Quais são todas as funcionalidades que você pode me ajudar?",
+    "/buscar":    "Busca os melhores candidatos para a vaga mais recente",
+    "/triagem":   "Quais candidatos ainda precisam de triagem WSI?",
+    "/relatorio": "Gera o relatório semanal de recrutamento",
+    "/pipeline":  "Como está a saúde geral do pipeline de recrutamento?",
+    "/vagas":     "Quais são as vagas ativas e seus status?",
+    "/candidatos":"Quais candidatos estão aguardando triagem ou retorno?",
+    "/resumo":    "Me dê um resumo das atividades e alertas de hoje",
+}
+
+
+async def _post_with_retry(
+    client: "httpx.AsyncClient",
+    url: str,
+    json: dict,
+    headers: dict,
+    timeout: float = 30.0,
+    max_attempts: int = 3,
+) -> "httpx.Response":
+    """Simple retry with exponential backoff for Bot Framework calls."""
+    import asyncio
+    last: "httpx.Response | None" = None
+    for attempt in range(max_attempts):
+        last = await client.post(url, json=json, headers=headers, timeout=timeout)
+        if last.status_code in (200, 201):
+            return last
+        if attempt < max_attempts - 1:
+            await asyncio.sleep(2 ** attempt)
+    return last  # type: ignore[return-value]
+
+
 class SimpleTeamsBot:
     """
     Simplified Teams bot that handles webhooks directly.
@@ -40,13 +73,10 @@ class SimpleTeamsBot:
             if datetime.utcnow() < self._token_expires:
                 return self._access_token
         
-        # Get new token — Single Tenant bot must use the App Registration's home tenant endpoint.
-        # Use dedicated TEAMS_APP_TENANT_ID setting; AZURE_TENANT_ID is for Graph API and may differ.
-        tenant_id = (
-            getattr(settings, "TEAMS_APP_TENANT_ID", None)
-            or getattr(settings, "AZURE_TENANT_ID", None)
-            or "botframework.com"
-        )
+        # Bot Framework Connector tokens MUST use botframework.com as the tenant endpoint.
+        # AZURE_TENANT_ID is for Microsoft Graph API calls (different service).
+        # TEAMS_APP_TENANT_ID can override if needed for special deployments.
+        tenant_id = getattr(settings, "TEAMS_APP_TENANT_ID", None) or "botframework.com"
         token_url = f"https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token"
         logger.info(f"[Teams] Acquiring token via {token_url}")
 
@@ -86,19 +116,21 @@ class SimpleTeamsBot:
                 logger.info(
                     f"[Teams] Token claims: appid={claims.get('appid')} "
                     f"tid={claims.get('tid')} aud={claims.get('aud')} "
-                    f"iss={claims.get('iss', '')[:60]}"
+                    f"ver={claims.get('ver', 'unknown')} "
+                    f"iss={claims.get('iss', '')[:70]}"
                 )
             except Exception:
                 pass
 
             return self._access_token
     
-    async def process_activity(self, activity: dict[str, Any]) -> Any | None:
+    async def process_activity(self, activity: dict[str, Any], db=None) -> Any | None:
         """
         Process incoming activity from Teams.
         
         Args:
             activity: Activity payload from Teams
+            db: Optional DB session for tenant resolution
             
         Returns:
             Response dict ({"type": "card", "card": ...} or {"type": "text", "text": ...})
@@ -107,7 +139,7 @@ class SimpleTeamsBot:
         activity_type = activity.get("type", "")
         
         if activity_type == "message":
-            return await self._handle_message(activity)
+            return await self._handle_message(activity, db=db)
         
         elif activity_type == "conversationUpdate":
             return await self._handle_conversation_update(activity)
@@ -152,7 +184,7 @@ class SimpleTeamsBot:
 
     # ─────────────────────────────────────────────────────────────────────────
 
-    async def _handle_message(self, activity: dict[str, Any]) -> dict[str, Any]:
+    async def _handle_message(self, activity: dict[str, Any], db=None) -> dict[str, Any]:
         """Handle incoming message — routes through full LIA orchestrator."""
         try:
             from app.domains.communication.services.teams_card_renderer import teams_card_renderer
@@ -170,7 +202,7 @@ class SimpleTeamsBot:
             # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.info(f"[Teams] Message from {from_user.get('name')}: {text[:80]}")
 
-            result = await teams_orchestrator_bridge.process_message(activity)
+            result = await teams_orchestrator_bridge.process_message(activity, db=db)
             deep_link = result.pop("_deep_link_path", "")
             card = teams_card_renderer.render(result, source_text=text, deep_link_path=deep_link)
 
@@ -232,6 +264,11 @@ class SimpleTeamsBot:
         
         return "Ação recebida! Processando..."
     
+    def _invalidate_token(self) -> None:
+        """Invalidate the cached access token, forcing re-acquisition on next call."""
+        self._access_token = None
+        self._token_expires = None
+
     async def send_message(
         self,
         service_url: str,
@@ -287,6 +324,25 @@ class SimpleTeamsBot:
                     timeout=30.0
                 )
                 
+                if response.status_code == 401:
+                    # Token rejected — invalidate cache and retry once with fresh token
+                    logger.warning(
+                        f"[Teams] send_message 401 — invalidating token cache and retrying. "
+                        f"WWW-Authenticate: {response.headers.get('WWW-Authenticate', 'none')} | "
+                        f"Body: {response.text[:200]}"
+                    )
+                    self._invalidate_token()
+                    token = await self.get_access_token()
+                    response = await client.post(
+                        url,
+                        json=message,
+                        headers={
+                            "Authorization": f"Bearer {token}",
+                            "Content-Type": "application/json"
+                        },
+                        timeout=30.0
+                    )
+
                 if response.status_code not in [200, 201]:
                     logger.error(
                         f"Failed to send message: HTTP {response.status_code} | URL: {url} "
@@ -353,11 +409,31 @@ class SimpleTeamsBot:
                     },
                     timeout=30.0
                 )
-                
+
+                if response.status_code == 401:
+                    # Token rejected — invalidate cache and retry once with fresh token
+                    logger.warning(
+                        f"[Teams] send_adaptive_card 401 — invalidating token cache and retrying. "
+                        f"WWW-Authenticate: {response.headers.get('WWW-Authenticate', 'none')} | "
+                        f"Body: {response.text[:200]}"
+                    )
+                    self._invalidate_token()
+                    token = await self.get_access_token()
+                    response = await client.post(
+                        url,
+                        json=message,
+                        headers={
+                            "Authorization": f"Bearer {token}",
+                            "Content-Type": "application/json"
+                        },
+                        timeout=30.0
+                    )
+
                 if response.status_code not in [200, 201]:
                     logger.error(
                         f"Failed to send card: HTTP {response.status_code} | URL: {url} "
-                        f"| Headers: {dict(response.headers)} | Body: {response.text[:500]}"
+                        f"| WWW-Authenticate: {response.headers.get('WWW-Authenticate', 'none')} "
+                        f"| Body: {response.text[:500]}"
                     )
                     return False
                 

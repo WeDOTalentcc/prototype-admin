@@ -198,7 +198,7 @@ export function AddColumnPopover({
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-semibold text-lia-text-primary">{t('addColumnToPipeline')}</h3>
           <button onClick={onClose} className="p-1 rounded-xl hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover">
-            <X className="w-4 h-4 text-lia-text-disabled" />
+            <X className="w-4 h-4 text-lia-text-muted" />
           </button>
         </div>
 
@@ -221,11 +221,11 @@ export function AddColumnPopover({
           )}
           {inferredBehavior && (
             <div className="flex items-center gap-2 p-2 rounded-xl bg-lia-bg-secondary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle">
-              <span className="text-micro px-2 py-0.5 rounded-full font-medium bg-wedo-cyan/15 text-wedo-cyan">
+              <span className="text-micro px-2 py-0.5 rounded-full font-medium bg-wedo-cyan/15 text-wedo-cyan-text">
                 {inferredBehavior.suggested_behavior}
               </span>
-              <span className="text-micro text-lia-text-disabled">
-                {t('confidenceLabel', { percent: Math.round(inferredBehavior.confidence * 100) })}
+              <span className="text-micro text-lia-text-muted">
+                {t('confidenceLabel', { percent: String(Math.round(inferredBehavior.confidence * 100)) })}
               </span>
             </div>
           )}

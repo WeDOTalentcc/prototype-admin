@@ -142,16 +142,18 @@ class ConversationMemory:
         conversation_id: str,
         include_messages: bool = False,
         include_summaries: bool = False,
+        company_id: str | None = None,
     ) -> Conversation | None:
         """
         Get a conversation by ID.
-        
+
         Args:
             db: Database session
             conversation_id: Conversation ID
             include_messages: Whether to load messages
             include_summaries: Whether to load summaries
-            
+            company_id: When provided, enforces tenant isolation (P0 multi-tenancy fix).
+
         Returns:
             Conversation or None
         """
@@ -160,10 +162,10 @@ class ConversationMemory:
         except (ValueError, TypeError):
             logger.warning(f"Invalid conversation ID format: {conversation_id}")
             return None
-        # TENANT-EXEMPT: conversation_memory queries user-scoped messages (user_id authoritative), not company-scoped row data
-        
-        # TENANT-EXEMPT: conversation_memory queries user-scoped messages (user_id authoritative), not company-scoped row data
+
         query = select(Conversation).where(Conversation.id == conv_uuid)
+        if company_id:
+            query = query.where(Conversation.company_id == company_id)
         
         if include_messages:
             query = query.options(selectinload(Conversation.messages))
@@ -171,8 +173,18 @@ class ConversationMemory:
             query = query.options(selectinload(Conversation.summaries))
         
         result = await db.execute(query)
-        return result.scalar_one_or_none()
-    
+        conv = result.scalar_one_or_none()
+
+        # Defense in depth: reject if returned conv belongs to different tenant
+        if conv is not None and company_id and conv.company_id and conv.company_id != company_id:
+            logger.warning(
+                "get_conversation tenant mismatch — conv.company_id=%s requested=%s",
+                conv.company_id, company_id,
+            )
+            return None
+
+        return conv
+
     async def add_message(
         self,
         db: AsyncSession,
@@ -464,6 +476,7 @@ class ConversationMemory:
         self,
         db: AsyncSession,
         conversation_id: str,
+        company_id: str | None = None,
     ) -> bool:
         """
         Archive a conversation.
@@ -471,18 +484,23 @@ class ConversationMemory:
         Args:
             db: Database session
             conversation_id: Conversation ID
+            company_id: When provided, enforces tenant isolation — prevents IDOR archive.
             
         Returns:
-            True if successful
+            True if successful, False if not found or wrong tenant.
         """
         try:
-            # TENANT-EXEMPT: conversation_memory queries user-scoped messages (user_id authoritative), not company-scoped row data
             conv_uuid = UUID(conversation_id) if isinstance(conversation_id, str) else conversation_id
         except (ValueError, TypeError):
             return False
+
+        if company_id:
+            conv = await self.get_conversation(db, conversation_id, company_id=company_id)
+            if conv is None:
+                logger.warning("archive_conversation: tenant mismatch or not found — %s / %s", conversation_id, company_id)
+                return False
         
         await db.execute(
-            # TENANT-EXEMPT: conversation_memory queries user-scoped messages (user_id authoritative), not company-scoped row data
             update(Conversation)
             .where(Conversation.id == conv_uuid)
             .values(
@@ -501,21 +519,30 @@ class ConversationMemory:
         self,
         db: AsyncSession,
         conversation_id: str,
+        company_id: str | None = None,
     ) -> bool:
         """
         Delete a conversation and all its messages.
-        
+
         Args:
             db: Database session
             conversation_id: Conversation ID
-            
+            company_id: When provided, enforces tenant isolation — prevents IDOR delete.
+
         Returns:
-            True if successful
+            True if successful, False if not found or wrong tenant.
         """
         try:
             conv_uuid = UUID(conversation_id) if isinstance(conversation_id, str) else conversation_id
         except (ValueError, TypeError):
             return False
+
+        # Tenant check before destructive operation
+        if company_id:
+            conv = await self.get_conversation(db, conversation_id, company_id=company_id)
+            if conv is None:
+                logger.warning("delete_conversation: tenant mismatch or not found — %s / %s", conversation_id, company_id)
+                return False
         
         await db.execute(
             delete(ConversationSummary)
@@ -529,7 +556,6 @@ class ConversationMemory:
         )
         
         await db.execute(
-            # TENANT-EXEMPT: conversation_memory queries user-scoped messages (user_id authoritative), not company-scoped row data
             delete(Conversation)
             .where(Conversation.id == conv_uuid)
         )

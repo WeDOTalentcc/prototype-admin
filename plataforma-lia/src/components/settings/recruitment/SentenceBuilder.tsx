@@ -510,7 +510,7 @@ export function SentenceBuilder({
       <div className="flex items-center gap-1.5 text-xs text-lia-text-tertiary">
         <Sparkles className="h-3 w-3 text-lia-cyan" />
         <span>
-          Prefere descrever em linguagem natural? Fale com a LIA no chat lateral.
+          Prefere descrever em linguagem natural? Fale com a IA no chat lateral.
         </span>
       </div>
 

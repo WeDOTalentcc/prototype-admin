@@ -37,13 +37,13 @@ from ._shared import (
     normalize_array_field,
 )
 from pydantic import BaseModel
-from app.domains.integrations_hub.services.rails_adapter import RailsAdapter, RAILS_ENABLED
-from app.domains.integrations_hub.services.rails_adapter_dependency import get_rails_adapter
-from app.shared.rails_migration.deprecation import enforce_candidates_deprecation
 from app.schemas.envelope import ResponseEnvelope, ok_envelope
 from app.shared.rbac.mutation_gate import assert_mutation_allowed
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+from app.shared.rbac.pii_field_resolver import resolve_pii_field_visibility
+from app.shared.rbac.pii_field_catalog import field_group
+from app.shared.pagination import decode_cursor, encode_cursor
 from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
 
 def _assert_tenant_scope(candidate, current_user) -> None:
@@ -62,7 +62,7 @@ def _assert_tenant_scope(candidate, current_user) -> None:
 # environment to turn all routes below into HTTP 410 Gone with a pointer at
 # the Rails endpoint. This lets us kill-switch the old API without a deploy.
 router = APIRouter(
-    dependencies=[Depends(enforce_candidates_deprecation)],
+    dependencies=[],
 )
 
 
@@ -250,7 +250,49 @@ def _redact_sensitive_pii_for_user(candidate_dict: dict, current_user) -> dict:
     return candidate_dict
 
 
-async def _audit_pii_access(current_user, candidate_id: str, company_id: str) -> None:
+def apply_pii_field_visibility(candidate_dict: dict, current_user, role_defaults: dict | None = None) -> dict:
+    """Field-level PII redaction (2026-06-06). Replaces the 2-bucket Sprint 5/8 grants.
+
+    Precedence (per field): user override > role default > legacy bucket > show. LGPD Art. 6 III.
+    Mutates AND returns. Preserves legacy UI flags salary_masked / sensitive_pii_masked.
+    """
+    effective = resolve_pii_field_visibility(current_user, role_defaults or {})
+    any_salary_masked = False
+    any_sensitive_masked = False
+    for field, can_view in effective.items():
+        if can_view:
+            continue
+        if field in candidate_dict:
+            existing = candidate_dict[field]
+            candidate_dict[field] = [] if isinstance(existing, list) else None
+        if field_group(field) == "salary":
+            any_salary_masked = True
+        else:
+            any_sensitive_masked = True
+    candidate_dict["salary_masked"] = any_salary_masked
+    candidate_dict["sensitive_pii_masked"] = any_sensitive_masked
+    return candidate_dict
+
+
+async def _load_role_pii_defaults(company_id: str) -> dict:
+    """Load per-role PII visibility defaults for a company. Returns {} if unset/missing."""
+    from app.core.database import AsyncSessionLocal
+    from app.domains.hiring_policy.repositories.hiring_policy_repository import HiringPolicyRepository
+    try:
+        async with AsyncSessionLocal() as db:
+            policy = await HiringPolicyRepository(db).get_by_company(company_id)
+        return (getattr(policy, "pii_visibility_defaults", None) or {}) if policy else {}
+    except Exception:
+        logger.warning("[A4] failed loading pii_visibility_defaults for company %s", company_id, exc_info=True)
+        return {}
+
+
+async def _audit_pii_access(
+    current_user,
+    candidate_id: str,
+    company_id: str,
+    role_defaults: dict | None = None,
+) -> None:
     """Log SOXAuditLog when privileged user accesses unmasked PII (LGPD Art. 37 V).
 
     Sprint 5 (salary) + Sprint 8 (sensitive PII). Fires for each grant that user holds.
@@ -263,12 +305,10 @@ async def _audit_pii_access(current_user, candidate_id: str, company_id: str) ->
     if bool(getattr(current_user, "can_view_sensitive_pii", True)):
         grants_to_audit.append("sensitive_identity")
 
-    if not grants_to_audit:
-        return
-
     try:
         from app.shared.compliance.audit_service import AuditService
         svc = AuditService()
+        # Existing legacy-bucket audit (preserved, Sprint 5/8)
         for pii_class in grants_to_audit:
             await svc.log_data_access(
                 company_id=company_id,
@@ -279,6 +319,19 @@ async def _audit_pii_access(current_user, candidate_id: str, company_id: str) ->
                 action="view_pii",
                 details={"pii_class": pii_class},
             )
+        # Task E -- per-field detail audit (LGPD Art. 37 V granular)
+        effective = resolve_pii_field_visibility(current_user, role_defaults or {})
+        viewed = sorted([f for f, v in effective.items() if v])
+        masked = sorted([f for f, v in effective.items() if not v])
+        await svc.log_data_access(
+            company_id=company_id,
+            user_id=str(current_user.id) if getattr(current_user, "id", None) else None,
+            user_email=getattr(current_user, "email", None),
+            resource_type="candidate",
+            resource_id=candidate_id,
+            action="view_pii_fields",
+            details={"pii_fields_viewed": viewed, "pii_fields_masked": masked},
+        )
     except Exception as exc:  # noqa: BLE001
         logger.debug("[Sprint5/8] _audit_pii_access failed (non-blocking): %s", exc)
 
@@ -388,44 +441,27 @@ async def list_candidates(
     source: str | None = None,
     seniority: str | None = None,
     ids: str | None = None,
+    vacancy_id: str | None = None,
     offset: int = Query(default=0, ge=0),
     skip: int = Query(default=0, ge=0),
     limit: int = Query(default=50, le=200),
+    cursor: str | None = Query(default=None, description="Opaque cursor from previous page next_cursor (overrides skip/offset when provided)"),
     sort_by: str | None = None,
     sort_order: str | None = None,
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
-    rails_adapter: RailsAdapter = Depends(get_rails_adapter),
+    vacancy_candidate_repo: VacancyCandidateRepository = Depends(get_vacancy_candidate_repo),
     current_user: User = Depends(get_current_user_or_demo),
     company_id: str = Depends(require_company_id),
 ):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     # Sprint 2 Phase 4 RBAC: dept scope filter via current_user.department_id (soft-launch).
-    """List candidates. When RAILS_API_URL is configured, tries Rails first then falls back to local DB."""
+    """List candidates from local DB."""
+    logger.info(
+        f"[FUNIL-DEBUG] ENTRY vacancy_id={vacancy_id!r} status={status!r} "
+        f"skip={skip} offset={offset} limit={limit} company={company_id!r}"
+    )  # TEMP debug funil-zero 2026-06-06 (remover apos diagnostico)
     # Only call Rails when explicitly enabled — avoids adapter's own DB fallback
     # bypassing endpoint-level filters and authorization.
-    if RAILS_ENABLED:
-        try:
-            page = (offset or skip) // limit + 1 if limit else 1
-            rails_items = await rails_adapter.list_candidates_from_rails_only(
-                search=search or "*",
-                page=page,
-                limit=limit,
-                status=status,
-                source=source,
-                seniority=seniority,
-            )
-            if rails_items is not None:
-                logger.debug("[list_candidates] Returning %d candidates from Rails", len(rails_items))
-                return {
-                    "total": len(rails_items),
-                    "skip": offset or skip,
-                    "limit": limit,
-                    "source": "rails",
-                    "items": rails_items,
-                }
-        except Exception as e:
-            logger.warning("[list_candidates] Rails unavailable, falling back to local DB: %s", e)
-
     try:
         id_list: list[str] | None = None
         if ids:
@@ -441,7 +477,22 @@ async def list_candidates(
             if not id_list:
                 id_list = None
 
-        effective_skip = offset if offset > 0 else skip
+        # P0-1 (audit 2026-06-05): quando vacancy_id é passado, escopar a lista
+        # aos candidatos vinculados à vaga (vacancy_candidates), via o path `ids=`.
+        # Antes o board do Kanban lia a lista GLOBAL (sem filtro de vaga).
+        # GAP-03: cursor overrides explicit skip/offset when provided
+        effective_skip = decode_cursor(cursor) if cursor else (offset if offset > 0 else skip)
+        vc_map: dict[str, dict] = {}
+        if vacancy_id:
+            vc_ids = await vacancy_candidate_repo.list_candidate_ids_for_vacancy(
+                vacancy_id, company_id
+            )
+            if not vc_ids:
+                return {"total": 0, "skip": effective_skip, "limit": limit, "source": "local", "items": []}
+            id_list = [i for i in id_list if i in set(vc_ids)] if id_list else vc_ids
+            vc_map = await vacancy_candidate_repo.list_vc_map_for_vacancy(
+                vacancy_id, company_id
+            )
         total = await candidate_repo.count_candidates(
             search=search, status=status, source=source, seniority=seniority, ids=id_list,
         )
@@ -451,49 +502,56 @@ async def list_candidates(
         )
         # Sprint 2 Phase 4 RBAC: dept scope filter (soft-launch). No-op when user has no dept_id.
         candidates = await _filter_candidates_by_dept_scope(candidates, current_user)
-        # Sprint 5 + Sprint 8 RBAC: redact PII fields when user lacks grants.
-        items = [
-            _redact_sensitive_pii_for_user(
-                _redact_salary_for_user(_serialize_candidate(c), current_user),
-                current_user,
-            )
-            for c in candidates
-        ]
+        # A4 field-level PII redaction: replaces 2-bucket Sprint 5/8 grants.
+        role_defaults = await _load_role_pii_defaults(company_id)
+        items = []
+        for c in candidates:
+            serialized = apply_pii_field_visibility(_serialize_candidate(c), current_user, role_defaults)
+            if vc_map and str(c.id) in vc_map:
+                _vc_entry = vc_map[str(c.id)]
+                if isinstance(_vc_entry, dict):
+                    serialized["vc_id"] = _vc_entry.get("vc_id")
+                    serialized["match_score"] = _vc_entry.get("match_score")
+                    if _vc_entry.get("vc_source"):
+                        serialized["source"] = _vc_entry["vc_source"]
+                else:
+                    # legado: vc_map ainda retorna string (não deveria, mas defensive)
+                    serialized["vc_id"] = _vc_entry
+            items.append(serialized)
+        logger.info(
+            f"[FUNIL-DEBUG] RETURN vacancy_id={vacancy_id!r} total={total} "
+            f"items={len(items)}"
+        )  # TEMP debug funil-zero 2026-06-06 (remover apos diagnostico)
+        # GAP-03: cursor pagination enrichment — backward-compat (legacy consumers read skip/total)
+        has_more = len(items) == limit
+        next_offset = effective_skip + limit if has_more else None
         return {
             "total": total,
             "skip": effective_skip,
             "limit": limit,
             "source": "local",
             "items": items,
+            "has_more": has_more,
+            "next_cursor": encode_cursor(next_offset) if next_offset is not None else None,
         }
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Error listing candidates: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.get("/{candidate_id}", response_model=ResponseEnvelope)
 async def get_candidate(
     candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
-    rails_adapter: RailsAdapter = Depends(get_rails_adapter),
     current_user: User = Depends(get_current_user_or_demo),
     company_id: str = Depends(require_company_id),
 ):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
-    """Get a candidate by ID. When RAILS_API_URL is configured, tries Rails first then falls back to local DB."""
+    """Get a candidate by ID."""
     # Only call Rails when explicitly enabled — avoids adapter's own DB fallback
     # returning unscoped/unfiltered data.
-    if RAILS_ENABLED:
-        try:
-            rails_result = await rails_adapter.get_candidate_from_rails_only(candidate_id)
-            if rails_result:
-                logger.debug("[get_candidate] Returning candidate %s from Rails", candidate_id)
-                return ok_envelope(rails_result, meta={"source": "rails"})
-        except Exception as e:
-            logger.warning("[get_candidate] Rails unavailable for %s, falling back to local DB: %s", candidate_id, e)
-
     try:
         try:
             uuid.UUID(candidate_id)
@@ -506,20 +564,18 @@ async def get_candidate(
         visible = await _filter_candidates_by_dept_scope([candidate], current_user)
         if not visible:
             raise HTTPException(status_code=404, detail="Candidate not found")
-        # Sprint 5 + Sprint 8 RBAC: redact financial + sensitive PII + audit (LGPD).
-        serialized = _redact_sensitive_pii_for_user(
-            _redact_salary_for_user(
-                _serialize_candidate(candidate, full=True), current_user,
-            ),
-            current_user,
+        # A4 field-level PII redaction: replaces 2-bucket Sprint 5/8 grants.
+        role_defaults = await _load_role_pii_defaults(company_id)
+        serialized = apply_pii_field_visibility(
+            _serialize_candidate(candidate, full=True), current_user, role_defaults
         )
-        await _audit_pii_access(current_user, candidate_id, company_id)
+        await _audit_pii_access(current_user, candidate_id, company_id, role_defaults)
         return ok_envelope(serialized, meta={"source": "local"})
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Error getting candidate: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 async def _background_enrich_candidate(candidate_id: uuid.UUID, linkedin_url: str):
@@ -618,7 +674,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error creating candidate: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.put("/{candidate_id}", response_model=None)
@@ -656,7 +712,7 @@ async def update_candidate(
         raise
     except Exception as e:
         logger.error(f"Error updating candidate: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.patch("/{candidate_id}/stage", response_model=None)
@@ -683,6 +739,7 @@ async def update_candidate_stage(
         vacancy_candidate = await vc_repo.get_for_candidate_and_job(
             candidate_id=candidate_id,
             job_vacancy_id=str(stage_data.job_vacancy_id) if stage_data.job_vacancy_id else None,
+            company_id=company_id,
         )
 
         if not vacancy_candidate:
@@ -728,6 +785,9 @@ async def update_candidate_stage(
                 },
             )
 
+        # P-GUARD: fairness gate — defense-in-depth (belt+suspenders).
+        # Canonical gate: pipeline_stage_service.transition_candidate (R1 chain).
+        # Path B keeps its own gate because this endpoint writes directly (not via service).
         if is_rejection and stage_data.sub_status:
             fg_rejection = check_rejection_reason(
                 reason=stage_data.sub_status,
@@ -746,18 +806,43 @@ async def update_candidate_stage(
                 )
 
         previous_stage = vacancy_candidate.stage or "unknown"
-        lia_score_at_transition = vacancy_candidate.lia_score
-        vacancy_candidate.stage = stage_data.stage
-        if is_rejection:
-            vacancy_candidate.rejected_by_human = True
-            vacancy_candidate.human_reviewer_id = stage_data.user_id
-        if stage_data.sub_status:
-            vacancy_candidate.status = stage_data.sub_status
-        vacancy_candidate.updated_at = datetime.utcnow()
-        vacancy_candidate = await vc_repo.update(vacancy_candidate)
+        lia_score_at_transition = vacancy_candidate.lia_score  # capture before service write
+
+        # R1 P-SSOT: delegate write + chain 1-6 to canonical service.
+        # Service handles: idempotency + FSM validation + fairness-on-rejection +
+        # CandidateStageHistory + STAGE_CHANGED + AuditService.log_decision + automation hooks.
+        # Endpoint keeps: LGPD consent erasure, calibration feedback, kanban broadcast.
+        # Lazy import to avoid circular dependency (pipeline_stage_service → _shared → candidates_crud)
+        from app.domains.recruiter_assistant.services.pipeline_stage_service import (
+            pipeline_stage_service,
+            FairnessBlockedError,
+        )
+        try:
+            await pipeline_stage_service.transition_candidate(
+                vacancy_candidate_id=str(vacancy_candidate.id),
+                to_stage=stage_data.stage,
+                to_sub_status=stage_data.sub_status,
+                triggered_by="patch_stage_endpoint",
+                triggered_by_user_id=str(current_user.id) if current_user else None,
+                source_agent=None,
+                reason=stage_data.sub_status or stage_data.stage,
+                context={
+                    "company_id": str(company_id),
+                    "human_reviewer_id": str(stage_data.user_id) if is_rejection and stage_data.user_id else None,
+                },
+            )
+        except FairnessBlockedError as _fb:
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "error": "fairness_blocked",
+                    "message": _fb.message,
+                    "compliance": ["Lei 9.029/95", "CLT Art. 373-A"],
+                },
+            )
         logger.info(
-            f"Candidate {candidate_id} stage updated for vacancy {vacancy_candidate.vacancy_id}: "
-            f"{previous_stage} -> {stage_data.stage}"
+            "Candidate %s stage updated via canonical service: %s -> %s",
+            candidate_id, previous_stage, stage_data.stage,
         )
 
         # LGPD Art. 18 II — se candidato rejeitado tem consent revocation pendente, disparar erasure
@@ -860,47 +945,36 @@ async def update_candidate_stage(
             except Exception as calibration_error:
                 logger.warning(f"Failed to record implicit feedback: {calibration_error}")
 
-        # Agent Studio Fase 2.5 — Onda C1.3: emite stage_changed no
-        # platform.events para o motor event-driven. Cobre os trigger_modes
-        # on_enter_stage / on_exit_stage / on_stage_change (o consumer C1.2
-        # faz o match from_stage/to_stage). on_stuck_in_stage e detectado por
-        # scheduler, fora do escopo deste evento.
-        # REGRA 4: fail-soft mas LOUD. Multi-tenancy: company_id vem de
-        # vacancy_candidate.company_id (row do tenant), NUNCA do request.
-        if previous_stage != vacancy_candidate.stage:
-            try:
-                from app.shared.messaging.platform_events import (
-                    StageChangedEvent,
-                    publish_platform_event,
-                )
+        # NOTE: StageChangedEvent (C1.3) now emitted by pipeline_stage_service (R1 chain step 4).
+        # Removed from endpoint layer to prevent double-emit after P-SSOT delegation (2026-06-19).
 
-                _evt_company_id = str(getattr(vacancy_candidate, "company_id", "") or company_id)
-                await publish_platform_event(
-                    StageChangedEvent(
-                        company_id=_evt_company_id,
-                        payload={
-                            "candidate_id": str(candidate.id),
-                            "vacancy_id": str(vacancy_candidate.vacancy_id),
-                            "from_stage": previous_stage,
-                            "to_stage": vacancy_candidate.stage,
-                        },
-                    )
+        # GAP-09-001: Real-time kanban broadcast via Redis pub/sub → SSE
+        # Note: use stage_data.stage (not vacancy_candidate.stage) — vc object is stale after service delegation.
+        if previous_stage != stage_data.stage:
+            try:
+                from app.api.v1.kanban_broadcast import publish_candidate_stage_change
+                background_tasks.add_task(
+                    publish_candidate_stage_change,
+                    company_id=company_id,
+                    candidate_id=str(candidate.id),
+                    candidate_name=candidate.name or "",
+                    vacancy_id=str(vacancy_candidate.vacancy_id),
+                    from_stage=previous_stage,
+                    to_stage=stage_data.stage,
+                    sub_status=stage_data.sub_status or "default",
+                    moved_by_user_id=str(current_user.id) if current_user else "",
                 )
-            except Exception as _evt_err:  # noqa: BLE001
-                logger.error(
-                    "[C1.3] publish stage_changed failed (transicao prossegue): %s",
-                    _evt_err,
-                    exc_info=True,
-                )
+            except Exception as _bc_err:
+                logger.debug("[kanban-broadcast] enqueue failed (fail-open): %s", _bc_err)
 
         return {
             "id": str(candidate.id),
             "name": candidate.name,
-            "stage": vacancy_candidate.stage,
+            "stage": stage_data.stage,
             "previous_stage": previous_stage,
-            "sub_status": vacancy_candidate.status,
-            "vacancy_id": vacancy_candidate.vacancy_id,
-            "updated_at": vacancy_candidate.updated_at.isoformat() if vacancy_candidate.updated_at else None,
+            "sub_status": stage_data.sub_status,
+            "vacancy_id": str(vacancy_candidate.vacancy_id),
+            "updated_at": datetime.utcnow().isoformat(),
             "message": "Candidate stage updated successfully",
             "feedback_recorded": feedback_action if feedback_action != "neutral" else None,
         }
@@ -908,7 +982,7 @@ async def update_candidate_stage(
         raise
     except Exception as e:
         logger.error(f"Error updating candidate stage: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.put("/{candidate_id}/experiences", response_model=None)
@@ -983,7 +1057,7 @@ async def update_candidate_experiences(
             "[update_candidate_experiences] failed request_id=%s candidate_id=%s",
             _rid, candidate_id,
         )
-        raise HTTPException(status_code=500, detail="Falha ao atualizar experiencias do candidato.")
+        raise
 
 
 @router.put("/{candidate_id}/education", response_model=None)
@@ -1053,7 +1127,7 @@ async def update_candidate_education(
             "[update_candidate_education] failed request_id=%s candidate_id=%s",
             _rid, candidate_id,
         )
-        raise HTTPException(status_code=500, detail="Falha ao atualizar formacao do candidato.")
+        raise
 
 
 @router.put("/{candidate_id}/skills", response_model=None)
@@ -1111,7 +1185,7 @@ async def update_candidate_skills(
             "[update_candidate_skills] failed request_id=%s candidate_id=%s",
             _rid, candidate_id,
         )
-        raise HTTPException(status_code=500, detail="Falha ao atualizar skills do candidato.")
+        raise
 
 
 @router.put("/{candidate_id}/certifications", response_model=None)
@@ -1172,7 +1246,7 @@ async def update_candidate_certifications(
             "[update_candidate_certifications] failed request_id=%s candidate_id=%s",
             _rid, candidate_id,
         )
-        raise HTTPException(status_code=500, detail="Falha ao atualizar certificações do candidato.")
+        raise
 
 
 @router.put("/{candidate_id}/identity", response_model=None)
@@ -1257,7 +1331,7 @@ async def update_candidate_identity(
             "[update_candidate_identity] failed request_id=%s candidate_id=%s",
             _rid, candidate_id,
         )
-        raise HTTPException(status_code=500, detail="Falha ao atualizar identidade do candidato.")
+        raise
 
 
 @router.delete("/{candidate_id}", response_model=None)
@@ -1278,7 +1352,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error deleting candidate: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 # ---------------------------------------------------------------------------
@@ -1328,7 +1402,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error enriching candidate: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 # ---------------------------------------------------------------------------

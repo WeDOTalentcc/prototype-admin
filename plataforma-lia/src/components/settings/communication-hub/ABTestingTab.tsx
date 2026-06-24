@@ -133,7 +133,7 @@ export function ABTestingTab() {
 
     const totalTraffic = form.variants.reduce((sum, v) => sum + Number(v.traffic_percentage), 0)
     if (Math.abs(totalTraffic - 100) > 0.1) {
-      setCreateError(t("trafficSumError", { total: totalTraffic }))
+      setCreateError(t("trafficSumError", { total: String(totalTraffic) }))
       return
     }
 
@@ -173,7 +173,7 @@ export function ABTestingTab() {
   const getStatusColor = (metrics: ABTestMetrics | undefined) => {
     if (!metrics) return "bg-lia-bg-secondary text-lia-text-tertiary"
     if (metrics.winner) return "bg-status-success/15 text-status-success"
-    if (metrics.total_observations > 0) return "bg-wedo-cyan/10 text-wedo-cyan"
+    if (metrics.total_observations > 0) return "bg-wedo-cyan/10 text-wedo-cyan-text"
     return "bg-lia-bg-secondary text-lia-text-tertiary"
   }
 
@@ -234,7 +234,7 @@ export function ABTestingTab() {
                 variant="ghost"
                 size="sm"
                 onClick={addVariant}
-                className="text-xs text-wedo-cyan hover:text-wedo-cyan-dark h-auto px-2 py-1"
+                className="text-xs text-lia-text-muted hover:text-wedo-cyan-dark h-auto px-2 py-1"
               >
                 {t("addVariantBtn")}
               </Button>

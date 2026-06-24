@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { Search, Calendar, Mail, MessageCircle, Users, Zap, BarChart3, FileText, Settings, User } from 'lucide-react'
 import {
@@ -31,6 +32,9 @@ export function CommandPalette({
   commands,
   placeholder = "Buscar ação ou digitar comando..."
 }: CommandPaletteProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('command-palette', isOpen)
+
   const [query, setQuery] = useState('')
   const [selectedIndex, setSelectedIndex] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -124,7 +128,7 @@ export function CommandPalette({
         <div className="max-h-content-lg overflow-y-auto">
           {Object.entries(groupedCommands).map(([category, items]) => (
             <div key={category}>
-              <div className="px-4 py-2 text-xs font-semibold text-lia-text-disabled">
+              <div className="px-4 py-2 text-xs font-semibold text-lia-text-tertiary">
                 {getCategoryLabel(category as CommandItem['category'])}
               </div>
               {items.map((cmd, index) => {
@@ -192,7 +196,7 @@ export const defaultCommands = (handlers: {
   {
     id: 'schedule',
     label: 'Agendar Entrevista',
-    description: 'Criar novo agendamento via LIA',
+    description: 'Criar novo agendamento via IA',
     icon: <Calendar className="w-4 h-4" />,
     category: 'actions',
     shortcut: 'A',
@@ -210,7 +214,7 @@ export const defaultCommands = (handlers: {
   {
     id: 'email',
     label: 'Gerar Email',
-    description: 'Email personalizado com LIA',
+    description: 'Email personalizado com IA',
     icon: <Mail className="w-4 h-4" />,
     category: 'actions',
     onSelect: handlers.onEmail || (() => {})

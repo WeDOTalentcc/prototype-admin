@@ -23,9 +23,12 @@ from app.domains.automation.agents.automation_react_agent import AutomationReAct
 from app.domains.automation.services.planned_task_service import CycleDetectedError, planned_task_service
 from app.models.planned_task import PlannedTaskPriority, PlannedTaskStatus
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 from app.shared.types import WeDoBaseModel
 from typing import Annotated
 from fastapi import Path
+import logging
+logger = logging.getLogger(__name__)
 from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 
 router = APIRouter(prefix="/task-planner", tags=["Task Planner"])
@@ -96,6 +99,38 @@ company_id: str = Depends(require_company_id)):
     - Assign appropriate agent types
     """
     company_id = get_user_company_id(current_user)
+
+    # FairnessGuard: bloquear task_description discriminatória antes do agente
+    try:
+        from app.shared.compliance.fairness_guard import FairnessGuard
+        _fg_tp = FairnessGuard()
+        _fr_tp = _fg_tp.check(request.task_description or "")
+        if _fr_tp and _fr_tp.is_blocked:
+            import asyncio as _asyncio
+            try:
+                _asyncio.get_event_loop().create_task(
+                    _fg_tp.log_check(
+                        result=_fr_tp,
+                        context="task_planner_decompose",
+                        company_id=company_id or None,
+                    )
+                )
+            except Exception:
+                pass
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error": "fairness_blocked",
+                    "fairness_blocked": True,
+                    "educational_message": _fr_tp.educational_message,
+                    "category": _fr_tp.category,
+                },
+            )
+    except HTTPException:
+        raise
+    except Exception as _fg_exc:
+        logger.debug("[task_planner] fairness check skipped (fail-open): %s", _fg_exc)
+
     agent = AutomationReActAgent()
     response = await agent.decompose_task(
         task_description=request.task_description,
@@ -148,8 +183,11 @@ company_id: str = Depends(require_company_id)):
             "success": True,
             "task": task.to_dict()
         }
-    except Exception as e:
+    except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error("create_planned_task failed: %s", str(e), exc_info=True)
+        raise LIAError(message="Erro ao criar tarefa — tente novamente")
 
 
 @router.get("/tasks/{task_id}", response_model=None)
@@ -337,7 +375,7 @@ company_id: str = Depends(require_company_id)):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/execution-plans/{plan_id}", response_model=None)

@@ -85,7 +85,7 @@ export const FIELD_CONFIGS: Record<string, FieldConfig> = {
     ],
   },
   lia_tone: {
-    label: "Tom da LIA",
+    label: "Tom da IA",
     type: 'select',
     options: [
       { value: 'professional', label: 'Profissional' },
@@ -183,7 +183,7 @@ export const POLICY_BLOCKS = [
   },
   {
     key: 'automation_rules',
-    title: 'Autonomia da LIA',
+    title: 'Autonomia da IA',
     iconName: 'Zap' as const,
     fields: [
       'auto_screening', 'auto_scheduling', 'auto_stage_advance', 'autonomy_level',

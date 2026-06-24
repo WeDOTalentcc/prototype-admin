@@ -1,6 +1,8 @@
 "use client"
 
-import { useState, useEffect, useCallback, useRef } from "react"
+import { useState, useCallback, useRef } from "react"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { useTranslations } from "next-intl"
 import { DataRequirement, validateCandidateDataForOpinion } from "@/components/modals/insufficient-data-modal"
 import type { ScreeningQuestion, TranscriptionSegment } from "@/components/modals/screening-media-modal"
 import { toast } from "sonner"
@@ -12,9 +14,12 @@ interface LiaChatMessage {
   timestamp: Date
 }
 
-export function useCandidatePreviewCore(candidate: Record<string, unknown> | null) {
+export function useCandidatePreviewCore(candidate: Record<string, unknown> | null, jobId?: string) {
   const { companyId } = useCurrentCompany()
-  const [activeTab, setActiveTab] = useState<'profile' | 'activities' | 'files' | 'opinions'>('profile')
+  const t = useTranslations('candidatePreview')
+  const queryClient = useQueryClient()
+
+  const [activeTab, setActiveTab] = useState<'profile' | 'activities' | 'files' | 'opinions' | 'consent'>('profile')
   const [showLiaModal, setShowLiaModal] = useState(false)
   const [liaConversation, setLiaConversation] = useState("")
 
@@ -32,22 +37,12 @@ export function useCandidatePreviewCore(candidate: Record<string, unknown> | nul
   const [isLiaChatLoading, setIsLiaChatLoading] = useState(false)
   const [liaConversationId, setLiaConversationId] = useState<string | null>(null)
 
-  const [opinionsData, setOpinionsData] = useState<Record<string, unknown> | null>(null)
-  const [isLoadingOpinions, setIsLoadingOpinions] = useState(false)
   const [expandedOpinionId, setExpandedOpinionId] = useState<string | null>(null)
-  const [opinionsHistory, setOpinionsHistory] = useState<Record<string, unknown>[]>([])
-  const [isLoadingHistory, setIsLoadingHistory] = useState(false)
-
-  const [savedAnalyses, setSavedAnalyses] = useState<{ total_analyses: number; analyses: Record<string, unknown>[] } | null>(null)
-  const [isLoadingAnalyses, setIsLoadingAnalyses] = useState(false)
-  const [opinionsSubTab, setOpinionsSubTab] = useState<'pareceres' | 'analises'>('pareceres')
-  const [expandedAnalysisId, setExpandedAnalysisId] = useState<string | null>(null)
 
   const [showUpdateOpinionAlert, setShowUpdateOpinionAlert] = useState(false)
   const [showInsufficientDataModal, setShowInsufficientDataModal] = useState(false)
   const [dataRequirements, setDataRequirements] = useState<DataRequirement[]>([])
   const [lastOpinionDate, setLastOpinionDate] = useState<Date | null>(null)
-  const [showLiaAnalysisModal, setShowLiaAnalysisModal] = useState(false)
 
   const [screeningModalOpen, setScreeningModalOpen] = useState(false)
   const [screeningModalData, setScreeningModalData] = useState<{
@@ -66,114 +61,52 @@ export function useCandidatePreviewCore(candidate: Record<string, unknown> | nul
   const [bigFiveModalCandidate, setBigFiveModalCandidate] = useState<Record<string, unknown> | null>(null)
 
   const [copiedItemId, setCopiedItemId] = useState<string | null>(null)
-  const [analysisToDelete, setAnalysisToDelete] = useState<Record<string, unknown> | null>(null)
-  const [isDeletingAnalysis, setIsDeletingAnalysis] = useState(false)
 
   const lastFetchedHistoryCandidateRef = useRef<string | null>(null)
-const candidateId = candidate?.id as string | undefined
+  const candidateId = candidate?.id as string | undefined
+  // Pearch candidates have non-UUID ids. Opinions endpoints expect internal DB UUIDs.
+  const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+  const candidateIsLocal = !!candidateId && UUID_RE.test(candidateId)
+
+  // Fix 1: React Query v5 — opinions summary
+  const {
+    data: opinionsData,
+    isLoading: isLoadingOpinions,
+    refetch: refetchOpinionsSummary,
+  } = useQuery({
+    queryKey: ['candidate-opinions-summary', candidateId],
+    queryFn: () =>
+      fetch(`/api/backend-proxy/opinions/candidate/${candidateId}/summary`)
+        .then(r => { if (!r.ok) throw new Error(r.statusText); return r.json() }),
+    enabled: candidateIsLocal,
+    staleTime: 60_000,
+  })
+
+  // Fix 1: React Query v5 — opinions history (only load when tab is active)
+  const {
+    data: opinionsHistoryData,
+    isLoading: isLoadingHistory,
+    isError: isErrorHistory,
+    refetch: refetchOpinionsHistory,
+  } = useQuery({
+    queryKey: ['candidate-opinions-history', candidateId],
+    queryFn: () =>
+      fetch(`/api/backend-proxy/opinions/candidate/${candidateId}/history`)
+        .then(r => { if (!r.ok) throw new Error(r.statusText); return r.json() }),
+    enabled: candidateIsLocal && activeTab === "opinions",
+    staleTime: 60_000,
+  })
+
+  const opinionsHistory = opinionsHistoryData ?? ([] as Record<string, unknown>[])
 
   const fetchOpinionsSummary = useCallback(async () => {
-    if (!candidateId || !companyId) return
-    setIsLoadingOpinions(true)
-    try {
-      const response = await fetch(`/api/backend-proxy/opinions/candidate/${candidateId}/summary?company_id=${encodeURIComponent(companyId)}`)
-      if (response.ok) {
-        const data = await response.json()
-        setOpinionsData(data)
-      }
-    } catch {
-    } finally {
-      setIsLoadingOpinions(false)
-    }
-  }, [candidateId, companyId])
+    await refetchOpinionsSummary()
+  }, [refetchOpinionsSummary])
 
-  const fetchSavedAnalyses = useCallback(async () => {
-    if (!candidateId || !companyId) return
-    setIsLoadingAnalyses(true)
-    try {
-      const response = await fetch(`/api/backend-proxy/lia/profile-analysis/candidate/${candidateId}?company_id=${encodeURIComponent(companyId)}`)
-      if (response.ok) {
-        const data = await response.json()
-        setSavedAnalyses(data)
-      }
-    } catch {
-    } finally {
-      setIsLoadingAnalyses(false)
-    }
-  }, [candidateId, companyId])
-
-  const saveAnalysisToBackend = async (analysis: { type: string; content: string; candidate_id: string }) => {
-    if (!companyId) return false
-    try {
-      const response = await fetch(`/api/backend-proxy/lia/profile-analysis/save?company_id=${encodeURIComponent(companyId)}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          candidate_id: analysis.candidate_id,
-          analysis_type: analysis.type,
-          content: analysis.content,
-          candidate_name: (candidate as Record<string, unknown>)?.name || (candidate as Record<string, unknown>)?.nome,
-        })
-      })
-
-      if (response.ok) {
-        await fetchSavedAnalyses()
-        return true
-      }
-      return false
-    } catch {
-      return false
-    }
-  }
-
-  const handleAnalysisTransport = async (analysis: { type: string; content: string; candidate_id: string }) => {
-    const success = await saveAnalysisToBackend(analysis)
-    if (success) {
-      toast.success("Análise salva", { description: "A análise foi adicionada à aba Pareceres e Análises" })
-    } else {
-      toast.error("Erro ao salvar", { description: "Não foi possível salvar a análise. Tente novamente." })
-    }
-  }
-
-  const fetchOpinionsHistory = useCallback(async () => {
-    if (!candidateId || !companyId) return
-
-    if (lastFetchedHistoryCandidateRef.current === candidateId && opinionsHistory.length > 0) {
-      return
-    }
-
-    lastFetchedHistoryCandidateRef.current = candidateId
-    setIsLoadingHistory(true)
-    try {
-      const response = await fetch(`/api/backend-proxy/opinions/candidate/${candidateId}/history?company_id=${encodeURIComponent(companyId)}`)
-      if (response.ok) {
-        const data = await response.json()
-        setOpinionsHistory(data)
-      }
-    } catch {
-    } finally {
-      setIsLoadingHistory(false)
-    }
-  }, [candidateId, companyId, opinionsHistory.length])
-
-  useEffect(() => {
-    if (candidateId) {
-      fetchOpinionsSummary()
-      fetchSavedAnalyses()
-    }
-  }, [candidateId, fetchOpinionsSummary, fetchSavedAnalyses])
-
-  useEffect(() => {
-    if (activeTab === 'opinions' && candidateId) {
-      fetchOpinionsHistory()
-    }
-  }, [activeTab, candidateId, fetchOpinionsHistory])
-
-  useEffect(() => {
-    if (candidateId && lastFetchedHistoryCandidateRef.current !== candidateId) {
-      setOpinionsHistory([])
-    }
-  }, [candidateId])
+  const retryOpinionsHistory = useCallback(() => {
+    lastFetchedHistoryCandidateRef.current = null
+    refetchOpinionsHistory()
+  }, [refetchOpinionsHistory])
 
   const sendLiaMessage = async (message: string) => {
     if (!message.trim()) return
@@ -202,7 +135,7 @@ const candidateId = candidate?.id as string | undefined
       })
 
       if (!response.ok) {
-        throw new Error(`Erro: ${response.status}`)
+        throw new Error(`${response.status}`)
       }
 
       const data = await response.json()
@@ -218,10 +151,10 @@ const candidateId = candidate?.id as string | undefined
           setLiaConversationId(data.conversation_id)
         }
       } else {
-        throw new Error(data.error || 'Erro desconhecido')
+        throw new Error(data.error || t('errorUnknown'))
       }
     } catch (error) {
-      toast.error("Erro ao enviar mensagem", { description: error instanceof Error ? error.message : "Não foi possível conectar com a LIA. Tente novamente." })
+      toast.error(t('errorSendMessage'), { description: error instanceof Error ? error.message : t('errorSendMessageDesc') })
     } finally {
       setIsLiaChatLoading(false)
     }
@@ -233,6 +166,26 @@ const candidateId = candidate?.id as string | undefined
     setIsAnalyzingWithLia(true)
 
     try {
+      // Vaga em contexto -> parecer job-directed (gera + persiste a matriz de qualificacao).
+      if (jobId) {
+        // Fix 2: company_id removed — resolved server-side from JWT
+        const parecerRes = await fetch(
+          `/api/backend-proxy/opinions/candidate/${candidateId}/parecer`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ job_vacancy_id: jobId }),
+          }
+        )
+        if (!parecerRes.ok) throw new Error(t('errorGenerateParecer'))
+        setLastAnalysisDate(new Date())
+        await fetchOpinionsSummary()
+        // Invalidate history cache so it refreshes on next tab visit
+        queryClient.invalidateQueries({ queryKey: ['candidate-opinions-history', candidateId] })
+        toast.success(t('parecerGenerated'), { description: t('parecerGeneratedDesc') })
+        return
+      }
+
       const c = candidate as Record<string, unknown>
       const candidateInput = {
         id: c.id,
@@ -249,7 +202,8 @@ const candidateId = candidate?.id as string | undefined
         seniority_level: c.seniorityLevel || c.seniority_level || ''
       }
 
-      const analysisResponse = await fetch(`/api/backend-proxy/analysis/candidates?company_id=${encodeURIComponent(companyId)}`, {
+      // Fix 2: company_id removed — resolved server-side from JWT
+      const analysisResponse = await fetch(`/api/backend-proxy/analysis/candidates`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -259,14 +213,14 @@ const candidateId = candidate?.id as string | undefined
       })
 
       if (!analysisResponse.ok) {
-        throw new Error('Falha na análise')
+        throw new Error(t('errorAnalysisFailed'))
       }
 
       const analysisData = await analysisResponse.json()
       const result = analysisData.results?.[0]
 
       if (!result) {
-        throw new Error('Resultado da análise vazio')
+        throw new Error(t('errorAnalysisEmpty'))
       }
 
       let recommendation = 'pending_review'
@@ -283,7 +237,7 @@ const candidateId = candidate?.id as string | undefined
         score: result.lia_score || 0,
         archetype: result.archetype || 'Não Identificado',
         recommendation: recommendation,
-        summary: result.explanation || 'Análise realizada pela LIA',
+        summary: result.explanation || 'Análise realizada pela IA',
         score_breakdown: result.score_breakdown ? {
           skills_match: result.score_breakdown.match_tecnico || null,
           personality_fit: result.score_breakdown.fit_personalidade || null,
@@ -298,7 +252,8 @@ const candidateId = candidate?.id as string | undefined
         next_steps: result.potential_roles ? `Cargos potenciais: ${result.potential_roles.join(', ')}` : 'Validar perfil em entrevista'
       }
 
-      const opinionResponse = await fetch(`/api/backend-proxy/opinions?company_id=${encodeURIComponent(companyId)}&user_id=system`, {
+      // Fix 2: company_id and user_id removed from query string — resolved server-side from JWT
+      const opinionResponse = await fetch(`/api/backend-proxy/opinions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(opinionPayload)
@@ -306,16 +261,17 @@ const candidateId = candidate?.id as string | undefined
 
       if (!opinionResponse.ok) {
         await opinionResponse.json().catch(() => ({}))
-        throw new Error('Falha ao salvar parecer')
+        throw new Error(t('errorSaveParecer'))
       }
 
       setLastAnalysisDate(new Date())
 
       await fetchOpinionsSummary()
+      queryClient.invalidateQueries({ queryKey: ['candidate-opinions-history', candidateId] })
 
-      toast.success("Parecer gerado", { description: "A LIA gerou um novo parecer para o candidato." })
+      toast.success(t('parecerGenerated'), { description: t('parecerGeneratedDesc') })
     } catch {
-      toast.error("Erro ao gerar parecer", { description: "Não foi possível gerar o parecer. Tente novamente." })
+      toast.error(t('errorGenerateParecerTitle'), { description: t('errorGenerateParecerDesc') })
     } finally {
       setIsAnalyzingWithLia(false)
     }
@@ -339,7 +295,8 @@ const candidateId = candidate?.id as string | undefined
     }
 
     try {
-      const summaryResponse = await fetch(`/api/backend-proxy/opinions/candidate/${candidateId}/summary?company_id=${encodeURIComponent(companyId)}`)
+      // Fix 2: company_id removed — resolved server-side from JWT
+      const summaryResponse = await fetch(`/api/backend-proxy/opinions/candidate/${candidateId}/summary`)
       if (summaryResponse.ok) {
         const data = await summaryResponse.json()
         if (data.current_general_opinion?.created_at) {
@@ -363,7 +320,8 @@ const candidateId = candidate?.id as string | undefined
     if (!companyId) return
 
     try {
-      const summaryResponse = await fetch(`/api/backend-proxy/opinions/candidate/${candidateId}/summary?company_id=${encodeURIComponent(companyId)}`)
+      // Fix 2: company_id removed — resolved server-side from JWT
+      const summaryResponse = await fetch(`/api/backend-proxy/opinions/candidate/${candidateId}/summary`)
       if (summaryResponse.ok) {
         const data = await summaryResponse.json()
         if (data.current_general_opinion?.created_at) {
@@ -382,8 +340,9 @@ const candidateId = candidate?.id as string | undefined
     await generateNewOpinion()
   }
 
+  // Fix 3: i18n — formatAnalysisDate uses t() for all PT-BR strings
   const formatAnalysisDate = (date: Date | null) => {
-    if (!date) return 'Nunca analisado'
+    if (!date) return t('neverAnalyzed')
 
     const now = new Date()
     const diffMs = now.getTime() - date.getTime()
@@ -391,11 +350,11 @@ const candidateId = candidate?.id as string | undefined
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
 
-    if (diffMins < 1) return 'Agora mesmo'
-    if (diffMins < 60) return `Há ${diffMins} min`
-    if (diffHours < 24) return `Há ${diffHours}h`
-    if (diffDays === 1) return 'Ontem'
-    if (diffDays < 7) return `Há ${diffDays} dias`
+    if (diffMins < 1) return t('justNow')
+    if (diffMins < 60) return t('minutesAgo', { count: diffMins })
+    if (diffHours < 24) return t('hoursAgo', { count: diffHours })
+    if (diffDays === 1) return t('yesterday')
+    if (diffDays < 7) return t('daysAgo', { count: diffDays })
 
     return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })
   }
@@ -457,65 +416,6 @@ const candidateId = candidate?.id as string | undefined
       setCopiedItemId(`opinion-${opinion.id}`)
       setTimeout(() => setCopiedItemId(null), 2000)
     } catch {
-    }
-  }
-
-  const handleCopyAnalysis = async (analysis: Record<string, unknown>) => {
-    const c = candidate as Record<string, unknown>
-    const analysisLabels: Record<string, string> = {
-      'bullet_points': 'Pontos-chave',
-      'short_paragraph': 'Resumo',
-      'detailed_bullets': 'Análise Detalhada'
-    }
-
-    let textToCopy = `ANÁLISE IA - ${c.name || c.nome}\n`
-    textToCopy += `Tipo: ${analysisLabels[String(analysis.analysis_type)] || analysis.analysis_type}\n`
-    textToCopy += `Data: ${analysis.created_at ? new Date(String(analysis.created_at)).toLocaleDateString('pt-BR') : ''}\n`
-    textToCopy += `\n`
-    textToCopy += cleanTextForCopy(String(analysis.content || ''))
-
-    try {
-      await navigator.clipboard.writeText(textToCopy)
-      setCopiedItemId(`analysis-${analysis.id}`)
-      setTimeout(() => setCopiedItemId(null), 2000)
-    } catch {
-    }
-  }
-
-  const handleDeleteAnalysis = async (analysis: Record<string, unknown>) => {
-    if (!companyId) return
-    setIsDeletingAnalysis(true)
-    try {
-      const c = candidate as Record<string, unknown>
-      const cId = c.id || c.candidate_id
-      const response = await fetch(`/api/backend-proxy/lia/profile-analysis/${cId}/${analysis.analysis_type}?company_id=${encodeURIComponent(companyId)}`, {
-        method: 'DELETE',
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to delete analysis')
-      }
-
-      setSavedAnalyses((prev) => {
-        if (!prev) return null
-        const analysisType = analysis.analysis_type as string
-        const filtered = prev.analyses.filter(
-          (a: Record<string, unknown>) => a.analysis_type !== analysisType
-        )
-        return {
-          ...prev,
-          analyses: filtered,
-          total_analyses: filtered.length,
-        }
-      })
-      setAnalysisToDelete(null)
-      setExpandedAnalysisId(null)
-
-      toast.success("Análise removida", { description: "A análise foi removida com sucesso." })
-    } catch {
-      toast.error("Erro ao remover", { description: "Não foi possível remover a análise." })
-    } finally {
-      setIsDeletingAnalysis(false)
     }
   }
 
@@ -627,15 +527,11 @@ const candidateId = candidate?.id as string | undefined
     expandedOpinionId, setExpandedOpinionId,
     opinionsHistory,
     isLoadingHistory,
-    savedAnalyses, setSavedAnalyses,
-    isLoadingAnalyses,
-    opinionsSubTab, setOpinionsSubTab,
-    expandedAnalysisId, setExpandedAnalysisId,
+    isErrorHistory, retryOpinionsHistory,
     showUpdateOpinionAlert, setShowUpdateOpinionAlert,
     showInsufficientDataModal, setShowInsufficientDataModal,
     dataRequirements,
     lastOpinionDate,
-    showLiaAnalysisModal, setShowLiaAnalysisModal,
     screeningModalOpen, setScreeningModalOpen,
     screeningModalData, setScreeningModalData,
     discModalOpen, setDiscModalOpen,
@@ -643,8 +539,6 @@ const candidateId = candidate?.id as string | undefined
     bigFiveModalOpen, setBigFiveModalOpen,
     bigFiveModalCandidate, setBigFiveModalCandidate,
     copiedItemId, setCopiedItemId,
-    analysisToDelete, setAnalysisToDelete,
-    isDeletingAnalysis,
     sendLiaMessage,
     generateNewOpinion,
     handleAnalyzeWithLia,
@@ -653,9 +547,6 @@ const candidateId = candidate?.id as string | undefined
     generateShortId,
     cleanTextForCopy,
     handleCopyOpinion,
-    handleCopyAnalysis,
-    handleDeleteAnalysis,
-    handleAnalysisTransport,
     formatCurrency,
     getLanguagesData,
     hasSalaryData,
@@ -663,6 +554,5 @@ const candidateId = candidate?.id as string | undefined
     getAddressString,
     hasAdditionalDetails,
     fetchOpinionsSummary,
-    fetchSavedAnalyses,
   }
 }

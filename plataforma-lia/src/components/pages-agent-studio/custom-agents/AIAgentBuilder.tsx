@@ -198,7 +198,7 @@ export function AIAgentBuilder({ onAgentCreated }: AIAgentBuilderProps) {
               ))}
             </div>
 
-            <div className="flex items-center gap-3 pt-1 text-[10px] text-lia-text-disabled">
+            <div className="flex items-center gap-3 pt-1 text-[10px] text-lia-text-muted">
               <span>{t('context')}: {config.suggested_context_level ?? "standard"}</span>
               <span>{t('steps')}: {config.suggested_max_steps ?? 8}</span>
               <span>{t('temp')}: {config.suggested_temperature ?? 0.5}</span>
@@ -214,7 +214,7 @@ export function AIAgentBuilder({ onAgentCreated }: AIAgentBuilderProps) {
             <button
               type="button"
               onClick={() => setShowPrompt(!showPrompt)}
-              className="flex items-center gap-1 text-[10px] text-lia-text-disabled hover:text-lia-text-secondary pt-1"
+              className="flex items-center gap-1 text-[10px] text-lia-text-muted hover:text-lia-text-secondary pt-1"
             >
               {showPrompt ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
               {showPrompt ? t('hidePrompt') : t('viewFullPrompt')}

@@ -370,7 +370,7 @@ export function SystemConfigurationModal({ system, onClose }: SystemConfiguratio
                   </div>
                   <div>
                     <h5 className="font-medium text-lia-text-primary mb-3 flex items-center gap-2">
-                      <Database className="w-4 h-4" />Plataforma LIA (Destino)
+                      <Database className="w-4 h-4" />WeDOTalent (Destino)
                     </h5>
                     <div className="space-y-2 max-h-96 overflow-y-auto border border-lia-border-subtle rounded-xl p-3">
                       {liaFields.map(field => {
@@ -428,7 +428,7 @@ export function SystemConfigurationModal({ system, onClose }: SystemConfiguratio
                       <p className="text-sm text-lia-text-secondary">Alta Confiança (≥90%)</p>
                     </div>
                     <div className="text-center">
-                      <p className="text-2xl font-semibold text-wedo-orange">{liaFields.filter(f => f.required && !mappings.some(m => m.targetField === f.id)).length}</p>
+                      <p className="text-2xl font-semibold text-wedo-orange-text">{liaFields.filter(f => f.required && !mappings.some(m => m.targetField === f.id)).length}</p>
                       <p className="text-sm text-lia-text-secondary">Obrigatórios Pendentes</p>
                     </div>
                   </div>

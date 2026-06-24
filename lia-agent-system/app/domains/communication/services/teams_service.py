@@ -63,15 +63,25 @@ class TeamsService:
     def __init__(self, webhook_url: str | None = None):
         """
         Initialize TeamsService.
-        
+
         Args:
             webhook_url: Teams Incoming Webhook URL. If not provided, uses TEAMS_WEBHOOK_URL env var.
+
+        How to obtain TEAMS_WEBHOOK_URL:
+          1. Open the target Teams channel.
+          2. Click the channel name → Manage channel → Connectors (or "..." → Connectors).
+          3. Search for "Incoming Webhook" → Configure.
+          4. Give it a name (e.g. "LIA Agent System") and click Create.
+          5. Copy the generated URL and set it as the TEAMS_WEBHOOK_URL secret.
         """
         self.webhook_url = webhook_url or os.environ.get("TEAMS_WEBHOOK_URL")
-        self.is_development = not self.webhook_url or settings.APP_ENV == "development"
-        
+        self.is_development = not self.webhook_url
+
         if self.is_development:
-            logger.info("TeamsService running in development mode - messages will be logged only")
+            logger.info(
+                "TeamsService running in development mode — messages will be logged only. "
+                "Set TEAMS_WEBHOOK_URL to enable outbound delivery to Teams channels."
+            )
     
     async def send_message(
         self,
@@ -461,6 +471,185 @@ class TeamsService:
                 "error": str(e)
             }
     
+    # ── Offer event notifications (called from offer_portal.py, fail-soft) ──
+
+    async def on_offer_viewed(
+        self,
+        offer_id: str,
+        company_id: str,
+        candidate_name: str,
+    ) -> None:
+        """Notify recruiter when candidate opens the offer portal link."""
+        try:
+            db_gen = get_db()
+            db = await db_gen.__anext__()
+            webhook_url, _ = await resolve_tenant_teams_webhook_url(company_id, db)
+            await db_gen.aclose()
+        except Exception:
+            webhook_url = None
+
+        if webhook_url:
+            await self.send_alert(
+                title="👁️ Proposta visualizada",
+                message=f"{candidate_name} abriu o link da proposta.",
+                severity=AlertSeverity.INFO,
+                webhook_url=webhook_url,
+                facts=[
+                    {"name": "Candidato", "value": candidate_name},
+                    {"name": "Proposta ID", "value": offer_id[:8] + "..."},
+                ],
+                source="Offer Portal",
+            )
+
+        # Fire automation trigger OFFER_VIEWED
+        try:
+            from app.domains.automation.services.automation_trigger_service import automation_trigger_service
+            from app.shared.automation.trigger_types_canonical import TriggerType
+            await automation_trigger_service.fire_offer_trigger(
+                trigger_type=TriggerType.OFFER_VIEWED,
+                offer_id=offer_id,
+                company_id=company_id,
+                candidate_name=candidate_name,
+                metadata={"event": "offer_viewed"},
+            )
+        except Exception as _e:
+            logger.debug("[teams_service] automation trigger OFFER_VIEWED skipped: %s", _e)
+
+    async def on_offer_responded(
+        self,
+        offer_id: str,
+        company_id: str,
+        candidate_name: str,
+        acao: str,
+        notas: str | None = None,
+    ) -> None:
+        """Notify recruiter when candidate accepts or declines via portal."""
+        is_accepted = acao == "aceitar"
+        severity = AlertSeverity.SUCCESS if is_accepted else AlertSeverity.WARNING
+        emoji = "✅" if is_accepted else "❌"
+        acao_label = "aceitou" if is_accepted else "recusou"
+
+        try:
+            db_gen = get_db()
+            db = await db_gen.__anext__()
+            webhook_url, _ = await resolve_tenant_teams_webhook_url(company_id, db)
+            await db_gen.aclose()
+        except Exception:
+            webhook_url = None
+
+        if webhook_url:
+            facts = [
+                {"name": "Candidato", "value": candidate_name},
+                {"name": "Decisão", "value": acao_label.capitalize()},
+                {"name": "Proposta ID", "value": offer_id[:8] + "..."},
+            ]
+            if notas:
+                facts.append({"name": "Observações", "value": notas[:200]})
+            await self.send_alert(
+                title=f"{emoji} Proposta {acao_label}",
+                message=f"{candidate_name} {acao_label} a proposta.",
+                severity=severity,
+                webhook_url=webhook_url,
+                facts=facts,
+                source="Offer Portal",
+            )
+
+        # Fire OFFER_DECLINED or let OFFER_ACCEPTED flow through existing handler
+        trigger_type_str = "offer_declined" if not is_accepted else "offer_accepted"
+        try:
+            from app.domains.automation.services.automation_trigger_service import automation_trigger_service
+            from app.shared.automation.trigger_types_canonical import TriggerType
+            tt = TriggerType.OFFER_DECLINED if not is_accepted else TriggerType.OFFER_ACCEPTED
+            await automation_trigger_service.fire_offer_trigger(
+                trigger_type=tt,
+                offer_id=offer_id,
+                company_id=company_id,
+                candidate_name=candidate_name,
+                metadata={"event": trigger_type_str, "notas": notas},
+            )
+        except Exception as _e:
+            logger.debug("[teams_service] automation trigger %s skipped: %s", trigger_type_str, _e)
+
+
+    async def on_offer_expired(
+        self,
+        offer_id: str,
+        company_id: str,
+        candidate_name: str,
+    ) -> None:
+        """Notify recruiter when an offer expires without candidate response."""
+        try:
+            db_gen = get_db()
+            db = await db_gen.__anext__()
+            webhook_url, _ = await resolve_tenant_teams_webhook_url(company_id, db)
+            await db_gen.aclose()
+        except Exception:
+            webhook_url = None
+
+        if webhook_url:
+            await self.send_alert(
+                title="⏰ Proposta expirada",
+                message=f"A proposta para {candidate_name} expirou sem resposta.",
+                severity=AlertSeverity.WARNING,
+                webhook_url=webhook_url,
+                facts=[
+                    {"name": "Candidato", "value": candidate_name},
+                    {"name": "Proposta ID", "value": offer_id[:8] + "..."},
+                ],
+                source="Offer Service",
+            )
+
+        try:
+            from app.domains.automation.services.automation_trigger_service import automation_trigger_service
+            from app.shared.automation.trigger_types_canonical import TriggerType
+            await automation_trigger_service.fire_offer_trigger(
+                trigger_type=TriggerType.OFFER_EXPIRED,
+                offer_id=offer_id,
+                company_id=company_id,
+                candidate_name=candidate_name,
+                metadata={"event": "offer_expired"},
+            )
+        except Exception as _e:
+            logger.debug("[teams_service] automation trigger OFFER_EXPIRED skipped: %s", _e)
+
+
+    async def on_offer_escalation_tool(
+        self,
+        offer_id: str,
+        pending_id: str,
+        reason: str,
+        company_id: str,
+        counter_salary: "float | None" = None,
+    ) -> None:
+        """Notify recruiter via Teams when concierge escalates for HITL approval."""
+        try:
+            db_gen = get_db()
+            db = await db_gen.__anext__()
+            webhook_url, _ = await resolve_tenant_teams_webhook_url(company_id, db)
+            await db_gen.aclose()
+        except Exception:
+            webhook_url = None
+
+        if not webhook_url:
+            return
+
+        facts = [
+            {"name": "Motivo", "value": reason[:200]},
+            {"name": "Pending ID", "value": pending_id[:16] + "..."},
+        ]
+        if counter_salary is not None:
+            facts.append({"name": "Contraproposta salarial", "value": f"R$ {counter_salary:,.2f}"})
+
+        await self.send_alert(
+            title="🤝 Aprovação necessária — Proposta de Oferta",
+            message="O agente de proposta solicita sua aprovação antes de prosseguir.",
+            severity=AlertSeverity.WARNING,
+            webhook_url=webhook_url,
+            facts=facts,
+            source="Offer Concierge Agent",
+        )
+
+
     async def test_connection(self, webhook_url: str | None = None) -> dict[str, Any]:
         """
         Test Teams webhook connection by sending a test message.
@@ -490,3 +679,61 @@ teams_service = TeamsService()
 
 def get_teams_service() -> "TeamsService":
     return teams_service
+
+
+async def resolve_tenant_teams_webhook_url(
+    company_id: str,
+    db: "Any",
+) -> "tuple[str | None, str]":
+    """Resolve the outbound Teams webhook URL for a tenant.
+
+    Lookup priority:
+      1. Per-tenant ``IntegrationConnection`` row (encrypted in DB).
+      2. Global ``TEAMS_WEBHOOK_URL`` environment variable.
+      3. ``("none", "none")`` — caller should treat as development/log-only mode.
+
+    Returns:
+        ``(url, source)`` where *source* is ``"db"``, ``"env"``, or ``"none"``.
+
+    This function is the canonical resolver used by every outbound send path
+    (API endpoints, background jobs, tool registry).  Callers that hold a DB
+    session and a resolved ``company_id`` MUST use this instead of reading
+    ``os.environ["TEAMS_WEBHOOK_URL"]`` directly so that per-tenant
+    configuration is honoured.
+    """
+    try:
+        from sqlalchemy import select as _sa_select
+
+        from app.models.integration_hub import IntegrationConnection as _IC
+        from app.models.integration_hub import IntegrationProvider as _IP
+        from app.shared.services.credentials_crypto import decrypt_credentials as _decrypt
+
+        _SLUG = "microsoft_teams"
+        prov_res = await db.execute(
+            _sa_select(_IP).where(_IP.slug == _SLUG)
+        )
+        provider = prov_res.scalar_one_or_none()
+        if provider is not None:
+            conn_res = await db.execute(
+                _sa_select(_IC).where(
+                    _IC.company_id == company_id,
+                    _IC.provider_id == provider.id,
+                )
+            )
+            conn = conn_res.scalar_one_or_none()
+            if conn is not None and conn.credentials_encrypted:
+                creds = _decrypt(conn.credentials_encrypted)
+                url = creds.get("webhook_url")
+                if url:
+                    return url, "db"
+    except Exception as _exc:
+        logger.warning(
+            "resolve_tenant_teams_webhook_url: DB lookup failed for company=%s: %s",
+            company_id,
+            _exc,
+        )
+
+    env_url = os.environ.get("TEAMS_WEBHOOK_URL")
+    if env_url:
+        return env_url, "env"
+    return None, "none"

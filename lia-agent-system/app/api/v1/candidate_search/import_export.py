@@ -81,6 +81,7 @@ def _generate_fingerprint(name: str, linkedin_url: str | None = None, email: str
 from app.auth.dependencies import assert_resource_ownership, get_current_user_or_demo, get_user_company_id
 from app.auth.models import User as ImportUser
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 
 
 @router.post("/candidates/import", response_model=ImportCandidatesResponse)
@@ -308,7 +309,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await db.rollback()
         logger.error(f"Error importing candidates to staging: {e}")
-        raise HTTPException(status_code=500, detail=f"Import failed: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 
 class PromoteCandidateResponse(BaseModel):
@@ -740,6 +741,6 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await db.rollback()
         logger.error(f"Error promoting candidate: {e}")
-        raise HTTPException(status_code=500, detail=f"Promotion failed: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 

@@ -60,6 +60,7 @@ export interface JDEvaluationPanelProps {
   onSaveEnrichedJD?: (enrichedJd: EnrichedJD) => Promise<void>
   onUpdateOfficialJD?: (updates: { description?: string; responsibilities?: string[]; requirements?: string[]; technicalSkills?: string[]; behavioralCompetencies?: string[] }) => Promise<void>
   onUpdateJobDescription?: (jdText: string) => Promise<void>
+  onSaveDefinitiva?: (enrichedJd: EnrichedJD, updates: { description?: string; responsibilities?: string[]; requirements?: string[]; technicalSkills?: string[]; behavioralCompetencies?: string[] }) => Promise<void>
   enrichedJd?: EnrichedJD
   isGenerating?: boolean
   className?: string
@@ -91,8 +92,9 @@ export function useJDEvaluation(props: {
   onSaveEnrichedJD?: JDEvaluationPanelProps['onSaveEnrichedJD']
   onUpdateOfficialJD?: JDEvaluationPanelProps['onUpdateOfficialJD']
   onUpdateJobDescription?: JDEvaluationPanelProps['onUpdateJobDescription']
+  onSaveDefinitiva?: JDEvaluationPanelProps['onSaveDefinitiva']
 }) {
-  const { jobTitle, responsibilities, technicalSkills, behavioralCompetencies, seniority, department, description, hasQuestions, enrichedJd, companyId, companyName, companyDescription, companyIndustry, benefits = [], interviewStages = [], onSaveJDInline, onSaveEnrichedJD, onUpdateOfficialJD, onUpdateJobDescription } = props
+  const { jobTitle, responsibilities, technicalSkills, behavioralCompetencies, seniority, department, description, hasQuestions, enrichedJd, companyId, companyName, companyDescription, companyIndustry, benefits = [], interviewStages = [], onSaveJDInline, onSaveEnrichedJD, onUpdateOfficialJD, onUpdateJobDescription, onSaveDefinitiva } = props
 
   // Cultura & EVP --- carrega dados da empresa para enriquecer o JD gerado
   const { culture } = useCompanyCulture()
@@ -103,7 +105,7 @@ export function useJDEvaluation(props: {
   // para o painel mostrar mensagem específica (auth/rede/servidor) em vez de
   // ficar mudo quando evaluation=null.
   const [evaluationError, setEvaluationError] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)  // start loading immediately to prevent JDEvalResultsPanel flash before fetchEvaluation runs
   const [isEditing, setIsEditing] = useState(false)
   const [editDescription, setEditDescription] = useState(description || '')
   const [editResponsibilities, setEditResponsibilities] = useState<string[]>(responsibilities)
@@ -117,6 +119,8 @@ export function useJDEvaluation(props: {
   const [aiBehavSuggestions, setAiBehavSuggestions] = useState<{name: string, key: string}[]>([])
   const [isLoadingTechSuggestions, setIsLoadingTechSuggestions] = useState(false)
   const [isLoadingBehavSuggestions, setIsLoadingBehavSuggestions] = useState(false)
+  const [aiRespSuggestions, setAiRespSuggestions] = useState<string[]>([])
+  const [isLoadingRespSuggestions, setIsLoadingRespSuggestions] = useState(false)
   const [generatedJD, setGeneratedJD] = useState<{full_description: string, sections: Record<string, string>, summary: string, tags: string[]} | null>(null)
   const [isGeneratingJD, setIsGeneratingJD] = useState(false)
   const [copiedJD, setCopiedJD] = useState(false)
@@ -149,8 +153,8 @@ export function useJDEvaluation(props: {
 
   useEffect(() => {
     if (!isEditing) {
-      setAiTechSuggestions([]); setAiBehavSuggestions([]); setGeneratedJD(null)
-      setIsLoadingTechSuggestions(false); setIsLoadingBehavSuggestions(false)
+      setAiTechSuggestions([]); setAiBehavSuggestions([]); setAiRespSuggestions([]); setGeneratedJD(null)
+      setIsLoadingTechSuggestions(false); setIsLoadingBehavSuggestions(false); setIsLoadingRespSuggestions(false)
       setIsGeneratingJD(false); setCopiedJD(false)
     }
   }, [isEditing])
@@ -181,7 +185,7 @@ export function useJDEvaluation(props: {
     try {
       const response = await fetch("/api/backend-proxy/skills-catalog/wizard/suggest-skills", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ company_id: companyId || "", job_title: jobTitle, seniority: seniority || undefined, department: department || undefined, include_company_catalog: true, limit: 10 })
+        body: JSON.stringify({ job_title: jobTitle, seniority: seniority || undefined, department: department || undefined, include_company_catalog: true, limit: 10 })
       })
       const data = await response.json()
       if (data.technical_skills && data.technical_skills.length > 0) {
@@ -189,7 +193,7 @@ export function useJDEvaluation(props: {
       } else {
         setAiTechSuggestions(FALLBACK_TECH_SKILLS.filter(s => !editTechSkills.includes(s)).map(s => ({ skill: s, confidence: 0.7 })))
       }
-    } catch { setAiTechSuggestions(FALLBACK_TECH_SKILLS.filter(s => !editTechSkills.includes(s)).map(s => ({ skill: s, confidence: 0.7 }))) }
+    } catch (err) { console.error('[useJDEvaluation] fetchTechSuggestions failed:', err); setAiTechSuggestions(FALLBACK_TECH_SKILLS.filter(s => !editTechSkills.includes(s)).map(s => ({ skill: s, confidence: 0.7 }))) }
     finally { setIsLoadingTechSuggestions(false) }
   }
 
@@ -198,7 +202,7 @@ export function useJDEvaluation(props: {
     try {
       const response = await fetch("/api/backend-proxy/skills-catalog/wizard/suggest-skills", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ company_id: companyId || "", job_title: jobTitle, seniority: seniority || undefined, department: department || undefined, include_company_catalog: true, limit: 10 })
+        body: JSON.stringify({ job_title: jobTitle, seniority: seniority || undefined, department: department || undefined, include_company_catalog: true, limit: 10 })
       })
       const data = await response.json()
       if (data.behavioral_competencies && data.behavioral_competencies.length > 0) {
@@ -206,8 +210,38 @@ export function useJDEvaluation(props: {
       } else {
         setAiBehavSuggestions(FALLBACK_BEHAV_COMPETENCIES.filter(c => !editBehavCompetencies.includes(c.name)))
       }
-    } catch { setAiBehavSuggestions(FALLBACK_BEHAV_COMPETENCIES.filter(c => !editBehavCompetencies.includes(c.name))) }
+    } catch (err) { console.error('[useJDEvaluation] fetchBehavSuggestions failed:', err); setAiBehavSuggestions(FALLBACK_BEHAV_COMPETENCIES.filter(c => !editBehavCompetencies.includes(c.name))) }
     finally { setIsLoadingBehavSuggestions(false) }
+  }
+
+
+  const fetchResponsibilitiesSuggestions = async () => {
+    setIsLoadingRespSuggestions(true)
+    try {
+      const response = await fetch("/api/backend-proxy/jd/suggest-responsibilities", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          job_title: jobTitle,
+          seniority: seniority || undefined,
+          department: department || undefined,
+          description: editDescription || undefined,
+          existing_responsibilities: editResponsibilities,
+        })
+      })
+      if (!response.ok) {
+        console.error('[useJDEvaluation] fetchResponsibilitiesSuggestions error:', response.status)
+        setAiRespSuggestions([])
+        return
+      }
+      const data = await response.json() as { success?: boolean; responsibilities?: string[] }
+      if (data.responsibilities && data.responsibilities.length > 0) {
+        const existing = new Set(editResponsibilities.map(r => r.toLowerCase().trim()))
+        setAiRespSuggestions(data.responsibilities.filter(r => !existing.has(r.toLowerCase().trim())))
+      } else {
+        setAiRespSuggestions([])
+      }
+    } catch (err) { console.error('[useJDEvaluation] fetchResponsibilitiesSuggestions failed:', err); setAiRespSuggestions([]) }
+    finally { setIsLoadingRespSuggestions(false) }
   }
 
   const generateJD = async () => {
@@ -221,7 +255,7 @@ export function useJDEvaluation(props: {
       setJdDynamicMessage('Gerando descrição com base na metodologia WSI...')
       const response = await fetch("/api/backend-proxy/jd/generate", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ job_title: jobTitle, department: department || undefined, seniority: seniority || undefined, description: editDescription || undefined, responsibilities: editResponsibilities, technical_skills: editTechSkills, behavioral_competencies: editBehavCompetencies, company_id: companyId || "", company_name: companyName || undefined, company_description: companyDescription || undefined, company_industry: companyIndustry || undefined, benefits: benefits.length > 0 ? benefits : undefined, interview_stages: interviewStages.length > 0 ? interviewStages : undefined, // Cultura & EVP --- injetados quando disponíveis, campos opcionais no backend
+        body: JSON.stringify({ job_title: jobTitle, department: department || undefined, seniority: seniority || undefined, description: editDescription || undefined, responsibilities: editResponsibilities, technical_skills: editTechSkills, behavioral_competencies: editBehavCompetencies, company_name: companyName || undefined, company_description: companyDescription || undefined, company_industry: companyIndustry || undefined, benefits: benefits.length > 0 ? benefits : undefined, interview_stages: interviewStages.length > 0 ? interviewStages : undefined, // Cultura & EVP --- injetados quando disponíveis, campos opcionais no backend
         mission: culture?.mission || undefined, vision: culture?.vision || undefined, evp_bullets: culture?.evpBullets && culture.evpBullets.length > 0 ? culture.evpBullets : undefined })
       })
       if (!response.ok) {
@@ -264,7 +298,7 @@ export function useJDEvaluation(props: {
       const response = await fetch('/api/backend-proxy/jd/extract', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: editDescription, company_id: companyId || '' }),
+        body: JSON.stringify({ text: editDescription }),
       })
       if (!response.ok) {
         const errPayload = await response.json().catch(() => null) as { detail?: { message?: string } | string; message?: string } | null
@@ -308,7 +342,7 @@ export function useJDEvaluation(props: {
     const evalTech = overrides?.technicalSkills ?? technicalSkills
     const evalBehav = overrides?.behavioralCompetencies ?? behavioralCompetencies
     const evalDesc = overrides?.description ?? description
-    if (!jobTitle) return
+    if (!jobTitle) { setIsLoading(false); return }
     setIsLoading(true)
     try {
       const response = await fetch("/api/backend-proxy/wsi/jd-evaluate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ job_title: jobTitle, responsibilities: evalResp, technical_skills: evalTech, behavioral_competencies: evalBehav, seniority: seniority || null, department: department || null, description: evalDesc || null }) })
@@ -365,7 +399,7 @@ export function useJDEvaluation(props: {
   const handleSaveRascunho = async () => {
     setIsSavingInline(true); setSaveError(false)
     try {
-      const enrichedData: EnrichedJD = { description: editDescription, responsibilities: editResponsibilities, technical_skills: editTechSkills, behavioral_competencies: editBehavCompetencies, generated_jd_text: generatedJD?.full_description || undefined, updated_at: new Date().toISOString() }
+      const enrichedData: EnrichedJD = { description: editDescription, responsibilities: editResponsibilities, technical_skills: editTechSkills, behavioral_competencies: editBehavCompetencies, generated_jd_text: generatedJD?.full_description ?? enrichedJd?.generated_jd_text ?? undefined, updated_at: new Date().toISOString() }
       if (onSaveEnrichedJD) { await onSaveEnrichedJD(enrichedData) }
       else if (onSaveJDInline) { await onSaveJDInline({ description: editDescription, requirements: editResponsibilities, technicalSkills: editTechSkills, behavioralCompetencies: editBehavCompetencies }) }
       setIsEditing(false)
@@ -375,10 +409,17 @@ export function useJDEvaluation(props: {
   const handleSaveDefinitiva = async () => {
     setIsSavingDefinitive(true); setSaveError(false)
     try {
-      const enrichedData: EnrichedJD = { description: editDescription, responsibilities: editResponsibilities, technical_skills: editTechSkills, behavioral_competencies: editBehavCompetencies, generated_jd_text: generatedJD?.full_description || undefined, updated_at: new Date().toISOString() }
-      if (onSaveEnrichedJD) { await onSaveEnrichedJD(enrichedData) }
-      if (onUpdateOfficialJD) { await onUpdateOfficialJD({ description: editDescription, requirements: editResponsibilities, technicalSkills: editTechSkills, behavioralCompetencies: editBehavCompetencies }) }
-      else if (onSaveJDInline) { await onSaveJDInline({ description: editDescription, requirements: editResponsibilities, technicalSkills: editTechSkills, behavioralCompetencies: editBehavCompetencies }) }
+      const enrichedData: EnrichedJD = { description: editDescription, responsibilities: editResponsibilities, technical_skills: editTechSkills, behavioral_competencies: editBehavCompetencies, generated_jd_text: generatedJD?.full_description ?? enrichedJd?.generated_jd_text ?? undefined, updated_at: new Date().toISOString() }
+      const officialUpdates = { description: editDescription, responsibilities: editResponsibilities, requirements: editResponsibilities, technicalSkills: editTechSkills, behavioralCompetencies: editBehavCompetencies }
+      if (onSaveDefinitiva) {
+        // P1-1: 1 PUT atômico com enriched_jd + campos canônicos
+        await onSaveDefinitiva(enrichedData, officialUpdates)
+      } else {
+        // Fallback: 2 PUTs independentes (legado)
+        if (onSaveEnrichedJD) { await onSaveEnrichedJD(enrichedData) }
+        if (onUpdateOfficialJD) { await onUpdateOfficialJD(officialUpdates) }
+        else if (onSaveJDInline) { await onSaveJDInline(officialUpdates) }
+      }
       setIsEditing(false)
       await fetchEvaluation({ responsibilities: editResponsibilities, technicalSkills: editTechSkills, behavioralCompetencies: editBehavCompetencies, description: editDescription })
     } catch { setSaveError(true) } finally { setIsSavingDefinitive(false) }
@@ -388,7 +429,7 @@ export function useJDEvaluation(props: {
     if (!generatedJD?.full_description) return
     setIsSavingWithJD(true); setSaveError(false)
     try {
-      const enrichedData: EnrichedJD = { description: editDescription, responsibilities: editResponsibilities, technical_skills: editTechSkills, behavioral_competencies: editBehavCompetencies, generated_jd_text: generatedJD.full_description, updated_at: new Date().toISOString() }
+      const enrichedData: EnrichedJD = { description: editDescription, responsibilities: editResponsibilities, technical_skills: editTechSkills, behavioral_competencies: editBehavCompetencies, generated_jd_text: generatedJD.full_description ?? enrichedJd?.generated_jd_text, updated_at: new Date().toISOString() }
       if (onSaveEnrichedJD) { await onSaveEnrichedJD(enrichedData) }
       if (onUpdateOfficialJD) { await onUpdateOfficialJD({ description: editDescription, requirements: editResponsibilities, technicalSkills: editTechSkills, behavioralCompetencies: editBehavCompetencies }) }
       if (onUpdateJobDescription) { await onUpdateJobDescription(generatedJD.full_description) }
@@ -415,11 +456,11 @@ export function useJDEvaluation(props: {
     editTechSkills, setEditTechSkills, editBehavCompetencies, setEditBehavCompetencies,
     isSavingInline, newItem, setNewItem, editingField, setEditingField, saveError,
     aiTechSuggestions, setAiTechSuggestions, aiBehavSuggestions, setAiBehavSuggestions,
-    isLoadingTechSuggestions, isLoadingBehavSuggestions,
+    isLoadingTechSuggestions, isLoadingBehavSuggestions, aiRespSuggestions, setAiRespSuggestions, isLoadingRespSuggestions,
     generatedJD, isGeneratingJD, copiedJD, isSavingDefinitive, isSavingWithJD,
     showFullDescription, setShowFullDescription,
     jdTypedMessage, jdDynamicMessage, jdGenerationStep, jdGenerationError,
-    fetchTechSuggestions, fetchBehavSuggestions, generateJD, handleCopyJD,
+    fetchTechSuggestions, fetchBehavSuggestions, fetchResponsibilitiesSuggestions, generateJD, handleCopyJD,
     fetchEvaluation, handleSaveRascunho, handleSaveDefinitiva, handleSaveAndUpdateJD, handleCancel,
     // T-1167 (Bug #3) — extração de campos do JD colado
     isExtracting, extractError, extractFromText,

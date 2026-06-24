@@ -53,6 +53,32 @@ def _safe_uuid(value: str) -> UUID | None:
         return None
 
 
+async def _get_quotas_from_plan_config(plan_code: str, db: AsyncSession) -> dict[str, int] | None:
+    """Fetch agent quotas from company_plan_configs table."""
+    try:
+        from lia_models.plan_config import CompanyPlanConfig
+
+        result = await db.execute(
+            select(
+                CompanyPlanConfig.max_custom_agents,
+                CompanyPlanConfig.max_sourcing_agents,
+                CompanyPlanConfig.max_digital_twins,
+                CompanyPlanConfig.max_campaigns,
+            ).where(CompanyPlanConfig.plan_code == plan_code.lower().strip()).limit(1)
+        )
+        row = result.one_or_none()
+        if row:
+            return {
+                "custom_agents": row[0],
+                "sourcing_agents": row[1],
+                "digital_twins": row[2],
+                "campaigns": row[3],
+            }
+    except Exception as exc:
+        logger.debug("[QUOTA] DB plan_config lookup failed for plan=%s: %s", plan_code, exc)
+    return None
+
+
 async def get_effective_quotas(company_id: str, db: AsyncSession) -> dict[str, int]:
     company_uuid = _safe_uuid(company_id)
 
@@ -72,8 +98,14 @@ async def get_effective_quotas(company_id: str, db: AsyncSession) -> dict[str, i
     )
     plan_code = (await db.execute(sub_q)).scalar_one_or_none()
     plan_key = (plan_code or "starter").lower().strip()
-    quotas = PLAN_AGENT_QUOTAS.get(plan_key, DEFAULT_QUOTAS).copy()
 
+    # Fase 1.3: try DB (company_plan_configs) before hardcoded fallback
+    db_quotas = await _get_quotas_from_plan_config(plan_key, db)
+    quotas = db_quotas if db_quotas is not None else PLAN_AGENT_QUOTAS.get(plan_key, DEFAULT_QUOTAS).copy()
+    if db_quotas is None:
+        quotas = quotas.copy()
+
+    # Per-company override from ClientAccount.settings (highest priority)
     client_result = await db.execute(
         select(ClientAccount).where(ClientAccount.id == company_uuid)
     )

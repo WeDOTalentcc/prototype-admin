@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 /**
  * UpgradeRequestModal — substitui mailto: como CTA "Falar com Account Manager"
  * no modelo pay-first sales-led canonical WeDOTalent.
@@ -14,6 +15,7 @@
  *   - HUBSPOT_ACCESS_TOKEN no Replit Secrets (opcional — fallback funciona sem)
  */
 import React, { useState } from "react"
+import { useMutation } from "@tanstack/react-query"
 import { Loader2, Zap } from "lucide-react"
 import { useTranslations } from "next-intl"
 import {
@@ -49,15 +51,15 @@ export interface UpgradeRequestModalProps {
 const PLAN_OPTIONS = ["starter", "pro", "business", "enterprise"] as const
 
 export function UpgradeRequestModal({ isOpen, onClose, context }: UpgradeRequestModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('upgrade-request', isOpen)
+
   const t = useTranslations("agents.studio.upgradeRequest")
   const [requestedPlan, setRequestedPlan] = useState<string>("")
   const [notes, setNotes] = useState("")
-  const [isSubmitting, setIsSubmitting] = useState(false)
-
-  const handleSubmit = async () => {
-    if (!context) return
-    setIsSubmitting(true)
-    try {
+  const { mutate: submitUpgradeRequest, isPending: isSubmitting } = useMutation({
+    mutationFn: async () => {
+      if (!context) throw new Error("Context required")
       const res = await fetch("/api/backend-proxy/upgrade-requests", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -73,7 +75,9 @@ export function UpgradeRequestModal({ isOpen, onClose, context }: UpgradeRequest
       if (!res.ok) {
         throw new Error(`HTTP ${res.status}`)
       }
-      const data = (await res.json()) as { expected_response_hours: number }
+      return (await res.json()) as { expected_response_hours: number }
+    },
+    onSuccess: (data) => {
       toast.success(
         t("successTitle"),
         t("successDesc", { hours: data.expected_response_hours }),
@@ -81,14 +85,17 @@ export function UpgradeRequestModal({ isOpen, onClose, context }: UpgradeRequest
       setRequestedPlan("")
       setNotes("")
       onClose()
-    } catch (e) {
+    },
+    onError: () => {
       toast.error(
         t("errorTitle"),
         t("errorDesc"),
       )
-    } finally {
-      setIsSubmitting(false)
-    }
+    },
+  })
+
+  const handleSubmit = () => {
+    submitUpgradeRequest()
   }
 
   if (!context) return null
@@ -134,7 +141,7 @@ export function UpgradeRequestModal({ isOpen, onClose, context }: UpgradeRequest
                 </option>
               ))}
             </select>
-            <p className="text-[10px] text-lia-text-disabled mt-0.5">
+            <p className="text-[10px] text-lia-text-muted mt-0.5">
               {t("requestedPlanHelp")}
             </p>
           </div>

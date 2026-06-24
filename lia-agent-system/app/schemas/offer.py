@@ -166,16 +166,25 @@ class OfferDraftResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
 
+class OfferDraftListResponse(BaseModel):
+    """Paginated list of offer drafts for a job vacancy."""
+    offers: list[OfferDraftResponse]
+    total: int | None = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class OfferSendAutoRequest(WeDoBaseModel):
     pass  # draft data already in DB; no extra params needed
 
 
 class OfferSendAutoResponse(BaseModel):
     offer_id: UUID
-    status: str  # "sent"
-    email_log_id: UUID
+    status: str  # sent
+    email_log_id: UUID | None
     sent_at: datetime
     message: str
+    offer_link: str | None = None
 
 
 class OfferPrepareManualResponse(BaseModel):

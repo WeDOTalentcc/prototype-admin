@@ -3,7 +3,6 @@
 import { useState, useCallback, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import type { DuplicateCheckResult } from '@/services/duplicate-detection-service'
-import { toast } from "sonner"
 import {
   ACCEPTED_FILE_TYPES,
   MAX_FILE_SIZE,
@@ -59,6 +58,7 @@ export function useNewCandidateUnifiedModal({
 
   const [duplicateResult, setDuplicateResult] = useState<DuplicateCheckResult | null>(null)
   const [savedCandidateId, setSavedCandidateId] = useState<string>('')
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
   useEffect(() => {
     if (!isOpen) {
@@ -75,6 +75,7 @@ export function useNewCandidateUnifiedModal({
       setUploadProgress(0)
       setError(null)
       setSavedCandidateId('')
+      setFieldErrors({})
     }
   }, [isOpen])
 
@@ -166,16 +167,19 @@ export function useNewCandidateUnifiedModal({
       await createAndOpen(parsed, !!parsed.linkedin)
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Erro ao processar CV"
-      setError(msg); toast.error("Erro no processamento", { description: msg }); setCurrentStep('input')
+      setError(msg); setCurrentStep('input')
     } finally {
       setIsProcessing(false); setUploadProgress(0)
     }
   }
 
   const handleSubmitLinkedin = async () => {
-    if (!linkedinUrl.trim()) { setError("Cole a URL do LinkedIn"); return }
+    setFieldErrors({})
+    if (!linkedinUrl.trim()) {
+      setFieldErrors({ linkedinUrl: "Cole a URL do LinkedIn" }); return
+    }
     if (!linkedinUrl.includes('linkedin.com/in/')) {
-      setError("URL inválida. Use o formato: linkedin.com/in/nome-do-usuario"); return
+      setFieldErrors({ linkedinUrl: "URL inválida. Use o formato: linkedin.com/in/nome-do-usuario" }); return
     }
     setIsProcessing(true); setError(null); setCurrentStep('processing')
     try {
@@ -189,17 +193,24 @@ export function useNewCandidateUnifiedModal({
       openFullProfile(candidateId)
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Erro ao cadastrar via LinkedIn"
-      setError(msg); toast.error("Erro no cadastro", { description: msg }); setCurrentStep('input')
+      setError(msg); setCurrentStep('input')
     } finally {
       setIsProcessing(false)
     }
   }
 
   const handleSubmitManual = async () => {
-    if (!manualData.name.trim()) { setError("O nome é obrigatório"); return }
-    if (!manualData.email.trim() && !manualData.phone.trim()) {
-      setError("Informe pelo menos um contato (email ou telefone)"); return
+    const errors: Record<string, string> = {}
+    if (!manualData.name.trim()) {
+      errors.name = "O nome é obrigatório"
     }
+    if (!manualData.email.trim() && !manualData.phone.trim()) {
+      errors.contact = "Informe pelo menos um contato (email ou telefone)"
+    }
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors); return
+    }
+    setFieldErrors({})
     setIsProcessing(true); setError(null); setCurrentStep('processing')
     try {
       const dup = await checkDuplicateByManual(manualData)
@@ -212,7 +223,7 @@ export function useNewCandidateUnifiedModal({
       openFullProfile(candidateId)
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Erro ao cadastrar candidato"
-      setError(msg); toast.error("Erro no cadastro", { description: msg }); setCurrentStep('input')
+      setError(msg); setCurrentStep('input')
     } finally {
       setIsProcessing(false)
     }
@@ -249,7 +260,7 @@ export function useNewCandidateUnifiedModal({
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Erro ao cadastrar candidato"
-      setError(msg); toast.error("Erro no cadastro", { description: msg }); setCurrentStep('input')
+      setError(msg); setCurrentStep('input')
     } finally {
       setIsProcessing(false)
     }
@@ -264,6 +275,7 @@ export function useNewCandidateUnifiedModal({
     isProcessing, isEnriching,
     uploadProgress,
     error, setError,
+    fieldErrors, setFieldErrors,
     parsedCV,
     linkedinUrl, setLinkedinUrl,
     manualData, setManualData,

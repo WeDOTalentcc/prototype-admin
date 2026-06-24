@@ -127,8 +127,20 @@ class ResendProvider(EmailProvider):
             if bcc:
                 params["bcc"] = bcc
             
-            if headers:
-                params["headers"] = headers
+            # GAP-07-002 / LOTE-009: compliance headers — per-recipient URL for RFC 8058
+            import urllib.parse as _ul
+            _base_url = os.getenv("APP_BASE_URL", "https://app.wedotalent.cc").rstrip("/")
+            _enc_to = _ul.quote_plus(to or "")
+            _compliance: dict[str, str] = {
+                "List-Unsubscribe": (
+                    f"<{_base_url}/api/v1/communication/unsubscribe?email={_enc_to}>, "
+                    f"<mailto:unsubscribe@wedotalent.cc?subject=Unsubscribe>"
+                ),
+                "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+                "DMARC-Policy": "v=DMARC1; p=quarantine; rua=mailto:dmarc@wedotalent.cc",
+                "X-Mailer": "WeDOTalent/LIA",
+            }
+            params["headers"] = {**_compliance, **(headers or {})}
             
             response = await asyncio.to_thread(
                 resend.Emails.send, params

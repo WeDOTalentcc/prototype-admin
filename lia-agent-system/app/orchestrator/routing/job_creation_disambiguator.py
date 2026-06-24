@@ -52,7 +52,10 @@ _CREATION_RE = re.compile(
 # phrasings that still mean "start the creation wizard".
 _CREATION_INTENT_RE = re.compile(
     r"\b("
-    r"(quero|preciso|vamos|gostaria)\s+(de\s+)?(criar|abrir|uma\s+vaga|nova\s+vaga)|"
+    r"(quero|preciso|vamos|gostaria)\s+(de\s+)?("
+    r"(criar|abrir)\s+(uma\s+|a\s+|o\s+)?(nova?\s+)?(vaga|posi[cC][aA]o|requisi[cC][aA]o)"
+    r"|uma\s+vaga|nova\s+vaga"
+    r")|"
     r"contratar\b"
     r")",
     re.IGNORECASE,
@@ -68,7 +71,7 @@ _PUBLISH_ONLY_RE = re.compile(
 # executed after the wizard finishes. Anything not here is captured as text but
 # flagged ``continuation_connected=False`` (offer signals it explicitly).
 CONNECTED_CONTINUATIONS: dict[str, re.Pattern[str]] = {
-    "publish_job": re.compile(r"public", re.IGNORECASE),
+    "publish_job": re.compile(r"publi[cq]", re.IGNORECASE),
     "sync_job": re.compile(r"sincroniz|sync|integra", re.IGNORECASE),
 }
 

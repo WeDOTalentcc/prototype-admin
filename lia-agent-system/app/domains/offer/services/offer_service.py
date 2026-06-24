@@ -110,7 +110,7 @@ class NoApproverConfiguredError(OfferPolicyGateError):
       yet; recruiter must trigger the approval workflow.
     - ``NoApproverConfiguredError`` => toggle ON, but the Approver table is
       empty; admin must add at least one approver before any workflow
-      can be triggered. UX response is ``ui_action='prompt_admin_to_configure_approver'``.
+      can be triggered. UX response is ``ui_action='settings_open_tab'`` with ``section='approvers'``.
     """
 
     reason = "no_approver_configured"
@@ -124,6 +124,48 @@ _INTERVIEW_COMPLETED_STATUSES = ("completed", "done", "realizada")
 def compute_default_start_date() -> date:
     """Return today + 30 calendar days as default start date."""
     return (datetime.utcnow() + timedelta(days=_WORKING_DAYS_BUFFER)).date()
+
+
+
+async def compute_next_start_date_for_company(company_id: str, db) -> "date":
+    """Compute next valid start date per offer_rules.
+
+    Reads CompanyHiringPolicy.offer_rules fields:
+      allowed_start_day_of_month, min_notice_days, onboarding_blackout_periods.
+    Falls back to compute_default_start_date() when no rules configured.
+    Used by OfferConciergeAgent.suggest_next_start_date tool.
+    """
+    from app.domains.hiring_policy.repositories.hiring_policy_repository import HiringPolicyRepository
+
+    policy = await HiringPolicyRepository(db).get_by_company_id(company_id)
+    rules = (policy.offer_rules if policy else None) or {}
+
+    allowed_days = rules.get("allowed_start_day_of_month", [])
+    min_notice = int(rules.get("min_notice_days", 30))
+    blackouts = rules.get("onboarding_blackout_periods", [])
+
+    base = (datetime.utcnow() + timedelta(days=min_notice)).date()
+
+    if not allowed_days:
+        return base
+
+    from datetime import date as _date
+    candidate = base
+    for _ in range(90):
+        if candidate.day in allowed_days:
+            blocked = False
+            for blk in blackouts:
+                try:
+                    if _date.fromisoformat(blk["start"]) <= candidate <= _date.fromisoformat(blk["end"]):
+                        blocked = True
+                        break
+                except (KeyError, ValueError):
+                    pass
+            if not blocked:
+                return candidate
+        candidate = candidate + timedelta(days=1)
+
+    return base
 
 
 def compute_response_deadline(validity_days: int) -> datetime:
@@ -885,7 +927,16 @@ class OfferService:
         # direct canonical columns. Append a multi-channel record to sent_via
         # JSONB array (canonical pattern for multi-channel send tracking).
         now = datetime.utcnow()
-        proposal.sent_at = now
+        # P0-1 (Migration 266): generate portal token + acceptance_url on first send
+        import uuid as _uuid_mod
+        import os as _os_mod
+        if not proposal.candidate_token:
+            proposal.candidate_token = _uuid_mod.uuid4()
+        if not proposal.acceptance_url:
+            base_url = _os_mod.environ.get("PORTAL_BASE_URL", "").rstrip("/")
+            if base_url:
+                proposal.acceptance_url = f"{base_url}/portal/proposta/{proposal.candidate_token}"
+                proposal.sent_at = now
         sent_via = list(proposal.sent_via or [])
         sent_via.append({
             "channel": "email",
@@ -937,6 +988,7 @@ class OfferService:
             "department": job.get("department", ""),
             "manager_name": job.get("manager", ""),
             "company_name": job.get("company_name", "WeDOTalent"),
+            "offer_link": proposal.acceptance_url or "",
             "offered_salary_formatted": (
                 f"{currency} {float(salary):,.2f}" if salary else ""
             ),
@@ -952,3 +1004,98 @@ class OfferService:
             "contract_type": job.get("contract_type", ""),
             "work_model": job.get("work_model", ""),
         }
+
+    async def check_hitl_threshold(
+        self,
+        counter_salary: float,
+        original_salary: float,
+        offer_rules: dict,
+    ) -> dict:
+        """3.6 — HITL threshold check para negociacao autonoma N3.
+
+        Se delta% <= negotiation_hitl_threshold_pct: agente pode auto-responder.
+        Se delta% > threshold: escala para aprovacao HITL do recrutador.
+
+        Returns dict: within_threshold, delta_pct, threshold_pct.
+        """
+        threshold_pct = float(offer_rules.get("negotiation_hitl_threshold_pct", 10.0))
+        if original_salary <= 0:
+            return {"within_threshold": False, "delta_pct": None, "threshold_pct": threshold_pct}
+        delta_pct = abs(counter_salary - original_salary) / original_salary * 100
+        return {
+            "within_threshold": delta_pct <= threshold_pct,
+            "delta_pct": round(delta_pct, 2),
+            "threshold_pct": threshold_pct,
+        }
+
+    async def get_learning_context(
+        self,
+        company_id: str,
+        *,
+        limit: int = 200,
+    ) -> dict:
+        """3.2 — Padroes anonimizados de negociacao (N >= 10, ADR-LGPD-001 Art. 12 para 1).
+
+        Retorna estatisticas agregadas para o argumentario do agente concierge.
+        Dados individuais NUNCA expostos — so agregados.
+        """
+        from app.domains.offer.repositories.offer_negotiation_event_repository import (
+            OfferNegotiationEventRepository,
+        )
+        events = await OfferNegotiationEventRepository(self._db).get_learning_data(
+            company_id, limit=limit
+        )
+        if len(events) < 10:  # ADR-LGPD-001 gate
+            return {
+                "sample_count": len(events),
+                "insufficient_data": True,
+                "message": "Menos de 10 negociacoes concluidas — padroes nao disponiveis ainda.",
+            }
+        accepted = [e for e in events if e.get("event_type") == "accepted"]
+        counter = [e for e in events if e.get("event_type") == "counter_proposed"]
+        declined = [e for e in events if e.get("event_type") == "declined"]
+        round_numbers = [e.get("round_number", 0) for e in counter if e.get("round_number")]
+        avg_rounds = round(sum(round_numbers) / len(round_numbers), 1) if round_numbers else 0
+        acceptance_rate = round(len(accepted) / len(events) * 100, 1) if events else 0
+        return {
+            "sample_count": len(events),
+            "insufficient_data": False,
+            "acceptance_rate_pct": acceptance_rate,
+            "avg_rounds_to_accept": avg_rounds,
+            "counter_proposal_rate_pct": round(len(counter) / len(events) * 100, 1),
+            "decline_rate_pct": round(len(declined) / len(events) * 100, 1),
+        }
+
+    async def mark_expired(
+        self,
+        offer_id: "UUID",
+        company_id: str,
+    ) -> "OfferProposal | None":
+        """Mark sent offer as expired when response_deadline passed.
+
+        Called by offer expiry scheduler. Fires OFFER_EXPIRED trigger (fail-soft).
+        """
+        from datetime import datetime as _dt
+        proposal = await self._repo.get_by_id(offer_id, company_id)
+        if not proposal:
+            return None
+        if proposal.status not in ("sent", "viewed"):
+            return proposal  # already resolved, idempotent
+
+        proposal.status = "expired"
+        await self._repo.update(proposal)
+        await self._db.flush()
+
+        try:
+            from app.domains.communication.services.teams_service import TeamsService
+            from app.shared.automation.trigger_types_canonical import TriggerType
+            await TeamsService().on_offer_expired(
+                offer_id=str(offer_id),
+                company_id=company_id,
+                candidate_name=proposal.candidate_name or "",
+            )
+        except Exception as _e:
+            import logging as _l
+            _l.getLogger(__name__).debug("[offer_service] OFFER_EXPIRED notify failed: %s", _e)
+
+        return proposal

@@ -153,7 +153,7 @@ export function useKeyboardShortcuts({
         </div>
 
         <div class="mt-4 p-3 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md">
-          <p class="text-xs text-wedo-cyan-dark dark:text-lia-text-tertiary">
+          <p class="text-xs text-wedo-cyan-text dark:text-lia-text-tertiary">
             💡 Dica: Use Ctrl+K em qualquer página para ativar rapidamente a busca com IA
           </p>
         </div>

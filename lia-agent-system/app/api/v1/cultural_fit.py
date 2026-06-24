@@ -12,6 +12,7 @@ from app.core.database import get_db
 from app.shared.services.cultural_fit_integration_service import cultural_fit_service
 from app.shared.tenant_guard import get_verified_company_id
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 from typing import Annotated
 from fastapi import Path
 from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
@@ -44,6 +45,6 @@ _company_gate: str = Depends(require_company_id)) -> dict:
         raise
     except Exception as exc:
         logger.error("[cultural-fit] Erro: %s", exc)
-        raise HTTPException(status_code=500, detail="Erro ao calcular fit cultural")
+        raise LIAError(message="Erro ao calcular fit cultural")
 
 reorder_collection_before_item(router)

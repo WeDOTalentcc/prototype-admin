@@ -43,9 +43,9 @@ class TestBulkSubStatusPrediction:
             result = SubStatusPredictor.predict(candidate, "interview_technical", "rejected")
             results.append(result)
 
-        assert results[0]["predicted_substatus"] == "insufficient_technical_skills"  # low tech score
+        assert results[0]["predicted_substatus"] == "lacking_technical_skills"  # low tech score
         assert results[1]["predicted_substatus"] == "another_candidate_selected"  # job has hire
-        assert results[2]["predicted_substatus"] == "cultural_fit"  # low cultural score
+        assert results[2]["predicted_substatus"] == "cultural_mismatch"  # low cultural score
 
         for r in results:
             assert "confidence" in r
@@ -70,7 +70,7 @@ class TestBulkSubStatusPrediction:
             "rejected"
         )
         assert result["predicted_substatus"] in [
-            "underqualified", "profile_not_aligned", "insufficient_technical_skills"
+            "under_qualified", "another_candidate_selected", "lacking_technical_skills"
         ]
 
     def test_bulk_predict_manager_rejection(self):
@@ -82,7 +82,7 @@ class TestBulkSubStatusPrediction:
             "interview_manager",
             "rejected"
         )
-        assert result["predicted_substatus"] == "manager_decision"
+        assert result["predicted_substatus"] == "another_candidate_selected"
 
     def test_bulk_predict_with_interview_gaps(self):
         """Test rejection with technical interview gaps."""
@@ -101,7 +101,7 @@ class TestBulkSubStatusPrediction:
         }
 
         result = SubStatusPredictor.predict(context, "interview_technical", "rejected")
-        assert result["predicted_substatus"] == "insufficient_technical_skills"
+        assert result["predicted_substatus"] == "lacking_technical_skills"
 
 
 class TestWebhookAdapters:
@@ -167,15 +167,24 @@ class TestWebhookAdapters:
 
     @pytest.mark.asyncio
     async def test_event_log_tracking(self):
+        """Eventos processados sao rastreados (idempotencia) na base WebhookAdapter.
+
+        Contrato REAL: WebhookAdapter._processed_events + is_processed(). (Nao ha
+        log ordenado/get_event_log — feature nunca implementada nem usada.)
+        Isolado: estado e class-level compartilhado entre adapters/testes.
+        """
         from app.domains.automation.services.webhook_adapters import InterviewWebhookAdapter, WebhookAdapter
+
+        WebhookAdapter._processed_events.discard("evt-log1")
+        WebhookAdapter._processed_events.discard("evt-log2")
 
         await InterviewWebhookAdapter.process("evt-log1", "interview_confirmed", {"candidate_id": "c1"})
         await InterviewWebhookAdapter.process("evt-log2", "interview_completed", {"candidate_id": "c2"})
 
-        log = WebhookAdapter.get_event_log()
-        assert len(log) == 2
-        assert log[0]["event_id"] == "evt-log1"
-        assert log[1]["event_id"] == "evt-log2"
+        # is_duplicate(event_id) == True significa "ja processado" (rastreado).
+        assert WebhookAdapter.is_duplicate("evt-log1")
+        assert WebhookAdapter.is_duplicate("evt-log2")
+        assert not WebhookAdapter.is_duplicate("evt-never-seen")
 
     @pytest.mark.asyncio
     async def test_cross_adapter_idempotency(self):
@@ -335,11 +344,13 @@ class TestMessageGeneration:
 
         result = MessageGenerator._build_personalization_data(context)
 
-        assert "72" in result
-        assert "80" in result
-        assert "liderança" in result
-        assert "SQL" in result
-        assert "proatividade" in result
+        # Contrato seguro (auditoria 2026-06-10): scores/gaps/notas internas NAO
+        # entram no prompt do LLM. So pontos fortes curados (positivos).
+        assert "72" not in result and "80" not in result and "65" not in result
+        assert "SQL" not in result          # gaps/development_areas fora
+        assert "inglês" not in result        # gap de entrevista fora
+        assert "proatividade" not in result  # nota verbatim de entrevistador fora
+        assert "liderança" in result and "comunicação" in result  # strengths mantidos
 
     def test_personalization_data_empty_context(self):
         from app.domains.automation.services.stage_transition_automation import MessageGenerator
@@ -378,7 +389,7 @@ class TestPredictSubstatusFromDb:
             )
             
             assert result["predicted_substatus"] in [
-                "underqualified", "insufficient_technical_skills", "profile_not_aligned"
+                "under_qualified", "lacking_technical_skills", "another_candidate_selected"
             ]
             assert "confidence" in result
             assert "reasoning" in result

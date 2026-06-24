@@ -23,6 +23,8 @@ interface ProfileInfoCardsProps {
   hasSalaryData: () => boolean
   hasAddressData: () => boolean
   getAddressString: () => string
+  /** Navigate to Consentimento tab */
+  onShowConsentHistory?: () => void
 }
 
 function ProfileNarrativeCard({ candidate }: { candidate: Record<string, unknown> }) {
@@ -317,7 +319,7 @@ function ProfileSalaryCard({ candidate, formatCurrency, hasSalaryData }: { candi
   )
 }
 
-function ProfilePreferencesCard({ candidate }: { candidate: Record<string, unknown> }) {
+function ProfilePreferencesCard({ candidate, onShowConsentHistory }: { candidate: Record<string, unknown>; onShowConsentHistory?: () => void }) {
   return (
     <Card className="border-lia-border-subtle">
       <CardHeader className="py-1.5 px-2.5 bg-lia-bg-primary">
@@ -380,13 +382,39 @@ function ProfilePreferencesCard({ candidate }: { candidate: Record<string, unkno
           </div>
         )}
         {candidate.communication_consent !== undefined && (
-          <div className="flex items-center justify-between">
-            <span className={textStyles.bodySmall}>Consentimento LGPD</span>
+          <div className="flex items-start justify-between gap-2">
+            <div>
+              <span className={textStyles.bodySmall}>Consent. comunicação</span>
+              {onShowConsentHistory && (
+                <button
+                  onClick={onShowConsentHistory}
+                  className="block text-micro text-lia-text-muted hover:underline mt-0.5"
+                >
+                  → Ver histórico
+                </button>
+              )}
+            </div>
             <Chip variant="neutral" muted className={previewChipVariants.neutral}>
               {candidate.communication_consent ? '✓ Consentido' : '✗ Não consentido'}
             </Chip>
           </div>
         )}
+        <div className="flex items-start justify-between gap-2">
+          <div>
+            <span className={textStyles.bodySmall}>Consent. áudio triagem</span>
+            {onShowConsentHistory && (
+              <button
+                onClick={onShowConsentHistory}
+                className="block text-micro text-lia-text-muted hover:underline mt-0.5"
+              >
+                → Ver histórico
+              </button>
+            )}
+          </div>
+          <Chip variant="neutral" muted className={previewChipVariants.neutral}>
+            —
+          </Chip>
+        </div>
       </CardContent>
     </Card>
   )
@@ -428,6 +456,7 @@ export function ProfileInfoCards({
   hasSalaryData,
   hasAddressData,
   getAddressString,
+  onShowConsentHistory,
 }: ProfileInfoCardsProps) {
   return (
     <>
@@ -436,7 +465,7 @@ export function ProfileInfoCards({
       <ProfileCertificationsCard candidate={candidate} />
       <ProfileLanguagesCard languagesData={languagesData} />
       <ProfileSalaryCard candidate={candidate} formatCurrency={formatCurrency} hasSalaryData={hasSalaryData} />
-      <ProfilePreferencesCard candidate={candidate} />
+      <ProfilePreferencesCard candidate={candidate} onShowConsentHistory={onShowConsentHistory} />
       <ProfileAddressCard hasAddressData={hasAddressData} getAddressString={getAddressString} />
     </>
   )

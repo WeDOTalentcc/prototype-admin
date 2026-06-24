@@ -3,6 +3,7 @@ PolicySyncService — Synchronizes CompanyHiringPolicy to derived models.
 
 Called after policy save (PUT/PATCH) to keep SLAs and feature flags in sync.
 """
+from app.middleware.request_id import get_correlation_id
 import logging
 from typing import Any
 
@@ -168,7 +169,7 @@ async def _sync_feature_flags(
                 from app.shared.compliance.audit_service import AuditService
 
                 await AuditService().log_action(
-                    trace_id=str(_uuid.uuid4()),
+                    trace_id=get_correlation_id(),
                     company_id=str(company_id),
                     action_type="feature_flag_change",
                     actor="policy-sync",

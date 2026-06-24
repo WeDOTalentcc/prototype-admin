@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import React, { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -77,6 +78,9 @@ export function RateLimitRuleFormModal({
   onSubmit,
   initialData,
 }: RateLimitRuleFormModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('rate-limit-rule-form', open)
+
   const [form, setForm] = useState<RateLimitRuleInput>(emptyInput())
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)

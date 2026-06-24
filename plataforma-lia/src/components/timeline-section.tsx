@@ -68,7 +68,7 @@ export function TimelineSection() {
     <Card className="border border-lia-border-subtle">
       <CardHeader className="pb-4">
         <CardTitle className="text-base font-semibold text-lia-text-primary">
-          Atividades sendo executadas pela LIA
+          Atividades sendo executadas pela IA
         </CardTitle>
       </CardHeader>
 
@@ -110,8 +110,8 @@ export function TimelineSection() {
                         'warning'
                       }
                       className={`text-xs ${
-                        item.type === 'screening' ? 'border-wedo-purple/30 text-wedo-purple' :
-                        item.type === 'analysis' ? 'border-wedo-orange/30 text-wedo-orange' :
+                        item.type === 'screening' ? 'border-wedo-purple/30 text-wedo-purple-text' :
+                        item.type === 'analysis' ? 'border-wedo-orange/30 text-wedo-orange-text' :
                         item.type === 'status_update' ? 'border-lia-border-subtle text-lia-text-primary' :
                         ''
                       }`}

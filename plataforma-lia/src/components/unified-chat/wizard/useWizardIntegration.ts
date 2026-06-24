@@ -176,15 +176,26 @@ export function useWizardIntegration({
     if (!isWizardActive) return
 
     function handleEditQuestion(e: CustomEvent) {
-      const { index, newText, type: eventType, candidateId } = e.detail || {}
+      const { index, newText, type: eventType, candidateId, reason } = e.detail || {}
 
-      // Calibration approve/reject events reuse this channel
-      if (eventType === "calibration_approve" && candidateId) {
-        sendMessage(`Aprovar candidato para calibracao: ${candidateId}`)
-        return
-      }
-      if (eventType === "calibration_reject" && candidateId) {
-        sendMessage(`Rejeitar candidato da calibracao: ${candidateId}`)
+      // Calibration approve/reject/skip: persist feedback + comment via API (fire-and-forget),
+      // then forward to LLM so orchestrator can update calibration state.
+      if ((eventType === "calibration_approve" || eventType === "calibration_reject" || eventType === "calibration_skip") && candidateId) {
+        const feedbackKind =
+          eventType === "calibration_approve" ? "like" :
+          eventType === "calibration_reject" ? "dislike" : "skip"
+
+        // Captura persistente: like/dislike + comentário → BE (best-effort, não bloqueia UX)
+        fetch("/api/backend-proxy/search/calibration/feedback", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ candidate_id: candidateId, feedback: feedbackKind, reason: reason ?? null }),
+        }).catch(() => {})
+
+        // Bug 13: structured marker so LLM calls calibration_action deterministically
+        sendMessage(
+          `[calibration_action candidate_id=${candidateId} signal=${feedbackKind}${reason ? ` reason="${reason}"` : ""}]`
+        )
         return
       }
 
@@ -228,12 +239,37 @@ export function useWizardIntegration({
       sendMessage(`Tentar novamente: ${label}`)
     }
 
+    // Botao "Gerar novas" (todas) do WsiQuestionsPanel (item 2 polish
+    // 2026-06-05). Caminho PROVADO sendMessage->classifier (mesmo dos
+    // per-question), NAO sendApproval — que no-opa sem hitlRef no estagio do
+    // wizard. O wsi_questions_gate classifica como regenerate_all.
+    function handleRegenerateAll() {
+      sendMessage("Regenerar todas as perguntas de triagem")
+    }
+
+    // W2-B: adicionar pergunta do banco da empresa ao set WSI
+    function handleAddBankQuestion(e: CustomEvent) {
+      const { questionId } = (e as CustomEvent<{ questionId: string }>).detail || {}
+      if (!questionId) return
+      // Mensagem estruturada: UUID literal — o wizard extrai exatamente
+      sendMessage(`Adicionar do banco pergunta id=${questionId}`)
+    }
+
+    // Bug 13: advance_calibration wired — envia marcador estruturado para o
+    // LLM chamar advance_calibration (seta calibration_complete=True no state).
+    function handleAdvance() {
+      sendMessage("[calibration_complete]")
+    }
+
     const c1 = onCustomEvent("lia:wizard-edit-question", handleEditQuestion)
     const c2 = onCustomEvent("lia:wizard-regenerate-question", handleRegenerateQuestion)
     const c3 = onCustomEvent("lia:wizard-remove-question", handleRemoveQuestion)
     const c4 = onCustomEvent("lia:wizard-reorder-questions", handleReorderQuestions)
     const c5 = onCustomEvent("lia:wizard-retry-stage", handleRetryStage)
-    return () => { c1(); c2(); c3(); c4(); c5() }
+    const c6 = onCustomEvent("lia:wizard-regenerate-all", handleRegenerateAll)
+    const c7 = onCustomEvent("lia:wizard-add-bank-question", handleAddBankQuestion)
+    const c8 = onCustomEvent("lia:wizard-advance", handleAdvance)
+    return () => { c1(); c2(); c3(); c4(); c5(); c6(); c7(); c8() }
   }, [isWizardActive, sendMessage])
 
   // Prefill message listener (used by DonePanel "Criar outra vaga")

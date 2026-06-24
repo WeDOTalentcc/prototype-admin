@@ -35,6 +35,8 @@ export interface MenuItemType {
   isPremium?: boolean
   /** Visual beta badge indicator — marks features in testing phase */
   isBeta?: boolean
+  /** Visual draft badge indicator — marks features in draft/WIP phase */
+  isDraft?: boolean
   /** Nested navigation items */
   subItems?: MenuItemType[]
   /** Custom navigation key (used instead of label when set) */
@@ -49,6 +51,10 @@ export interface MenuItemType {
   seeAllLabel?: string
   /** Navigation target for the "see all" link */
   seeAllTarget?: string
+  /** Highlights this item as the LIA differentiator (purple left accent) */
+  isDifferentiator?: boolean
+  /** Marks this as a coming-soon placeholder — visually dimmed */
+  isFuturo?: boolean
 }
 
 // ─── Job Filter Item ────────────────────────────────────────────────────────
@@ -85,6 +91,10 @@ export interface SidebarProps {
   onRecentItemsClear?: () => void
   /** Callback to open global search modal */
   onShowSearch?: () => void
+  /** Whether the notification panel is open (attached mode) */
+  notificationOpen?: boolean
+  /** Toggle notification panel (attached mode) */
+  onNotificationToggle?: () => void
 }
 
 // ─── Sidebar State ──────────────────────────────────────────────────────────

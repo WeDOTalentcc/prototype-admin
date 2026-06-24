@@ -30,8 +30,33 @@ from .scoring import _calculate_final_score, _score_response_deterministic
 from .voice import _generate_tts_audio
 from .wsi_blocks import _load_or_generate_blocks
 from . import eligibility_phase
+from app.domains.persona.services.ai_persona_service import get_ai_persona
 
 logger = logging.getLogger(__name__)
+
+# -- Expires-by-channel canonical (Phase 1a LGPD Consent 2026-06-11)
+# Async channels allow pausing between sessions => 2 days.
+# Sync channels (real-time call) expire later for scheduling => 7 days.
+ASYNC_CHANNELS: frozenset[str] = frozenset({"chat_web", "whatsapp"})
+SYNC_CHANNELS: frozenset[str] = frozenset({"chamada_online", "chamada_telefonica"})
+_EXPIRES_DAYS_ASYNC: int = 2
+_EXPIRES_DAYS_SYNC: int = 7
+
+
+def get_expires_days_for_channel(invite_channel: str, override: int | None = None) -> int:
+    """Return canonical expires_days for a given invite channel.
+
+    Async channels (chat_web, whatsapp) allow candidates to pause and resume
+    across sessions. A 2-day window reduces stale-link risk.
+    Sync channels (calls) need a longer window for scheduling convenience.
+
+    Args:
+        invite_channel: The channel slug (whatsapp, chat_web, chamada_online, etc.)
+        override: Caller-supplied override; honoured when explicitly set.
+    """
+    if override is not None:
+        return override
+    return _EXPIRES_DAYS_ASYNC if invite_channel in ASYNC_CHANNELS else _EXPIRES_DAYS_SYNC
 
 
 async def validate_token(db: AsyncSession, token: str) -> dict[str, Any]:
@@ -63,6 +88,15 @@ async def get_session_config(db: AsyncSession, token: str) -> dict[str, Any] | N
     job_info: dict[str, Any] = {}
     job_id = session_data.get("job_id")
     company_id = session_data.get("company_id")
+
+    # Phase 1a — fetch ai_name for InterviewLobby (fail-open: default Lia if unavailable)
+    ai_name = "Lia"
+    if company_id:
+        try:
+            persona = await get_ai_persona(company_id, db)
+            ai_name = persona.get("name", "Lia") or "Lia"
+        except Exception as _e:
+            logger.warning("[Triagem] Could not fetch ai_persona for company_id=%s: %s", company_id, _e)
     if job_id:
         try:
             job = await find_job_vacancy_for_triagem(db, job_id, company_id)
@@ -106,11 +140,38 @@ async def get_session_config(db: AsyncSession, token: str) -> dict[str, Any] | N
 
     messages_data = [m.to_dict() for m in messages]
 
+    # Phase 1a — resolve is_affirmative / affirmative_type from session metadata
+    _session_meta = (session_orm.metadata_json if session_orm else None) or {}
+    _is_affirmative: bool = bool(_session_meta.get("is_affirmative", False))
+    _affirmative_type: str | None = _session_meta.get("affirmative_criteria") or None
+    # expires_at from session model (already in to_dict but adding to top-level for InterviewLobby)
+    _expires_at: str = session_data.get("expires_at", "")
+
+    # Phase 1a — fetch show_wedotalent_branding from CompanyHiringPolicy (fail-open: True)
+    _show_branding: bool = True
+    if company_id:
+        try:
+            from app.domains.company.repositories.company_hiring_policy_repository import (
+                CompanyHiringPolicyRepository,
+            )
+            _policy_repo = CompanyHiringPolicyRepository(session_orm._sa_instance_state.session if session_orm else None)  # type: ignore[attr-defined]
+        except Exception:
+            pass  # fail-open: keep _show_branding = True
+    # Simpler approach: read from session metadata if stored, otherwise default True
+    _show_branding = True  # Phase 1a default; full per-tenant via CompanyHiringPolicy in Phase 1b
+
     response: dict[str, Any] = {
         "valid": True,
         "completed": validation.get("completed", False),
         "session": session_data,
         "config": config,
+        # InterviewLobby fields (Phase 1a)
+        "ai_name": ai_name,
+        "is_affirmative": _is_affirmative,
+        "affirmative_type": _affirmative_type,
+        "has_practice_question": False,  # default False — Phase 1b will set this
+        "expires_at": _expires_at,
+        "show_wedotalent_branding": _show_branding,
         "progress": _build_progress(
             session_data.get("current_block", 0),
             len([m for m in messages if m.sender == "candidate"]),
@@ -157,9 +218,11 @@ async def create_session(
     company_logo_url: str | None = None,
     invite_channel: str = "email",
     created_by: str | None = None,
-    expires_days: int = 7,
+    expires_days: int | None = None,
     voice_mode: bool = False,
 ) -> TriagemSession:
+    # Phase 1a: if caller did not specify expires_days, derive from invite channel
+    _expires_days = get_expires_days_for_channel(invite_channel, override=expires_days)
     screening_config: dict[str, Any] = {}
     job = await find_job_vacancy_for_triagem(db, job_id, company_id)
     if job:
@@ -228,7 +291,7 @@ async def create_session(
         total_blocks=total_blocks,
         invite_channel=invite_channel,
         voice_mode=voice_mode,
-        expires_at=datetime.utcnow() + timedelta(days=expires_days),
+        expires_at=datetime.utcnow() + timedelta(days=_expires_days),
         created_by=created_by,
         metadata_json=session_meta,
     )
@@ -284,10 +347,18 @@ async def start_session(db: AsyncSession, token: str, voice_mode: bool | None = 
                     "session": session.to_dict(),
                 }
         except Exception as _consent_exc:
+            # P1 (audit 2026-06-05 #13): FAIL-CLOSED. Se a verificacao de consent
+            # lanca, NAO prosseguir — bloquear a sessao (LGPD: nao iniciar triagem
+            # com IA sem consent verificado no servidor). Antes caia atraves => fail-open.
             logger.error(
-                "[Triagem][SEG-4] consent check falhou (prosseguindo p/ disponibilidade): %s",
+                "[Triagem][SEG-4] consent check falhou — fail-closed (sessao BLOQUEADA): %s",
                 _consent_exc, exc_info=True,
             )
+            return {
+                "error": "lgpd_consent_check_failed",
+                "reason": "Falha ao verificar consentimento; sessao bloqueada por seguranca (LGPD).",
+                "session": session.to_dict(),
+            }
 
     if session.status == "invited":
         session.status = "started"
@@ -376,6 +447,8 @@ async def complete_session(db: AsyncSession, token: str) -> dict[str, Any]:
     eliminatory_keywords: list[str] = [
         str(k).lower() for k in (session_meta_for_scoring.get("eliminatory_keywords") or [])
     ]
+    # F9-2: senioridade da vaga gravada no metadata ao criar sessao (seniority_level)
+    session_seniority: str | None = session_meta_for_scoring.get("seniority_level")
 
     candidate_by_block: dict[int, list[TriagemMessage]] = {}
     for msg in candidate_msgs:
@@ -389,17 +462,21 @@ async def complete_session(db: AsyncSession, token: str) -> dict[str, Any]:
             block = active_blocks[block_idx]
             block_type = block.get("block_type", "behavioral")
             competency = block.get("competency", "general")
+            block_candidate_pos = candidate_by_block.get(block_idx, []).index(msg) if msg in candidate_by_block.get(block_idx, []) else 0
+            _frameworks = block.get("question_frameworks", [])
+            question_framework = _frameworks[block_candidate_pos] if block_candidate_pos < len(_frameworks) else "CBI"
             score_result = _score_response_deterministic(
                 msg.content,
                 block_type,
                 competency,
+                question_framework=question_framework,
             )
             score_result["competency"] = competency
             score_result["block_type"] = block_type
             score_result["block_index"] = block_idx
             score_result["response_text"] = (msg.content or "")[:2000]
+            score_result["question_framework"] = question_framework
             block_lia_msgs = lia_by_block.get(block_idx, [])
-            block_candidate_pos = candidate_by_block.get(block_idx, []).index(msg) if msg in candidate_by_block.get(block_idx, []) else 0
             if block_lia_msgs and block_candidate_pos < len(block_lia_msgs):
                 score_result["question_text"] = (block_lia_msgs[block_candidate_pos].content or "")[:500]
             else:
@@ -409,7 +486,7 @@ async def complete_session(db: AsyncSession, token: str) -> dict[str, Any]:
                 score_result["has_eliminatory_hit"] = any(kw in response_lower for kw in eliminatory_keywords)
             response_scores.append(score_result)
 
-    final_score, recommendation = _calculate_final_score(response_scores)
+    final_score, recommendation = _calculate_final_score(response_scores, seniority=session_seniority)
     session.wsi_final_score = final_score
     session.recommendation = recommendation
 

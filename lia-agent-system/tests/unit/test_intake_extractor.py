@@ -341,7 +341,7 @@ class TestWizardCanonicalResume:
     def test_resume_uses_canonical_api_and_canonical_extraction(
         self, monkeypatch
     ):
-        from app.api.v1 import agent_chat_ws as ws_mod
+        from app.api.v1 import chat_shared as ws_mod
         from app.domains.job_creation import graph as jc_graph
 
         # Capture how the helper drives the canonical resume API.
@@ -410,7 +410,7 @@ class TestWizardCanonicalResume:
         builds a stage-aware Portuguese fallback so the recruiter never
         sees an empty assistant bubble.
         """
-        from app.api.v1 import agent_chat_ws as ws_mod
+        from app.api.v1 import chat_shared as ws_mod
         from app.domains.job_creation import graph as jc_graph
 
         class _StubGraph:

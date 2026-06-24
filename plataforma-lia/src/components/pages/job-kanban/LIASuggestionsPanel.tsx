@@ -45,7 +45,7 @@ export function LIASuggestionsPanel({ open, onClose, selectedTriagemQuestion }: 
               </div>
               <div>
                 <h2 className="text-lg font-semibold">{t('liaQuestionSuggestions')}</h2>
-                <p className="text-wedo-purple text-xs">{t('forScreeningLabel', { question: selectedTriagemQuestion || '' })}</p>
+                <p className="text-wedo-purple-text text-xs">{t('forScreeningLabel', { question: selectedTriagemQuestion || '' })}</p>
               </div>
             </div>
             <button

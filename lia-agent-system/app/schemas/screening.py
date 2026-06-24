@@ -114,6 +114,7 @@ class WSIScreeningPipelineRequest(WeDoBaseModel):
     company_question_categories: list[str] | None = Field(None, description="Filter company questions by category")
     is_affirmative: bool = Field(default=False, description="Whether this is an affirmative action job vacancy")
     affirmative_type: str | None = Field(None, description="Type of affirmative action: pcd, racial, gender, age, lgbtqia+")
+    job_id: str | None = Field(None, description="ID da vaga — servidor resolve is_affirmative/critério da vaga server-side (fonte da verdade, não confia na flag do FE)")
 
 
 class WSIBlockSummary(BaseModel):

@@ -16,7 +16,7 @@ from enum import Enum, StrEnum
 from typing import Any
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Request
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -283,6 +283,45 @@ async def _handle_approve_action(
             candidate_id=payload.candidate_id
         )
     
+    # ── W7.3 LGPD: verify WhatsApp consent before initiating screening ─────────
+    if payload.candidate_id and company_id:
+        from app.domains.communication.services.consent_gate import CommunicationConsentGate
+        consent_result = await CommunicationConsentGate(db).check(
+            candidate_id=payload.candidate_id,
+            company_id=company_id,
+            channel="whatsapp",
+        )
+        if not consent_result.allowed:
+            _CONSENT_REASON_MSG: dict[str, str] = {
+                "revoked":     "candidato revogou o consentimento para contato via WhatsApp",
+                "absent":      "candidato não forneceu consentimento para contato via WhatsApp (LGPD Art. 7)",
+                "check_error": "não foi possível verificar consentimento LGPD — tente novamente",
+            }
+            reason_msg = _CONSENT_REASON_MSG.get(consent_result.reason or "", consent_result.reason or "erro")
+            await _log_teams_action_audit(
+                action="approve_blocked_lgpd_consent",
+                result="blocked",
+                actor_id=payload.recruiter_id,
+                actor_name=payload.recruiter_name,
+                candidate_id=payload.candidate_id,
+                vacancy_id=payload.vacancy_id,
+                company_id=company_id,
+                details={
+                    "lgpd_reason": consent_result.reason,
+                    "consent_type": consent_result.consent_type,
+                    "channel": "whatsapp",
+                },
+                db=db,
+            )
+            return TeamsWebhookResponse(
+                success=False,
+                action="approve",
+                message=f"Triagem bloqueada: {reason_msg}.",
+                screening_initiated=False,
+                candidate_id=payload.candidate_id,
+            )
+    # ─────────────────────────────────────────────────────────────────────────
+
     screening_result = await _start_whatsapp_screening(
         candidate_id=payload.candidate_id or "",
         candidate_name=payload.candidate_name or "Candidato",
@@ -641,16 +680,17 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error retrieving audit logs: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Error retrieving audit logs: {str(e)}")
+        raise
 
 
 @router.post("/messages", response_model=None)
 async def receive_teams_message(
     request: Request,
     authorization: str = Header(None),
-    db: AsyncSession = Depends(get_db), 
-company_id: str = Depends(require_company_id)):
-    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
+    db: AsyncSession = Depends(get_db)):
+    # PUBLIC endpoint: called by Microsoft Bot Framework (no platform JWT).
+    # Auth is enforced inside the handler via bot_auth.validate_token (Bot Framework JWT).
+    # Tenant context is resolved from the Teams user's email/AAD object ID via teams_orchestrator_bridge.
     """
     Webhook endpoint for Teams messages.
 
@@ -723,8 +763,8 @@ company_id: str = Depends(require_company_id)):
                 await _log_teams_message(activity, db)
                 return {"status": "ok"}
 
-        # Process text message via orchestrator-backed bot
-        response = await simple_teams_bot.process_activity(activity)
+        # Process text message via orchestrator-backed bot (db passed for tenant resolution)
+        response = await simple_teams_bot.process_activity(activity, db=db)
 
         if isinstance(response, dict) and response.get("type") == "card":
             await simple_teams_bot.send_adaptive_card(
@@ -770,7 +810,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error processing Teams message: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 router.add_api_route(
@@ -786,11 +826,86 @@ router.add_api_route(
 async def teams_health(company_id: str = Depends(require_company_id)):
     # multi-tenancy: public endpoint (health) — no tenant data
     """Health check for Teams integration."""
+    from app.domains.communication.services.teams_service import teams_service as _ts
     return {
         "status": "healthy",
         "service": "teams-bot",
-        "bot_configured": simple_teams_bot.app_id is not None
+        "bot_configured": simple_teams_bot.app_id is not None,
+        "outbound_webhook_configured": bool(_ts.webhook_url),
+        "outbound_mode": "production" if not _ts.is_development else "development",
     }
+
+
+class TestWebhookRequest(BaseModel):
+    """Request body for POST /teams/test-webhook."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    webhook_url: str | None = Field(
+        None,
+        description=(
+            "Incoming Webhook URL to test. "
+            "When omitted the endpoint resolves the per-tenant URL saved via "
+            "Configurações → Integrações → Microsoft Teams, falling back to "
+            "the global TEAMS_WEBHOOK_URL environment variable."
+        ),
+    )
+    message: str | None = Field(
+        None,
+        description="Custom test message (optional — defaults to generic test card)",
+    )
+
+
+@router.post("/test-webhook", response_model=None)
+async def test_teams_webhook(
+    body: TestWebhookRequest,
+    company_id: str = Depends(require_company_id),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Validate a Teams Incoming Webhook URL before saving it.
+
+    Sends a simple Adaptive Card to the provided URL and returns success/failure.
+    This endpoint is authenticated (requires valid JWT + company_id) and does NOT
+    persist the URL — it only tests reachability.
+
+    When ``webhook_url`` is omitted the endpoint resolves the per-tenant URL
+    stored in the database (set via Configurações → Integrações → Microsoft
+    Teams), falling back to the global ``TEAMS_WEBHOOK_URL`` environment
+    variable.  This lets callers verify an already-configured webhook without
+    having to echo the (masked) URL back from the settings page.
+
+    Security: The target URL is validated by ``safe_outbound_url`` (SSRF guard)
+    before any HTTP request is made.
+
+    Returns:
+        200 with ``{"success": true}`` on delivery.
+        200 with ``{"success": false, "error": "..."}`` on failure (4xx/5xx from Teams).
+        400 if the URL fails SSRF validation.
+        200 with ``{"success": false, "mode": "development"}`` when no URL is configured.
+    """
+    from app.domains.communication.services.teams_service import (
+        TeamsService,
+        resolve_tenant_teams_webhook_url,
+    )
+    from app.shared.security.url_validator import UnsafeOutboundURLError, safe_outbound_url
+
+    url = body.webhook_url
+    source = "request"
+
+    if not url:
+        url, source = await resolve_tenant_teams_webhook_url(str(company_id), db)
+
+    if url:
+        try:
+            safe_outbound_url(url, require_https=True)
+        except UnsafeOutboundURLError as exc:
+            raise HTTPException(status_code=400, detail=f"URL inválida ou não segura: {exc}") from exc
+
+    svc = TeamsService(webhook_url=url)
+    result = await svc.test_connection(webhook_url=url)
+    result["url_source"] = source
+    return result
 
 
 def _parse_teams_timestamp(ts: str | None) -> datetime | None:
@@ -882,7 +997,7 @@ company_id: str = Depends(require_company_id)):
         )
         
         if not success:
-            raise HTTPException(status_code=500, detail="Failed to send notification")
+            raise
         
         return {"status": "sent", "conversation_id": str(teams_conv.id)}
         
@@ -890,7 +1005,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error sending proactive notification: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 def _create_notification_card(notification_type: str, data: dict[str, Any]) -> dict[str, Any]:
@@ -965,7 +1080,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"[Teams] proactivity check error: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.post("/proactive/new-candidate", response_model=None)
@@ -994,7 +1109,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"[Teams] notify_new_candidate error: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.post("/proactive/screening-complete", response_model=None)
@@ -1027,7 +1142,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"[Teams] notify_screening_complete error: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 @router.post("/proactive/daily-digest", response_model=None)
 async def send_daily_digest(
@@ -1071,8 +1186,11 @@ async def teams_sso_page(
     conversation_id: str,
     client_id: str = "",
     tenant_id: str = "",
-company_id: str = Depends(require_company_id)):
-    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
+):
+    # Public OAuth pre-auth endpoint: when the Teams sign-in card opens this URL
+    # the user has NO app session yet, so it CANNOT require a JWT. The tenant is
+    # resolved later from the conversation mapping during the callback (same
+    # pattern as the calendar OAuth callbacks in auth_enforcement.PUBLIC_PATHS).
     """
     OAuth start page — user is redirected here when clicking "Conectar conta".
     Redirects to Azure AD consent page.
@@ -1111,8 +1229,10 @@ async def teams_sso_callback(
     state: str = "",  # conversation_id
     error: str = "",
     db: AsyncSession = Depends(get_db),
-company_id: str = Depends(require_company_id)):
-    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
+):
+    # Public OAuth callback: Azure AD redirects the user's browser here after
+    # sign-in, carrying NO app JWT. The tenant is derived from the conversation
+    # mapping during code exchange (same pattern as calendar OAuth callbacks).
     """
     OAuth callback — Azure AD redirects here after user signs in.
     Exchanges code for profile, maps identity, sends confirmation to Teams.
@@ -1125,7 +1245,14 @@ company_id: str = Depends(require_company_id)):
     redirect_uri = f"{platform_url}/api/v1/teams/auth/callback"
 
     if error:
-        return HTMLResponse(f"<h2>❌ Erro de autenticação: {error}</h2>", status_code=400)
+        # Do NOT reflect the raw OAuth `error` query param into HTML (this is a
+        # public no-JWT endpoint — reflecting attacker-controlled input would be
+        # a reflected-XSS sink). Log the detail server-side, return generic copy.
+        logger.warning("[TeamsSSO] Azure AD returned OAuth error: %s", error)
+        return HTMLResponse(
+            "<h2>❌ Erro de autenticação. Tente conectar a conta novamente pelo Teams.</h2>",
+            status_code=400,
+        )
 
     if not code:
         return HTMLResponse("<h2>❌ Código de autorização ausente.</h2>", status_code=400)
@@ -1183,8 +1310,12 @@ company_id: str = Depends(require_company_id)):
         )
 
     except Exception as e:
+        # Public endpoint: log the detail but never leak str(e) to the browser.
         logger.error(f"[TeamsSSO] Callback error: {e}", exc_info=True)
-        return HTMLResponse(f"<h2>❌ Erro interno: {str(e)}</h2>", status_code=500)
+        return HTMLResponse(
+            "<h2>❌ Erro interno ao conectar a conta. Tente novamente.</h2>",
+            status_code=500,
+        )
 
 
 # ============================================================================
@@ -1270,139 +1401,58 @@ company_id: str = Depends(require_company_id)):
 # Teams App Manifest — generate manifest.json for Teams App Studio
 # ============================================================================
 
-@router.get("/manifest", response_model=None)
-async def get_teams_manifest(company_id: str = Depends(require_company_id)):
-    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
-    """
-    Generate and return the Teams app manifest.json.
-    Download this file and upload to Teams Admin Center / App Studio.
+# Stable per-process fallback so /manifest and /manifest-zip never drift the app
+# "id" across requests when TEAMS_APP_ID is unset (dev/misconfig only).
+_FALLBACK_TEAMS_APP_ID = str(uuid.uuid4())
 
-    Requires env vars:
-      TEAMS_APP_ID        — generate a UUID for your app
-      TEAMS_BOT_APP_ID    — Microsoft App ID of the bot
-      AZURE_CLIENT_ID     — for SSO
-      WEDOTALENT_PLATFORM_URL — e.g. https://app.wedotalent.com
-    """
+
+def _resolve_platform_url() -> tuple[str, str]:
+    """Return (platform_url, platform_domain) from env with a single canonical default."""
     import os
-    import uuid
-
-    from fastapi.responses import JSONResponse
-
-    platform_url = os.environ.get("WEDOTALENT_PLATFORM_URL", "https://wedotalent.cc").rstrip("/")
-    try:
-        from urllib.parse import urlparse
-        platform_domain = urlparse(platform_url).netloc
-    except Exception:
-        platform_domain = "wedotalent.cc"
-
-    manifest = {
-        "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.17/MicrosoftTeams.schema.json",
-        "manifestVersion": "1.17",
-        "version": "1.0.0",
-        "id": os.environ.get("TEAMS_APP_ID", str(uuid.uuid4())),
-        "packageName": "com.wedotalent.wedo",
-        "developer": {
-            "name": "WeDOTalent",
-            "websiteUrl": platform_url,
-            "privacyUrl": f"{platform_url}/privacy",
-            "termsOfUseUrl": f"{platform_url}/terms",
-        },
-        "icons": {"color": "wedo-color.png", "outline": "wedo-outline.png"},
-        "name": {"short": "WeDO", "full": "WeDOTalent — Recrutamento Inteligente"},
-        "description": {
-            "short": "Plataforma de recrutamento com IA",
-            "full": "WeDOTalent conecta recrutadores à LIA, a assistente de IA para busca de candidatos, triagem, agendamento e relatórios — direto no Teams.",
-        },
-        "accentColor": "#000000",
-        "bots": [{
-            "botId": os.environ.get("TEAMS_BOT_APP_ID", os.environ.get("TEAMS_APP_ID", os.environ.get("MICROSOFT_APP_ID", ""))),
-            "scopes": ["personal", "team", "groupChat"],
-            "supportsFiles": True,
-            "isNotificationOnly": False,
-            "commandLists": [{
-                "scopes": ["personal", "team", "groupChat"],
-                "commands": [
-                    {"title": "ajuda",      "description": "Ver todas as funcionalidades da LIA"},
-                    {"title": "buscar",     "description": "Buscar candidatos para uma vaga"},
-                    {"title": "triagem",    "description": "Ver candidatos aguardando triagem WSI"},
-                    {"title": "relatorio",  "description": "Gerar relatório semanal de recrutamento"},
-                    {"title": "pipeline",   "description": "Ver saúde do pipeline de recrutamento"},
-                    {"title": "vagas",      "description": "Ver vagas ativas e seus status"},
-                    {"title": "candidatos", "description": "Ver candidatos aguardando retorno"},
-                    {"title": "resumo",     "description": "Resumo das atividades do dia"},
-                ],
-            }],
-        }],
-        "staticTabs": [
-            {"entityId": "tab-vagas",      "name": "Vagas",       "contentUrl": f"{platform_url}/teams-tab/vagas",      "websiteUrl": f"{platform_url}/vagas",      "scopes": ["personal"]},
-            {"entityId": "tab-candidatos", "name": "Candidatos",  "contentUrl": f"{platform_url}/teams-tab/candidatos", "websiteUrl": f"{platform_url}/candidatos", "scopes": ["personal"]},
-            {"entityId": "tab-pipeline",   "name": "Pipeline",    "contentUrl": f"{platform_url}/teams-tab/pipeline",   "websiteUrl": f"{platform_url}/pipeline",   "scopes": ["personal"]},
-            {"entityId": "tab-dashboard",  "name": "Dashboard",   "contentUrl": f"{platform_url}/teams-tab/dashboard",  "websiteUrl": f"{platform_url}/dashboard",  "scopes": ["personal"]},
-        ],
-        "configurableTabs": [{
-            "configurationUrl": f"{platform_url}/teams-tab/configure",
-            "canUpdateConfiguration": True,
-            "scopes": ["team", "groupChat"],
-        }],
-        "permissions": ["identity", "messageTeamMembers"],
-        "validDomains": [platform_domain, "token.botframework.com", "login.microsoftonline.com"],
-        "webApplicationInfo": {
-            "id": os.environ.get("AZURE_CLIENT_ID", ""),
-            "resource": f"api://{platform_domain}/{os.environ.get('AZURE_CLIENT_ID', '')}",
-        },
-        "authorization": {
-            "permissions": {
-                "resourceSpecific": [
-                    {"name": "ChannelMessage.Read.Group",  "type": "Application"},
-                    {"name": "ChatMessage.Read.Chat",      "type": "Application"},
-                    {"name": "TeamSettings.Read.Group",    "type": "Delegated"},
-                ]
-            }
-        },
-    }
-
-    return JSONResponse(
-        content=manifest,
-        headers={"Content-Disposition": "attachment; filename=manifest.json"},
-    )
-
-
-@router.get("/manifest-zip", response_model=None)
-async def download_teams_manifest_zip(company_id: str = Depends(require_company_id)):
-    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
-    """
-    Download a ready-to-upload Teams app ZIP package.
-
-    Contains:
-    - manifest.json  (generated dynamically from env vars)
-    - wedo-color.png  (192x192 color icon)
-    - wedo-outline.png (32x32 outline icon)
-
-    Upload the downloaded ZIP to:
-    Teams Admin Center → Teams apps → Manage apps → Upload an app
-    """
-    import io
-    import os
-    import uuid
-    import zipfile
-
-    from fastapi.responses import StreamingResponse
+    from urllib.parse import urlparse
 
     platform_url = os.environ.get("WEDOTALENT_PLATFORM_URL", "https://ai.wedotalent.cc").rstrip("/")
     try:
-        from urllib.parse import urlparse
-        platform_domain = urlparse(platform_url).netloc
+        platform_domain = urlparse(platform_url).netloc or "ai.wedotalent.cc"
     except Exception:
         platform_domain = "ai.wedotalent.cc"
+    return platform_url, platform_domain
 
-    bot_id = os.environ.get("TEAMS_BOT_APP_ID", os.environ.get("TEAMS_APP_ID", os.environ.get("MICROSOFT_APP_ID", "")))
-    app_id = os.environ.get("TEAMS_APP_ID", str(uuid.uuid4()))
+
+def _build_teams_manifest() -> dict:
+    """Canonical Teams app manifest — single source of truth for /manifest and /manifest-zip.
+
+    Bot-complete by default (commands, file support, personal/team/groupChat scopes).
+    Embedded tabs + SSO (staticTabs + webApplicationInfo + authorization) are emitted
+    ONLY when AZURE_CLIENT_ID is configured, so the package degrades gracefully when
+    Teams SSO is not yet set up in Azure AD.
+    """
+    import os
+    import uuid
+
+    platform_url, platform_domain = _resolve_platform_url()
+    app_id = os.environ.get("TEAMS_APP_ID") or _FALLBACK_TEAMS_APP_ID
+    if not os.environ.get("TEAMS_APP_ID"):
+        logger.warning(
+            "[Teams Manifest] TEAMS_APP_ID not set; using per-process fallback id "
+            "%s. Set TEAMS_APP_ID in production to keep the Teams app stable.",
+            app_id,
+        )
+    bot_id = os.environ.get(
+        "TEAMS_BOT_APP_ID",
+        os.environ.get("MICROSOFT_APP_ID", os.environ.get("TEAMS_APP_ID", "")),
+    )
+    if not bot_id:
+        logger.warning(
+            "[Teams Manifest] No botId resolved (set TEAMS_BOT_APP_ID or "
+            "MICROSOFT_APP_ID); generated manifest will have an empty botId."
+        )
     azure_client_id = os.environ.get("AZURE_CLIENT_ID", "")
 
-    manifest = {
+    manifest: dict[str, Any] = {
         "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.17/MicrosoftTeams.schema.json",
         "manifestVersion": "1.17",
-        "version": "1.0.0",
+        "version": "1.0.3",
         "id": app_id,
         "packageName": "com.wedotalent.wedo",
         "developer": {
@@ -1412,7 +1462,7 @@ async def download_teams_manifest_zip(company_id: str = Depends(require_company_
             "termsOfUseUrl": f"{platform_url}/terms",
         },
         "icons": {"color": "wedo-color.png", "outline": "wedo-outline.png"},
-        "name": {"short": "WeDO", "full": "WeDOTalent — Recrutamento Inteligente"},
+        "name": {"short": "WeDOTalent", "full": "WeDOTalent - Recrutamento Inteligente"},
         "description": {
             "short": "Plataforma de recrutamento com IA",
             "full": "WeDOTalent conecta recrutadores à LIA, a assistente de IA para busca de candidatos, triagem, agendamento e relatórios — direto no Teams.",
@@ -1426,14 +1476,14 @@ async def download_teams_manifest_zip(company_id: str = Depends(require_company_
             "commandLists": [{
                 "scopes": ["personal", "team", "groupChat"],
                 "commands": [
-                    {"title": "ajuda",      "description": "Ver todas as funcionalidades da LIA"},
-                    {"title": "buscar",     "description": "Buscar candidatos para uma vaga"},
-                    {"title": "triagem",    "description": "Ver candidatos aguardando triagem WSI"},
-                    {"title": "relatorio",  "description": "Gerar relatório semanal de recrutamento"},
-                    {"title": "pipeline",   "description": "Ver saúde do pipeline de recrutamento"},
-                    {"title": "vagas",      "description": "Ver vagas ativas e seus status"},
+                    {"title": "ajuda", "description": "Ver todas as funcionalidades da LIA"},
+                    {"title": "buscar", "description": "Buscar candidatos para uma vaga"},
+                    {"title": "triagem", "description": "Ver candidatos aguardando triagem WSI"},
+                    {"title": "relatorio", "description": "Gerar relatório semanal de recrutamento"},
+                    {"title": "pipeline", "description": "Ver saúde do pipeline de recrutamento"},
+                    {"title": "vagas", "description": "Ver vagas ativas e seus status"},
                     {"title": "candidatos", "description": "Ver candidatos aguardando retorno"},
-                    {"title": "resumo",     "description": "Resumo das atividades do dia"},
+                    {"title": "resumo", "description": "Resumo das atividades do dia"},
                 ],
             }],
         }],
@@ -1442,10 +1492,72 @@ async def download_teams_manifest_zip(company_id: str = Depends(require_company_
     }
 
     if azure_client_id:
+        manifest["staticTabs"] = [
+            {"entityId": "tab-decidir", "name": "Decidir", "contentUrl": f"{platform_url}/teams-tab/decidir", "websiteUrl": f"{platform_url}/tasks", "scopes": ["personal"]},
+            {"entityId": "tab-vagas", "name": "Vagas", "contentUrl": f"{platform_url}/teams-tab/vagas", "websiteUrl": f"{platform_url}/jobs", "scopes": ["personal"]},
+            {"entityId": "tab-funil", "name": "Funil de Talentos", "contentUrl": f"{platform_url}/teams-tab/funil-de-talentos", "websiteUrl": f"{platform_url}/funil-de-talentos", "scopes": ["personal"]},
+            {"entityId": "tab-recrutar", "name": "Recrutar", "contentUrl": f"{platform_url}/teams-tab/recrutar", "websiteUrl": f"{platform_url}/recrutar", "scopes": ["personal"]},
+        ]
         manifest["webApplicationInfo"] = {
             "id": azure_client_id,
             "resource": f"api://{platform_domain}/{azure_client_id}",
         }
+        manifest["authorization"] = {
+            "permissions": {
+                "resourceSpecific": [
+                    {"name": "ChannelMessage.Read.Group", "type": "Application"},
+                    {"name": "ChatMessage.Read.Chat", "type": "Application"},
+                    {"name": "TeamSettings.Read.Group", "type": "Delegated"},
+                ]
+            }
+        }
+
+    return manifest
+
+
+@router.get("/manifest", response_model=None)
+async def get_teams_manifest(company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
+    """
+    Generate and return the Teams app manifest.json (canonical builder).
+    Download this file and upload to Teams Admin Center / App Studio.
+
+    Requires env vars:
+      TEAMS_APP_ID        — Teams app id (UUID, keep stable to update the same app)
+      TEAMS_BOT_APP_ID    — Microsoft App ID of the bot (alias: MICROSOFT_APP_ID)
+      AZURE_CLIENT_ID     — only needed to enable embedded tabs + SSO
+      WEDOTALENT_PLATFORM_URL — e.g. https://ai.wedotalent.cc
+    """
+    from fastapi.responses import JSONResponse
+
+    manifest = _build_teams_manifest()
+    return JSONResponse(
+        content=manifest,
+        headers={"Content-Disposition": "attachment; filename=manifest.json"},
+    )
+
+
+@router.get("/manifest-zip", response_model=None)
+async def download_teams_manifest_zip(company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
+    """
+    Download a ready-to-upload Teams app ZIP package.
+
+    Contains:
+    - manifest.json  (generated dynamically from env vars, canonical builder)
+    - wedo-color.png  (192x192 color icon)
+    - wedo-outline.png (32x32 outline icon)
+
+    Upload the downloaded ZIP to:
+    Teams Admin Center -> Teams apps -> Manage apps -> Upload an app
+    """
+    import io
+    import os
+    import zipfile
+
+    from fastapi.responses import StreamingResponse
+
+    manifest = _build_teams_manifest()
 
     import json as _json
 
@@ -1623,7 +1735,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"[TeamsTabAuth] Unexpected error: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="SSO authentication failed")
+        raise
 
 
 @router.post("/tab/events", response_model=None)
@@ -1722,7 +1834,9 @@ def _enforce_company_id_scope(
     """
     from app.auth.models import UserRole
 
-    is_admin = getattr(current_user, "role", None) == UserRole.admin
+    # PERM-EXEMPT: feature flag admin gate, context-specific
+    # PERM-EXEMPT: feature flag admin gate, context-specific
+    is_admin = getattr(current_user, "role", None) == UserRole.admin  # PERM-EXEMPT: feature flag admin-only, context-specific
     user_company = getattr(current_user, "company_id", None)
 
     if requested_company_id is None:

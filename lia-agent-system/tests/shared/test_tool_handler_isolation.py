@@ -29,10 +29,6 @@ from app.shared.tool_handler import _TENANT_REQUIRED_RESPONSE
 # (or maps keyed by tool name).
 REGISTRY_SOURCES: list[tuple[str, tuple[str, ...]]] = [
     (
-        "app.domains.autonomous.agents.autonomous_tool_registry",
-        ("AUTONOMOUS_TOOL_POOL",),
-    ),
-    (
         "app.domains.sourcing.agents.sourcing_tool_registry",
         ("TOOL_DEFINITIONS",),
     ),

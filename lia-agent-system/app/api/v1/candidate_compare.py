@@ -7,6 +7,7 @@ Delega para CandidateComparisonService que calcula scores por dimensão.
 Requer X-Company-ID header para isolamento multi-tenant.
 """
 import logging
+from app.shared.errors import LIAInternalError
 from typing import Literal
 from uuid import UUID
 
@@ -60,7 +61,4 @@ _company_gate: str = Depends(require_company_id)) -> dict:
         raise
     except Exception as exc:
         logger.error("candidates/compare erro: %s", exc)
-        raise HTTPException(
-            status_code=500,
-            detail="Erro ao comparar candidatos",
-        )
+        raise LIAInternalError("Erro ao comparar candidatos")

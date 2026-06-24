@@ -724,7 +724,7 @@ class TokenTrackingService:
 
             # Verificar via Redis se já alertamos hoje para este threshold
             try:
-                redis_client = aioredis.from_url(settings.REDIS_URL, decode_responses=True)
+                redis_client = aioredis.from_url(settings.REDIS_URL, decode_responses=True, socket_connect_timeout=5, socket_timeout=5)
                 redis_key = f"ai_alert:{company_id}:{threshold}"
                 was_set = await redis_client.set(redis_key, "1", ex=86400, nx=True)
                 await redis_client.aclose()

@@ -69,6 +69,7 @@ async def get_tenant_llm_config(company_id: str) -> dict | None:
                     "providers": row.providers or {},
                     "routing": row.routing or {},
                     "region": row.region,  # W2-012-B (2026-05-23): LGPD Art 33 per-tenant region
+                    "tier_policies": row.tier_policies or {},  # Sprint D (2026-06-13): override de tier por dominio
                 }
                 _tenant_configs[company_id] = config
                 return config

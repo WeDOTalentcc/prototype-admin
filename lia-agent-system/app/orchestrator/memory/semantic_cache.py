@@ -50,11 +50,11 @@ async def _get_redis():
 
     try:
         import redis.asyncio as aioredis
-        client = await aioredis.from_url(settings.REDIS_URL, decode_responses=True)
+        client = await aioredis.from_url(settings.REDIS_URL, decode_responses=True, socket_connect_timeout=5, socket_timeout=5)
     except ImportError:
         try:
             import aioredis
-            client = await aioredis.from_url(settings.REDIS_URL, decode_responses=True)
+            client = await aioredis.from_url(settings.REDIS_URL, decode_responses=True, socket_connect_timeout=5, socket_timeout=5)
         except ImportError:
             return None
     return wrap_redis_client(client, module="semantic_cache")

@@ -20,6 +20,7 @@ from ._shared import (  # noqa: F401
 )
 from app.shared.security.require_company_id import require_company_id
 from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from app.shared.errors import LIAError
 
 router = APIRouter()
 
@@ -74,7 +75,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error exporting PDF report: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/job-vacancies/{job_id}/export/excel", response_model=None)
@@ -127,4 +128,4 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error exporting Excel report: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")

@@ -4,6 +4,7 @@ import React, { useState } from "react"
 import { Brain } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { EnrichedJD } from "./useJDEvaluation"
+import { useAiPersona } from "@/hooks/company/use-ai-persona"
 
 interface JDEvalResultsPanelProps {
   description?: string
@@ -21,6 +22,8 @@ export const JDEvalResultsPanel = React.memo(function JDEvalResultsPanel({
   enrichedJd,
 }: JDEvalResultsPanelProps) {
   const [showFullDescription, setShowFullDescription] = useState(false)
+  const { persona } = useAiPersona()
+  const personaName = persona?.name ?? "IA"
 
   return (
     <div className="grid grid-cols-2 gap-4 pt-2">
@@ -93,7 +96,7 @@ export const JDEvalResultsPanel = React.memo(function JDEvalResultsPanel({
       </div>
 
       <div className="space-y-3">
-        <span className="text-xs font-semibold uppercase tracking-wide block">DESCRIÇÃO ENRIQUECIDA (LIA)</span>
+        <span className="text-xs font-semibold uppercase tracking-wide block">{`DESCRIÇÃO ENRIQUECIDA (${personaName})`}</span>
 
         {enrichedJd && (enrichedJd.generated_jd_text || enrichedJd.description) ? (
           <div className="border rounded-xl p-3 space-y-3 border-wedo-cyan/20 bg-wedo-cyan/[.02]">
@@ -151,7 +154,7 @@ export const JDEvalResultsPanel = React.memo(function JDEvalResultsPanel({
           <div className="border rounded-xl p-3 border-wedo-cyan/15 bg-wedo-cyan/[.02]">
             <div className="flex flex-col items-center justify-center py-6">
               <Brain className="h-8 w-8 mb-2 text-wedo-cyan opacity-40" />
-              <p className="text-xs text-lia-text-disabled text-center leading-relaxed">
+              <p className="text-xs text-lia-text-muted text-center leading-relaxed">
                 Nenhum JD enriquecido gerado ainda.<br />
                 Clique em Editar Descrição para gerar.
               </p>

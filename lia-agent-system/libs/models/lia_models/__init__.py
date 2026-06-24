@@ -27,6 +27,7 @@ from lia_models.planned_task import (
     ExecutionPlan
 )
 from lia_models.alert import Alert, AlertRule, AlertType, AlertSeverity, AlertStatus
+from lia_models.digest_schedule import DigestSchedulePreference
 from lia_models.calibration import (
     CalibrationEvent,
     CalibrationWeight,
@@ -144,6 +145,7 @@ from lia_models.communication_settings import (
     ConsentType,
     DEFAULT_COMMUNICATION_SETTINGS
 )
+from lia_models.plan_config import CompanyPlanConfig
 from lia_models.billing import (
     Subscription,
     Invoice,

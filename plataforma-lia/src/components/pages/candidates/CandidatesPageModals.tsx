@@ -23,6 +23,7 @@ export function CandidatesPageModals(props: CandidatesPageModalsProps) {
         handleScheduleComplete={props.handleScheduleComplete}
         unifiedModalOpen={props.unifiedModalOpen}
         unifiedModalCandidate={props.unifiedModalCandidate}
+        unifiedModalSelectedCandidates={props.unifiedModalSelectedCandidates}
         unifiedModalType={props.unifiedModalType}
         lastSearchQuery={props.lastSearchQuery}
         handleUnifiedModalClose={props.handleUnifiedModalClose}
@@ -31,6 +32,10 @@ export function CandidatesPageModals(props: CandidatesPageModalsProps) {
         setShowSendEmailModal={props.setShowSendEmailModal}
         emailCandidateSelected={props.emailCandidateSelected}
         setEmailCandidateSelected={props.setEmailCandidateSelected}
+        showScheduleMessageModal={props.showScheduleMessageModal}
+        setShowScheduleMessageModal={props.setShowScheduleMessageModal}
+        scheduleMessageCandidate={props.scheduleMessageCandidate}
+        setScheduleMessageCandidate={props.setScheduleMessageCandidate}
       />
 
       <CandidatesCoreModals

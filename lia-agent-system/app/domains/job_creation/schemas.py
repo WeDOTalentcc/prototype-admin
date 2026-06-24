@@ -5,7 +5,7 @@ Aligns with WSI methodology F1-F6 outputs.
 EnrichedJobDescription matches the output schema from WSI_FLOW_PONTA_A_PONTA.md F1.C.
 """
 
-from typing import Dict, List, Literal, Optional
+from typing import Any, Dict, List, Literal, Optional
 
 from pydantic import BaseModel, Field
 
@@ -122,3 +122,99 @@ class GeneratedQuestion(BaseModel):
     skill_probed: Optional[str] = None
     skill_parent: Optional[str] = None
     skill_classification_source: Optional[str] = None  # "llm" | "heuristic" | "default"
+
+
+# ---------------------------------------------------------------------------
+# Create-from-source: canonical seed shape (PR-A)
+# ---------------------------------------------------------------------------
+# Producer: JobSeedBuilderService (single source of truth). A JobTemplate or an
+# existing JobVacancy is normalized into JobCreationSeed. Each populated field
+# carries provenance so the UI/agent can show where a value came from and flag
+# values that need review. extra=forbid via WeDoBaseModel (no ghost fields, no
+# company_id in payload). ALWAYS_FRESH_FIELDS are never seeded from a source.
+
+from pydantic import ConfigDict, model_validator
+
+from app.shared.types import WeDoBaseModel
+
+ALWAYS_FRESH_FIELDS = {
+    "manager_name",
+    "manager_email",
+    "headcount",
+    "deadline",
+    "cost_center",
+}
+
+
+class FieldProvenance(BaseModel):
+    """Where a single seeded field came from + whether it needs human review."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    source_type: Literal["template", "vacancy", "user", "derived"]
+    source_id: str
+    source_name: str
+    confidence: Literal["high", "medium", "low"] = "high"
+    needs_review: bool = False
+
+
+class SourceDescriptor(BaseModel):
+    """The source the seed was built from (template or vacancy)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    type: Literal["template", "vacancy"]
+    id: str
+    name: str
+
+
+class JobCreationSeed(WeDoBaseModel):
+    """Normalized seed for the job-creation wizard. extra=forbid via base."""
+
+    title: Optional[str] = None
+    seniority: Optional[str] = None
+    work_model: Optional[str] = None
+    department: Optional[str] = None
+    location: Optional[str] = None
+    employment_type: Optional[str] = None
+    salary_min: Optional[float] = None
+    salary_max: Optional[float] = None
+    skills: List[str] = []
+    responsibilities: List[str] = []
+    requirements: Optional[str] = None
+    nice_to_have: Optional[str] = None
+    description: Optional[str] = None
+    pipeline_template_id: Optional[str] = None
+    # PR-B2a (clone rico): competencias + elegibilidade estruturadas. Mapeadas
+    # por apply_seed_to_state em confirmed_*_competencies / eligibility_questions,
+    # que competency_node (_has_confirmed) e eligibility_node ja reusam. Os gates
+    # de aprovacao continuam disparando (conservador). NAO entram em
+    # _SEEDABLE_FIELDS (coverage = metrica de intake, igual ao template).
+    technical_competencies: List[Dict[str, Any]] = []
+    behavioral_competencies: List[Dict[str, Any]] = []
+    eligibility_questions: List[Dict[str, Any]] = []
+    # PR-B2b: perguntas WSI da vaga origem. apply_seed_to_state as ESTACIONA em
+    # state['seed_wsi_questions'] (NAO wsi_questions): o wsi_questions_node
+    # pergunta ao recrutador (reaproveitar/gerar) reusando o gate de aprovacao.
+    wsi_questions: List[Dict[str, Any]] = []
+    # PR-B2 item 3 (clone): JD enriquecida EXATA da vaga origem. apply mapeia
+    # p/ state['jd_enriched']; o jd_enrichment_node ja tem reuse-guard (usa se
+    # presente, pula geracao) e apresenta no HITL #1 p/ revisao.
+    jd_enriched: Optional[Dict[str, Any]] = None
+
+    provenance: Dict[str, FieldProvenance] = {}
+    source: Optional[SourceDescriptor] = None
+    coverage_filled: int = 0
+    coverage_total: int = 0
+
+    _NON_SEEDABLE = {"provenance", "source", "coverage_filled", "coverage_total"}
+
+    @model_validator(mode="after")
+    def _provenance_keys_are_real_fields(self):
+        valid = set(type(self).model_fields) - self._NON_SEEDABLE
+        bad = set(self.provenance) - valid
+        if bad:
+            raise ValueError(
+                f"provenance keys nao sao campos reais do seed: {sorted(bad)}"
+            )
+        return self

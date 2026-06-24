@@ -30,6 +30,7 @@ from app.domains.job_management.repositories.job_vacancy_public_repository impor
 from app.models.candidate import Candidate, VacancyCandidate
 from app.services.notification_service import NotificationType
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 from app.shared.types import WeDoBaseModel
 from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
 
@@ -143,7 +144,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error(f"Error generating public link: {e}", exc_info=True)
         await repo.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/job-vacancies/{vacancy_id}/share-link", response_model=ShareLinkResponse)
@@ -192,7 +193,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting share link: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 # ─── Public routes (no auth) ──────────────────────────────────────────────────
@@ -283,7 +284,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error fetching public vacancy: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router_public.post("/p/{slug}/apply", response_model=PublicApplicationResponse)
@@ -428,6 +429,14 @@ company_id: str = Depends(require_company_id)):
         import secrets as _secrets
         screening_token = _secrets.token_urlsafe(32)
 
+        # Task #1306: resolve the structural stage link at creation so the SLA
+        # detector can join by id instead of fragile name matching.
+        from app.shared.services.stage_id_resolver import resolve_recruitment_stage_id
+        _apply_stage_id = await resolve_recruitment_stage_id(
+            repo.get_session(),
+            str(job.company_id) if job.company_id else None,
+            "pending_gate1",
+        )
         vacancy_candidate = VacancyCandidate(
             id=uuid_lib.uuid4(),
             vacancy_id=job.id,
@@ -439,6 +448,7 @@ company_id: str = Depends(require_company_id)):
             match_percentage=candidate.skills_match_percentage,
             status=candidate_status,
             stage="pending_gate1",
+            recruitment_stage_id=_apply_stage_id,
             additional_data={
                 "screening_invite_token": screening_token,
                 "applied_at": datetime.utcnow().isoformat(),
@@ -452,24 +462,24 @@ company_id: str = Depends(require_company_id)):
         # REGRA 4: fail-soft mas LOUD. Multi-tenancy: company_id de
         # job.company_id (contexto tenant), NUNCA do payload do request.
         try:
-            from app.shared.messaging.platform_events import (
-                CandidateAppliedEvent,
-                publish_platform_event,
+            from lia_events.schemas import CandidateAppliedEvent
+            from app.shared.messaging.events_outbox_service import get_events_outbox_service
+            from lia_config.database import AsyncSessionLocal
+            _evt = CandidateAppliedEvent(
+                company_id=str(job.company_id),
+                payload={
+                    "candidate_id": str(candidate.id),
+                    "vacancy_id": str(job.id),
+                },
+                source_api="lia-agent-system",
             )
-
-            await publish_platform_event(
-                CandidateAppliedEvent(
-                    company_id=str(job.company_id),
-                    payload={
-                        "candidate_id": str(candidate.id),
-                        "vacancy_id": str(job.id),
-                    },
-                )
-            )
-        except Exception as _evt_err:  # noqa: BLE001
+            async with AsyncSessionLocal() as _evt_db:
+                await get_events_outbox_service().publish_via_outbox(_evt, _evt_db)
+                await _evt_db.commit()
+        except Exception as _evt_err:  # noqa: BLE001  # REGRA-4-EXEMPT: event dispatch é best-effort
             logger.error(
-                "[C1.3] publish candidate_applied (web) failed (apply prossegue): %s",
-                _evt_err,
+                "[C1.3] publish candidate_applied outbox (web) failed (apply prossegue): %s",
+                type(_evt_err).__name__,
                 exc_info=True,
             )
 
@@ -510,4 +520,4 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error processing public application: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="Erro ao processar candidatura. Tente novamente.")
+        raise LIAError(message="Erro ao processar candidatura. Tente novamente.")

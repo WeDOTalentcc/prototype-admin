@@ -21,7 +21,7 @@ import type { WizardPipelineTemplateSuggestion } from "@/components/unified-chat
  *     a vaga em curso.
  *
  * Design tokens canonical (Design System v4.2.x):
- *   - Header com accent cyan (`text-wedo-cyan`) — LIA "agindo" (memory
+ *   - Header com accent cyan (`text-lia-text-secondary`) — LIA "agindo" (memory
  *     `project_white_label_ai_assistant`).
  *   - Botão primário "Aplicar este template" usa variant Ink canonical
  *     (`bg-lia-text-primary`), NUNCA cyan — cyan é exclusivo da
@@ -113,13 +113,13 @@ export function PipelineTemplateSuggestion({
       {/* Header — LIA falando, accent cyan apropriado */}
       <div className="flex items-center gap-2">
         <span
-          className="flex h-7 w-7 items-center justify-center rounded-md bg-wedo-cyan/15 text-wedo-cyan"
+          className="flex h-7 w-7 items-center justify-center rounded-md bg-wedo-cyan/15 text-wedo-cyan-text"
           aria-hidden="true"
         >
           <Sparkles className="h-4 w-4" />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-[11px] font-medium uppercase tracking-wide text-wedo-cyan">
+          <p className="text-[11px] font-medium uppercase tracking-wide text-lia-text-secondary">
             {t("suggestionTitle")}
           </p>
           <p className="text-sm font-semibold text-lia-text-primary">
@@ -157,7 +157,7 @@ export function PipelineTemplateSuggestion({
                     </span>
                     <span className="inline-flex items-center gap-1 rounded-full bg-status-success/10 px-2 py-0.5 text-[11px] font-medium text-status-success">
                       <Sparkle className="h-3 w-3" aria-hidden="true" />
-                      {t("matchPercent", { percent })}
+                      {t("matchPercent", { percent: String(percent) })}
                     </span>
                   </div>
                 </div>

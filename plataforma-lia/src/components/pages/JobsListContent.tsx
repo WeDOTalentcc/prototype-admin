@@ -4,7 +4,7 @@ import React from"react"
 import {
   Briefcase, CheckCircle, CheckCircle2, Target, ChevronsLeftRight,
   Brain, Copy, Share2, UserCheck, X, ChevronRight, Loader2,
-  Table as TableIcon, LayoutGrid
+  Table as TableIcon, LayoutGrid, Archive, ArchiveRestore
 } from"lucide-react"
 import { Button } from"@/components/ui/button"
 import { Chip } from "@/components/ui/chip"
@@ -12,12 +12,11 @@ import { ViewToggle } from"@/components/ui/view-toggle"
 import { ToolbarButton } from"@/components/ui/toolbar-button"
 import { EmptyState } from"@/components/ui/empty-state"
 import { BulkActionsBar } from"@/components/ui/bulk-actions-bar"
+import { ConfirmArchiveDialog } from"@/components/pages/jobs/ConfirmArchiveDialog"
 import { TableFiltersPanel } from"@/components/pages/jobs/TableFiltersPanel"
 import { JobPreviewPanel } from"@/components/pages/jobs/JobPreviewPanel"
 import { JobsCompactTableView } from"@/components/pages/jobs/JobsCompactTableView"
 import { JobsKanbanView } from"@/components/pages/jobs/JobsKanbanView"
-// Phase 4H — ATS empty state
-import { AtsImportSuggestionCard } from "@/components/jobs/AtsImportSuggestionCard"
 import { ColumnConfigPanel } from"@/components/pages/jobs/ColumnConfigPanel"
 import { toast } from"sonner"
 import type { Job } from"@/components/jobs"
@@ -65,6 +64,9 @@ interface JobsListContentProps {
   handleJobPublish: () => void; handleJobInsights: () => void
   handleJobDuplicate: () => void; handleJobToggleStatus: () => void
   handleJobAssignRecruiter: () => void; getSelectedJobsHaveActiveStatus: () => boolean
+  handleJobArchive?: (archive: boolean) => Promise<boolean>
+  isArchivingJobs?: boolean
+  activeFilter?: string
   toggleTableExpansion: () => void
   openJobCreationChat: (initialMessage?: string) => void
   setSearchTerm: (v: string) => void; jobFilters: JobFiltersLocal; toggleJobFilter: (category: string, key: string, value: unknown) => void
@@ -95,8 +97,9 @@ interface JobsListContentProps {
   toggleUrgentJob: (id: number) => void; togglePinJob: (id: number) => void; toggleFavoriteJob: (id: number) => void
   jobsError?: string | null; loadBackendJobs?: () => Promise<void>
   // Phase 4H — ATS rail filter
-  activeFilter?: string
   setShowBulkImportModal?: (open: boolean) => void
+  /** Lista completa de vagas (sem filtro) para derivar opções de Localização no painel de filtros (RV-019). */
+  allJobs?: Job[]
 }
 
 export function JobsListContent(props: JobsListContentProps) {
@@ -106,6 +109,7 @@ export function JobsListContent(props: JobsListContentProps) {
     showColumnConfig, handleToggleColumnConfig, getActiveJobFiltersCount,
     selectAllJobs, deselectAllJobs, handleJobPublish, handleJobInsights,
     handleJobDuplicate, handleJobToggleStatus, handleJobAssignRecruiter,
+    handleJobArchive, isArchivingJobs, activeFilter,
     getSelectedJobsHaveActiveStatus, toggleTableExpansion,
     openJobCreationChat,
     setSearchTerm, jobFilters, toggleJobFilter, clearAllJobFilters,
@@ -125,7 +129,8 @@ export function JobsListContent(props: JobsListContentProps) {
     handleJobsColumnDrop, handleJobsColumnDragEnd, startJobsColumnResize,
     toggleUrgentJob, togglePinJob, toggleFavoriteJob, setShowColumnConfig,
     jobsError, loadBackendJobs,
-    activeFilter, setShowBulkImportModal,
+    setShowBulkImportModal,
+    allJobs,
   } = props
 
   const t = useTranslations('jobs')
@@ -133,14 +138,28 @@ export function JobsListContent(props: JobsListContentProps) {
   const jobsViewMode = useUIPreferencesStore((s) => s.jobsViewMode)
   const setJobsViewMode = useUIPreferencesStore((s) => s.setJobsViewMode)
 
+  const [showArchiveConfirm, setShowArchiveConfirm] = React.useState(false)
+  const [archiveMode, setArchiveMode] = React.useState<'archive' | 'unarchive'>('archive')
+
+  const openArchiveDialog = (mode: 'archive' | 'unarchive') => {
+    setArchiveMode(mode)
+    setShowArchiveConfirm(true)
+  }
+
   const bulkActions = [
     { id: 'publish', label: t('publish'), icon: <Share2 className="w-3.5 h-3.5 text-lia-text-secondary" />, onClick: handleJobPublish },
-    { id: 'insights', label: t('insights'), icon: <Brain className="w-3.5 h-3.5 text-wedo-cyan" />, onClick: handleJobInsights },
+    { id: 'insights', label: t('insights'), icon: <Brain className="w-3.5 h-3.5 text-wedo-cyan-text" />, onClick: handleJobInsights },
     { id: 'duplicate', label: t('duplicate'), icon: <Copy className="w-3.5 h-3.5 text-lia-text-secondary" />, onClick: handleJobDuplicate },
     { id: 'toggle_status', label: getSelectedJobsHaveActiveStatus() ? t('pause') : t('activate'),
       icon: getSelectedJobsHaveActiveStatus() ? <X className="w-3.5 h-3.5 text-lia-text-secondary" /> : <CheckCircle2 className="w-3.5 h-3.5 text-lia-text-secondary" />,
       onClick: handleJobToggleStatus },
     { id: 'assign_recruiter', label: t('recruiter'), icon: <UserCheck className="w-3.5 h-3.5 text-lia-text-secondary" />, onClick: handleJobAssignRecruiter },
+    ...(handleJobArchive && activeFilter === 'arquivadas'
+      ? [{ id: 'unarchive', label: 'Desarquivar', icon: <ArchiveRestore className="w-3.5 h-3.5 text-lia-text-secondary" />, onClick: () => openArchiveDialog('unarchive') }]
+      : []),
+    ...(handleJobArchive && activeFilter !== 'arquivadas'
+      ? [{ id: 'archive', label: 'Arquivar', icon: <Archive className="w-3.5 h-3.5 text-lia-text-secondary" />, onClick: () => openArchiveDialog('archive') }]
+      : []),
   ]
 
   return (
@@ -192,7 +211,7 @@ export function JobsListContent(props: JobsListContentProps) {
               title={t('configureColumns')}
               icon={<ChevronsLeftRight />}
               trailing={
-                <Chip variant="neutral" muted className={`ml-1 text-xs ${showColumnConfig ? 'bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-elevated' : 'bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-elevated'}`}>6</Chip>
+                <Chip variant="neutral" muted className={`ml-1 text-xs ${showColumnConfig ? 'bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-elevated' : 'bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-elevated'}`}>{visibleColumnIds.length}</Chip>
               }
             >
               {t('columns')}
@@ -210,11 +229,26 @@ export function JobsListContent(props: JobsListContentProps) {
       </div>
 
       {jobsViewMode === 'table' && (
-        <BulkActionsBar
-          selectedCount={selectedJobsForBatch.size} entityLabel={t('newJob')}
-          entityIcon={<Briefcase className="w-3.5 h-3.5 text-lia-text-secondary" />}
-          onDeselectAll={deselectAllJobs} className="flex-shrink-0 mb-3" actions={bulkActions}
-        />
+        <>
+          <BulkActionsBar
+            selectedCount={selectedJobsForBatch.size} entityLabel={t('newJob')}
+            entityIcon={<Briefcase className="w-3.5 h-3.5 text-lia-text-secondary" />}
+            onDeselectAll={deselectAllJobs} className="flex-shrink-0 mb-3" actions={bulkActions}
+          />
+          {showArchiveConfirm && handleJobArchive && (
+            <ConfirmArchiveDialog
+              open={showArchiveConfirm}
+              mode={archiveMode}
+              jobCount={selectedJobsForBatch?.size ?? 0}
+              isLoading={isArchivingJobs ?? false}
+              onCancel={() => setShowArchiveConfirm(false)}
+              onConfirm={async () => {
+                const ok = await handleJobArchive(archiveMode === 'archive')
+                if (ok) setShowArchiveConfirm(false)
+              }}
+            />
+          )}
+        </>
       )}
 
       <div className="flex gap-2 transition-colors motion-reduce:transition-none duration-300 flex-1 min-h-0 overflow-hidden">
@@ -226,6 +260,7 @@ export function JobsListContent(props: JobsListContentProps) {
           hasActiveFilters={hasActiveFilters} savedSearches={savedSearches}
           onSaveSearch={saveSearchAsTemplate} onApplySavedSearch={handleApplySavedSearch}
           onRenameSavedSearch={handleRenameSavedSearch} onDeleteSavedSearch={handleDeleteSavedSearch}
+          allJobs={allJobs}
         />
 
         <div className={`h-full bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl transition-[width,height] duration-300 min-w-0 overflow-hidden ${
@@ -301,11 +336,13 @@ export function JobsListContent(props: JobsListContentProps) {
                     </div>
                   </div>
                 ) : filteredJobs.length === 0 ? (
-                  // Phase 4H — ATS empty state takes priority over generic
+                  // C7 fix: AtsImportSuggestionCard canonical location is pipeline-overview-page
+                  // (ats_importada stage panel). JobsListContent uses EmptyState + BulkImportModal
+                  // trigger here to avoid duplicate render across the two SPA pages.
                   activeFilter === 'ats' ? (
-                    <AtsImportSuggestionCard
-                      onImport={() => setShowBulkImportModal?.(true)}
-                    />
+                    <EmptyState icon={<Briefcase />} title={t('emptyAtsTitle')}
+                      description={t('emptyAtsDescription')}
+                      action={{ label: t('emptyAtsAction'), onClick: () => setShowBulkImportModal?.(true) }} className="h-64" />
                   ) : (
                     <EmptyState icon={<Briefcase />} title={t('emptyTitle')}
                       description={t('emptyDescription')}

@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import * as React from "react"
 import { useState, useEffect } from "react"
 import {
@@ -23,6 +24,7 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { CheckCircle, XCircle, Clock, Mail, Calendar, Brain } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useAiPersona } from "@/hooks/company/use-ai-persona"
 
 export type Decision = {
   type: "approve" | "reject" | "pending"
@@ -55,6 +57,11 @@ export function NextStepModal({
   availableStages,
   onConfirm,
 }: NextStepModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('next-step', isOpen)
+
+  const { persona } = useAiPersona()
+  const personaName = persona?.name ?? "IA"
   const [decisionType, setDecisionType] = useState<DecisionType | null>(null)
   const [selectedStage, setSelectedStage] = useState<string>("")
   const [feedbackAction, setFeedbackAction] = useState<FeedbackAction>("none")
@@ -227,7 +234,7 @@ export function NextStepModal({
                         {suggestedNextStage === stage && (
                           <span className="inline-flex items-center gap-1 rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-secondary px-1.5 py-0.5 text-micro font-medium text-lia-text-secondary">
                             <Brain className="h-3 w-3 text-wedo-cyan" />
-                            Sugestão LIA
+                            Sugestão de IA
                           </span>
                         )}
                       </div>
@@ -238,7 +245,7 @@ export function NextStepModal({
               {suggestedNextStage && selectedStage !== suggestedNextStage && (
                 <p className="text-xs text-lia-text-secondary flex items-center gap-1">
                   <Brain className="h-3 w-3 text-wedo-cyan" />
-                  A LIA sugeriu: <span className="font-medium">{suggestedNextStage}</span>
+                  {`${personaName} sugeriu:`} <span className="font-medium">{suggestedNextStage}</span>
                 </p>
               )}
             </div>

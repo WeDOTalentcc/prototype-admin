@@ -1,8 +1,10 @@
 "use client"
 
+import { useQuery } from "@tanstack/react-query"
+
 import React, { useRef, useState } from "react"
 import { cn } from "@/lib/utils"
-import { Check, GripVertical, RefreshCw, Trash2, ChevronDown, ChevronUp, AlertTriangle } from "lucide-react"
+import { Check, GripVertical, RefreshCw, Trash2, ChevronDown, ChevronUp, AlertTriangle, Library, Plus, ChevronRight } from "lucide-react"
 import type { WsiQuestionsData, ScreeningQuestion } from "../wizard-types"
 import { FallbackBanner } from "./FallbackBanner"
 import { AiDegradedModeBanner } from "./AiDegradedModeBanner"
@@ -16,22 +18,44 @@ interface Props {
 }
 
 const FRAMEWORK_COLORS: Record<string, string> = {
-  CBI: "bg-wedo-cyan/10 text-wedo-cyan",
-  Bloom: "bg-wedo-purple/10 text-wedo-purple",
-  Dreyfus: "bg-wedo-magenta/10 text-wedo-magenta",
-  BigFive: "bg-wedo-green/10 text-wedo-green",
+  CBI: "bg-wedo-cyan/10 text-wedo-cyan-text",
+  Bloom: "bg-wedo-purple/10 text-wedo-purple-text",
+  Dreyfus: "bg-wedo-magenta/10 text-wedo-magenta-text",
+  BigFive: "bg-wedo-green/10 text-wedo-green-text",
 }
 
 /**
  * WsiQuestionsPanel — F6 HITL approval panel.
  * Shows generated questions as cards. Recruiter can approve/edit/regenerate each.
  */
-export function WsiQuestionsPanel({ data, requiresApproval, onApprove, onReject, onToggleApprove }: Props) {
+export function WsiQuestionsPanel({ data, requiresApproval, onApprove, onToggleApprove }: Props) {
   const d = data as unknown as WsiQuestionsData
   const questions = d.questions || []
   const mode = d.screening_mode
   const dist = d.distribution
   const [expandedId, setExpandedId] = useState<number | null>(null)
+  const [bankOpen, setBankOpen] = useState(false)
+
+  // W2-B: banco de perguntas da empresa (fetch via proxy, cache 60s)
+  const { data: bankData } = useQuery({
+    queryKey: ["company-bank-questions"],
+    queryFn: async () => {
+      const r = await fetch("/api/backend-proxy/company/screening-questions")
+      if (!r.ok) return { items: [] }
+      return r.json()
+    },
+    staleTime: 60_000,
+    enabled: bankOpen,  // lazy — só busca quando abrir
+  })
+  const bankQuestions: Array<{ id: string; question_text: string; category?: string; is_eliminatory?: boolean }> =
+    bankData?.items ?? []
+
+  const handleAddFromBank = (questionId: string) => {
+    window.dispatchEvent(new CustomEvent("lia:wizard-add-bank-question", {
+      detail: { questionId },
+    }))
+    setBankOpen(false)
+  }
   // Onda 33: HTML5 native drag-to-reorder. Source index lives in a ref so the
   // drop handler can pair it with the target index without re-rendering.
   const dragSourceRef = useRef<number | null>(null)
@@ -83,36 +107,9 @@ export function WsiQuestionsPanel({ data, requiresApproval, onApprove, onReject,
     }))
   }
 
-  // Distribuicao minima por modo (tabela F5 da metodologia WSI)
-  const MIN_DISTRIBUTION: Record<string, Record<string, { technical: number; behavioral: number }>> = {
-    compact: {
-      estagiario: { technical: 5, behavioral: 2 },
-      junior: { technical: 5, behavioral: 2 },
-      pleno: { technical: 5, behavioral: 2 },
-      senior: { technical: 4, behavioral: 3 },
-      principal: { technical: 4, behavioral: 3 },
-      staff: { technical: 4, behavioral: 3 },
-      lead: { technical: 3, behavioral: 4 },
-      diretor: { technical: 3, behavioral: 4 },
-    },
-    full: {
-      estagiario: { technical: 9, behavioral: 3 },
-      junior: { technical: 9, behavioral: 3 },
-      pleno: { technical: 8, behavioral: 4 },
-      senior: { technical: 7, behavioral: 5 },
-      principal: { technical: 7, behavioral: 5 },
-      staff: { technical: 7, behavioral: 5 },
-      lead: { technical: 7, behavioral: 5 },
-      diretor: { technical: 7, behavioral: 5 },
-    },
-  }
-
-  const screeningMode = (d.screening_mode || "compact").toLowerCase()
-  const seniority = (d.seniority_level || "pleno").toLowerCase()
-  const minDist =
-    MIN_DISTRIBUTION[screeningMode]?.[seniority] ??
-    MIN_DISTRIBUTION[screeningMode]?.["pleno"] ??
-    { technical: 5, behavioral: 2 }
+  // Task 7 WSI — usar expected_distribution do backend (YAML canonical).
+  // Fallback conservador: compact/pleno = {technical:5, behavioral:2}.
+  const minDist = d.expected_distribution ?? { technical: 5, behavioral: 2 }
 
   const techCount = questions.filter((q) => q.block === "technical").length
   const behavCount = questions.filter((q) => q.block === "behavioral").length
@@ -155,7 +152,7 @@ export function WsiQuestionsPanel({ data, requiresApproval, onApprove, onReject,
           <span className="text-lia-text-secondary">{behavCount} comportamentais</span>
         </div>
         {mode && (
-          <span className="inline-flex items-center mt-1 px-2 py-0.5 rounded bg-wedo-cyan/10 text-wedo-cyan text-[10px] font-medium">
+          <span className="inline-flex items-center mt-1 px-2 py-0.5 rounded bg-wedo-cyan/10 text-wedo-cyan-text text-[10px] font-medium">
             Modo {mode === "compact" ? "Compacto" : "Completo"}
           </span>
         )}
@@ -221,12 +218,50 @@ export function WsiQuestionsPanel({ data, requiresApproval, onApprove, onReject,
       {/* HITL Approval footer */}
       {requiresApproval && questions.length > 0 && (
         <div className="flex-shrink-0 px-4 py-3 border-t border-lia-border-subtle bg-lia-bg-primary flex items-center gap-2">
+          {/* W2-B — banco de perguntas da empresa */}
+          <div className="relative">
+            <button
+              onClick={() => setBankOpen(!bankOpen)}
+              title="Adicionar pergunta do banco da empresa"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-md border border-lia-border-subtle text-sm font-medium text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
+            >
+              <Library className="w-3.5 h-3.5" />
+              Do banco
+              <ChevronRight className={`w-3 h-3 transition-transform ${bankOpen ? "rotate-90" : ""}`} />
+            </button>
+            {bankOpen && (
+              <div className="absolute bottom-full mb-1 left-0 w-72 max-h-48 overflow-y-auto rounded-md border border-lia-border-subtle bg-lia-bg-primary shadow-lg z-20">
+                {bankQuestions.length === 0 ? (
+                  <p className="px-3 py-2 text-xs text-lia-text-tertiary">Nenhuma pergunta no banco ainda.</p>
+                ) : (
+                  <ul role="list" className="py-1">
+                    {bankQuestions.map((bq) => (
+                      <li key={bq.id}>
+                        <button
+                          onClick={() => handleAddFromBank(bq.id)}
+                          className="w-full flex items-start gap-2 px-3 py-2 text-left text-xs text-lia-text-primary hover:bg-lia-interactive-hover transition-colors"
+                        >
+                          <Plus className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-wedo-cyan" />
+                          <span className="flex-1 line-clamp-2">{bq.question_text}</span>
+                          {bq.is_eliminatory && (
+                            <span className="text-[10px] px-1 rounded bg-status-error/10 text-status-error flex-shrink-0">Elim.</span>
+                          )}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
+          </div>
           <button
-            onClick={onReject}
+            onClick={() =>
+              window.dispatchEvent(new CustomEvent("lia:wizard-regenerate-all"))
+            }
             className="flex items-center gap-1.5 px-3 py-2 rounded-md border border-lia-border-subtle text-sm font-medium text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
           >
             <RefreshCw className="w-3.5 h-3.5" />
-            Regenerar
+            Gerar novas
           </button>
           <button
             onClick={() => {
@@ -353,16 +388,16 @@ function QuestionCard({
               </span>
             )}
             {question.trait_ocean && (
-              <span className="px-1.5 py-0.5 rounded bg-wedo-cyan/10 text-[10px] text-wedo-cyan font-medium">
+              <span className="px-1.5 py-0.5 rounded bg-wedo-cyan/10 text-[10px] text-wedo-cyan-text font-medium">
                 {question.trait_ocean}
               </span>
             )}
           </div>
         </div>
         {isExpanded ? (
-          <ChevronUp className="w-4 h-4 text-lia-text-disabled flex-shrink-0 mt-1" />
+          <ChevronUp className="w-4 h-4 text-lia-text-muted flex-shrink-0 mt-1" />
         ) : (
-          <ChevronDown className="w-4 h-4 text-lia-text-disabled flex-shrink-0 mt-1" />
+          <ChevronDown className="w-4 h-4 text-lia-text-muted flex-shrink-0 mt-1" />
         )}
       </div>
 
@@ -395,7 +430,7 @@ function QuestionCard({
           <div className="flex items-center gap-1.5 pt-1.5 border-t border-lia-border-subtle mt-1.5">
             <button
               onClick={() => onRegenerate?.(index)}
-              className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-medium text-wedo-cyan hover:bg-wedo-cyan/10 transition-colors motion-reduce:transition-none"
+              className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-medium text-wedo-cyan-text hover:bg-wedo-cyan/10 transition-colors motion-reduce:transition-none"
             >
               <RefreshCw className="w-3 h-3" />
               Regenerar

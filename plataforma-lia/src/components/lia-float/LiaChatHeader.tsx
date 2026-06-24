@@ -8,6 +8,7 @@ import {
   type LucideIcon
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useIASessionStore } from "@/stores/ia-session-store"
 import type { ActionType } from "@/hooks/shared/use-action-intent"
 import type { EntityContext } from "@/contexts/lia-float-context"
 
@@ -48,6 +49,7 @@ export function LiaChatHeader({
   handleNewChat, handleClear, handleToggleHistory, handleExpand, close,
   setActiveActionType, setActionLabel, onSwitchTask,
 }: LiaChatHeaderProps) {
+  const { toggleIASidebar, isIASidebarOpen } = useIASessionStore()
   const ContextIcon = contextPage ? (CONTEXT_PAGE_ICONS[contextPage] || null) : null
   const entityLabel = entityContext?.name
     ? `${entityContext.type === "candidate" ? "Candidato" : "Vaga"}: ${entityContext.name}`
@@ -60,17 +62,14 @@ export function LiaChatHeader({
           <div className="w-7 h-7 rounded-full flex items-center justify-center">
             <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
           </div>
-          <div className="flex flex-col">
-            <span className="text-base-ui font-bold text-lia-text-primary leading-tight">LIA</span>
-            {(entityLabel || (contextPage && contextPage !== "Conversar")) && (
-              <span className="inline-flex items-center gap-1 text-xs text-lia-text-tertiary leading-tight">
-                {ContextIcon && <ContextIcon className="w-3 h-3" />}
-                <span className="truncate max-w-[180px]">
-                  {entityLabel || contextPage}
-                </span>
+          {(entityLabel || (contextPage && contextPage !== "Conversar")) && (
+            <span className="inline-flex items-center gap-1 text-xs text-lia-text-tertiary leading-tight">
+              {ContextIcon && <ContextIcon className="w-3 h-3" />}
+              <span className="truncate max-w-[180px]">
+                {entityLabel || contextPage}
               </span>
-            )}
-          </div>
+            </span>
+          )}
           {isConnected && (
             <span className="w-1.5 h-1.5 rounded-full bg-status-success flex-shrink-0" title="Conectado" />
           )}
@@ -104,16 +103,16 @@ export function LiaChatHeader({
             </button>
           )}
           <button
-            onClick={handleToggleHistory}
+            onClick={toggleIASidebar}
             className={cn(
               "p-1.5 rounded-md transition-colors",
-              showHistory
-                ? "text-wedo-cyan bg-lia-bg-tertiary"
+              isIASidebarOpen
+                ? "text-wedo-cyan-text bg-lia-bg-tertiary"
                 : "text-lia-text-disabled hover:text-lia-text-secondary hover:bg-lia-interactive-hover"
             )}
             title="Histórico de conversas"
             aria-label="Ver histórico de conversas"
-            aria-expanded={showHistory}
+            aria-expanded={isIASidebarOpen}
           >
             <History className="w-3.5 h-3.5" />
           </button>

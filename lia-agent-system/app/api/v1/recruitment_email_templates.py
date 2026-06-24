@@ -2,6 +2,7 @@
 Recruitment Email Templates API endpoints.
 Provides CRUD operations for pipeline stage email templates.
 """
+from app.middleware.request_id import get_correlation_id
 import logging
 import uuid as uuid_module
 from datetime import datetime
@@ -27,6 +28,7 @@ from app.shared.types import WeDoBaseModel
 from typing import Annotated
 from fastapi import Path
 from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
+from app.shared.errors import LIAError
 
 logger = logging.getLogger(__name__)
 
@@ -155,7 +157,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error listing recruitment email templates: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/stages", response_model=list[StageInfo])
@@ -237,7 +239,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"Error getting template for stage {stage_name}: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/{template_id}", response_model=TemplateResponse)
@@ -260,7 +262,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting template {template_id}: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.put("/{template_id}", response_model=TemplateResponse)
@@ -291,7 +293,7 @@ company_id: str = Depends(require_company_id)):
 
         updated = await repo.update(template, update_fields)
         try:
-            await AuditService().log_action(trace_id=str(uuid_module.uuid4()), company_id=company_id, action_type="communication_template_updated", actor="system", target_id=template_id, target_type="email_template", metadata={"fields_updated": list(update_fields.keys())})  # P1-W2-03
+            await AuditService().log_action(trace_id=get_correlation_id(), company_id=company_id, action_type="communication_template_updated", actor="system", target_id=template_id, target_type="email_template", metadata={"fields_updated": list(update_fields.keys())})  # P1-W2-03
         except Exception as _ae:
             logger.warning(f"Audit log failed (non-blocking): {_ae}")
         return template_to_response(updated)
@@ -299,7 +301,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error updating template {template_id}: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/seed", response_model=SeedResponse)
@@ -325,7 +327,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error seeding templates: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/clone", response_model=SeedResponse)
@@ -350,7 +352,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error cloning templates: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/{template_id}/preview", response_model=TemplatePreviewResponse)
@@ -385,7 +387,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error previewing template {template_id}: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/stage/{stage_name}/preview", response_model=TemplatePreviewResponse)
@@ -430,7 +432,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"Error previewing stage template: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.delete("/{template_id}", response_model=None)
@@ -458,7 +460,7 @@ company_id: str = Depends(require_company_id)):
         await repo.delete(template)
 
         try:
-            await AuditService().log_action(trace_id=str(uuid_module.uuid4()), company_id=company_id, action_type="communication_template_deleted", actor="system", target_id=template_id, target_type="email_template")  # P1-W2-03
+            await AuditService().log_action(trace_id=get_correlation_id(), company_id=company_id, action_type="communication_template_deleted", actor="system", target_id=template_id, target_type="email_template")  # P1-W2-03
         except Exception as _ae:
             logger.warning(f"Audit log failed (non-blocking): {_ae}")
         return {"message": "Template deleted successfully", "id": template_id}
@@ -466,6 +468,6 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error deleting template {template_id}: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 reorder_collection_before_item(router)

@@ -135,3 +135,24 @@ class CandidateAttachmentRepository:
         await self.db.commit()
         await self.db.refresh(attachment)
         return attachment
+
+    async def find_by_hash(
+        self,
+        file_hash: str,
+        company_id: str,
+    ) -> CandidateAttachment | None:
+        """Return first active attachment with matching SHA-256 hash in this tenant.
+
+        Used for file-level dedup on CV uploads (GAP-05-006).
+        company_id is required — multi-tenancy invariant.
+        """
+        if not company_id:
+            raise ValueError("company_id is required (multi-tenancy invariant)")
+        result = await self.db.execute(
+            select(CandidateAttachment).where(
+                CandidateAttachment.file_hash == file_hash,
+                CandidateAttachment.company_id == company_id,
+                CandidateAttachment.is_active.is_(True),
+            )
+        )
+        return result.scalars().first()

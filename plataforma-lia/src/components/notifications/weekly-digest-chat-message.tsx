@@ -62,7 +62,7 @@ export function WeeklyDigestChatMessage({
   return (
     <div className="space-y-2.5 max-w-[480px]">
       <div className="flex items-center gap-2 mb-1">
-        <span className="bg-wedo-cyan/10 text-wedo-cyan text-[10px] font-semibold px-2 py-0.5 rounded-full border border-wedo-cyan/30">
+        <span className="bg-wedo-cyan/10 text-wedo-cyan-text text-[10px] font-semibold px-2 py-0.5 rounded-full border border-wedo-cyan/30">
           RESUMO SEMANAL
         </span>
         <span className="text-[10px] text-lia-text-tertiary">{digest.date}</span>
@@ -173,7 +173,7 @@ export function WeeklyDigestChatMessage({
           <div className="flex items-start gap-2.5 px-3.5 py-2.5 bg-wedo-cyan/5">
             <Lightbulb className="w-3.5 h-3.5 text-wedo-cyan mt-0.5 shrink-0" />
             <div>
-              <p className="text-xs font-semibold text-wedo-cyan mb-0.5">Padrões e Otimização</p>
+              <p className="text-xs font-semibold text-lia-text-secondary mb-0.5">Padrões e Otimização</p>
               <p className="text-[11px] text-lia-text-secondary leading-relaxed">{digest.optimization.message}</p>
             </div>
           </div>

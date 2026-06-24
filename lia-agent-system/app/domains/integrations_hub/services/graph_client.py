@@ -9,6 +9,8 @@ from typing import Any
 import httpx
 from msal import ConfidentialClientApplication
 
+from app.shared.http_client import get_http_client
+
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)
@@ -111,7 +113,7 @@ class GraphAPIClient:
             "Content-Type": "application/json"
         }
         
-        async with httpx.AsyncClient() as client:
+        async with get_http_client("microsoft") as client:
             response = await client.request(
                 method=method,
                 url=url,

@@ -5,6 +5,7 @@ v3.0: Unified pipeline via MainOrchestrator.process() + ContextAdapter.from_job_
       FairnessGuard, PendingAction, ActionExecutor, CascadedRouter all handled centrally.
 """
 import logging
+from app.shared.errors import LIAInternalError
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -94,8 +95,8 @@ INTENT_TO_UI_ACTION: dict[str, str] = {
     "analise_detalhada": "analyze_profile",
     "analyze_profile": "analyze_profile",
     
-    "create_job_vacancy": "start_job_wizard",
-    "create_job": "start_job_wizard",
+    "create_job_vacancy": "start_wizard_seeded",
+    "create_job": "start_wizard_seeded",
 }
 
 @router.post("/orchestrator/job-chat", response_model=OrchestratedJobChatResponse)
@@ -130,6 +131,58 @@ company_id: str = Depends(require_company_id)) -> OrchestratedJobChatResponse:
             db = _db
             break
 
+        # Frente D (2026-06-10): respeitar LIA_FEDERATED_PRIMARY no job-chat.
+        # Sem esta flag, 2 cerebros rodam lado a lado: bolha SSE usa recruiter_copilot,
+        # job-chat lateral usa supervisor — o moat (RRP/scoped-tools/entity-resolver)
+        # nao chegava ao kanban. Feature-flagged: fail-open se agente indisponivel.
+        try:
+            from app.tools.scope_config import federated_primary_enabled as _jc_fed_check
+            _jc_use_federated = _jc_fed_check()
+        except Exception:
+            _jc_use_federated = False
+
+        if _jc_use_federated:
+            try:
+                from app.api.v1.chat_shared import _get_agent, _build_agent_input
+                import uuid as _uuid
+                _fed_agent = _get_agent("recruiter_copilot")
+                if _fed_agent is not None:
+                    logger.info("[JobChat] federated path: recruiter_copilot")
+                    _agent_input = _build_agent_input(
+                        content=ctx.message,
+                        context={
+                            "page_type": "job",
+                            "job_context": request.job_context,
+                            "candidates": request.candidates,
+                            "selected_candidate_ids": request.selected_candidate_ids or [],
+                        },
+                        session_id=request.conversation_id or str(_uuid.uuid4()),
+                        company_id=company_id,
+                        user_id=request.user_id,
+                        conversation_history=[],
+                    )
+                    _agent_output = await _fed_agent.process(_agent_input)
+                    return OrchestratedJobChatResponse(
+                        success=True,
+                        content=_agent_output.message,
+                        agent_used="recruiter_copilot",
+                        agents_consulted=["recruiter_copilot"],
+                        intent_detected="federated",
+                        confidence=_agent_output.confidence,
+                        actions=[a.model_dump() for a in _agent_output.actions],
+                        conversation_id=request.conversation_id,
+                    )
+                else:
+                    logger.warning(
+                        "[JobChat] recruiter_copilot indisponivel, fallback supervisor"
+                    )
+            except Exception as _fed_exc:
+                logger.warning(
+                    "[JobChat] federated path falhou (fail-open, fallback supervisor): %s",
+                    _fed_exc,
+                )
+        # Supervisor path (default quando LIA_FEDERATED_PRIMARY=false ou federated falhou)
+
         chat_response = await main_orchestrator.process(ctx, db)
         return OrchestratedJobChatResponse(
             success=chat_response.success,
@@ -156,10 +209,7 @@ company_id: str = Depends(require_company_id)) -> OrchestratedJobChatResponse:
         raise
     except Exception as e:
         logger.error(f"[JobChat] Error: {e}", exc_info=True)
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error processing job chat: {str(e)}"
-        )
+        raise LIAInternalError("Internal server error")
 
 @router.get("/orchestrator/job-chat/intents", response_model=None)
 async def get_job_chat_intents(company_id: str = Depends(require_company_id)):
@@ -172,7 +222,7 @@ async def get_job_chat_intents(company_id: str = Depends(require_company_id)):
                 "description": "Criar uma nova vaga de recrutamento",
                 "keywords": ["criar vaga", "nova vaga", "abrir vaga", "nova posição"],
                 "agent": "JobPlanner",
-                "ui_action": "start_job_wizard"
+                "ui_action": "start_wizard_seeded"
             },
             {
                 "id": "ranking_candidatos",

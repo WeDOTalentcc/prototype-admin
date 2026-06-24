@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
+import { getAuthHeaders } from '@/lib/api/auth-headers'
 import { validateParams, validateBody } from '@/lib/api/validate'
 import { z } from 'zod'
 
@@ -25,9 +26,7 @@ export async function POST(
     
     const response = await fetch(`${BACKEND_URL}/api/v1/search/archetypes/from-job`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getAuthHeaders(request),
       body: JSON.stringify({
         job_id: parseInt(jobId, 10),
         name: body.name || null,

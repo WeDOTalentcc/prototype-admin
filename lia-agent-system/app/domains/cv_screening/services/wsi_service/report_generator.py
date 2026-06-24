@@ -15,11 +15,17 @@ em app.shared.llm.safe_response). Em failure:
     fila pra revisao manual.
 
 Pattern canonical alinhado com REGRA 4 CLAUDE.md (fail-loud em LLM paths).
+
+C4 P0 #1 fix (2026-06-20): FairnessGuard gate adicionado.
+- company_id obrigatorio em generate_report() e generate_feedback() (fail-closed)
+- GuardedCandidateContentService verifica conteudo gerado ANTES de retornar
+- Instrucao anti-fabricacao adicionada em ambos os prompts
 """
 import logging
 from typing import Any, Literal
 
 from app.shared.llm.safe_response import safe_llm_with_flag_async, LLMFailureMode
+from app.shared.compliance.guarded_content_service import get_guarded_content_service
 
 from .models import (
     CandidateFeedback,
@@ -33,41 +39,54 @@ logger = logging.getLogger(__name__)
 
 class WSIReportGenerator:
     """Gerador de pareceres estruturados e feedbacks com RAG."""
-    
+
     def __init__(self, llm):
         self.llm = llm
         self._load_rag_templates()
-    
+
     def _load_rag_templates(self):
         """Carrega templates do RAG."""
         from pathlib import Path
-        
+
         rag_dir = Path("lia-agent-system/training/rag_knowledge/wsi_methodology")
         self.report_templates = (rag_dir / "report_templates.md").read_text(encoding="utf-8") if (rag_dir / "report_templates.md").exists() else ""
-    
+
     async def generate_report(
         self,
         candidate_id: str,
         wsi_result: WSIResult,
-        responses: list[ResponseAnalysis]
+        responses: list[ResponseAnalysis],
+        company_id: str = "",
     ) -> StructuredReport:
-        """Gera parecer estruturado para recrutadores."""
-        
+        """Gera parecer estruturado para recrutadores.
+
+        C4 P0 #1 (2026-06-20): company_id obrigatorio (fail-closed via
+        GuardedCandidateContentService). Conteudo gerado pelo LLM e
+        verificado pelo FairnessGuard antes de retornar ao caller.
+        """
+        # C4 P0 #1: fail-closed se company_id ausente
+        if not company_id:
+            raise ValueError(
+                "generate_report() requer company_id. "
+                "Multi-tenancy fail-closed: nunca gere parecer sobre candidato "
+                "sem company_id verificado via JWT."
+            )
+
         # Preparar contexto das respostas
         responses_summary = "\n".join([
             f"- {r.competency} (Score: {r.final_score}/5): {r.justification}"
             for r in responses
         ])
-        
+
         tech_responses = [r for r in responses if r.competency and any(
             kw in r.competency.lower() for kw in ["python", "react", "java", "sql", "aws", "node", "go", "rust", "docker", "kubernetes", "api", "backend", "frontend", "devops", "data", "machine", "deep", "cloud"]
         )]
         behav_responses = [r for r in responses if r not in tech_responses]
-        
+
         tech_strong = [f"{r.competency} ({r.final_score}/5)" for r in tech_responses if r.final_score >= 4.0]
         tech_gaps = [f"{r.competency} ({r.final_score}/5)" for r in tech_responses if r.final_score < 3.0]
         behav_strong = [f"{r.competency} ({r.final_score}/5)" for r in behav_responses if r.final_score >= 4.0]
-        
+
         prompt = f"""Gere um parecer estruturado completo para recrutadores usando a metodologia WSI.
 
 CANDIDATO ID: {candidate_id}
@@ -89,6 +108,11 @@ TEMPLATES DE REFERÊNCIA (exemplos do RAG):
 {self.report_templates[:3000]}
 
 ---
+
+INSTRUÇÃO ANTI-FABRICAÇÃO (OBRIGATÓRIO): Use EXCLUSIVAMENTE os dados presentes
+acima (scores WSI, análises de respostas, competências avaliadas). NUNCA invente
+projetos, métricas, tecnologias ou evidências não mencionadas nas respostas.
+Cada afirmação do parecer DEVE ter âncora direta nos dados fornecidos.
 
 CRITÉRIOS OBJETIVOS PARA DECISÃO (OBRIGATÓRIO seguir — WSI_CUTOFFS canônicos):
 - WSI Geral >= 3.75 → decisao = "APROVADO" (= 7.5/10)
@@ -197,31 +221,44 @@ RETORNE APENAS JSON:
                 envelope.error_message,
             )
 
+        # C4 P0 #1: FairnessGuard gate — verifica executive_summary gerado
+        executive_summary_raw = data.get("executive_summary", "Análise não disponível")
+        guard_svc = get_guarded_content_service()
+        guard_result = guard_svc.guard_generated_content(
+            content=executive_summary_raw,
+            company_id=company_id,
+            content_type="wsi_report",
+        )
+        executive_summary_final = guard_result.content
+        # Se guard bloqueou, escalar needs_manual_review
+        needs_manual_review = envelope.needs_manual_review or guard_result.needs_manual_review
+
         return StructuredReport(
             candidate_id=candidate_id,
             wsi_result=wsi_result,
-            executive_summary=data.get("executive_summary", "Análise não disponível"),
+            executive_summary=executive_summary_final,
             technical_analysis=data.get("technical_analysis", {}),
             behavioral_analysis=data.get("behavioral_analysis", {}),
             cultural_fit=data.get("cultural_fit", {}),
             recommendation=data.get("recommendation", {}),
             # P0.D envelope (audit 2026-05-21)
             fallback_used=not envelope.success,
-            needs_manual_review=envelope.needs_manual_review,
+            needs_manual_review=needs_manual_review,
             llm_failure_mode=(
                 envelope.failure_mode.value if not envelope.success else None
             ),
             llm_error_message=envelope.error_message if not envelope.success else None,
         )
-    
+
     async def generate_feedback(
         self,
         wsi_result: WSIResult,
         responses: list[ResponseAnalysis],
-        decision: Literal["aprovado", "aguardando", "nao_aprovado"]
+        decision: Literal["aprovado", "aguardando", "nao_aprovado"],
+        company_id: str = "",
     ) -> CandidateFeedback:
         """Gera feedback construtivo para candidato.
-        
+
         IMPORTANTE — NEUTRALIDADE DE TOM:
         O feedback pós-triagem é enviado ANTES da decisão do recrutador.
         O candidato NÃO sabe (e não deve saber) se será aprovado ou não.
@@ -229,25 +266,36 @@ RETORNE APENAS JSON:
         recomendação interna da LIA. O parâmetro `decision` é mantido
         apenas para rastreabilidade interna (audit trail), NUNCA para
         modular o tom do feedback ao candidato.
-        
+
         Alinhado com wsi_feedback_generator.py:
           - Sem score numérico
           - Sem classificação (aprovado / reprovado / aguardando)
           - Sem comparação com outros candidatos
           - Foco em comportamentos observáveis e desenvolvimento
+
+        C4 P0 #1 (2026-06-20): company_id obrigatorio (fail-closed via
+        GuardedCandidateContentService). main_message verificado pelo
+        FairnessGuard antes de retornar ao caller.
         """
-        
+        # C4 P0 #1: fail-closed se company_id ausente
+        if not company_id:
+            raise ValueError(
+                "generate_feedback() requer company_id. "
+                "Multi-tenancy fail-closed: nunca gere feedback sobre candidato "
+                "sem company_id verificado via JWT."
+            )
+
         strong_responses = [r for r in responses if r.final_score >= 4.0]
         development_responses = [r for r in responses if r.final_score < 3.5]
-        
+
         strong_competencies = [f"{r.competency} ({r.final_score}/5)" for r in strong_responses]
         development_competencies = [f"{r.competency} ({r.final_score}/5)" for r in development_responses]
-        
+
         tech_strong = [r for r in responses if r.final_score >= 4.0 and r not in development_responses]
         behav_strong_list = [r.competency for r in tech_strong if r.competency and not any(
             kw in r.competency.lower() for kw in ["python", "react", "java", "sql", "aws", "node", "go", "rust", "docker", "kubernetes", "api", "backend", "frontend", "devops", "data", "machine", "deep", "cloud"]
         )]
-        
+
         prompt = f"""Gere um feedback estruturado e construtivo para o candidato após a etapa de triagem.
 
 PONTOS FORTES TÉCNICOS: {strong_competencies}
@@ -258,6 +306,11 @@ TEMPLATES DE REFERÊNCIA (exemplos do RAG):
 {self.report_templates[10000:13000]}
 
 ---
+
+INSTRUÇÃO ANTI-FABRICAÇÃO (OBRIGATÓRIO): Use EXCLUSIVAMENTE os dados presentes
+acima (competências avaliadas, pontos fortes identificados, oportunidades de
+desenvolvimento). NUNCA invente projetos, métricas, recursos ou conteúdo não
+ancorado nas respostas e scores reais do candidato.
 
 TOM OBRIGATÓRIO: Construtivo, empático e neutro. Reconheça pontos fortes genuínos, posicione gaps como oportunidades de crescimento. NUNCA antecipar resultado do processo (aprovação ou reprovação). O candidato ainda aguarda a decisão do recrutador.
 
@@ -327,10 +380,21 @@ RETORNE APENAS JSON:
                 envelope.error_message,
             )
 
+        # C4 P0 #1: FairnessGuard gate — verifica main_message gerado
+        main_message_raw = data.get("main_message", _fallback["main_message"])
+        guard_svc = get_guarded_content_service()
+        guard_result = guard_svc.guard_generated_content(
+            content=main_message_raw,
+            company_id=company_id,
+            content_type="candidate_feedback",
+        )
+        main_message_final = guard_result.content
+        needs_manual_review = envelope.needs_manual_review or guard_result.needs_manual_review
+
         return CandidateFeedback(
             candidate_id=wsi_result.candidate_id,
             decision=decision,
-            main_message=data.get("main_message", _fallback["main_message"]),
+            main_message=main_message_final,
             technical_strengths=data.get("technical_strengths", []),
             development_opportunities=data.get("development_opportunities", []),
             behavioral_strengths=data.get("behavioral_strengths", []),
@@ -340,7 +404,7 @@ RETORNE APENAS JSON:
             recommended_resources=data.get("recommended_resources"),
             # P0.D envelope (audit 2026-05-21)
             fallback_used=not envelope.success,
-            needs_manual_review=envelope.needs_manual_review,
+            needs_manual_review=needs_manual_review,
             llm_failure_mode=(
                 envelope.failure_mode.value if not envelope.success else None
             ),

@@ -9,7 +9,7 @@ import { SCREENING_STATUS_LABELS } from"@/types/screening"
 import { liaApi } from"@/services/lia-api"
 import {
   ArrowLeft, Settings, Share2, FileText, Layers3, ListChecks, Lightbulb,
-  PauseCircle, PlayCircle, Archive, Calendar, Link2, RotateCcw, Brain,
+  PauseCircle, PlayCircle, Archive, Calendar, Link2, RotateCcw, Brain, Search, BarChart3,
 } from"lucide-react"
 import { Button } from"@/components/ui/button"
 import { Chip } from "@/components/ui/chip"
@@ -37,6 +37,7 @@ interface KanbanJobHeaderProps {
   setShowJobEditor: (show: boolean) => void
   pipelineInheritance: { isCustomized: boolean; isLoading: boolean; resetToCompanyDefault: () => Promise<boolean> }
   setJobLocalOverrides: (fn: (prev: Record<string, unknown>) => Record<string, unknown>) => void
+  onOpenVacancySearch?: () => void
 }
 
 export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: KanbanJobHeaderProps) {
@@ -240,7 +241,7 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
                       {t('published')}
                     </Chip>
                   )}
-                  <span className="text-micro text-lia-text-disabled mx-0.5">|</span>
+                  <span className="text-micro text-lia-text-muted mx-0.5">|</span>
                   {!!(currentJob.openDate) && (
                     <span className="text-micro text-lia-text-secondary whitespace-nowrap">
                       <Calendar className="w-3 h-3 inline mr-0.5 -mt-0.5" />
@@ -297,6 +298,12 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
 
             {/* Right: Action Buttons */}
             <div className="flex items-center gap-2 pt-1 flex-shrink-0">
+              {props.onOpenVacancySearch && (
+                <Button variant="outline" size="sm" className="gap-2 h-8" onClick={props.onOpenVacancySearch}>
+                  <Search className="w-3.5 h-3.5" />
+                  {t('searchCandidates')}
+                </Button>
+              )}
               <Button variant="outline" size="sm" className="gap-2 h-8" onClick={handleShowReport}>
                 <FileText className="w-3.5 h-3.5" />
                 {t('report')}
@@ -359,6 +366,18 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
               <Brain className="w-3.5 h-3.5 text-lia-cyan" />
               {tJobs('tabs.agents')}
             </button>
+            <button
+              onClick={() => { setActiveTab('indicators'); setShowJobEditor(false); }}
+              data-testid="job-tab-indicators"
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer ${
+                activeTab === 'indicators'
+                  ? 'bg-lia-bg-tertiary text-lia-text-primary'
+                  : 'text-lia-text-secondary hover:bg-lia-interactive-hover'
+              }`}
+            >
+              <BarChart3 className="w-3.5 h-3.5" />
+              {t('indicators')}
+            </button>
             <div className="ml-auto flex items-center gap-2">
               {pipelineInheritance.isCustomized ? (
                 <>
@@ -383,7 +402,7 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
                   </button>
                 </>
               ) : (
-                <span className="inline-flex items-center gap-1 text-micro text-lia-text-disabled">
+                <span className="inline-flex items-center gap-1 text-micro text-lia-text-muted">
                   <Link2 className="w-3 h-3" />
                   {t('inheritedFromCompany')}
                 </span>

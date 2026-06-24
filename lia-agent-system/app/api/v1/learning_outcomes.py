@@ -22,6 +22,7 @@ from app.shared.types import WeDoBaseModel
 from typing import Annotated
 from fastapi import Path
 from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
+from app.shared.errors import LIAError
 
 router = APIRouter(prefix="/learning-outcomes", tags=["Learning Outcomes"])
 logger = logging.getLogger(__name__)
@@ -100,7 +101,7 @@ async def record_outcome(request: OutcomeRecordRequest, db: AsyncSession = Depen
         raise
     except Exception as e:
         logger.error(f"Failed to record outcome: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/outcomes/{company_id}", response_model=list[OutcomeResponse])
@@ -150,7 +151,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
         raise
     except Exception as e:
         logger.error(f"Failed to list outcomes: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/outcomes/{company_id}/stats", response_model=OutcomeStatsResponse)
@@ -182,13 +183,13 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
         raise
     except Exception as e:
         logger.error(f"Failed to get outcome stats: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/outcomes/{company_id}/patterns", response_model=list[OutcomePatternResponse])
 async def get_outcome_patterns(
     company_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
-    group_by: str = Query(default="role", regex="^(role|seniority|department)$"),
+    group_by: str = Query(default="role", pattern="^(role|seniority|department)$"),
     repo: LearningOutcomeRepository = Depends(get_learning_outcome_repo),
 _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
@@ -212,6 +213,6 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
         raise
     except Exception as e:
         logger.error(f"Failed to get outcome patterns: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 reorder_collection_before_item(router)

@@ -40,6 +40,11 @@ class UserResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
+    # A7-BE: expose PII/grant fields for admin display.
+    can_view_salary: bool | None = None
+    can_view_sensitive_pii: bool | None = None
+    pii_field_visibility: dict[str, bool] | None = None
+
     class Config:
         from_attributes = True
 
@@ -82,6 +87,7 @@ class UserManagementCreate(WeDoBaseModel):
     email: EmailStr
     name: str = Field(..., min_length=2, max_length=255)
     role: UserRole = UserRole.viewer
+    department_id: str | None = None  # P1-6: persistir dept selecionado
     permissions: list[str] = Field(default_factory=list)
     password: str | None = Field(None, description="Password for the user. If not provided, a default will be used.")
 
@@ -98,6 +104,13 @@ class UserManagementResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
+    # A7-BE: expose PII/grant fields for admin display (mirrors UserResponse).
+    can_view_salary: bool | None = None
+    can_view_sensitive_pii: bool | None = None
+    pii_field_visibility: dict[str, bool] | None = None
+    department_id: UUID | None = None  # B4 fix: expose for FE filtering (UUID type — Pydantic v2 does not coerce UUID->str)
+    department_name: str | None = None  # B4 fix: enriched from departments table
+
     class Config:
         from_attributes = True
 
@@ -113,6 +126,12 @@ class UserManagementUpdate(WeDoBaseModel):
     role: UserRole | None = None
     is_active: bool | None = None
     permissions: list[str] | None = None
+    department_id: str | None = None  # P1-6: persistir dept selecionado
+    # A7-BE: PII/grant fields — consolidated SoT on company_users endpoint (LGPD Art. 6 III).
+    # Requires tenant admin. Gate enforced in update_user handler.
+    can_view_salary: bool | None = None
+    can_view_sensitive_pii: bool | None = None
+    pii_field_visibility: dict[str, bool] | None = None
 
 
 class ProfileUpdate(WeDoBaseModel):

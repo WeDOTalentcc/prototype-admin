@@ -76,7 +76,7 @@ class TestDependencyReturnsCanonical:
     async def test_get_triagem_repo_returns_canonical_instance(self):
         from unittest.mock import AsyncMock
 
-        from app.domains.triagem.dependencies import get_triagem_repo
+        from app.repositories.dependencies import get_triagem_repo
 
         mock_db = AsyncMock(spec=AsyncSession)
         repo = get_triagem_repo(db=mock_db)

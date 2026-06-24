@@ -86,7 +86,8 @@ class CommunicationDispatcher:
         body_html: str,
         body_text: str | None = None,
         from_name: str | None = None,
-        reply_to: str | None = None
+        reply_to: str | None = None,
+        headers: dict[str, str] | None = None,
     ) -> dict[str, Any]:
         """
         Send an email via Mailgun with automatic Resend fallback.
@@ -149,6 +150,22 @@ class CommunicationDispatcher:
             if reply_to:
                 data["h:Reply-To"] = reply_to
 
+            # GAP-07-002 / LOTE-009: CAN-SPAM / Gmail — per-recipient URL for RFC 8058
+            # List-Unsubscribe URL includes ?email= so one-click can identify recipient.
+            import urllib.parse as _ul
+            _base_url = os.getenv("APP_BASE_URL", "https://app.wedotalent.cc").rstrip("/")
+            _enc_email = _ul.quote_plus(to_email or "")
+            data["h:List-Unsubscribe"] = (
+                f"<{_base_url}/api/v1/communication/unsubscribe?email={_enc_email}>, "
+                f"<mailto:unsubscribe@wedotalent.cc?subject=Unsubscribe>"
+            )
+            data["h:List-Unsubscribe-Post"] = "List-Unsubscribe=One-Click"
+            data["h:DMARC-Policy"] = "v=DMARC1; p=quarantine; rua=mailto:dmarc@wedotalent.cc"
+            data["h:X-Mailer"] = "WeDOTalent/LIA"
+            # GAP-07-008: RFC 2822 threading headers (In-Reply-To / References)
+            for _hk, _hv in (headers or {}).items():
+                data[f"h:{_hk}"] = _hv
+
             try:
                 import httpx
                 with httpx.Client(timeout=30) as client:
@@ -199,6 +216,7 @@ class CommunicationDispatcher:
                 from_email=from_email_address,
                 reply_to=reply_to,
                 resend_api_key=resend_api_key,
+                headers=headers,
             )
             if resend_result.get("success"):
                 return resend_result
@@ -258,6 +276,7 @@ class CommunicationDispatcher:
         from_name: str | None = None,
         from_email: str | None = None,
         reply_to: str | None = None,
+        headers: dict[str, str] | None = None,
     ) -> dict[str, Any]:
         """Send email via Resend as fallback provider."""
         try:
@@ -288,6 +307,9 @@ class CommunicationDispatcher:
                 params["text"] = body_text
             if reply_to:
                 params["reply_to"] = reply_to
+            # GAP-07-008: RFC 2822 threading headers (In-Reply-To / References)
+            if headers:
+                params["headers"] = headers
 
             response = resend_sdk.Emails.send(params)
 
@@ -671,12 +693,49 @@ class CommunicationDispatcher:
         formatted_message: str,
     ) -> dict[str, Any]:
         if channel == "email" and recipient_email:
-            return self.send_email(
+            email_result = self.send_email(
                 to_email=recipient_email,
-                subject=subject or "Atualização do processo seletivo",
+                subject=subject or "Atualiza\u00e7\u00e3o do processo seletivo",
                 body_html=f"<p>{formatted_message}</p>",
                 body_text=formatted_message,
             )
+            if email_result.get("success"):
+                return email_result
+
+            if recipient_phone:
+                logger.warning(
+                    "[DISPATCHER] Email failed for %s (error=%s) \u2014 attempting WhatsApp fallback to %s",
+                    recipient_email,
+                    email_result.get("error", "unknown"),
+                    recipient_phone,
+                )
+                wa_result = self.send_whatsapp(
+                    to_phone=recipient_phone,
+                    message=formatted_message,
+                )
+                if wa_result.get("success"):
+                    wa_result["fallback_from"] = "email"
+                    wa_result["original_email_error"] = email_result.get("error")
+                    return wa_result
+
+                logger.error(
+                    "[DISPATCHER] Both email and WhatsApp failed for %s / %s",
+                    recipient_email,
+                    recipient_phone,
+                )
+                return {
+                    "success": False,
+                    "error": "Both email and WhatsApp failed",
+                    "email_error": email_result.get("error"),
+                    "whatsapp_error": wa_result.get("error"),
+                    "both_channels_failed": True,
+                    "channel": "email",
+                    "recipient": recipient_email,
+                    "timestamp": datetime.utcnow().isoformat(),
+                }
+
+            return email_result
+
         elif channel == "whatsapp" and recipient_phone:
             return self.send_whatsapp(
                 to_phone=recipient_phone,
@@ -692,7 +751,7 @@ class CommunicationDispatcher:
         elif recipient_email:
             return self.send_email(
                 to_email=recipient_email,
-                subject=subject or "Atualização do processo seletivo",
+                subject=subject or "Atualiza\u00e7\u00e3o do processo seletivo",
                 body_html=f"<p>{formatted_message}</p>",
                 body_text=formatted_message,
             )

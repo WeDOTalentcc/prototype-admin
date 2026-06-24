@@ -1,4 +1,5 @@
 "use client"
+// lia-context: setLiaModal managed by useUniversalTransitionModal hook
 import NextImage from "next/image"
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
@@ -10,7 +11,6 @@ import {
   ArrowRight,
   Brain,
   User,
-  MessageSquare,
   Loader2,
   CalendarClock,
   ChevronDown,
@@ -77,9 +77,13 @@ export function UniversalTransitionModal(props: UniversalTransitionModalProps) {
     handlePerCandidateSubStatusChange,
     handleSendChatMessage,
     handleConfirm,
+    bulkExample,
+    isLoadingBulkExample,
     handleOpenManualModal,
     prompt,
     setPrompt,
+    hitlPending,
+    sendApproval,
   } = useUniversalTransitionModal(props)
 
   const fromStage = props.fromStage
@@ -239,6 +243,21 @@ export function UniversalTransitionModal(props: UniversalTransitionModalProps) {
                 handlePerCandidateSubStatusChange={handlePerCandidateSubStatusChange}
               />
 
+              {isRejectedBatch && action === 'lia_auto' && (
+                <div className="px-5 py-2">
+                  <p className="text-micro font-medium text-lia-text-secondary mb-1">
+                    Exemplo do feedback (candidato 1 de {candidates.length}) — cada candidato recebe um texto personalizado pela IA
+                  </p>
+                  {isLoadingBulkExample ? (
+                    <p className="text-xs text-lia-text-tertiary">Gerando exemplo…</p>
+                  ) : bulkExample ? (
+                    <div className="text-xs text-lia-text-primary bg-lia-bg-secondary dark:bg-lia-bg-elevated rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle p-3 whitespace-pre-wrap max-h-40 overflow-y-auto">
+                      {bulkExample.body}
+                    </div>
+                  ) : null}
+                </div>
+              )}
+
               <ActionModeSection
                 action={action}
                 setAction={setAction}
@@ -259,6 +278,8 @@ export function UniversalTransitionModal(props: UniversalTransitionModalProps) {
                 onClearChat={() => { resetInterpret(); setPrompt(''); }}
                 actionBehavior={currentActionBehavior}
                 extractedPreferences={action === 'lia_auto' ? interpretResult?.extracted_preferences : null}
+                localHitlPending={hitlPending}
+                onLocalSendApproval={sendApproval}
               />
             </div>
           )}
@@ -287,19 +308,7 @@ export function UniversalTransitionModal(props: UniversalTransitionModalProps) {
 
         <DialogFooter className="px-5 py-0 bg-lia-bg-secondary dark:bg-lia-bg-primary border-t border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-center justify-between w-full py-2.5 gap-3">
-            <div className="flex items-center gap-2">
-              {currentActionBehavior === 'conclusion_rejected' && onOpenSpecializedModal && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-9 px-3 text-xs font-medium rounded-xl border-lia-border-default text-lia-text-secondary hover:bg-lia-bg-secondary focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none dark:border-lia-border-default"
-                  onClick={() => onOpenSpecializedModal('rejection-feedback', { candidates, toStage: selectedToStage })}
-                >
-                  <MessageSquare className="w-3.5 h-3.5 mr-1.5" />
-                  Feedback
-                </Button>
-              )}
-            </div>
+            <div className="flex items-center gap-2" />
 
             <div className="flex items-center gap-3">
               <Button
@@ -326,7 +335,7 @@ export function UniversalTransitionModal(props: UniversalTransitionModalProps) {
                     {action === 'lia_auto' ? (
                       <>
                         <Brain className="w-3.5 h-3.5 mr-1.5 text-wedo-cyan" />
-                        Confirmar com LIA
+                        Confirmar com IA
                       </>
                     ) : (
                       <>

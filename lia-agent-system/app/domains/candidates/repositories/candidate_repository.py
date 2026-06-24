@@ -39,7 +39,7 @@ class CandidateRepository:
         # TENANT-EXEMPT: dynamic builder — Candidate.company_id == company_id
         # é appended conditionally below quando company_id passado.
         query = select(Candidate).where(Candidate.id == candidate_id)
-        if company_id:
+        if company_id is not None:
             query = query.where(Candidate.company_id == company_id)
         result = await self.db.execute(query)
         return result.scalar_one_or_none()
@@ -70,7 +70,7 @@ class CandidateRepository:
         # TENANT-EXEMPT: dynamic builder — Candidate.company_id == company_id
         # é appended conditionally below quando company_id passado.
         query = select(Candidate).where(Candidate.id.in_(candidate_ids))
-        if company_id:
+        if company_id is not None:
             query = query.where(Candidate.company_id == company_id)
         result = await self.db.execute(query)
         return list(result.scalars().all())
@@ -140,7 +140,7 @@ class CandidateRepository:
                 Candidate._email_raw == email,  # transition: pre-migration rows with plaintext
             )
         )
-        if company_id:
+        if company_id is not None:
             query = query.where(Candidate.company_id == company_id)
         result = await self.db.execute(query)
         return result.scalar_one_or_none()
@@ -167,7 +167,8 @@ class CandidateRepository:
                     term = f"%{token}%"
                     token_conditions.append(
                         or_(
-                            func.lower(func.unaccent(Candidate.name)).like(term),
+                            # name_normalized: non-reversible token (migration 284); NULL name post-encryption.
+                            Candidate.name_normalized.ilike(f"%{token[:20]}%"),
                             func.lower(func.unaccent(Candidate.current_title)).like(term),
                             func.lower(func.unaccent(Candidate.current_company)).like(term),
                             func.lower(func.unaccent(Candidate.location_city)).like(term),
@@ -255,7 +256,7 @@ class CandidateRepository:
         # TENANT-EXEMPT: dynamic builder — Candidate.company_id == company_id
         # é appended conditionally below quando company_id passado.
         query = select(func.count(Candidate.id)).where(Candidate.is_active)
-        if company_id:
+        if company_id is not None:
             query = query.where(Candidate.company_id == company_id)
         query = self._build_list_filters(query, search=search, status=status, source=source, seniority=seniority, ids=ids)
         result = await self.db.execute(query)
@@ -279,7 +280,7 @@ class CandidateRepository:
         # TENANT-EXEMPT: dynamic builder — Candidate.company_id == company_id
         # é appended conditionally below quando company_id passado.
         query = select(Candidate).where(Candidate.is_active)
-        if company_id:
+        if company_id is not None:
             query = query.where(Candidate.company_id == company_id)
         query = self._build_list_filters(query, search=search, status=status, source=source, seniority=seniority, ids=ids)
 
@@ -316,7 +317,7 @@ class CandidateRepository:
         # TENANT-EXEMPT: dynamic builder — Candidate.company_id == company_id
         # é appended conditionally below quando company_id passado.
         query = select(Candidate).where(Candidate.is_active == filters.is_active)
-        if company_id:
+        if company_id is not None:
             query = query.where(Candidate.company_id == company_id)
 
         # LGPD Art. 18 - excluir candidatos com consent revogado para AI/automated
@@ -352,7 +353,9 @@ class CandidateRepository:
             term = f"%{normalized.lower()}%"
             query = query.where(
                 or_(
-                    func.lower(func.unaccent(Candidate.name)).like(term),
+                    # name_normalized: non-reversible search token (migration 284).
+                    # Candidate.name is NULL post-encryption; use name_normalized instead.
+                    Candidate.name_normalized.ilike(f"%{normalized.lower()[:20]}%"),
                     func.lower(func.unaccent(Candidate.current_title)).like(term),
                     func.lower(func.unaccent(Candidate.resume_text)).like(term),
                     func.lower(func.unaccent(func.array_to_string(Candidate.technical_skills, ","))).like(term),
@@ -459,7 +462,7 @@ class CandidateRepository:
             )
             .limit(limit)
         )
-        if company_id:
+        if company_id is not None:
             query = query.where(Candidate.company_id == company_id)
         result = await self.db.execute(query)
         return list(result.scalars().all())
@@ -471,6 +474,7 @@ class CandidateRepository:
         return candidate
 
     async def update(self, candidate: Candidate) -> Candidate:
+        self.db.add(candidate)
         await self.db.commit()
         await self.db.refresh(candidate)
         return candidate
@@ -501,7 +505,7 @@ class CandidateRepository:
             )
             .where(Candidate.id == candidate_id)
         )
-        if company_id:
+        if company_id is not None:
             query = query.where(Candidate.company_id == company_id)
         result = await self.db.execute(query)
         return result.scalar_one_or_none()
@@ -626,7 +630,8 @@ class CandidateRepository:
                 WHERE is_active = true
                   AND company_id = :company_id
                   AND (:query = ''
-                       OR name ILIKE :qlike
+                       -- name_normalized: post-encryption name search token (migration 284)
+                       OR name_normalized ILIKE :qlike_normalized
                        OR current_title ILIKE :qlike
                        OR :query = ANY(technical_skills))
                   AND (:location = '' OR location_city ILIKE :lloc OR location_state ILIKE :lloc)
@@ -638,6 +643,7 @@ class CandidateRepository:
                 "company_id": cid,
                 "query": query,
                 "qlike": f"%{query}%",
+                "qlike_normalized": f"%{_normalize_for_search(query)[:20]}%",
                 "location": location,
                 "lloc": f"%{location}%",
                 "min_exp": min_experience,
@@ -663,7 +669,7 @@ class CandidateRepository:
                 SELECT COUNT(*) AS total FROM candidates
                 WHERE is_active = true
                   AND company_id = :company_id
-                  AND (:query = '' OR name ILIKE :qlike OR current_title ILIKE :qlike
+                  AND (:query = '' OR name_normalized ILIKE :qlike_normalized OR current_title ILIKE :qlike
                        OR :query = ANY(technical_skills))
                   AND (:location = '' OR location_city ILIKE :lloc OR location_state ILIKE :lloc)
                   AND (years_of_experience IS NULL OR years_of_experience >= :min_exp)
@@ -672,6 +678,7 @@ class CandidateRepository:
                 "company_id": cid,
                 "query": query,
                 "qlike": f"%{query}%",
+                "qlike_normalized": f"%{_normalize_for_search(query)[:20]}%",
                 "location": location,
                 "lloc": f"%{location}%",
                 "min_exp": min_experience,
@@ -723,21 +730,22 @@ class CandidateRepository:
 
         edu_rows = await self.db.execute(
             sa_text("""
-                SELECT institution, degree, field_of_study, start_year, end_year, is_current
+                SELECT institution, degree, field_of_study, start_date, end_date, is_completed
                 FROM candidate_education
                 WHERE candidate_id = :cid
-                ORDER BY end_year DESC NULLS FIRST, start_year DESC NULLS FIRST
+                ORDER BY end_date DESC NULLS FIRST, start_date DESC NULLS FIRST
             """),
             {"cid": candidate_id},
         )
         education = []
         for r in edu_rows.mappings():
-            end_label = "atual" if r["is_current"] else (r["end_year"] or "?")
+            # is_completed=False => curso em andamento => "atual"
+            end_label = (r["end_date"] or "?") if r["is_completed"] else "atual"
             education.append({
                 "institution": r["institution"],
                 "degree": r["degree"],
                 "field_of_study": r["field_of_study"],
-                "period": f"{r['start_year'] or '?'} - {end_label}",
+                "period": f"{r['start_date'] or '?'} - {end_label}",
             })
 
         return {

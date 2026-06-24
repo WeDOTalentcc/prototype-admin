@@ -9,11 +9,23 @@ Valida o fluxo de roteamento end-to-end com mocks por tier, garantindo que:
 - Degradação graceful quando tiers estão indisponíveis
 
 Camada 3 (Integração) da pirâmide — mocks de Redis/pgvector/LLM.
+
+Task #1144: toda chamada a router.route() DEVE passar context={"company_id": ...}
+(multi-tenancy invariante — ENVIRONMENT=production no Replit faz
+record_namespace_violation lançar RuntimeError quando company_id ausente).
 """
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 from dataclasses import dataclass
 from typing import Optional
+
+
+# ---------------------------------------------------------------------------
+# Constante de tenant para testes — UUID fixo, não conflita com prod
+# ---------------------------------------------------------------------------
+
+_TEST_COMPANY_ID = "00000000-test-cccc-aaaa-000000000001"
+_TEST_CONTEXT = {"company_id": _TEST_COMPANY_ID}
 
 
 # ---------------------------------------------------------------------------
@@ -48,7 +60,13 @@ def _make_router_with_mocks(
     fast_match=None,
     llm_result=None,
 ):
-    """Cria CascadedRouter com todos os tiers mockados."""
+    """Cria CascadedRouter com todos os tiers mockados.
+
+    Task #1144: todos os callers DEVEM passar context=_TEST_CONTEXT para
+    satisfazer o invariante de multi-tenancy (company_id obrigatório na
+    chave Redis). ENVIRONMENT=production no Replit faz
+    record_namespace_violation lançar RuntimeError quando ausente.
+    """
     from app.orchestrator.routing.cascaded_router import CascadedRouter
 
     router = CascadedRouter()
@@ -94,14 +112,14 @@ class TestCascadedRouterFastTier:
         fast_result.confidence = 0.9
 
         router = _make_router_with_mocks(fast_match=fast_result)
-        result = await router.route("criar vaga de desenvolvedor")
+        result = await router.route("criar vaga de desenvolvedor", context=_TEST_CONTEXT)
 
         assert result.domain_id == "job_management"
         assert result.source == "fast_router"
 
     @pytest.mark.asyncio
     async def test_fast_router_increments_stats(self):
-        """Fast router hit incrementa stats['fast_hits']."""
+        """Fast router hit incrementa stats[fast_hits]."""
         fast_result = MagicMock()
         fast_result.domain_id = "sourcing"
         fast_result.confidence = 0.85
@@ -109,7 +127,7 @@ class TestCascadedRouterFastTier:
         router = _make_router_with_mocks(fast_match=fast_result)
         router._stats["fast_hits"] = 0
 
-        await router.route("buscar candidatos")
+        await router.route("buscar candidatos", context=_TEST_CONTEXT)
         assert router._stats.get("fast_hits", 0) >= 1
 
     @pytest.mark.asyncio
@@ -120,7 +138,7 @@ class TestCascadedRouterFastTier:
         fast_result.confidence = 0.88
 
         router = _make_router_with_mocks(fast_match=fast_result)
-        result = await router.route("analisar cv do candidato")
+        result = await router.route("analisar cv do candidato", context=_TEST_CONTEXT)
 
         assert result.confidence >= 0.7
 
@@ -140,9 +158,9 @@ class TestCascadedRouterMemoryCache:
         router = _make_router_with_mocks(fast_match=fast_result)
 
         # Primeira chamada
-        result1 = await router.route("criar vaga de desenvolvedor")
+        result1 = await router.route("criar vaga de desenvolvedor", context=_TEST_CONTEXT)
         # Segunda chamada — deve bater no cache
-        result2 = await router.route("criar vaga de desenvolvedor")
+        result2 = await router.route("criar vaga de desenvolvedor", context=_TEST_CONTEXT)
 
         assert result2.cached is True
         assert result2.domain_id == result1.domain_id
@@ -156,8 +174,8 @@ class TestCascadedRouterMemoryCache:
         router = _make_router_with_mocks(fast_match=fast_result)
         router._stats["memory_hits"] = 0
 
-        await router.route("relatório de pipeline")
-        await router.route("relatório de pipeline")  # segunda chamada → cache
+        await router.route("relatório de pipeline", context=_TEST_CONTEXT)
+        await router.route("relatório de pipeline", context=_TEST_CONTEXT)  # segunda chamada → cache
 
         assert router._stats.get("memory_hits", 0) >= 1
 
@@ -178,7 +196,7 @@ class TestCascadedRouterClarification:
             fast_match=None,
             llm_result=None,
         )
-        result = await router.route("xyzzy nonsense 999 aaa bbb ccc")
+        result = await router.route("xyzzy nonsense 999 aaa bbb ccc", context=_TEST_CONTEXT)
 
         assert result.needs_clarification is True
         assert result.source == "clarification_needed"
@@ -188,7 +206,7 @@ class TestCascadedRouterClarification:
     async def test_clarification_has_question(self):
         """Resultado de clarification tem clarification_question não vazio."""
         router = _make_router_with_mocks(fast_match=None, llm_result=None)
-        result = await router.route("algo absolutamente ambíguo 0xdeadbeef")
+        result = await router.route("algo absolutamente ambíguo 0xdeadbeef", context=_TEST_CONTEXT)
 
         assert result.needs_clarification is True
         assert result.clarification_question is not None
@@ -198,7 +216,7 @@ class TestCascadedRouterClarification:
     async def test_clarification_has_options(self):
         """Resultado de clarification tem lista de opções."""
         router = _make_router_with_mocks(fast_match=None, llm_result=None)
-        result = await router.route("xyz abc def 12345")
+        result = await router.route("xyz abc def 12345", context=_TEST_CONTEXT)
 
         assert result.needs_clarification is True
         assert isinstance(result.clarification_options, list)
@@ -212,16 +230,16 @@ class TestCascadedRouterClarification:
         fast_result.confidence = 0.9
         router = _make_router_with_mocks(fast_match=fast_result)
 
-        result = await router.route("buscar candidatos para vaga")
+        result = await router.route("buscar candidatos para vaga", context=_TEST_CONTEXT)
         assert result.needs_clarification is False
 
     @pytest.mark.asyncio
     async def test_clarification_stat_incremented(self):
-        """clarification_needed incrementa stats['clarification_issued']."""
+        """clarification_needed incrementa stats[clarification_issued]."""
         router = _make_router_with_mocks(fast_match=None, llm_result=None)
         router._stats["clarification_issued"] = 0
 
-        await router.route("incompreensível xyzzy 99999")
+        await router.route("incompreensível xyzzy 99999", context=_TEST_CONTEXT)
         assert router._stats.get("clarification_issued", 0) >= 1
 
 
@@ -239,7 +257,7 @@ class TestRouteResultContract:
         fast_result.confidence = 0.8
         router = _make_router_with_mocks(fast_match=fast_result)
 
-        result = await router.route("enviar email para candidato")
+        result = await router.route("enviar email para candidato", context=_TEST_CONTEXT)
         assert result.domain_id is not None
         assert result.domain_id != ""
 
@@ -251,7 +269,7 @@ class TestRouteResultContract:
         fast_result.confidence = 0.75
         router = _make_router_with_mocks(fast_match=fast_result)
 
-        result = await router.route("sincronizar gupy")
+        result = await router.route("sincronizar gupy", context=_TEST_CONTEXT)
         assert isinstance(result.confidence, float)
         assert 0.0 <= result.confidence <= 1.0
 
@@ -263,7 +281,7 @@ class TestRouteResultContract:
         fast_result.confidence = 0.9
         router = _make_router_with_mocks(fast_match=fast_result)
 
-        result = await router.route("criar vaga")
+        result = await router.route("criar vaga", context=_TEST_CONTEXT)
         assert result.source in (
             "memory_cache", "redis_cache", "vector_cache",
             "fast_router", "llm_cascade", "clarification_needed"
@@ -289,9 +307,9 @@ class TestRouteResultContract:
             fast_result.confidence = 0.9
             router = _make_router_with_mocks(fast_match=fast_result)
 
-            result = await router.route(query)
+            result = await router.route(query, context=_TEST_CONTEXT)
             assert result.domain_id in CANONICAL, (
-                f"Query '{query}' retornou domain_id não canônico: '{result.domain_id}'"
+                f"Query {query} retornou domain_id não canônico: {result.domain_id}"
             )
 
 
@@ -316,7 +334,7 @@ class TestCascadedRouterStats:
         router = CascadedRouter()
         stats = router.get_stats()
         for key in ("memory_hits", "fast_hits"):
-            assert key in stats, f"Stats não tem chave '{key}'"
+            assert key in stats, f"Stats não tem chave {key}"
 
     @pytest.mark.asyncio
     async def test_stats_increment_on_route(self):
@@ -327,6 +345,6 @@ class TestCascadedRouterStats:
         router = _make_router_with_mocks(fast_match=fast_result)
         initial_total = sum(router._stats.values())
 
-        await router.route("criar tarefa urgente")
+        await router.route("criar tarefa urgente", context=_TEST_CONTEXT)
         final_total = sum(router._stats.values())
         assert final_total > initial_total

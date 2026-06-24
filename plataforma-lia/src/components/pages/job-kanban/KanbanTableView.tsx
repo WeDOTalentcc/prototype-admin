@@ -59,6 +59,7 @@ interface DynamicStageItem {
   name: string
   displayName: string
   color?: string
+  subStatuses?: Array<{ name: string; display_name: string }>
 }
 
 interface SaturationData {
@@ -259,6 +260,15 @@ export function KanbanTableView({
     openTransition,
     onTransitionRequired,
     onStatusChange,
+    onDirectTransition: async (candidate: any, toStage: string, subStatus?: string, jvId?: string) => {
+      const id = candidate.id
+      await fetch(`/api/backend-proxy/candidates/${encodeURIComponent(id)}/stage`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ stage: toStage, sub_status: subStatus, job_vacancy_id: jvId || jobVacancyId }),
+      })
+      onTransitionRequired([candidate], (candidate.stageId as string | undefined) || (candidate.stage as string | undefined) || '', toStage)
+    },
     onCandidateClick,
   }) as unknown as KanbanTableCellRendererProps)
   return (
@@ -273,7 +283,8 @@ export function KanbanTableView({
       />
     )}
 
-    {/* Conteúdo da Tabela */}
+    {/* Conteúdo da Tabela + Preview — envolvidos em flex explícito */}
+    <div className="flex-1 flex overflow-hidden min-w-0">
     <div className="flex-1 overflow-hidden bg-lia-bg-primary dark:bg-lia-bg-primary flex flex-col min-w-0">
       <div className="flex-1 overflow-auto px-4 py-2 flex flex-col">
       {/* Tabela Elegante - Unified Component */}
@@ -458,8 +469,7 @@ export function KanbanTableView({
     </div>
     {/* Fecha o Conteúdo da Tabela */}
 
-    {/* Preview do Candidato - Painel Lateral Direito */}
-    {/* Preview do Candidato - Painel Lateral Direito */}
+    {/* Preview do Candidato - Painel Lateral Direito (dentro do flex wrapper) */}
     <KanbanCandidatePreviewPanel
       isPreviewOpen={isPreviewOpen}
       previewCandidate={previewCandidate as Record<string, unknown> | null | undefined}
@@ -482,6 +492,8 @@ export function KanbanTableView({
       candidatesData={candidatesData as Record<string, Record<string, unknown>[]>}
       jobVacancyId={jobVacancyId}
     />
+    </div>
+    {/* Fecha o wrapper flex (tabela + preview) */}
 
     {/* Column Configuration Sidebar - Lado Direito */}
     <KanbanColumnConfigPanel

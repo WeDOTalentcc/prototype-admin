@@ -63,8 +63,8 @@ agents:
 
   # R-004 (2026-05-07): apontava para app.domains.policy.agents.policy_agent.PolicySetupAgent
   # (módulo inexistente). Real é hiring_policy.PolicyReActAgent.
-  - name: policy
-    domain: policy
+  - name: hiring_policy
+    domain: hiring_policy
     class_path: app.domains.hiring_policy.agents.policy_react_agent.PolicyReActAgent
     model_id: claude-haiku-4-5-20251001
     system_prompt_path: null
@@ -100,17 +100,4 @@ agents:
     class_path: app.domains.communication.agents.communication_react_agent.CommunicationReActAgent
     model_id: claude-haiku-4-5-20251001
     system_prompt_path: app/domains/communication/agents/communication_system_prompt.py
-    enabled: true
-
-  # ACTIVE: autonomous agent is Tier 6 of CascadedRouter (cross-domain ReAct).
-  # Triggered when Tiers 0-5 fail to route with sufficient confidence.
-  # Exposes dedicated API router via app/api/v1/lia_autonomous.py and
-  # AutonomousAgentService (used by proactive_actions endpoints).
-  # Pool of 40+ curated tools across all domains; circuit-breaker + FairnessGuard enabled.
-  # DO NOT set enabled: false or deprecated: true — this agent is production-critical.
-  - name: autonomous
-    domain: autonomous
-    class_path: app.domains.autonomous.agents.autonomous_react_agent.AutonomousReActAgent
-    model_id: claude-sonnet-4-6
-    system_prompt_path: null
     enabled: true

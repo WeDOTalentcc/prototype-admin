@@ -1,6 +1,7 @@
 import logging
 import os
 import uuid
+from typing import Any
 
 from app.shared.channels.channel_adapter import (
     ChannelAdapter,
@@ -19,21 +20,63 @@ class MSTeamsChannelAdapter(ChannelAdapter):
     def validate_contact(self, contact: str) -> bool:
         return bool(contact and len(contact.strip()) > 0)
 
-    async def is_available(self) -> bool:
+    async def is_available(
+        self,
+        company_id: str | None = None,
+        db: Any | None = None,
+    ) -> bool:
         """
         Return True only when a viable delivery path exists.
 
-        TEAMS_WEBHOOK_URL is required for actual delivery.
-        Both TeamsBot._deliver_card() and TeamsService.send_message() fall back
-        to the incoming webhook; without it neither path can deliver messages.
-        Bot Framework credentials (MICROSOFT_APP_ID/PASSWORD) are used for proactive
-        sends when a conversation_reference is supplied, but are not sufficient alone.
+        Priority:
+          1. TEAMS_WEBHOOK_URL env var (global fallback)
+          2. Per-tenant webhook_url resolved from IntegrationConnection row in DB
+             (when company_id + db are supplied by the caller)
+          3. teams_service singleton webhook_url (set from env or explicit instantiation)
+
+        When company_id and db are provided the per-tenant URL is checked via
+        resolve_tenant_teams_webhook_url so that tenants that have only a
+        DB-stored URL are NOT silently dropped.
         """
         webhook_url = os.environ.get("TEAMS_WEBHOOK_URL")
         if webhook_url:
             return True
+
+        if company_id and db:
+            try:
+                from app.domains.communication.services.teams_service import (
+                    resolve_tenant_teams_webhook_url,
+                )
+
+                url, source = await resolve_tenant_teams_webhook_url(company_id, db)
+                if url:
+                    logger.debug(
+                        "[TEAMS_ADAPTER] Per-tenant Teams URL resolved "
+                        "(company=%s, source=%s) — canal disponível",
+                        company_id,
+                        source,
+                    )
+                    return True
+            except Exception as exc:
+                logger.warning(
+                    "[TEAMS_ADAPTER] Falha ao resolver URL por tenant "
+                    "(company=%s): %s",
+                    company_id,
+                    exc,
+                )
+
+        try:
+            from app.domains.communication.services.teams_service import teams_service as _svc
+
+            if _svc.webhook_url:
+                return True
+        except Exception:
+            pass
+
         logger.debug(
-            "[TEAMS_ADAPTER] TEAMS_WEBHOOK_URL não configurada — canal Teams indisponível"
+            "[TEAMS_ADAPTER] TEAMS_WEBHOOK_URL não configurada, nenhuma URL por "
+            "tenant encontrada e teams_service sem URL "
+            "— canal Teams indisponível para entregas via webhook global"
         )
         return False
 
@@ -68,11 +111,39 @@ class MSTeamsChannelAdapter(ChannelAdapter):
             logger.warning(
                 "[TEAMS_ADAPTER] Falha ao enviar via TeamsBot — tentando TeamsService"
             )
+
+            resolved_webhook_url: str | None = None
+            db = message.metadata.get("_db") if message.metadata else None
+            if message.company_id and db:
+                try:
+                    from app.domains.communication.services.teams_service import (
+                        resolve_tenant_teams_webhook_url,
+                    )
+
+                    resolved_webhook_url, _source = await resolve_tenant_teams_webhook_url(
+                        message.company_id, db
+                    )
+                    if resolved_webhook_url:
+                        logger.debug(
+                            "[TEAMS_ADAPTER] Usando URL por tenant para fallback "
+                            "(company=%s, source=%s)",
+                            message.company_id,
+                            _source,
+                        )
+                except Exception as exc:
+                    logger.warning(
+                        "[TEAMS_ADAPTER] Falha ao resolver URL por tenant no fallback "
+                        "(company=%s): %s",
+                        message.company_id,
+                        exc,
+                    )
+
             from app.domains.communication.services.teams_service import teams_service
 
             result = await teams_service.send_message(
                 text=body,
                 title=title,
+                webhook_url=resolved_webhook_url or None,
             )
             if result.get("success"):
                 logger.info(

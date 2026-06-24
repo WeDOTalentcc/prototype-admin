@@ -17,6 +17,7 @@ from lia_agents_core.tool_adapter import ToolOutput
 
 from app.shared.tool_handler import tool_handler
 from app.domains.sourcing.repositories.passive_candidate_repository import PassiveCandidateRepository
+from app.domains.sourcing.fairness import run_sourcing_fairness_check
 
 logger = logging.getLogger(__name__)
 
@@ -41,18 +42,16 @@ async def _wrap_passive_search_archived(**kwargs: Any) -> dict[str, Any]:
 
     # FairnessGuard: verificar query de busca
     query_str = f"{role} {' '.join(str(s) for s in kwargs.get('skills', []))}"
-    try:
-        from app.shared.compliance.fairness_guard import FairnessGuard
-        _fg = FairnessGuard()
-        _fg_result = _fg.check(query_str)
-        if _fg_result.is_blocked:
-            return {
+    from app.shared.compliance.fairness_guard import FairnessGuard
+    _fg_blocked, _fg_block_msg = run_sourcing_fairness_check(
+        FairnessGuard().check, query_str, registry_name="passive_pipeline_tool_registry",
+    )
+    if _fg_blocked:
+        return {
                 "success": False,
                 "data": {},
-                "message": _fg_result.educational_message or "Busca bloqueada por critério discriminatório.",
+                "message": _fg_block_msg or "Busca bloqueada por critério discriminatório.",
             }
-    except Exception as _fg_exc:
-        logger.debug("[passive_tools] FairnessGuard check skipped: %s", _fg_exc)
     skills = kwargs.get("skills", [])
     min_fit_score = float(kwargs.get("min_fit_score", 50.0))
     limit = min(int(kwargs.get("limit", 20)), 50)

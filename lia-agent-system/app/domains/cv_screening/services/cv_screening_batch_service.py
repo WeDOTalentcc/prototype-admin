@@ -28,6 +28,9 @@ logger = logging.getLogger(__name__)
 
 _WSI_TECHNICAL_WEIGHT_DEFAULT = 0.70
 _WSI_BEHAVIORAL_WEIGHT_DEFAULT = 0.30
+# FALLBACK DE EMERGENCIA — threshold canonico vive em fairness_policy_rules (Regra 4 e 9).
+# Usado APENAS quando threshold_resolver + DB estao indisponiveis (_apply_fairness_gate fallback).
+# Nao alterar este valor sem tambem atualizar a Regra 4 do seed (platform_general/decision_threshold).
 _SCORE_THRESHOLDS = {"auto_approve": 75, "review": 55}
 
 
@@ -76,6 +79,9 @@ def _calculate_wsi_score(
 
 
 def _determine_recommendation(score: float) -> str:
+    """Label de recomendacao para exibicao. Usa _SCORE_THRESHOLDS como fallback.
+    Decisoes de aprovacao real passam por _apply_fairness_gate (cascata canonica).
+    """
     if score >= _SCORE_THRESHOLDS["auto_approve"]:
         return "avançar"
     if score >= _SCORE_THRESHOLDS["review"]:
@@ -225,6 +231,79 @@ def _check_salary_compatibility(
     return min(expectations) <= ceiling
 
 
+async def _apply_fairness_gate(
+    score: float,
+    company_id: str,
+    domain: str = "screening",
+    sector: str | None = None,
+) -> tuple:
+    """
+    Resolve thresholds via cascata canônica (platform -> sector -> tenant)
+    e verifica FairnessPolicyService.allows_automated() para aprovações automáticas.
+
+    score: 0-100 (escala da rubric)
+    Returns: (status, reason) -- status in {"Aprovado", "Revisao", "Reprovado"}
+    """
+    try:
+        from app.shared.compliance.threshold_resolver import resolve_screening_thresholds
+        from app.shared.compliance.fairness_policy_service import _get_fairness_service
+        from app.core.database import AsyncSessionLocal as _ASL
+
+        async with _ASL() as _db:
+            # 1. Resolver thresholds pela cascata
+            thresholds = await resolve_screening_thresholds(
+                company_id=company_id,
+                sector=sector,
+                db=_db,
+            )
+            auto_approve_pct = thresholds["auto_approve"] * 100  # volta para escala 0-100
+            review_pct = thresholds["review"] * 100
+
+            # 2. Determinar status base
+            if score >= auto_approve_pct:
+                # 3. Gate de fairness apenas para aprovacoes automaticas
+                confidence = score / 100.0
+                svc = _get_fairness_service()
+                effective_policy = await svc.load_effective_policy(
+                    tenant_id=company_id,
+                    domain=domain,
+                    db=_db,
+                )
+                allowed, reason = await svc.allows_automated(
+                    decision_type="screening_score",
+                    confidence=confidence,
+                    effective_policy=effective_policy,
+                    tenant_id=company_id,
+                    domain=domain,
+                    db=_db,
+                )
+                if not allowed:
+                    logger.info(
+                        "[CVScreeningBatch] FairnessGate override: score=%.1f "
+                        "threshold_source=%s blocked -- %s",
+                        score, thresholds.get("source"), reason,
+                    )
+                    return "Revisao", reason
+                return "Aprovado", None
+
+            elif score >= review_pct:
+                return "Revisao", None
+            else:
+                return "Reprovado", None
+
+    except Exception as exc:
+        # Fail-open: usa _SCORE_THRESHOLDS como fallback de emergencia
+        logger.warning(
+            "[CVScreeningBatch] ThresholdResolver + FairnessGate unavailable "
+            "(fail-open, usando hardcoded): %s", exc
+        )
+        if score >= _SCORE_THRESHOLDS["auto_approve"]:
+            return "Aprovado", None
+        elif score >= _SCORE_THRESHOLDS["review"]:
+            return "Revisao", None
+        return "Reprovado", None
+
+
 async def run_batch(
     candidate_ids: list[str],
     job_id: str,
@@ -332,12 +411,11 @@ async def run_batch(
     for i, item in enumerate(ranking, 1):
         item["rank"] = i
         score = item["rubric_score"]
-        if score >= _SCORE_THRESHOLDS["auto_approve"]:
-            item["status"] = "Aprovado"
-        elif score >= _SCORE_THRESHOLDS["review"]:
-            item["status"] = "Revisão"
-        else:
-            item["status"] = "Reprovado"
+        # Todos os candidatos passam pelo gate — ele resolve thresholds via cascata canonica
+        # (platform -> sector -> tenant). Fallback hardcoded so ativa se DB indisponivel.
+        item["status"], _gate_reason = await _apply_fairness_gate(score, company_id)
+        if _gate_reason:
+            item["fairness_gate_reason"] = _gate_reason
 
     approved = sum(1 for r in ranking if r.get("status") == "Aprovado")
     review = sum(1 for r in ranking if r.get("status") == "Revisão")

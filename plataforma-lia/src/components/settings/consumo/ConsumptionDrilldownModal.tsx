@@ -11,6 +11,7 @@
 //   - Empty: copy clara "Nenhuma execução encontrada"
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import { useState } from "react"
 import { useTranslations } from "next-intl"
 import { ChevronLeft, ChevronRight, RotateCw } from "lucide-react"
@@ -67,6 +68,9 @@ export function ConsumptionDrilldownModal({
   open,
   onOpenChange,
 }: ConsumptionDrilldownModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('consumption-drilldown', open)
+
   const t = useTranslations("settings.consumption.drilldown")
   const [page, setPage] = useState(0)
 

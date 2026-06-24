@@ -126,7 +126,7 @@ export function OpinionCard({ opinion, isExpanded, onToggle, type, copiedItemId,
         </div>
         <div className="flex items-center gap-2">
           {!!opinion.created_at && (
-            <span className="text-micro text-lia-text-disabled">{formatOpinionDate(String(opinion.created_at))}</span>
+            <span className="text-micro text-lia-text-muted">{formatOpinionDate(String(opinion.created_at))}</span>
           )}
           <Tooltip>
             <TooltipTrigger asChild>
@@ -140,16 +140,16 @@ export function OpinionCard({ opinion, isExpanded, onToggle, type, copiedItemId,
                 {copiedItemId === `opinion-${opinion.id}` ? (
                   <Check className="w-3.5 h-3.5 text-status-success" />
                 ) : (
-                  <Copy className="w-3.5 h-3.5 text-lia-text-disabled hover:text-lia-text-secondary" />
+                  <Copy className="w-3.5 h-3.5 text-lia-text-muted hover:text-lia-text-secondary" />
                 )}
               </button>
             </TooltipTrigger>
             <TooltipContent side="top" className="text-micro">Copiar parecer</TooltipContent>
           </Tooltip>
           {isExpanded ? (
-            <ChevronUp className="w-4 h-4 text-lia-text-disabled" />
+            <ChevronUp className="w-4 h-4 text-lia-text-muted" />
           ) : (
-            <ChevronDown className="w-4 h-4 text-lia-text-disabled" />
+            <ChevronDown className="w-4 h-4 text-lia-text-muted" />
           )}
         </div>
       </div>
@@ -172,7 +172,7 @@ export function OpinionCard({ opinion, isExpanded, onToggle, type, copiedItemId,
               </h5>
               <div className="grid grid-cols-2 gap-1.5">
                 {Object.entries(opinion.score_breakdown as Record<string, unknown>).map(([key, value]) => (
-                  value !== null && value !== undefined && (
+                  key !== 'f11_report' && (typeof value === 'number' || typeof value === 'string') && (
                     <div key={key} className="flex items-center justify-between text-micro bg-lia-bg-secondary rounded-full px-2 py-1">
                       <span className="text-lia-text-secondary capitalize">{key.replace(/_/g, ' ')}</span>
                       <span className="font-medium text-lia-text-primary">{typeof value === 'number' ? `${Math.round(value)}%` : String(value)}</span>
@@ -283,14 +283,48 @@ export function OpinionCard({ opinion, isExpanded, onToggle, type, copiedItemId,
             </div>
           )}
 
+          {(() => {
+            const f11 = (opinion.score_breakdown as Record<string, unknown> | undefined)?.f11_report as Record<string, unknown> | undefined
+            if (!f11) return null
+            const flags = ((f11.attention_flags as unknown[] | undefined) || []).filter((x) => typeof x === 'string') as string[]
+            const confRaw = typeof f11.decision_confidence === 'number' ? (f11.decision_confidence as number) : null
+            const conf = confRaw === null ? '' : ` (${Math.round(confRaw <= 1 ? confRaw * 100 : confRaw)}%)`
+            return (
+              <div className="bg-lia-bg-secondary rounded-xl p-2 border border-lia-border-subtle">
+                <h5 className={`${textStyles.label} mb-1 flex items-center gap-1`}>
+                  <Target className="w-3 h-3 text-wedo-cyan" />
+                  Relatório WSI (consultor)
+                </h5>
+                {!!f11.classification_label && (
+                  <p className={`${textStyles.caption} text-lia-text-secondary`}>Classificação: {String(f11.classification_label)}</p>
+                )}
+                {!!f11.decision_result && (
+                  <p className={`${textStyles.caption} text-lia-text-secondary`}>Decisão: {String(f11.decision_result)}{conf}</p>
+                )}
+                {!!f11.decision_reason && (
+                  <p className={`${textStyles.caption} text-lia-text-secondary`}>{String(f11.decision_reason)}</p>
+                )}
+                {flags.length > 0 && (
+                  <ul className="mt-1 space-y-0.5">
+                    {flags.map((fl: string, i: number) => (
+                      <li key={`flag-${i}`} className={`${textStyles.caption} text-status-warning flex items-start gap-1`}>
+                        <AlertCircle className="w-3 h-3 mt-0.5" />{fl}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )
+          })()}
+
           {!!opinion.recruiter_override && (
             <div className="bg-wedo-purple/10 rounded-xl p-2 border border-wedo-purple/30">
               <div className="flex items-center gap-2 mb-1">
-                <h5 className={`${textStyles.label} text-wedo-purple`}>Override do Recrutador</h5>
+                <h5 className={`${textStyles.label} text-lia-text-secondary`}>Override do Recrutador</h5>
                 {getRecommendationBadge(opinion.recruiter_override as string)}
               </div>
               {!!opinion.recruiter_override_reason && (
-                <p className={`${textStyles.caption} text-wedo-purple`}>{String(opinion.recruiter_override_reason)}</p>
+                <p className={`${textStyles.caption} text-lia-text-secondary`}>{String(opinion.recruiter_override_reason)}</p>
               )}
             </div>
           )}

@@ -16,10 +16,11 @@ import { type UniversalTransitionConfirmData } from "@/components/kanban"
 import { type BulkActionType } from "@/components/ui/bulk-actions-bar"
 import { usePipelineInheritance } from "@/hooks/recruitment/use-pipeline-inheritance"
 import { useRecruitmentStages } from "@/hooks/recruitment/use-recruitment-stages"
-import { enrichStagesWithSubStatuses, buildSubStatusMap } from "@/components/kanban/utils/stage-utils"
+import { enrichStagesWithSubStatuses, buildSubStatusMap, applyVacancyStageOverrides } from "@/components/kanban/utils/stage-utils"
 import { useReturnEvents } from '@/hooks/recruitment/use-return-events'
 import { useBulkCandidateDataRequests } from "@/hooks/candidates/use-candidate-data-requests"
 import { type DataRequestSubmitData } from "@/components/modals/data-request-modal"
+import { DEFAULT_DATA_FIELDS } from "@/hooks/company/use-data-request-config"
 import {
   mapInterviewStagesToKanban,
   createInitialCandidatesData,
@@ -45,6 +46,7 @@ import { useKanbanNavigation } from "@/components/pages/job-kanban/hooks/useKanb
 import { useOfferReviewFlow } from "@/hooks/offers/useOfferReviewFlow"
 import { useKanbanJobFormInit } from "@/components/pages/job-kanban/hooks/useKanbanJobFormInit"
 import { useKanbanDataEffects } from "@/components/pages/job-kanban/hooks/useKanbanDataEffects"
+import { useKanbanBroadcast } from "@/hooks/candidates/use-kanban-broadcast"
 import { toast } from "sonner"
 
 /**
@@ -98,6 +100,10 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
   // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: pipelineInheritance object excluded to avoid re-runs
   }, [job?.id])
 
+
+  // GAP-09-001: real-time kanban updates via SSE broadcast
+  useKanbanBroadcast(job?.id?.toString() || job?.backendId?.toString())
+
   const viewMode = useKanbanStore((s) => s.viewMode)
   const setViewMode = useKanbanStore((s) => s.setViewMode)
   const activeTab = useKanbanStore((s) => s.activeTab)
@@ -109,17 +115,17 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
   // user-driven tab changes go through setActiveTab as usual.
   // See .planning/vacancy-pipeline-plan.md > Phase A.4.
   const _searchParams = useSearchParams()
+
+  // activeTab excluded from deps intentionally: including it caused the URL
+  // param to lock the tab forever — every user tab-click re-ran this effect
+  // and snapped the active tab back to the URL value (all tabs unresponsive).
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const requested = _searchParams?.get("tab")
-    if (requested === "edit" || requested === "management") {
-      if (requested !== activeTab) {
-        setActiveTab(requested)
-      }
+    if (requested === "edit" || requested === "management" || requested === "agents") {
+      setActiveTab(requested)
     }
-    // We intentionally only sync when job changes — eslint-disable-next-line
-    // is unnecessary because `_searchParams` and `activeTab` are stable across
-    // renders for the same URL/store state, but we list them all.
-  }, [job?.id, _searchParams, activeTab, setActiveTab])
+  }, [job?.id, _searchParams, setActiveTab])
   const selectedCandidate = useKanbanStore((s) => s.selectedCandidate)
   const setSelectedCandidate = useKanbanStore((s) => s.setSelectedCandidate)
   const [selectedTriagemCandidate, setSelectedTriagemCandidate] = useState<Record<string, unknown> | null>(null)
@@ -150,17 +156,20 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
   const { stages: companyPipelineStages } = useRecruitmentStages()
   useEffect(() => {
     if (!companyPipelineStages.length) return
-    const subStatusMap = buildSubStatusMap(
-      companyPipelineStages.map(s => ({
-        name: s.name,
-        sub_statuses: (s.sub_statuses || []).map(ss => ({
-          name: ss.name, display_name: ss.display_name, is_default: ss.is_default,
-          is_waiting: ss.is_waiting, waiting_for: ss.waiting_for,
-        })),
-      }))
+    const subStatusMap = applyVacancyStageOverrides(
+      buildSubStatusMap(
+        companyPipelineStages.map(s => ({
+          name: s.name,
+          sub_statuses: (s.sub_statuses || []).map(ss => ({
+            name: ss.name, display_name: ss.display_name, is_default: ss.is_default,
+            is_waiting: ss.is_waiting, waiting_for: ss.waiting_for,
+          })),
+        }))
+      ),
+      job?.interviewStages as Parameters<typeof applyVacancyStageOverrides>[1]
     )
     setDynamicStages(prev => enrichStagesWithSubStatuses(prev, subStatusMap))
-  }, [companyPipelineStages])
+  }, [companyPipelineStages, job?.interviewStages])
 
   const [showAddColumnPopover, setShowAddColumnPopover] = useState(false)
   const [newColumnName, setNewColumnName] = useState("")
@@ -224,7 +233,7 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
 
   const { getDataRequestForCandidate, mutate: mutateDataRequests } = useBulkCandidateDataRequests({
     candidateIds: allCandidateIds,
-    vacancyId: job?.id?.toString(),
+    vacancyId: ((job?.backendId || job?.id) as string | number | undefined)?.toString(),
     enabled: allCandidateIds.length > 0,
   })
 
@@ -268,12 +277,83 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
     setShowDecisionFlowModal: uiModals.actions.setShowDecisionFlowModal,
   })
 
-  const handleDataRequestSubmit = useCallback(async (_data: DataRequestSubmitData) => {
-    toast.success("Solicitação Enviada", { description: `Solicitação de dados enviada para ${(uiModals.state.dataRequestModalCandidate as Record<string,unknown>|null)?.name as string || 'candidato'}` })
+  const handleDataRequestSubmit = useCallback(async (data: DataRequestSubmitData) => {
+    const candidateIds = (data.candidateIds || []).filter(Boolean)
+    if (candidateIds.length === 0) {
+      toast.error("Solicitação de Dados", { description: "Nenhum candidato selecionado." })
+      return
+    }
+
+    // channel -> backend notification_channels (BE allow-list: email | whatsapp | voice)
+    const notificationChannels =
+      data.channel === "both"
+        ? ["email", "whatsapp"]
+        : data.channel === "voice"
+          ? ["voice"]
+          : data.channel === "whatsapp"
+            ? ["whatsapp"]
+            : ["email"]
+
+    // map selected field names -> backend FieldSchema objects (label/type from catalog)
+    const fields = (data.fields || []).map((fieldName) => {
+      const def = DEFAULT_DATA_FIELDS.find((f) => f.name === fieldName || f.id === fieldName)
+      return {
+        name: fieldName,
+        label: def?.displayName || fieldName,
+        field_type: def?.type || "text",
+        is_required: def?.required ?? true,
+      }
+    })
+
+    const vacancyId = ((job?.backendId || job?.id) as string | number | undefined)?.toString()
+
+    const results = await Promise.allSettled(
+      candidateIds.map(async (candidateId) => {
+        const res = await fetch("/api/backend-proxy/data-requests", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            candidate_id: candidateId,
+            vacancy_id: vacancyId,
+            fields,
+            expiration_days: data.expirationDays,
+            send_notification: true,
+            notification_channels: notificationChannels,
+          }),
+        })
+        if (!res.ok) {
+          const detail = await res.text().catch(() => "")
+          throw new Error(detail || `HTTP ${res.status}`)
+        }
+        return res.json()
+      })
+    )
+
+    const failed = results.filter((r) => r.status === "rejected").length
+    const succeeded = results.length - failed
+
+    if (failed === 0) {
+      toast.success("Solicitação Enviada", {
+        description:
+          succeeded === 1
+            ? "Solicitação de dados enviada para 1 candidato."
+            : `Solicitação de dados enviada para ${succeeded} candidatos.`,
+      })
+    } else if (succeeded === 0) {
+      toast.error("Falha na Solicitação", {
+        description: `Não foi possível enviar a solicitação (${failed} ${failed === 1 ? "falha" : "falhas"}).`,
+      })
+    } else {
+      toast.warning("Solicitação Parcial", {
+        description: `${succeeded} enviada(s), ${failed} com falha.`,
+      })
+    }
+
+    mutateDataRequests()
     uiModals.actions.setShowDataRequestModal(false)
     uiModals.actions.setDataRequestModalCandidate(null)
   // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: uiModals.actions is a stable object from zustand
-  }, [uiModals.state.dataRequestModalCandidate])
+  }, [job?.backendId, job?.id, mutateDataRequests])
 
   const { handleBulkAction, handleBulkActionExecute } = useKanbanBulkActions({
     selectedCandidates: kanbanFilters.selectedCandidates,
@@ -313,6 +393,8 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
   const [showJobEditor, setShowJobEditor] = useState(false)
   const [editingSection, setEditingSection] = useState<string | null>(null)
   const [savingJobSection, setSavingJobSection] = useState<string | null>(null)
+  const [dataRequestDetailsId, setDataRequestDetailsId] = useState<string | null>(null)
+  const [showDataRequestDetailsModal, setShowDataRequestDetailsModal] = useState(false)
 
   const { handleLiaUiAction, handleAICommand, handleOrchestratedMessage } = useKanbanLIAHandlers({
     liaMessages: uiModals.state.liaMessages,
@@ -407,6 +489,7 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
     setShowRubricModal: uiModals.actions.setShowRubricModal,
     setRubricEvaluationData: uiModals.actions.setRubricEvaluationData as unknown as Parameters<typeof useKanbanCandidateDecisions>[0]["setRubricEvaluationData"],
     setDecisionFlowType: uiModals.actions.setDecisionFlowType as unknown as Parameters<typeof useKanbanCandidateDecisions>[0]["setDecisionFlowType"],
+    setShowCloseVacancyModal: uiModals.actions.setShowCloseVacancyModal,
   })
 
   const handleOpenTriagem = useCallback((candidate: Record<string, unknown>) => {
@@ -497,7 +580,16 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
     handleDataRequestSubmit,
     getDataRequestForCandidate,
     handleDataRequestResend: (_candidateId: string) => {},
-    handleDataRequestViewDetails: (_candidateId: string) => {},
+    handleDataRequestViewDetails: (candidateId: string) => {
+      const req = getDataRequestForCandidate(candidateId)
+      if (req?.id) {
+        setDataRequestDetailsId(req.id)
+        setShowDataRequestDetailsModal(true)
+      }
+    },
+    dataRequestDetailsId,
+    showDataRequestDetailsModal,
+    setShowDataRequestDetailsModal,
     handleOpenScoreModal,
     currentJob,
     jobData: currentJob,

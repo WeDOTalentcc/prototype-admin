@@ -25,6 +25,7 @@ from app.domains.candidates.services.candidate_feedback_service import candidate
 from app.domains.cv_screening.services.lia_score_service import lia_score_service
 from app.services.notification_service import NotificationType, notification_service
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 from app.shared.types import WeDoBaseModel
 from typing import Annotated
 from fastapi import Path
@@ -295,24 +296,24 @@ company_id: str = Depends(require_company_id)):
             # Multi-tenancy: company_id vem de vacancy.company_id (contexto do
             # tenant), NUNCA do payload do request.
             try:
-                from app.shared.messaging.platform_events import (
-                    CandidateAppliedEvent,
-                    publish_platform_event,
+                from lia_events.schemas import CandidateAppliedEvent
+                from app.shared.messaging.events_outbox_service import get_events_outbox_service
+                from lia_config.database import AsyncSessionLocal
+                _evt = CandidateAppliedEvent(
+                    company_id=str(vacancy.company_id),
+                    payload={
+                        "candidate_id": str(candidate.id),
+                        "vacancy_id": str(vacancy_id),
+                    },
+                    source_api="lia-agent-system",
                 )
-
-                await publish_platform_event(
-                    CandidateAppliedEvent(
-                        company_id=str(vacancy.company_id),
-                        payload={
-                            "candidate_id": str(candidate.id),
-                            "vacancy_id": str(vacancy_id),
-                        },
-                    )
-                )
-            except Exception as _evt_err:  # noqa: BLE001
+                async with AsyncSessionLocal() as _evt_db:
+                    await get_events_outbox_service().publish_via_outbox(_evt, _evt_db)
+                    await _evt_db.commit()
+            except Exception as _evt_err:  # noqa: BLE001  # REGRA-4-EXEMPT: event dispatch é best-effort, apply prossegue
                 logger.error(
-                    "[C1.3] publish candidate_applied failed (apply prossegue): %s",
-                    _evt_err,
+                    "[C1.3] publish candidate_applied outbox failed (apply prossegue): %s",
+                    type(_evt_err).__name__,
                     exc_info=True,
                 )
 
@@ -383,7 +384,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error(f"Error processing application: {e}")
         await repo.rollback()
-        raise HTTPException(status_code=500, detail=f"Erro ao processar candidatura: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/resubmit/{vacancy_id}", response_model=ResubmitResponseDTO)
@@ -553,7 +554,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error(f"Error processing CV resubmission: {e}")
         await repo.rollback()
-        raise HTTPException(status_code=500, detail=f"Erro ao processar reenvio: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/feedback/{vacancy_id}/analytics", response_model=FeedbackAnalyticsDTO)
@@ -585,7 +586,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting feedback analytics: {e}")
-        raise HTTPException(status_code=500, detail=f"Erro ao obter analytics: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/feedback/{feedback_id}/track-click", response_model=None)
@@ -610,7 +611,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error tracking click: {e}")
-        raise HTTPException(status_code=500, detail=f"Erro ao registrar clique: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 
 

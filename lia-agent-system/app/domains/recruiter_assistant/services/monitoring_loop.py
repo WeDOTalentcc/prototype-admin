@@ -82,6 +82,8 @@ class ProactiveAlert:
     metadata: dict[str, Any] = field(default_factory=dict)
     resolved: bool = False
     resolved_at: datetime | None = None
+    # Task #1295: canais canônicos (AlertPreference). Default = surfaces in-app.
+    channels: list[str] = field(default_factory=lambda: ["bell", "chat"])
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -110,6 +112,23 @@ EXTENDED_OPEN_DAYS = 45
 BOTTLENECK_THRESHOLD = 0.6
 MIN_CANDIDATES_FOR_BOTTLENECK = 5
 DEFAULT_CHECK_INTERVAL_SECONDS = 3600
+
+
+def _resolve_alert_channels(cfg_channels: dict[str, bool] | None) -> list[str]:
+    """Task #1295: dict de canais canônico (AlertPreference) -> lista p/ notificação.
+
+    Preserva os surfaces in-app: quando 'bell' está ativo, também surface no
+    'chat' (briefing). Fail-safe para ['bell','chat'] se nada estiver marcado,
+    para não perder o alerta silenciosamente (a regra ainda está ENABLED aqui).
+    """
+    from app.shared.services.alert_config_resolver import channels_to_list
+
+    chans = channels_to_list(cfg_channels)
+    if "bell" in chans and "chat" not in chans:
+        chans = chans + ["chat"]
+    if not chans:
+        chans = ["bell", "chat"]
+    return chans
 
 
 class MonitoringLoop:
@@ -431,13 +450,31 @@ class MonitoringLoop:
 
     async def run_checks(self, company_id: str) -> list[ProactiveAlert]:
         logger.info("MonitoringLoop running checks for company %s", company_id)
-        alerts: list[ProactiveAlert] = []
 
-        alerts.extend(await self._check_stale_candidates(company_id))
-        alerts.extend(await self._check_sla_risks(company_id))
-        alerts.extend(await self._check_funnel_bottlenecks(company_id))
-        alerts.extend(await self._check_empty_pipelines(company_id))
-        alerts.extend(await self._check_high_rejection_rate(company_id))
+        # Frente C: detectores em paralelo com fail-isolation.
+        # return_exceptions=True garante que falha num check nao aborta os outros.
+        _check_fns = [
+            self._check_stale_candidates(company_id),
+            self._check_sla_risks(company_id),
+            self._check_funnel_bottlenecks(company_id),
+            self._check_empty_pipelines(company_id),
+            self._check_high_rejection_rate(company_id),
+        ]
+        _check_names = [
+            "stale_candidates", "sla_risks", "funnel_bottlenecks",
+            "empty_pipelines", "high_rejection_rate",
+        ]
+        _results = await asyncio.gather(*_check_fns, return_exceptions=True)
+
+        alerts: list[ProactiveAlert] = []
+        for _name, _result in zip(_check_names, _results):
+            if isinstance(_result, Exception):
+                logger.warning(
+                    "MonitoringLoop check '%s' failed for company %s: %s",
+                    _name, company_id, _result,
+                )
+            else:
+                alerts.extend(_result)
 
         self._alert_store[company_id] = alerts
         self._last_run[company_id] = datetime.now(timezone.utc)
@@ -717,9 +754,28 @@ class MonitoringLoop:
     async def _check_stale_candidates(self, company_id: str) -> list[ProactiveAlert]:
         from lia_config.database import AsyncSessionLocal
         from sqlalchemy import text
+        from app.shared.services.alert_config_resolver import resolve_alert_config
 
         alerts: list[ProactiveAlert] = []
         async with AsyncSessionLocal() as session:
+            # Task #1295: honra a config canônica da tela Configurações →
+            # Comunicação & Alertas (AlertPreference). Regra desligada = NADA.
+            cfg = await resolve_alert_config(
+                session, company_id, "candidate_no_interaction"
+            )
+            if not cfg.is_enabled:
+                logger.info(
+                    "Stale candidates: alert candidate_no_interaction disabled "
+                    "for company=%s — skipping", company_id,
+                )
+                return alerts
+
+            # threshold (dias) vem da UI; tiers escalam a partir dele.
+            min_days = cfg.threshold or STALE_DAYS_LOW
+            tier_medium = min_days * 2
+            tier_high = min_days * 3
+            channels = _resolve_alert_channels(cfg.channels)
+
             try:
                 result = await session.execute(text("""
                     SELECT vc.candidate_id, vc.stage, vc.vacancy_id,
@@ -731,10 +787,10 @@ class MonitoringLoop:
                     LEFT JOIN job_vacancies jv ON jv.id = vc.vacancy_id
                     WHERE vc.company_id = :company_id
                       AND vc.stage NOT IN ('Contratado', 'Rejeitado', 'Desistiu')
-                      AND vc.updated_at < NOW() - INTERVAL '5 days'
+                      AND vc.updated_at < NOW() - (:min_days * INTERVAL '1 day')
                     ORDER BY vc.updated_at ASC
                     LIMIT 50
-                """), {"company_id": company_id})
+                """), {"company_id": company_id, "min_days": min_days})
                 rows = result.fetchall()
             except Exception as exc:
                 logger.warning("Stale candidates check failed: %s", exc)
@@ -742,9 +798,9 @@ class MonitoringLoop:
 
         for row in rows:
             days_idle = int(row[5] or 0)
-            if days_idle >= STALE_DAYS_HIGH:
+            if days_idle >= tier_high:
                 severity = AlertSeverity.HIGH
-            elif days_idle >= STALE_DAYS_MEDIUM:
+            elif days_idle >= tier_medium:
                 severity = AlertSeverity.MEDIUM
             else:
                 severity = AlertSeverity.LOW
@@ -764,6 +820,7 @@ class MonitoringLoop:
                 job_id=str(row[2]),
                 job_title=row[4],
                 metadata={"days_idle": days_idle, "stage": row[1]},
+                channels=channels,
             ))
         return alerts
 
@@ -771,9 +828,24 @@ class MonitoringLoop:
         # ADR-001 W1-004-C: migrated from raw SQL (session+text) to JobVacancyCrudRepository
         from lia_config.database import AsyncSessionLocal
         from app.domains.job_management.repositories.job_vacancy_crud_repository import JobVacancyCrudRepository
+        from app.shared.services.alert_config_resolver import resolve_alert_config
 
         alerts: list[ProactiveAlert] = []
         async with AsyncSessionLocal() as session:
+            # Task #1295: honra o toggle/canais da regra sla_near_expiration da
+            # tela Configurações. O threshold de % do SLA da UI não se aplica ao
+            # cálculo por dias deste check (semântica distinta — fora de escopo);
+            # só enable + canais são wired aqui.
+            cfg = await resolve_alert_config(
+                session, company_id, "sla_near_expiration"
+            )
+            if not cfg.is_enabled:
+                logger.info(
+                    "SLA risk: alert sla_near_expiration disabled for "
+                    "company=%s — skipping", company_id,
+                )
+                return alerts
+            channels = _resolve_alert_channels(cfg.channels)
             try:
                 repo = JobVacancyCrudRepository(session)
                 raw_rows = await repo.get_jobs_near_deadline(company_id=company_id, days_ahead=7)
@@ -810,6 +882,7 @@ class MonitoringLoop:
                 job_id=str(row[0]),
                 job_title=row[1],
                 metadata={"days_remaining": days_remaining, "deadline": str(row[2])},
+                channels=channels,
             ))
         return alerts
 
@@ -956,11 +1029,25 @@ class MonitoringLoop:
             return
         try:
             from lia_messaging.notification_service import (
+                NotificationChannel,
                 NotificationService,
                 NotificationType,
             )
 
             svc = NotificationService()
+            # E4 (2026-06-09): fan-out REAL. Antes create_notification so persistia
+            # 1 linha de sino e os channels (teams/email) viravam JSON inerte, nunca
+            # entregues. Agora send_multi_channel_notification entrega em cada canal.
+            # company_id em data habilita Teams per-tenant (E2) — estes sao "alertas
+            # de empresa" (user_id=system:) que vao pro canal Teams compartilhado.
+            _CHANNEL_MAP = {
+                "bell": NotificationChannel.BELL,
+                "chat": NotificationChannel.CHAT,
+                "teams": NotificationChannel.TEAMS,
+                "email": NotificationChannel.EMAIL,
+                "whatsapp": NotificationChannel.WHATSAPP,
+                "in_app": NotificationChannel.IN_APP,
+            }
             high_alerts = [a for a in alerts if a.severity in (AlertSeverity.HIGH, AlertSeverity.CRITICAL)]
 
             for alert in high_alerts[:10]:
@@ -969,19 +1056,26 @@ class MonitoringLoop:
                     if alert.severity == AlertSeverity.CRITICAL
                     else NotificationType.WARNING
                 )
-                await svc.create_notification(
+                _str_channels = alert.channels or ["bell", "chat"]
+                _channels = [
+                    _CHANNEL_MAP[c] for c in _str_channels if c in _CHANNEL_MAP
+                ] or [NotificationChannel.BELL]
+                await svc.send_multi_channel_notification(
                     user_id=f"system:{company_id}",
                     title=alert.title,
                     message=alert.message,
                     notification_type=ntype,
-                    category="proactive_alert",
-                    source_agent="monitoring_loop",
-                    source_trigger=alert.category.value,
+                    channels=_channels,
                     related_job_id=alert.job_id,
                     related_candidate_id=alert.candidate_id,
-                    channels=["bell", "chat"],
-                    metadata=alert.metadata,
-                    expires_in_hours=24,
+                    data={
+                        "company_id": company_id,
+                        "category": "proactive_alert",
+                        "source_agent": "monitoring_loop",
+                        "source_trigger": alert.category.value,
+                        "metadata": alert.metadata,
+                        "expires_in_hours": 24,
+                    },
                 )
         except Exception as exc:
             logger.warning("Failed to persist alerts as notifications: %s", exc)

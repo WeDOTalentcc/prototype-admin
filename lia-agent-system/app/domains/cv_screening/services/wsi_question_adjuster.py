@@ -14,6 +14,7 @@ Mesmo pattern dos C19 (wsi report_generator) + outros siblings P0.D.
 Doc canonical: ``app/shared/llm/safe_response.py``.
 """
 
+from app.shared.llm_models import CANONICAL_GEMINI_FLASH_MODEL
 import json
 
 from app.domains.ai.services.llm import llm_service
@@ -276,7 +277,7 @@ Responda APENAS com o texto da avaliação, sem formatação especial."""
             # o helper canonical safe_llm_with_flag_async signature.
             response = llm_service.generate_native_gemini_sync(
                 contents=[{"role": "user", "parts": [{"text": eval_prompt}]}],
-                model="gemini-2.5-flash",
+                model=CANONICAL_GEMINI_FLASH_MODEL,
                 generation_config={"temperature": 0.5, "max_output_tokens": 500},
             )
             return response.text.strip()

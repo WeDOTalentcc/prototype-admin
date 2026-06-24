@@ -89,6 +89,7 @@ export function useWorkforcePlanning(): UseWorkforcePlanningResult {
               headcounts = await hcResponse.json()
             }
           } catch (e) {
+            console.error("[use-workforce-planning] Error:", e)
           }
         }
         

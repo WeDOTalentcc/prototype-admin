@@ -27,6 +27,7 @@ class CompanyCultureProfile(Base):
     values = Column(ARRAY(String), nullable=False, server_default="{}", default=list)
     evp_bullets = Column(ARRAY(String), nullable=False, server_default="{}", default=list)
     core_competencies = Column(ARRAY(String), nullable=False, server_default="{}", default=list)  # Behavioral competencies extracted from website
+    behavioral_competencies = Column(ARRAY(String), nullable=False, server_default="{}", default=list)  # E2: fonte distinta de core_competencies (decisao Paulo 2026-06-06)
     culture_description = Column(Text, nullable=True)
     
     website_url = Column(String(500), nullable=False)
@@ -68,6 +69,13 @@ class CompanyCultureProfile(Base):
     source = Column(String(20), default="auto")
     confidence_score = Column(Float, default=0.0)
     raw_llm_response = Column(Text, nullable=True)
+
+    # Fase 5.1 (2026-06-04) — Context Center HITL approval gate. Auto profiles
+    # (source='auto', scrape+LLM) must be human-approved before feeding agent
+    # prompts (LGPD/bias). Human-authored profiles bypass via source != 'auto'.
+    is_approved = Column(Boolean, nullable=False, server_default="false", default=False)
+    approved_at = Column(DateTime, nullable=True)
+    approved_by_user_id = Column(UUID(as_uuid=True), nullable=True)
     
     last_analysis_at = Column(DateTime, default=datetime.utcnow)
     created_at = Column(DateTime, default=datetime.utcnow)

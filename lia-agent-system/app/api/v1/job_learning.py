@@ -16,6 +16,7 @@ from pydantic import BaseModel, Field
 from app.domains.job_management.services.job_pattern_service import job_pattern_service
 from fastapi import Depends
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.errors import LIAError
 from app.shared.types import WeDoBaseModel
 from typing import Annotated
 from fastapi import Path
@@ -131,7 +132,7 @@ async def get_wizard_suggestions(request: WizardSuggestionsRequest, company_id: 
         raise
     except Exception as e:
         logger.error(f"Error getting wizard suggestions: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/salary-suggestion", response_model=None)
@@ -157,7 +158,7 @@ async def get_salary_suggestion(request: SalarySuggestionRequest, company_id: st
         raise
     except Exception as e:
         logger.error(f"Error getting salary suggestion: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/skills-recommendation", response_model=None)
@@ -184,7 +185,7 @@ async def get_skills_recommendation(request: SkillsRecommendationRequest, compan
         raise
     except Exception as e:
         logger.error(f"Error getting skills recommendation: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/behavioral-recommendation", response_model=None)
@@ -209,7 +210,7 @@ async def get_behavioral_recommendation(request: BehavioralRecommendationRequest
         raise
     except Exception as e:
         logger.error(f"Error getting behavioral recommendation: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/time-to-fill", response_model=None)
@@ -236,7 +237,7 @@ async def predict_time_to_fill(request: TimeFillPredictionRequest, company_id: s
         raise
     except Exception as e:
         logger.error(f"Error predicting time-to-fill: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/success-profile", response_model=None)
@@ -260,7 +261,7 @@ async def get_success_profile(request: SimilarJobsRequest, company_id: str = Dep
         raise
     except Exception as e:
         logger.error(f"Error getting success profile: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/similar-jobs", response_model=None)
@@ -289,7 +290,7 @@ async def find_similar_jobs(request: SimilarJobsRequest, company_id: str = Depen
         raise
     except Exception as e:
         logger.error(f"Error finding similar jobs: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/record-outcome", response_model=None)
@@ -318,7 +319,7 @@ async def record_job_outcome(request: JobOutcomeRequest, company_id: str = Depen
         raise
     except Exception as e:
         logger.error(f"Error recording job outcome: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/patterns/{company_id}", response_model=None)
@@ -374,6 +375,6 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
         raise
     except Exception as e:
         logger.error(f"Error listing patterns: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 reorder_collection_before_item(router)

@@ -32,6 +32,8 @@ from starlette.middleware.base import BaseHTTPMiddleware
 # apenas para validar mismatch contra o JWT, nao para preencher o ContextVar).
 # Hashimoto: nunca mais cross-tenant via header forging.
 _current_company_id: ContextVar[str] = ContextVar("_current_company_id", default="")
+# P1-5 (2026-06-18): view_context snapshot for read_table_state tool
+_lia_view_context: ContextVar["dict | None"] = ContextVar("_lia_view_context", default=None)
 
 
 def _set_company_id_from_jwt(verified_payload: dict) -> str:
@@ -262,6 +264,12 @@ PUBLIC_REGEX_PATHS: tuple[_re.Pattern[str], ...] = (
     _re.compile(r"^/api/v1/manager-alignments/[0-9a-fA-F\-]{36}/respond/?$"),
     _re.compile(r"^/api/v1/hiring-nps/respond/?$"),
     _re.compile(r"^/api/v1/hiring-nps/[0-9a-fA-F\-]{36}/respond/?$"),
+    # Candidate Portal — portal público LGPD para candidatos preencherem dados.
+    # Token = hex 64 chars (secrets.token_hex(32)), não-guessable, expires_at
+    # validado no handler. company_id derivado do registro (NUNCA do request).
+    # Sub-paths: /request-otp, /verify-otp, /submit, /upload.
+    # Endpoints admin (/api/v1/data-request/*) PRESERVAM JWT — não matchados.
+    _re.compile(r"^/portal/data-request/[A-Za-z0-9_\-]{16,128}(/[A-Za-z0-9_\-]+)?$"),
 )
 
 
@@ -338,7 +346,8 @@ class AuthEnforcementMiddleware(BaseHTTPMiddleware):
                         )
 
             except Exception as guard_err:
-                logger.error(f"[PromptInjectionGuard] Guard error on {path}: {guard_err}")
+                # pii-logs ok: path é URL da requisição (não PII de pessoa); guard_err é tipo de erro
+                logger.error(f"[PromptInjectionGuard] Guard error on {path}: {type(guard_err).__name__}: {guard_err!r}", exc_info=True)
                 # Fail-closed: unknown guard errors block agent-bound requests
                 return JSONResponse(
                     {"detail": "Solicitação não pôde ser processada."},
@@ -381,21 +390,24 @@ class AuthEnforcementMiddleware(BaseHTTPMiddleware):
             except Exception:
                 payload = None
 
-            # Fallback: Rails JWT (token assinado pelo ats_api, secret compartilhado)
+            # Phase 1b COMPLETE (2026-06-13): FastAPI JWT é fonte de verdade.
+            # Rails JWT não é mais aceito diretamente. Clientes devem usar POST /auth/exchange.
             if payload is None or not payload.get("sub"):
-                from app.auth.rails_jwt import fetch_rails_user_info, validate_rails_token_from_env
+                from app.auth.rails_jwt import validate_rails_token_from_env
 
                 rails_payload = validate_rails_token_from_env(token)
                 if rails_payload:
-                    rails_info = await fetch_rails_user_info(token, rails_payload.user_id)
-                    if rails_info and rails_info.get("email"):
-                        payload = {
-                            "sub": rails_info["email"],  # placeholder; real user resolvido em get_current_user
-                            "company_id": str(rails_info.get("account_id") or ""),
-                            "role": "admin" if rails_info.get("is_admin") else "recruiter",
-                            "rails_user_id": rails_payload.user_id,
-                            "email": rails_info["email"],
-                        }
+                    # Phase 1b COMPLETE (2026-06-13): FastAPI JWT é fonte de verdade.
+                    # Rails JWT não é mais aceito diretamente.
+                    # Clientes devem trocar via POST /api/v1/auth/exchange.
+                    return JSONResponse(
+                        {
+                            "detail": "Rails token não aceito. Troque via POST /api/v1/auth/exchange.",
+                            "upgrade_required": True,
+                            "code": "RAILS_JWT_UPGRADE_REQUIRED",
+                        },
+                        status_code=401,
+                    )
 
             if payload is None and _DEV_MODE:
                 rejection = _check_dev_api_key(request, path)

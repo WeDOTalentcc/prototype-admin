@@ -4,7 +4,7 @@ NavigationIntentDetector — Detects which platform page a user message relates 
 Uses keyword/pattern matching (no LLM) for instant classification in the float chat.
 Returns page name matching dashboard-app.tsx navigation keys.
 
-Pages: "Vagas" | "Funil de Talentos" | "Painel de Controle" | "Configurações" | "Indicadores" | None
+Pages: "Vagas" | "Funil de Talentos" | "Recrutar" | "Painel de Controle" | "Configurações" | "Indicadores" | None
 
 Calibration rules:
 - Interrogative phrases (perguntas) reduce confidence — user is asking, not commanding.
@@ -149,6 +149,28 @@ _DATA_READ_KEYWORDS = re.compile(
 )
 
 
+# CR-4 fix (2026-06-15) -- visao global navigation veto.
+#
+# "Visao Global" tem tabs (Candidatos/Vagas) que o NavigationIntentDetector
+# nao sabe distinguir. O agente federado (recruiter_copilot) tem o mapa
+# completo (ir_para_visao_global / ir_para_visao_global_candidatos /
+# ir_para_visao_global_vagas) via open_ui. Delegar para ele.
+#
+# Bug historico: Paulo 2026-06-15 -- "visao global de talentos" matchava
+# "talentos" (peso 0.2) no grupo Funil de Talentos e abria pagina errada.
+# "me leve para Visao Global -- aba Candidatos" falhava porque o detector
+# nao suporta enderecar tabs.
+#
+# Sensor: tests/contract/test_navigation_intent_yields_to_visao_global.py
+_VISAO_GLOBAL_KEYWORDS = re.compile(
+    r"\b("
+    r"vis[aã]o\s+global|"
+    r"pipeline\s+overview|"
+    r"overview\s+(de\s+)?(recrutamento|pipeline|vagas|candidatos)"
+    r")\b",
+    re.IGNORECASE,
+)
+
 _PATTERNS: list[tuple[list[tuple[str, float]], str, str]] = [
     # ([(keyword, weight), ...], page_name, hint_text)
     # weight: 1.0 = strong action phrase, 0.3 = generic/ambiguous word
@@ -199,6 +221,35 @@ _PATTERNS: list[tuple[list[tuple[str, float]], str, str]] = [
          ("avançar candidato", 1.0), ("mover para etapa", 1.0), ("board", 1.0)],
         "Funil de Talentos",
         "Quer que eu abra o Funil para ver o Kanban?",
+    ),
+
+
+    # 5b. Recrutar / Visão Global (pipeline overview com tabs)
+    (
+        [("recrutar", 1.0), ("recrutamento", 0.5), ("processo seletivo", 0.7),
+         ("etapas", 0.4), ("stages", 0.4)],
+        "Recrutar",
+        "Quer que eu abra a Visão Global de recrutamento?",
+    ),
+
+    # 7. Plano e Cobrança — billing boundary
+    # Palavras-chave que indicam intenção de ver/gerenciar plano, fatura ou créditos.
+    # NavigationIntent detecta e propõe navegação antes do LLM processar —
+    # complementar ao billing_boundary em lia_persona.yaml.
+    (
+        [("plano e cobran", 1.0), ("plano e cobranca", 1.0),
+         ("fatura", 1.0), ("faturas", 1.0),
+         ("cobran", 0.9), ("cobrança", 0.9), ("cobranca", 0.9),
+         ("meu plano", 1.0), ("ver meu plano", 1.0), ("meu plano atual", 1.0),
+         ("cancelar plano", 1.0), ("upgrade de plano", 1.0), ("mudar plano", 1.0),
+         ("consumo de créditos", 1.0), ("consumo de creditos", 1.0),
+         ("créditos disponíveis", 1.0), ("creditos disponiveis", 1.0),
+         ("dados de pagamento", 1.0), ("método de pagamento", 1.0), ("metodo de pagamento", 1.0),
+         ("forma de pagamento", 1.0), ("cartão de crédito", 0.9), ("cartao de credito", 0.9),
+         ("nota fiscal", 1.0), ("boleto", 0.9), ("assinatura", 0.7),
+         ("período de trial", 1.0), ("periodo de trial", 1.0), ("vencimento", 0.7)],
+        "Plano e Cobrança",
+        "Quer que eu abra Configurações > Plano e Cobrança?",
     ),
 
     # 6. Painel de Controle
@@ -265,6 +316,21 @@ class NavigationIntentDetector:
                 matched_pattern="cr3_data_read_veto",
             )
 
+
+        # CR-4 fix (2026-06-15) -- visao global veto. "Visao Global" tem tabs
+        # que o detector keyword nao distingue. O agente federado tem open_ui
+        # com capabilities especificas (ir_para_visao_global_candidatos, etc.).
+        if _VISAO_GLOBAL_KEYWORDS.search(text):
+            logger.info(
+                "[NavigationIntent] CR-4 veto: visao global keyword detected in "
+                "%r -- yielding to federated agent open_ui (tab-aware navigation)",
+                text[:80],
+            )
+            return NavigationIntentResult(
+                page=None, confidence=0.0, hint=None,
+                matched_pattern="cr4_visao_global_veto",
+            )
+
         # BUG-18: imperativos de navegação ("me leva pra vagas", "abra a página X",
         # "quero ver minhas vagas") NÃO são perguntas, mesmo com "?". Eles devem
         # manter confidence alta e disparar a sugestão de navegação.
@@ -301,6 +367,21 @@ class NavigationIntentDetector:
             return NavigationIntentResult(page=None, confidence=0.0, hint=None)
 
         confidence = min(0.95, 0.5 + best_score * 0.2)
+
+
+        # CR-4 fix (2026-06-15) -- visao global veto. "Visao Global" tem tabs
+        # que o detector keyword nao distingue. O agente federado tem open_ui
+        # com capabilities especificas (ir_para_visao_global_candidatos, etc.).
+        if _VISAO_GLOBAL_KEYWORDS.search(text):
+            logger.info(
+                "[NavigationIntent] CR-4 veto: visao global keyword detected in "
+                "%r -- yielding to federated agent open_ui (tab-aware navigation)",
+                text[:80],
+            )
+            return NavigationIntentResult(
+                page=None, confidence=0.0, hint=None,
+                matched_pattern="cr4_visao_global_veto",
+            )
 
         # BUG-18: imperativos de navegação ADICIONAM confiança em vez de remover.
         # "me leva pra vagas" é intenção clara, merece prioridade sobre pergunta genérica.

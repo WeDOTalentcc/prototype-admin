@@ -254,6 +254,10 @@ from app.domains.job_creation.nodes.salary import salary_node  # noqa: F401, E40
 # competency_node moved to nodes/competency.py (PR-10 ONDA 3 sub-B)
 from app.domains.job_creation.nodes.competency import competency_node  # noqa: F401, E402
 
+# benefits + variable_comp nodes (2026-06-18) -- inferencia + confirmacao assistida
+from app.domains.job_creation.nodes.benefits import benefits_node  # noqa: F401, E402
+from app.domains.job_creation.nodes.variable_comp import variable_comp_node  # noqa: F401, E402
+
 
 # wsi_questions_node moved to nodes/wsi_questions.py (PR-10 ONDA 3 sub-B)
 from app.domains.job_creation.nodes.wsi_questions import wsi_questions_node  # noqa: F401, E402
@@ -267,16 +271,8 @@ from app.domains.job_creation.nodes.eligibility import eligibility_node  # noqa:
 from app.domains.job_creation.nodes.review import review_node  # noqa: F401, E402
 
 
-# publish_node moved to nodes/publish.py (PR-10 ONDA 3 sub-B)
-from app.domains.job_creation.nodes.publish import publish_node  # noqa: F401, E402
 
 
-# calibration_node moved to nodes/calibration.py (PR-10 ONDA 3 sub-B)
-from app.domains.job_creation.nodes.calibration import calibration_node  # noqa: F401, E402
-
-
-# handoff_node moved to nodes/handoff.py (PR-10 ONDA 3 sub-B)
-from app.domains.job_creation.nodes.handoff import handoff_node  # noqa: F401, E402
 
 
 # ---------------------------------------------------------------------------
@@ -490,8 +486,8 @@ def route_after_review(state: JobCreationState) -> str:
     """After review: check readiness."""
     readiness = state.get("readiness_check", {})
     if readiness.get("ready"):
-        logger.info("[JobCreation:route] review -> publish")
-        return "publish"
+        logger.info("[JobCreation:route] review -> END (publish removed Fase 8)")
+        return "end"
     logger.info("[JobCreation:route] review -> END (not ready)")
     return "end"
 
@@ -578,8 +574,8 @@ def route_after_review_gate(state: JobCreationState) -> str:
                 _readiness.get("missing"),
             )
             return "end"
-        logger.info("[JobCreation:route] review_gate -> publish (dual-confirmation + ready)")
-        return "publish"
+        logger.info("[JobCreation:route] review_gate -> END (dual-confirmation + ready; publish/calibration/handoff removed Fase 8)")
+        return "end"
     pending = state.get("review_request_changes_pending") or {}
     if isinstance(pending, dict):
         target = str(pending.get("target_section") or "").strip().lower()
@@ -604,22 +600,7 @@ def route_after_review_gate(state: JobCreationState) -> str:
     return "review_gate"
 
 
-def route_after_publish(state: JobCreationState) -> str:
-    """After publish: go to calibration if job was published."""
-    if state.get("job_id"):
-        logger.info("[JobCreation:route] publish -> calibration")
-        return "calibration"
-    logger.info("[JobCreation:route] publish -> END (publish failed)")
-    return "end"
 
-
-def route_after_calibration(state: JobCreationState) -> str:
-    """After calibration: if threshold met, handoff."""
-    if state.get("calibration_complete"):
-        logger.info("[JobCreation:route] calibration -> handoff")
-        return "handoff"
-    logger.info("[JobCreation:route] calibration -> END (awaiting more calibration)")
-    return "end"
 
 
 # ---------------------------------------------------------------------------
@@ -659,19 +640,12 @@ def _get_question_distribution(mode: str, seniority: str) -> Dict[str, int]:
     Os valores devem bater com a methodology exatamente; nao mude o YAML
     sem atualizar o doc + test sentinel.
     """
-    distributions = _load_wsi_question_distributions()
-    table = distributions.get(mode if mode == "compact" else "full", {})
-    seniority_key = (
-        seniority.lower()
-        .replace("sênior", "senior")
-        .replace("júnior", "junior")
-        .replace("estágio", "estagiario")
-        .replace("estagiário", "estagiario")
+    # Delegado ao helper canonical (audit 2026-06-05 #3) -- fonte UNICA do
+    # split por bloco. Comportamento identico (mesmo YAML + normalizacao).
+    from app.domains.job_creation.helpers.wsi_distribution import (
+        block_distribution,
     )
-    return table.get(
-        seniority_key,
-        table.get("pleno", {"technical": 5, "behavioral": 2}),
-    )
+    return block_distribution(mode, seniority)
 
 
 def _build_readiness_check(state: JobCreationState) -> Dict[str, Any]:
@@ -787,6 +761,8 @@ def create_job_creation_graph(
     builder.add_node("pipeline_template", pipeline_template_node)
     builder.add_node("bigfive", bigfive_node)
     builder.add_node("salary", salary_node)
+    builder.add_node("benefits", benefits_node)
+    builder.add_node("variable_comp", variable_comp_node)
     builder.add_node("competency", competency_node)
     if use_llm_gates:
         builder.add_node("competency_gate", competency_gate_node)
@@ -797,9 +773,6 @@ def create_job_creation_graph(
     builder.add_node("review", review_node)
     if use_llm_gates:
         builder.add_node("review_gate", review_gate_node)
-    builder.add_node("publish", publish_node)
-    builder.add_node("calibration", calibration_node)
-    builder.add_node("handoff", handoff_node)
 
     # Entry point
     builder.set_entry_point("intake")
@@ -857,9 +830,11 @@ def create_job_creation_graph(
     # tornando bigfive/salary/competency/wsi/eligibility/review/publish/etc unreachable.
     builder.add_edge("pipeline_template", "bigfive")
 
-    # F2+F3 -> salary -> F4+F5
+    # F2+F3 -> salary -> benefits -> variable_comp -> F4+F5
     builder.add_edge("bigfive", "salary")
-    builder.add_edge("salary", "competency")
+    builder.add_edge("salary", "benefits")
+    builder.add_edge("benefits", "variable_comp")
+    builder.add_edge("variable_comp", "competency")
 
     # F4+F5: needs screening mode
     if use_llm_gates:
@@ -929,7 +904,6 @@ def create_job_creation_graph(
             "review_gate",
             route_after_review_gate,
             {
-                "publish": "publish",
                 "jd_enrichment": "jd_enrichment",
                 "salary": "salary",
                 "wsi_questions": "wsi_questions",
@@ -944,33 +918,11 @@ def create_job_creation_graph(
             "review",
             route_after_review,
             {
-                "publish": "publish",
                 "end": END,
             },
         )
 
-    # Publish -> Calibration
-    builder.add_conditional_edges(
-        "publish",
-        route_after_publish,
-        {
-            "calibration": "calibration",
-            "end": END,
-        },
-    )
 
-    # Calibration -> Handoff
-    builder.add_conditional_edges(
-        "calibration",
-        route_after_calibration,
-        {
-            "handoff": "handoff",
-            "end": END,
-        },
-    )
-
-    # Handoff -> Done
-    builder.add_edge("handoff", END)
 
     # Compile with checkpointer
     if checkpointer is not None:
@@ -981,6 +933,12 @@ def create_job_creation_graph(
 # ---------------------------------------------------------------------------
 # Singleton access (same pattern as SchedulingGraph)
 # ---------------------------------------------------------------------------
+
+# Audit C1/#11 (2026-06-05): ceiling explicito de recursao do wizard.
+# LangGraph usa 25 implicito; o caminho HITL com loop-backs cabe folgado em
+# ~15 super-steps por invoke, entao 50 da headroom mantendo o guard anti-runaway.
+WIZARD_RECURSION_LIMIT = 50
+
 
 class JobCreationGraph:
     _instance = None
@@ -1010,7 +968,7 @@ class JobCreationGraph:
             Updated state after graph execution (may END at HITL points).
         """
         config = {"configurable": {"thread_id": thread_id}}
-        return self._graph.invoke(state, config=config)
+        return self._graph.invoke(state, config={**config, "recursion_limit": WIZARD_RECURSION_LIMIT})
 
     def resume(
         self,
@@ -1035,7 +993,7 @@ class JobCreationGraph:
             return self.resume_with_message(thread_id, str(user_msg))
         merged = {**prior_state, **updates}
         config = {"configurable": {"thread_id": thread_id}}
-        return self._graph.invoke(merged, config=config)
+        return self._graph.invoke(merged, config={**config, "recursion_limit": WIZARD_RECURSION_LIMIT})
 
     def is_interrupted(self, thread_id: str) -> bool:
         """Task #1094 — True se o graph para esse thread está pausado em
@@ -1093,7 +1051,7 @@ class JobCreationGraph:
         from langgraph.types import Command
         config = {"configurable": {"thread_id": thread_id}}
         return self._graph.invoke(
-            Command(resume=str(user_message or "")), config=config
+            Command(resume=str(user_message or "")), config={**config, "recursion_limit": WIZARD_RECURSION_LIMIT}
         )
 
     async def aresume_with_message(
@@ -1104,7 +1062,7 @@ class JobCreationGraph:
         from langgraph.types import Command
         config = {"configurable": {"thread_id": thread_id}}
         return await self._graph.ainvoke(
-            Command(resume=str(user_message or "")), config=config
+            Command(resume=str(user_message or "")), config={**config, "recursion_limit": WIZARD_RECURSION_LIMIT}
         )
 
 

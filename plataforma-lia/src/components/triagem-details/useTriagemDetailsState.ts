@@ -64,7 +64,7 @@ export { getWsiScoreColor as getScoreColor, getWsiScoreColor as getScoreColor3Ti
 
 export const gapConfig = {
   ok:    { label: "Alinhado",          icon: CheckCircle,   color: "text-status-success", bg: "bg-status-success/10", border: "border-status-success/30" },
-  acima: { label: "Acima do esperado", icon: Star,          color: "text-wedo-cyan-dark",  bg: "bg-wedo-cyan/10",     border: "border-wedo-cyan/30"       },
+  acima: { label: "Acima do esperado", icon: Star,          color: "text-wedo-cyan-text",  bg: "bg-wedo-cyan/10",     border: "border-wedo-cyan/30"       },
   gap:   { label: "Gap identificado",  icon: AlertTriangle, color: "text-status-warning",  bg: "bg-status-warning/10",border: "border-status-warning/30"  },
 }
 

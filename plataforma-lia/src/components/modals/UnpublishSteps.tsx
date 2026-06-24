@@ -151,7 +151,7 @@ export function OptionsStep({ hook }: StepProps) {
               {notifyApplicants && (
                 <p className="text-micro text-lia-text-tertiary mt-1 flex items-center gap-1">
                   <Archive className="w-3 h-3" />
-                  LIA abrirá o modal de envio por email/WhatsApp com template sugerido
+                  IA abrirá o modal de envio por email/WhatsApp com template sugerido
                 </p>
               )}
             </div>

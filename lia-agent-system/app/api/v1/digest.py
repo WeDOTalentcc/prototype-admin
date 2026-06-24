@@ -10,6 +10,7 @@ Endpoints:
 """
 import logging
 
+from app.shared.rbac.scope_filter_service import get_scope_filter_service
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -18,7 +19,7 @@ from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User, UserRole
 from app.core.database import get_db
 from app.domains.analytics.services.weekly_digest_service import WeeklyDigestService, get_weekly_digest_service
-from app.domains.auth.repositories.user_repository import UserRepository
+from app.repositories.auth_user_repository import UserRepository
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
 
@@ -47,7 +48,9 @@ company_id: str = Depends(require_company_id)):
     )
 
     if recruiter_id and recruiter_id != str(current_user.id):
-        if current_user.role != UserRole.admin:
+        # PERM-EXEMPT: self-access pattern — so checa permissao para outros usuarios
+        _perm_svc = get_scope_filter_service()
+        if not await _perm_svc.is_allowed(str(current_user.role), "digest", "send_others", db):
             raise HTTPException(status_code=403, detail="Apenas administradores podem visualizar digest de outros usuários")
         uid = recruiter_id
         name = "Recrutador"
@@ -82,8 +85,11 @@ async def send_weekly_digest(
     svc: WeeklyDigestService = Depends(get_weekly_digest_service),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
-    if current_user.role != UserRole.admin and str(current_user.id) != recruiter_id:
-        raise HTTPException(status_code=403, detail="Apenas administradores podem enviar digest para outros usuários")
+    # PERM-EXEMPT: self-access exemption (current_user.id == recruiter_id) requer context do request, nao expressa em role_scope_filters
+    if str(current_user.id) != recruiter_id:
+        _perm_svc = get_scope_filter_service()
+        if not await _perm_svc.is_allowed(str(current_user.role), "digest", "send_others", db):
+            raise HTTPException(status_code=403, detail="Apenas administradores podem enviar digest para outros usuários")
 
     name = "Recrutador"
     user_repo = UserRepository(db)
@@ -93,7 +99,7 @@ company_id: str = Depends(require_company_id)):
     else:
         raise HTTPException(status_code=404, detail="Recruiter not found")
 
-    result = await svc.generate_and_deliver(recruiter_id, name, db)
+    result = await svc.generate_and_deliver(recruiter_id, name, db, company_id=company_id)
     return result
 
 
@@ -104,7 +110,8 @@ async def send_weekly_digest_to_all(
     svc: WeeklyDigestService = Depends(get_weekly_digest_service),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
-    if current_user.role != UserRole.admin:
+    _perm_svc = get_scope_filter_service()
+    if not await _perm_svc.is_allowed(str(current_user.role), "digest", "send_all", db):
         raise HTTPException(status_code=403, detail="Apenas administradores podem disparar digest para todos")
 
     result = await svc.send_to_all_recruiters(db)
@@ -144,6 +151,8 @@ company_id: str = Depends(require_company_id)):
     except Exception:
         pass
 
+    # B-F1 (2026-06-10): commit obrigatorio — sem isso a mudanca e perdida ao fechar sessao.
+    await db.commit()
 
     user_id = str(current_user.id)
     logger.info(
@@ -176,7 +185,8 @@ company_id: str = Depends(require_company_id)):
     Normally called by the cron job at 08:00 BRT (Mon–Fri).
     Admins can also call manually to test.
     """
-    if current_user.role != UserRole.admin:
+    _perm_svc = get_scope_filter_service()
+    if not await _perm_svc.is_allowed(str(current_user.role), "digest", "send_all", db):
         raise HTTPException(status_code=403, detail="Apenas administradores podem disparar o digest diário para todos")
 
     result = await svc.send_to_all_recruiters(db)
@@ -192,8 +202,11 @@ async def send_daily_digest_to_user(
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Send daily digest to a specific recruiter (admin or self)."""
-    if current_user.role != UserRole.admin and str(current_user.id) != recruiter_id:
-        raise HTTPException(status_code=403, detail="Apenas administradores podem enviar digest para outros usuários")
+    # PERM-EXEMPT: self-access exemption (id==recruiter_id) requer context do request
+    if str(current_user.id) != recruiter_id:
+        _perm_svc = get_scope_filter_service()
+        if not await _perm_svc.is_allowed(str(current_user.role), "digest", "send_others", db):
+            raise HTTPException(status_code=403, detail="Apenas administradores podem enviar digest para outros usuários")
 
     user_repo = UserRepository(db)
     user = await user_repo.get_by_id(recruiter_id)

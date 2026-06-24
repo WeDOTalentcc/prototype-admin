@@ -16,8 +16,8 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 
-from app.domains.saas_metrics.dependencies import get_saas_metrics_repo
-from app.domains.saas_metrics.repositories.saas_metrics_repository import (
+from app.repositories.dependencies import get_saas_metrics_repo
+from app.repositories.saas_metrics_repository import (
     SaasMetricsRepository,
 )
 from app.models.client_account import ClientStatus

@@ -154,27 +154,27 @@ class TestATSMultiTenantContract:
 
 class TestATSWSDispatcher:
     def test_get_agent_ats_integration_returns_ats_agent(self):
-        from app.api.v1.agent_chat_ws import _get_agent
+        from app.api.v1.chat_shared import _get_agent
         agent = _get_agent("ats_integration")
         assert agent is not None
         assert "ats" in type(agent).__name__.lower() or "ATS" in type(agent).__name__
 
     def test_get_agent_ats_alias_returns_ats_agent(self):
         """'ats' deve funcionar como alias."""
-        from app.api.v1.agent_chat_ws import _get_agent
+        from app.api.v1.chat_shared import _get_agent
         agent = _get_agent("ats")
         assert agent is not None
         assert "ats" in type(agent).__name__.lower() or "ATS" in type(agent).__name__
 
     def test_ats_agent_not_falls_back_to_talent(self):
-        from app.api.v1.agent_chat_ws import _get_agent
+        from app.api.v1.chat_shared import _get_agent
         from app.domains.recruiter_assistant.agents.talent_react_agent import TalentReActAgent
         agent = _get_agent("ats_integration")
         assert not isinstance(agent, TalentReActAgent), \
             "ats_integration domain não deve usar TalentReActAgent (wiring faltando)"
 
     def test_ats_alias_not_falls_back_to_talent(self):
-        from app.api.v1.agent_chat_ws import _get_agent
+        from app.api.v1.chat_shared import _get_agent
         from app.domains.recruiter_assistant.agents.talent_react_agent import TalentReActAgent
         agent = _get_agent("ats")
         assert not isinstance(agent, TalentReActAgent)

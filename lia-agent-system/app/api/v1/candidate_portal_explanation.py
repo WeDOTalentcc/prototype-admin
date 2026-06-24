@@ -27,6 +27,7 @@ from pydantic import BaseModel
 from app.schemas.api_envelope import APIResponse
 from fastapi import Depends
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError, LIAInternalError
 
 logger = logging.getLogger(__name__)
 
@@ -106,10 +107,7 @@ company_id: str = Depends(require_company_id)):
         )
 
         if not result.get("success"):
-            raise HTTPException(
-                status_code=500,
-                detail=result.get("message", "Erro ao recuperar explicação."),
-            )
+            raise LIAInternalError(result.get("message", "Erro ao recuperar explicação."))
 
         data = result.get("data", {})
         # Detect fairness triggering in any decision (transparency to audit log)
@@ -131,7 +129,7 @@ company_id: str = Depends(require_company_id)):
             "[CandidateDecisionExplain] error candidate_id=%s: %s",
             candidate_id, exc,
         )
-        raise HTTPException(status_code=500, detail="Erro interno. Tente novamente.")
+        raise LIAError(message="Erro interno. Tente novamente.")
     finally:
         # Audit log — ADR-006: IDs only, no PII
         try:

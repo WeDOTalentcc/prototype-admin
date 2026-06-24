@@ -86,6 +86,9 @@ class AggregatedContext:
     # Empty string ⇒ legacy unfiltered behavior (back-compat for callers that
     # do not pass company_id to ``get_full_context``).
     lia_filtered_prompt: str = ""
+    # Phase C (2026-06-22): offer_rules + screening_config_defaults injected
+    # via build_operational_config_context. Empty ⇒ not loaded yet.
+    operational_config_prompt: str = ""
 
     def to_prompt_context(self) -> str:
         """Converte para string formatada para incluir no prompt do LLM.
@@ -162,6 +165,11 @@ class AggregatedContext:
             lines.append("---")
             lines.append(self.lia_filtered_prompt)
 
+        if self.operational_config_prompt:
+            lines.append("")
+            lines.append("---")
+            lines.append(self.operational_config_prompt)
+
         return "\n".join(lines)
 
 
@@ -231,6 +239,7 @@ class ContextAggregatorService:
             }
         from app.shared.services.lia_agent_context_builder import (
             build_company_agent_context,
+            build_operational_config_context,
         )
         lia_filtered_prompt = await build_company_agent_context(
             company_id=company_id,
@@ -238,11 +247,16 @@ class ContextAggregatorService:
             job_context=job_context_for_lia,
         )
 
+        operational_config_prompt = await build_operational_config_context(
+            company_id=company_id, db=db,
+        )
+
         context = AggregatedContext(
             company=company_context,
             historical=historical_context,
             session=session_context,
             lia_filtered_prompt=lia_filtered_prompt,
+            operational_config_prompt=operational_config_prompt,
         )
 
         self._cache[cache_key] = context

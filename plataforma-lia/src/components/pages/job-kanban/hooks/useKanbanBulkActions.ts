@@ -52,45 +52,40 @@ export function useKanbanBulkActions(ctx: KanbanBulkActionsContext) {
         setBulkActionType(actionId as BulkActionType)
         setShowBulkActionModal(true)
         break
-      case 'request_data': {
-        const selectedForDataRequest = allTableCandidates.filter(c => selectedCandidates.has(c.id))
-        if (selectedForDataRequest.length > 0) {
-          setDataRequestModalCandidate(selectedForDataRequest[0])
-          setShowDataRequestModal(true)
-        }
+      case 'request_data':
+        setBulkActionType('request_data' as BulkActionType)
+        setShowBulkActionModal(true)
         break
-      }
       case 'send_message':
         setUnifiedModalType('email')
         setUnifiedModalCandidate(null)
         setUnifiedModalOpen(true)
         break
-      case 'wsi_screening': {
-        const selectedForWSI = allTableCandidates.filter(c => selectedCandidates.has(c.id))
-        if (selectedForWSI.length > 0) {
-          setWsiInviteCandidate(selectedForWSI[0])
-          setShowWSIInviteModal(true)
-        }
+      case 'wsi_screening':
+        setBulkActionType('wsi_screening' as BulkActionType)
+        setShowBulkActionModal(true)
         break
-      }
       case 'share_search':
         setShowShareGestorModal(true)
+        break
+      case 'add_tags':
+        setBulkActionType('add_tags' as BulkActionType)
+        setShowBulkActionModal(true)
+        break
+      case 'remove_tags':
+        setBulkActionType('remove_tags' as BulkActionType)
+        setShowBulkActionModal(true)
         break
       default:
         toast.success("Ação em Lote", { description: `Ação "${actionId}" para ${selectedCandidates.size} candidato(s)` })
     }
   }, [
     selectedCandidates,
-    allTableCandidates,
     setBulkActionType,
     setShowBulkActionModal,
-    setDataRequestModalCandidate,
-    setShowDataRequestModal,
     setUnifiedModalType,
     setUnifiedModalCandidate,
     setUnifiedModalOpen,
-    setWsiInviteCandidate,
-    setShowWSIInviteModal,
     setShowShareGestorModal,
   ])
 
@@ -104,7 +99,7 @@ export function useKanbanBulkActions(ctx: KanbanBulkActionsContext) {
           new_status: data.targetStage
         })
 
-        const failedMap = new Map(apiResult.errors?.map((e: { id: string; error: string }) => [e.id, e.error]) || [])
+        const failedMap = new Map(apiResult.errors?.map((e) => [e.id, e.error_message]) || [])
         const successfulIds = data.candidateIds.filter(id => !failedMap.has(id))
 
         if (successfulIds.length > 0) {
@@ -137,7 +132,7 @@ export function useKanbanBulkActions(ctx: KanbanBulkActionsContext) {
 
         for (const candidateId of data.candidateIds) {
           if (failedMap.has(candidateId)) {
-            results.push({ candidateId, success: false, error: failedMap.get(candidateId) })
+            results.push({ candidateId, success: false, error: failedMap.get(candidateId) as string ?? 'Erro desconhecido' })
           } else {
             results.push({ candidateId, success: true })
           }
@@ -146,10 +141,11 @@ export function useKanbanBulkActions(ctx: KanbanBulkActionsContext) {
       } else if (data.actionType === 'reject') {
         const apiResult = await liaApi.bulkUpdateStatus({
           candidate_ids: data.candidateIds,
-          new_status: 'rejected'
+          new_status: 'rejected',
+          rejection_notes: data.rejectionNotes,  // G-Fairness: FairnessGuard aplicado no BE
         })
 
-        const failedMap = new Map(apiResult.errors?.map((e: { id: string; error: string }) => [e.id, e.error]) || [])
+        const failedMap = new Map(apiResult.errors?.map((e) => [e.id, e.error_message]) || [])
         const successfulIds = data.candidateIds.filter(id => !failedMap.has(id))
 
         if (successfulIds.length > 0) {
@@ -182,7 +178,7 @@ export function useKanbanBulkActions(ctx: KanbanBulkActionsContext) {
 
         for (const candidateId of data.candidateIds) {
           if (failedMap.has(candidateId)) {
-            results.push({ candidateId, success: false, error: failedMap.get(candidateId) })
+            results.push({ candidateId, success: false, error: failedMap.get(candidateId) as string ?? 'Erro desconhecido' })
           } else {
             results.push({ candidateId, success: true })
           }
@@ -195,22 +191,67 @@ export function useKanbanBulkActions(ctx: KanbanBulkActionsContext) {
           template_id: templateId
         })
 
-        const failedMap = new Map(apiResult.errors?.map((e: { id: string; error: string }) => [e.id, e.error]) || [])
+        const failedMap = new Map(apiResult.errors?.map((e) => [e.id, e.error_message]) || [])
 
         for (const candidateId of data.candidateIds) {
           if (failedMap.has(candidateId)) {
-            results.push({ candidateId, success: false, error: failedMap.get(candidateId) })
+            results.push({ candidateId, success: false, error: failedMap.get(candidateId) as string ?? 'Erro desconhecido' })
           } else {
             results.push({ candidateId, success: true })
           }
         }
 
       } else if (data.actionType === 'request_data') {
+        // G-RequestData fix: antes era no-op; agora chama o endpoint bulk real
+        const apiResult = await liaApi.bulkRequestData({
+          candidate_ids: data.candidateIds,
+        })
+        const failedMap = new Map(apiResult.errors?.map((e) => [e.id, e.error_message]) || [])
         for (const candidateId of data.candidateIds) {
-          try {
+          if (failedMap.has(candidateId)) {
+            results.push({ candidateId, success: false, error: failedMap.get(candidateId) as string ?? 'Erro desconhecido' })
+          } else {
             results.push({ candidateId, success: true })
-          } catch (error) {
-            results.push({ candidateId, success: false, error: 'Erro ao solicitar dados' })
+          }
+        }
+
+      } else if (data.actionType === 'add_tags' || data.actionType === 'remove_tags') {
+        const endpoint = data.actionType === 'add_tags'
+          ? '/api/backend-proxy/candidates/bulk/add-tags'
+          : '/api/backend-proxy/candidates/bulk/remove-tags'
+
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ candidate_ids: data.candidateIds, tags: data.tags ?? [] }),
+        })
+
+        if (!response.ok) {
+          throw new Error(data.actionType === 'add_tags' ? 'Erro ao adicionar tags' : 'Erro ao remover tags')
+        }
+        const apiResult = await response.json()
+        const failedMap = new Map(apiResult.errors?.map((e: { id: string; error_message: string }) => [e.id, e.error_message]) || [])
+
+        for (const candidateId of data.candidateIds) {
+          if (failedMap.has(candidateId)) {
+            results.push({ candidateId, success: false, error: failedMap.get(candidateId) as string ?? 'Erro desconhecido' })
+          } else {
+            results.push({ candidateId, success: true })
+          }
+        }
+
+      } else if (data.actionType === 'wsi_screening') {
+        // G3 fix: kanban WSI bulk agora processa todos os candidatos selecionados
+        const apiResult = await liaApi.bulkStartScreening({
+          candidate_ids: data.candidateIds,
+          job_vacancy_id: '',  // sem vaga específica no kanban geral; override_saturation=false
+        })
+        const failedMap = new Map(apiResult.errors?.map((e) => [e.id, e.error_message]) || [])
+        for (const candidateId of data.candidateIds) {
+          if (failedMap.has(candidateId)) {
+            results.push({ candidateId, success: false, error: failedMap.get(candidateId) as string ?? 'Erro desconhecido' })
+          } else {
+            results.push({ candidateId, success: true })
           }
         }
 

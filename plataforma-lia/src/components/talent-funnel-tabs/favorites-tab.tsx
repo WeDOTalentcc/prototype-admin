@@ -10,7 +10,7 @@ import { Textarea } from"@/components/ui/textarea"
 import {
   Pin, Star, Search, MapPin,
   BarChart3, X, StickyNote,
-  TrendingUp
+  TrendingUp,
 } from"lucide-react"
 import {
   Popover,
@@ -35,6 +35,7 @@ import {
   getColumnDefinition,
   COLUMN_PRESETS
 } from"@/components/tables"
+import { CandidateChatPopover } from "@/components/shared/CandidateChatPopover"
 
 interface FavoritesTabProps {
   candidates: TableCandidate[]
@@ -137,11 +138,16 @@ export function FavoritesTab({
         sortable: nameCol?.sortable ?? true,
         width: nameCol?.width || 220,
         render: (candidate, _col) => (
-          <CandidateCell 
-            candidate={candidate} 
-            isPinned={pinnedCandidates.has(candidate.id)}
-            isFavorite={favoriteCandidates.has(candidate.id)}
-          />
+          <CandidateChatPopover
+            candidateId={candidate.id}
+            candidateName={candidate.name || "Candidato"}
+          >
+            <CandidateCell 
+              candidate={candidate} 
+              isPinned={pinnedCandidates.has(candidate.id)}
+              isFavorite={favoriteCandidates.has(candidate.id)}
+            />
+          </CandidateChatPopover>
         )
       },
       {
@@ -506,9 +512,11 @@ export function FavoritesTab({
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="font-medium text-lia-text-primary text-xs">
-                    {viewingNote.candidate.name}
-                  </p>
+                  <div className="flex items-center gap-1.5">
+                    <p className="font-medium text-lia-text-primary text-xs">
+                      {viewingNote.candidate.name}
+                    </p>
+                  </div>
                   <p className="text-xs text-lia-text-tertiary">
                     {viewingNote.candidate.position}
                   </p>

@@ -2,7 +2,7 @@
 WSI package — aggregates all sub-routers into a single APIRouter.
 
 Sub-modules:
-  questions   — generate-questions, suggest-question, save, versions
+  questions   — generate-questions, regenerate-questions, suggest-question, save, versions
   evaluation  — jd-evaluate, analyze-response, complete-screening
   sessions    — session CRUD, interview-graph sessions
   reports     — f11-report, ranking, candidate-ranking

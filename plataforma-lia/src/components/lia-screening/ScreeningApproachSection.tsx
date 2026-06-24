@@ -50,8 +50,8 @@ export function ScreeningApproachSection({
                 <div className="text-xs text-status-success dark:text-status-success">{approachStrategy.duration}</div>
               </div>
               <div className="text-center p-3 bg-wedo-purple/10 dark:bg-wedo-purple/20 rounded-md">
-                <div className="text-sm font-medium text-wedo-purple dark:text-wedo-purple">Formato</div>
-                <div className="text-xs text-wedo-purple dark:text-wedo-purple">Conversa estruturada</div>
+                <div className="text-sm font-medium text-lia-text-secondary dark:text-wedo-purple">Formato</div>
+                <div className="text-xs text-lia-text-muted dark:text-wedo-purple">Conversa estruturada</div>
               </div>
             </div>
           </CardContent>

@@ -12,7 +12,6 @@ import { type QuickAction } from "@/components/ui/quick-action-chips"
 import { type ParsedCVResponse } from "@/components/cv"
 import type { Candidate } from "@/components/pages/candidates/types"
 import { PREVIEW_WIDTH_MIN, PREVIEW_WIDTH_MAX } from "./candidates-core"
-import { toast } from "sonner"
 
 interface UseCandidatesInteractionsParams {
   // Candidate data
@@ -36,6 +35,7 @@ interface UseCandidatesInteractionsParams {
   setPreviewWidth: (v: number) => void
   // Modals
   setUnifiedModalCandidate: (c: Candidate | null) => void
+  setUnifiedModalSelectedCandidates: (v: Array<{ id: string; name: string; email?: string; phone?: string; avatar?: string }>) => void
   setUnifiedModalType: (t: CommunicationType) => void
   setUnifiedModalOpen: (v: boolean) => void
   setShowScheduleModal: (v: boolean) => void
@@ -47,6 +47,9 @@ interface UseCandidatesInteractionsParams {
   // CV modal
   setParsedCVData: (d: ParsedCVResponse | null) => void
   setShowCVPreviewModal: (v: boolean) => void
+  // Schedule Message Modal (GAP-07-007)
+  setShowScheduleMessageModal?: (v: boolean) => void
+  setScheduleMessageCandidate?: (c: Candidate | null) => void
   // Toast
   // Callbacks from props
   onAddRecentItem?: (item: {
@@ -77,6 +80,7 @@ export function useCandidatesInteractions({
   previewWidth,
   setPreviewWidth,
   setUnifiedModalCandidate,
+  setUnifiedModalSelectedCandidates,
   setUnifiedModalType,
   setUnifiedModalOpen,
   setShowScheduleModal,
@@ -92,6 +96,8 @@ export function useCandidatesInteractions({
   handleBulkActionComplete,
   handleAICommand,
   deselectAllCandidates,
+  setShowScheduleMessageModal,
+  setScheduleMessageCandidate,
 }: UseCandidatesInteractionsParams) {
   const router = useRouter()
 
@@ -189,36 +195,30 @@ export function useCandidatesInteractions({
   const handleSendAgendamento = (candidate: Candidate) => openUnifiedModal(candidate, 'agendamento')
   const handleSendFeedback = (candidate: Candidate) => openUnifiedModal(candidate, 'feedback')
 
-  // ── Bulk communication ────────────────────────────────────────────────────
-  const handleBulkEmail = () => {
-    const c = sortedCandidates.find(c => selectedCandidatesForBatch.has(c.id))
-    if (c) openUnifiedModal(c, 'email')
+  // ── Bulk communication ────────────────────────────────────────
+  const openBulkUnifiedModal = (type: CommunicationType) => {
+    const selected = sortedCandidates
+      .filter(c => selectedCandidatesForBatch.has(c.id))
+      .map(c => ({ id: c.id, name: c.name, email: c.email, phone: c.phone, avatar: c.avatar }))
+    if (selected.length === 0) return
+    setUnifiedModalCandidate(null)
+    setUnifiedModalSelectedCandidates(selected)
+    setUnifiedModalType(type)
+    setUnifiedModalOpen(true)
   }
-  const handleBulkWSIScreening = () => {
-    const c = sortedCandidates.find(c => selectedCandidatesForBatch.has(c.id))
-    if (c) openUnifiedModal(c, 'triagem')
-  }
-  const handleBulkScheduleInterview = () => {
-    const c = sortedCandidates.find(c => selectedCandidatesForBatch.has(c.id))
-    if (c) openUnifiedModal(c, 'agendamento')
-  }
-  const handleBulkFeedback = () => {
-    const c = sortedCandidates.find(c => selectedCandidatesForBatch.has(c.id))
-    if (c) openUnifiedModal(c, 'feedback')
-  }
+
+  const handleBulkEmail = () => openBulkUnifiedModal('email')
+  const handleBulkWSIScreening = () => openBulkUnifiedModal('triagem')
+  const handleBulkScheduleInterview = () => openBulkUnifiedModal('agendamento')
+  const handleBulkFeedback = () => openBulkUnifiedModal('feedback')
 
   // ── Unified modal close/send ──────────────────────────────────────────────
   const handleUnifiedModalClose = () => {
     setUnifiedModalOpen(false)
     setUnifiedModalCandidate(null)
+    setUnifiedModalSelectedCandidates([])
   }
-  const handleUnifiedModalSend = (data: Record<string, unknown>) => {
-    const label =
-      data.type === 'email' ? 'Email' :
-      data.type === 'whatsapp' ? 'WhatsApp' :
-      data.type === 'triagem' ? 'Convite de triagem' :
-      data.type === 'agendamento' ? 'Convite de entrevista' : 'Feedback'
-    toast.success('Mensagem enviada!', { description: `${label} enviado com sucesso.` })
+  const handleUnifiedModalSend = (_data: Record<string, unknown>) => {
     handleUnifiedModalClose()
   }
 
@@ -338,6 +338,12 @@ export function useCandidatesInteractions({
       source: 'linkedin', tags: c.tags || [], jobTitle: c.position, department: 'Tecnologia',
     }))
 
+  // GAP-07-007 — Open schedule message modal for a specific candidate
+  const handleOpenScheduleMessageModal = (candidate: Candidate) => {
+    if (setScheduleMessageCandidate) setScheduleMessageCandidate(candidate)
+    if (setShowScheduleMessageModal) setShowScheduleMessageModal(true)
+  }
+
   return {
     openUnifiedModal,
     handleCandidateClick,
@@ -362,6 +368,7 @@ export function useCandidatesInteractions({
     handleSendTriagem,
     handleSendAgendamento,
     handleSendFeedback,
+    handleOpenScheduleMessageModal,
     handleBulkEmail,
     handleBulkWSIScreening,
     handleBulkScheduleInterview,

@@ -7,6 +7,11 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),
 }))
 
+// Mock next-intl (useLocale)
+vi.mock("next-intl", () => ({
+  useLocale: () => "pt",
+}))
+
 // Mock useOnboardingFlow hook
 vi.mock("@/components/onboarding/useOnboardingFlow", () => ({
   useOnboardingFlow: vi.fn(),

@@ -81,8 +81,11 @@ dependencies = [
     "lia-audit",
     "lia-messaging",
     "lia-models",
+    "lia-events",
     "lia-agents-core",
     "lia-services",
+    "lia-llm",
+    "lia-pii",
 ]
 
 [tool.uv]
@@ -92,7 +95,7 @@ dev-dependencies = [
 ]
 
 [tool.uv.workspace]
-members = ["libs/*"]
+members = ["libs/*", "apps/api-onboarding"]
 
 [tool.uv.sources]
 lia-config      = { workspace = true }
@@ -100,8 +103,12 @@ lia-utils       = { workspace = true }
 lia-audit       = { workspace = true }
 lia-messaging   = { workspace = true }
 lia-models      = { workspace = true }
+lia-events      = { workspace = true }
+api-onboarding  = { workspace = true }
 lia-agents-core = { workspace = true }
 lia-services    = { workspace = true }
+lia-llm         = { workspace = true }
+lia-pii         = { workspace = true }
 
 # Per-module ignores: high-error-density domains that need time to fix.
 # These are isolated from strict mode so new code CAN be enforced.

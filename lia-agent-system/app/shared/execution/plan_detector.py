@@ -45,6 +45,7 @@ class PlanPattern:
 
 
 PLAN_PATTERNS: list[PlanPattern] = [
+    # ── Sourcing + Comparison ──
     PlanPattern(
         name="buscar_e_comparar",
         patterns=[
@@ -54,7 +55,7 @@ PLAN_PATTERNS: list[PlanPattern] = [
         ],
         pipeline=[
             PipelineStep(domain_id="sourcing", action_id="search_candidates"),
-            PipelineStep(domain_id="sourcing", action_id="compare_candidates", context_from="task_0.candidate_ids"),
+            PipelineStep(domain_id="cv_screening", action_id="compare_candidates", context_from="task_0.candidate_ids"),
         ],
         description="Buscar candidatos e comparar os resultados",
     ),
@@ -65,11 +66,13 @@ PLAN_PATTERNS: list[PlanPattern] = [
             r"buscar?\s+(top|melhor)\s+.*\s+e\s+(mostr|detalh|ver)",
         ],
         pipeline=[
-            PipelineStep(domain_id="sourcing", action_id="search_top"),
-            PipelineStep(domain_id="sourcing", action_id="show_candidate_details", context_from="task_0.top_candidate_id"),
+            PipelineStep(domain_id="sourcing", action_id="search_candidates"),
+            PipelineStep(domain_id="cv_screening", action_id="rank_candidates", context_from="task_0.candidate_ids"),
         ],
-        description="Buscar os melhores candidatos e detalhar o principal",
+        description="Buscar os melhores candidatos e ranquear",
     ),
+
+    # ── JD + Screening ──
     PlanPattern(
         name="gerar_jd_e_avaliar",
         patterns=[
@@ -78,275 +81,139 @@ PLAN_PATTERNS: list[PlanPattern] = [
         ],
         pipeline=[
             PipelineStep(domain_id="job_management", action_id="generate_jd"),
-            PipelineStep(domain_id="cv_screening", action_id="evaluate_against_jd", context_from="task_0.jd_data"),
+            PipelineStep(domain_id="cv_screening", action_id="score_cv", context_from="task_0.jd_data"),
         ],
         description="Gerar JD e avaliar candidatos contra ela",
     ),
-    # NOTE (Task #1222): the former "triagem_e_agendar" pattern was removed.
-    # Triagem (WSI screening) is a CONTINUOUS, monetizable agent, not a one-shot
-    # Plan & Execute action. When a flow reaches a triagem step it must hand off
-    # honestly (see app/shared/execution/agent_handoff.py) — never fake success.
+
+    # ── Evaluate + Notify ──
     PlanPattern(
         name="avaliar_e_notificar",
         patterns=[
             r"avali(?:ar|a[cç][aã]o)\s+.*\s+e\s+(notific|avis|comunic)",
         ],
         pipeline=[
-            PipelineStep(domain_id="cv_screening", action_id="evaluate_candidate"),
-            PipelineStep(domain_id="communication", action_id="send_notification", context_from="task_0.evaluation_result"),
+            PipelineStep(domain_id="cv_screening", action_id="score_cv"),
+            PipelineStep(domain_id="communication", action_id="notify_stakeholders", context_from="task_0.evaluation_result"),
         ],
         description="Avaliar candidato e notificar sobre resultado",
     ),
-    # NOTE (Task #1222): the former "filtrar_e_reportar" pattern was removed.
-    # Relatórios não são ações one-shot do Plan & Execute (pertencem a dashboards
-    # / agente de analytics). Removido junto com "relatorio_e_exportar".
-    # NOTE (Task #1211 — INVIOLABLE): There is intentionally NO plan pattern
-    # that creates a job. Job creation is ALWAYS and ONLY the canonical wizard.
-    # The former "criar_vaga_e_publicar" pattern (step action_id="create_job")
-    # was removed because it persisted a real draft vacancy, bypassing the
-    # wizard. The composite request "criar a vaga e publicar" is now caught by
-    # the wizard bootstrap (MainOrchestrator._try_wizard_canonical via
-    # job_creation_disambiguator); the "...e publicar" half is offered as a
-    # post-wizard continuation once the wizard finishes. The import-time guard
-    # _assert_no_creation_steps() below enforces this invariant (fail loud).
-    PlanPattern(
-        name="analisar_e_planejar",
-        patterns=[
-            r"analis(?:ar|e)\s+.*\s+e\s+(planejar?|sugerir?|recomendar?)",
-            r"diagn[oó]stico\s+.*\s+e\s+(plano|sugest)",
-        ],
-        pipeline=[
-            PipelineStep(domain_id="analytics", action_id="analyze_funnel"),
-            PipelineStep(domain_id="recruiter_assistant", action_id="create_plan", context_from="task_0.analysis_data"),
-        ],
-        description="Analisar funil e criar plano de ação",
-    ),
+
+    # ── Interview + Remind ──
     PlanPattern(
         name="agendar_e_lembrar",
         patterns=[
-            r"agendar?\s+.*\s+e\s+(lembr|enviar?\s+lembrete|reminder)",
+            r"agend(?:ar|e)\s+.*\s+e\s+(lembr|avisa|notific)",
+            r"marc(?:ar|e)\s+entrevista\s+e\s+(lembr|avisa|envi)",
         ],
         pipeline=[
-            PipelineStep(domain_id="interview_scheduling", action_id="schedule_interview"),
-            PipelineStep(domain_id="communication", action_id="send_reminder", context_from="task_0.interview_data"),
+            PipelineStep(domain_id="interview_scheduling", action_id="scheduling_schedule_interview"),
+            PipelineStep(domain_id="communication", action_id="communication_send_email", context_from="task_0.interview_data"),
         ],
         description="Agendar entrevista e enviar lembrete",
     ),
+
+    # ── Move Stage + Notify ──
     PlanPattern(
         name="mover_e_notificar",
         patterns=[
-            r"mov(?:er|a)\s+.*\s+e\s+(notific|avis|comunic|email)",
-            r"atualizar?\s+(?:o\s+)?(?:status|est[aá]gio|stage)\s+.*\s+e\s+(notific|avis)",
+            r"mov(?:er|a)\s+.*\s+e\s+(notific|avis|comunic)",
+            r"avan[cç](?:ar|e)\s+.*\s+e\s+(notific|avis|comunic)",
         ],
         pipeline=[
-            PipelineStep(domain_id="automation", action_id="move_candidate_stage"),
-            PipelineStep(domain_id="communication", action_id="send_notification", context_from="task_0.movement_data"),
+            PipelineStep(domain_id="pipeline_transition", action_id="move_candidate"),
+            PipelineStep(domain_id="communication", action_id="notify_stakeholders", context_from="task_0.movement_data"),
         ],
-        description="Mover candidato de etapa e notificar",
+        description="Mover candidato no pipeline e notificar",
     ),
+
+    # ── Search + Screen ──
     PlanPattern(
         name="buscar_e_triar",
         patterns=[
             r"buscar?\s+.*\s+e\s+tri(?:ar|agem)",
-            r"encontrar?\s+.*\s+e\s+avali(?:ar|a[cç][aã]o)",
+            r"encontrar?\s+.*\s+e\s+tri(?:ar|agem)",
         ],
         pipeline=[
             PipelineStep(domain_id="sourcing", action_id="search_candidates"),
-            PipelineStep(domain_id="cv_screening", action_id="screen_candidates", context_from="task_0.candidate_ids"),
+            PipelineStep(domain_id="cv_screening", action_id="batch_screen", context_from="task_0.candidate_ids"),
         ],
-        description="Buscar candidatos e triar automaticamente",
+        description="Buscar candidatos e iniciar triagem",
     ),
+
+    # ── Score + Rank ──
     PlanPattern(
-        # Task #1227 — Buscar, pontuar (BARS dry-run) e propor adicionar os
-        # aprovados à vaga. "pontu" é o discriminante (não colide com
-        # comparar/triar/avaliar). A adição final é gated por confirmação PT-BR
-        # (pe_add_to_vacancy_continuation), por isso NÃO entra no pipeline aqui.
-        name="buscar_pontuar_e_adicionar",
+        name="pontuar_e_rankear",
         patterns=[
-            r"bus[cq]\w*\s+.*\s+e\s+pontu",
-            r"encontr\w*\s+.*\s+e\s+pontu",
-            r"pesquis\w*\s+.*\s+e\s+pontu",
-            r"pontu\w*\s+.*\s+e\s+adicion",
+            r"pontua(?:r|e)\s+.*\s+e\s+rank",
+            r"avalia(?:r|e)\s+.*\s+e\s+classific",
         ],
         pipeline=[
-            PipelineStep(domain_id="sourcing", action_id="search_candidates"),
-            PipelineStep(domain_id="cv_screening", action_id="score_candidates", context_from="task_0.candidates"),
+            PipelineStep(domain_id="cv_screening", action_id="score_cv"),
+            PipelineStep(domain_id="cv_screening", action_id="rank_candidates", context_from="task_0.scores"),
         ],
-        description="Buscar candidatos, pontuar (BARS) e propor adicionar os aprovados à vaga",
+        description="Pontuar CVs e ranquear candidatos",
     ),
-    # NOTE (Task #1222): the former "relatorio_e_exportar" pattern was removed
-    # (see "filtrar_e_reportar" note above) — relatórios não são P&E one-shot.
+
+    # ── Parse CV + Screen ──
     PlanPattern(
-        name="adicionar_analisar_wsi",
+        name="importar_cv_e_triar",
         patterns=[
-            r"adiciona[rn]?\s+.*\s+(na|[àa])\s+vaga\s+e\s+(dispara[r]?|inicia[r]?|fa[cz][er]?)\s+(triagem|wsi|screening)",
-            r"cadastra[rn]?\s+.*\s+(na|[àa])\s+vaga\s+e\s+(dispara[r]?|triagem|wsi)",
-            r"(adiciona[r]?|cadastra[r]?)\s+candidato\s+.*\s+e\s+(triagem|wsi|screening)",
-            r"coloca[r]?\s+.*\s+na\s+vaga\s+e\s+(tria[r]?|screen|wsi)",
-            r"insere?\s+.*\s+na\s+vaga\s+e\s+(dispara[r]?|tria[r]?|faz[er]?\s+triagem)",
+            r"import(?:ar|e)\s+(?:o\s+)?cv\s+.*e\s+tri",
+            r"cadastr(?:ar|e)\s+candidato\s+e\s+tri",
         ],
         pipeline=[
-            PipelineStep(domain_id="cv_screening", action_id="add_candidate_to_vacancy"),
-            PipelineStep(domain_id="cv_screening", action_id="run_wsi_screening", context_from="task_0.candidate_id"),
+            PipelineStep(domain_id="cv_screening", action_id="parse_cv"),
+            PipelineStep(domain_id="cv_screening", action_id="generate_wsi_questions", context_from="task_0.candidate_id"),
         ],
-        description="Adicionar candidato à vaga e disparar triagem WSI",
+        description="Importar CV e iniciar triagem WSI",
     ),
+
+    # ── Enrich JD + Start Sourcing ──
     PlanPattern(
-        name="upload_cadastrar_triar",
+        name="enriquecer_e_buscar",
         patterns=[
-            r"analise?\s+(?:este|esse|o)\s+cv\s+(?:para|na|e\s+cadastr)",
-            r"cadastr[ae]\s+(?:este|esse|o)?\s*candidato\s+.*\s+e\s+tria[r]?",
-            r"faz[er]?\s+(?:o\s+)?upload\s+.*\s+e\s+(cadastr|registr|tria)",
-            r"cri[ae]\s+(?:o\s+)?candidato\s+.*\s+e\s+(tria[r]?|screen|wsi)",
-            r"registra[r]?\s+(?:o\s+)?candidato\s+.*\s+e\s+(dispara[r]?|tria[r]?|screen|wsi)",
-            r"parse[ia]?\s+(?:o\s+)?cv\s+.*\s+e\s+(cadastr|tria|adiciona)",
-            # Task #1229: imperativos naturais PT-BR adicionais (additivo — não
-            # remover/alterar os patterns acima). Cobrem "faça/suba" e a forma
-            # "registrar/criar o candidato e <fazer> triagem" sem token extra.
-            r"fa[cç]a\s+(?:o\s+)?upload\s+.*\s+e\s+(cadastr|registr|tria)",
-            r"registra[r]?\s+(?:o\s+)?candidato\s+e\s+(dispara[r]?|tria[r]?|fa[cç][ae]r?\s+(?:a\s+)?triagem|screen|wsi)",
-            r"cri[ae]\s+(?:o\s+)?candidato\s+.*\s+e\s+(fa[cç][ae]r?\s+(?:a\s+)?triagem|tria[r]?|screen|wsi)",
-            r"sub[ae]\s+(?:o\s+)?cv.*\s+(cadastr|registr).*\s+(tria|wsi|screen)",
-        ],
-        pipeline=[
-            PipelineStep(domain_id="cv_screening", action_id="parse_and_create_candidate"),
-            PipelineStep(domain_id="cv_screening", action_id="add_to_vacancy", context_from="task_0.candidate_id"),
-            PipelineStep(domain_id="cv_screening", action_id="run_wsi_screening", context_from="task_1.vacancy_candidate_id"),
-        ],
-        description="Parsear CV, cadastrar candidato e disparar triagem WSI",
-    ),
-    PlanPattern(
-        name="launch_job_sourcing",
-        patterns=[
-            r"lan[cç]ar?\s+(busca|sourcing|search)",
-            r"iniciar?\s+(sourcing|busca)\s+(para|da|de)\s+vaga",
-            r"ativar?\s+sourcing",
-            r"come[cç]ar?\s+(a\s+)?buscar?\s+candidatos?\s+(para|da)\s+vaga",
+            r"enrique[cç](?:er|a)\s+.*\s+e\s+(busc|sourc|procur)",
         ],
         pipeline=[
             PipelineStep(domain_id="job_management", action_id="enrich_job_description"),
-            PipelineStep(domain_id="sourcing", action_id="start_sourcing", context_from="task_0.job_id"),
-            PipelineStep(domain_id="communication", action_id="notify_sourcing_started", context_from="task_1.job_id"),
+            PipelineStep(domain_id="sourcing", action_id="auto_source", context_from="task_0.job_id"),
         ],
-        description="Lançar busca de candidatos para uma vaga",
+        description="Enriquecer descrição da vaga e iniciar sourcing",
     ),
+
+    # ── Analytics + Report ──
     PlanPattern(
-        name="close_stale_jobs",
+        name="analisar_e_reportar",
         patterns=[
-            r"fechar?\s+vagas?\s+(paradas?|estagnadas?|antigas?)",
-            r"arquivar?\s+vagas?\s+sem\s+movimenta[cç][aã]o",
-            r"limpar?\s+vagas?\s+abertas?\s+h[aá]\s+muito",
+            r"analis(?:ar|e)\s+.*\s+e\s+(report|relat[oó]rio|envi)",
+            r"gerar?\s+(?:relat[oó]rio|an[aá]lise)\s+.*\s+e\s+envi",
         ],
         pipeline=[
-            PipelineStep(domain_id="job_management", action_id="list_stale_jobs"),
-            PipelineStep(domain_id="communication", action_id="notify_stale_job_owners", context_from="task_0.job_ids"),
-            PipelineStep(domain_id="job_management", action_id="archive_stale_jobs", context_from="task_0.job_ids"),
+            PipelineStep(domain_id="analytics", action_id="analytics_analyze_funnel"),
+            PipelineStep(domain_id="communication", action_id="send_kpi_report", context_from="task_0.analysis_data"),
         ],
-        description="Fechar vagas estagnadas",
+        description="Analisar funil e enviar relatório",
     ),
+
+    # ── Briefing diário ──
     PlanPattern(
-        name="screening_campaign",
+        name="briefing_e_planejar",
         patterns=[
-            r"enviar?\s+(wsi|triagem)\s+(em\s+lote|para\s+todos|em\s+massa)",
-            r"disparar?\s+campanha\s+de\s+triagem",
-            r"triagem\s+em\s+lote",
+            r"briefing\s+.*\s+e\s+plan",
+            r"resumo\s+do\s+dia\s+e\s+plan",
         ],
         pipeline=[
-            PipelineStep(domain_id="cv_screening", action_id="list_pending_screening"),
-            PipelineStep(domain_id="cv_screening", action_id="send_wsi_batch", context_from="task_0.candidate_ids"),
+            PipelineStep(domain_id="recruiter_assistant", action_id="daily_briefing"),
+            PipelineStep(domain_id="recruiter_assistant", action_id="plan_day", context_from="task_0.briefing_data"),
         ],
-        description="Campanha de triagem em lote",
+        description="Gerar briefing e planejar o dia",
     ),
-    # NOTE (Task #1222): the former "onboarding_pipeline" pattern was removed.
-    # Onboarding é um fluxo CONTÍNUO/multi-etapa (documentos, Day-1, avisos ao
-    # time) que pertence a um agente do Studio, não a uma ação one-shot do P&E.
-    # Handoff honesto via app/shared/execution/agent_handoff.py.
-    PlanPattern(
-        name="full_hiring_launch",
-        patterns=[
-            r"lan[cç]amento\s+completo\s+(de\s+)?vaga",
-            r"criar?\s+publicar?\s+e\s+(lan[cç]ar?|iniciar?)\s+sourcing",
-            r"setup\s+completo\s+(de\s+)?vaga",
-        ],
-        pipeline=[
-            PipelineStep(domain_id="job_management", action_id="enrich_job_description"),
-            PipelineStep(domain_id="job_management", action_id="publish_job", context_from="task_0.job_id"),
-            PipelineStep(domain_id="sourcing", action_id="start_sourcing", context_from="task_1.job_id"),
-        ],
-        description="Lançamento completo de vaga",
-    ),
-    PlanPattern(
-        name="weekly_report",
-        patterns=[
-            r"relat[oó]rio\s+semanal",
-            r"gerar?\s+relat[oó]rio\s+da\s+semana",
-            r"enviar?\s+resumo\s+semanal",
-            r"weekly\s+report",
-        ],
-        pipeline=[
-            PipelineStep(domain_id="analytics", action_id="collect_weekly_metrics"),
-            PipelineStep(domain_id="analytics", action_id="generate_weekly_report", context_from="task_0.metrics"),
-            PipelineStep(domain_id="communication", action_id="send_weekly_report", context_from="task_1.report"),
-        ],
-        description="Relatório semanal de recrutamento",
-    ),
-    PlanPattern(
-        name="candidate_nurturing",
-        patterns=[
-            r"nutri[cç][aã]o\s+de\s+candidatos",
-            r"engajar?\s+candidatos?\s+(no\s+)?pipeline",
-            r"enviar?\s+atualiza[cç][oõ]es?\s+para\s+candidatos",
-        ],
-        pipeline=[
-            PipelineStep(domain_id="cv_screening", action_id="list_active_pipeline"),
-            PipelineStep(domain_id="communication", action_id="send_pipeline_updates", context_from="task_0.candidate_ids"),
-        ],
-        description="Nutrição de candidatos no pipeline",
-    ),
-    PlanPattern(
-        name="interview_prep_pack",
-        patterns=[
-            r"kit\s+de\s+prepara[cç][aã]o",
-            r"enviar?\s+prepara[cç][aã]o\s+para\s+entrevista",
-            r"briefing\s+e\s+guia\s+de\s+entrevista",
-        ],
-        pipeline=[
-            PipelineStep(domain_id="interview_scheduling", action_id="get_upcoming_interview"),
-            PipelineStep(domain_id="communication", action_id="send_interview_prep_guide", context_from="task_0.interview_id"),
-            PipelineStep(domain_id="communication", action_id="send_company_briefing", context_from="task_0.candidate_id"),
-        ],
-        description="Kit de preparação para entrevista",
-    ),
-    PlanPattern(
-        name="talent_pool_build",
-        patterns=[
-            r"construir?\s+pool\s+de\s+talentos",
-            r"adicionar?\s+reprovados?\s+(ao\s+)?pool",
-            r"talent\s+pool",
-        ],
-        pipeline=[
-            PipelineStep(domain_id="cv_screening", action_id="list_recently_rejected"),
-            PipelineStep(domain_id="analytics", action_id="classify_by_competency", context_from="task_0.candidate_ids"),
-            PipelineStep(domain_id="sourcing", action_id="add_to_talent_pool", context_from="task_1.classified"),
-        ],
-        description="Construção de pool de talentos",
-    ),
-    PlanPattern(
-        name="end_of_month_closure",
-        patterns=[
-            r"fechamento\s+mensal",
-            r"fechar?\s+o\s+m[eê]s",
-            r"relat[oó]rio\s+mensal",
-            r"encerrar?\s+ciclo\s+mensal",
-        ],
-        pipeline=[
-            PipelineStep(domain_id="job_management", action_id="list_filled_jobs_month"),
-            PipelineStep(domain_id="job_management", action_id="archive_filled_jobs", context_from="task_0.job_ids"),
-            PipelineStep(domain_id="analytics", action_id="generate_monthly_report", context_from="task_0.metrics"),
-            PipelineStep(domain_id="communication", action_id="send_monthly_report", context_from="task_2.report"),
-        ],
-        description="Fechamento mensal de recrutamento",
-    ),
+
+    # NOTE (Task #1222): triagem is a CONTINUOUS agent, not a one-shot action.
+    # NOTE (Task #1211 — INVIOLABLE): NO pattern creates a job. Job creation
+    # is ALWAYS the canonical wizard. See wizard bootstrap in MainOrchestrator.
+
 ]
 
 

@@ -1,0 +1,62 @@
+[
+  {
+    "file": "app/api/v1/bulk_actions.py",
+    "line": 730,
+    "pattern": "P4-orm-assign(.status)",
+    "snippet": "candidate.status = \"screening\""
+  },
+  {
+    "file": "app/domains/automation/services/automation_handlers.py",
+    "line": 1215,
+    "pattern": "P4-orm-assign(.status)",
+    "snippet": "vc.status = \"screening\""
+  },
+  {
+    "file": "app/domains/automation/services/automation_handlers.py",
+    "line": 1216,
+    "pattern": "P4-orm-assign(.stage)",
+    "snippet": "vc.stage = \"screening\""
+  },
+  {
+    "file": "app/domains/automation/services/automation_handlers.py",
+    "line": 1220,
+    "pattern": "P4-orm-assign(.recruitment_stage_id)",
+    "snippet": "vc.recruitment_stage_id = await resolve_recruitment_stage_id("
+  },
+  {
+    "file": "app/domains/automation/services/automation_handlers.py",
+    "line": 1358,
+    "pattern": "P4-orm-assign(.status)",
+    "snippet": "vc.status = \"screening\""
+  },
+  {
+    "file": "app/domains/automation/services/automation_handlers.py",
+    "line": 1359,
+    "pattern": "P4-orm-assign(.stage)",
+    "snippet": "vc.stage = \"screening\""
+  },
+  {
+    "file": "app/domains/automation/services/automation_handlers.py",
+    "line": 1363,
+    "pattern": "P4-orm-assign(.recruitment_stage_id)",
+    "snippet": "vc.recruitment_stage_id = await resolve_recruitment_stage_id("
+  },
+  {
+    "file": "app/domains/candidates/repositories/vacancy_candidate_repository.py",
+    "line": 159,
+    "pattern": "P4-orm-assign(.status)",
+    "snippet": "vc.status = \"rejected\""
+  },
+  {
+    "file": "app/domains/cv_screening/agents/pipeline_tool_registry.py",
+    "line": 703,
+    "pattern": "P4-orm-assign(.stage)",
+    "snippet": "vc.stage = \"Contratado\""
+  },
+  {
+    "file": "app/domains/cv_screening/agents/pipeline_tool_registry.py",
+    "line": 704,
+    "pattern": "P4-orm-assign(.status)",
+    "snippet": "vc.status = \"hired\"  # fix: \"contratado\" n\u00e3o estava em VALID_STATUSES"
+  }
+]

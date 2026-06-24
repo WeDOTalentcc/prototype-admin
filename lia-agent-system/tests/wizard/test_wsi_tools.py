@@ -18,7 +18,11 @@ CTX = ToolContext(company_id="c1")
 _QS = [
     {"block": "technical", "question": "Q1", "bloom_level": 4, "dreyfus_level": 3},
     {"block": "technical", "question": "Q2", "bloom_level": 5, "dreyfus_level": 3},
-    {"block": "behavioral", "question": "Q3", "trait_ocean": "conscientiousness"},
+    {"block": "technical", "question": "Q3", "bloom_level": 3, "dreyfus_level": 2},
+    {"block": "technical", "question": "Q4", "bloom_level": 4, "dreyfus_level": 3},
+    {"block": "technical", "question": "Q5", "bloom_level": 5, "dreyfus_level": 4},
+    {"block": "behavioral", "question": "Q6", "trait_ocean": "conscientiousness"},
+    {"block": "behavioral", "question": "Q7", "trait_ocean": "openness"},
 ]
 
 
@@ -99,7 +103,7 @@ def test_generate_wsi_reports_dropped_equity():
     fake_svc = SimpleNamespace(generate_wsi_package=_fake_pkg)
 
     with patch("app.domains.cv_screening.services.wsi_service.service.get_wsi_service", lambda: fake_svc):
-        res = wst._handle_generate_wsi_questions({"jd_enriched": {"about_role": "x"}, "salary_skipped": True}, {}, CTX)
+        res = wst._handle_generate_wsi_questions({"jd_enriched": {"about_role": "x"}, "salary_skipped": True, "screening_mode": "compact"}, {}, CTX)
     assert not res.error
     assert "equidade" in res.llm_message.lower()
     assert len(res.state_updates["wsi_dropped_questions"]) == 1
@@ -117,7 +121,7 @@ def test_generate_wsi_fail_loud_on_package_error():
     fake_svc = SimpleNamespace(generate_wsi_package=_boom)
 
     with patch("app.domains.cv_screening.services.wsi_service.service.get_wsi_service", lambda: fake_svc):
-        res = wst._handle_generate_wsi_questions({"jd_enriched": {"about_role": "x"}, "salary_skipped": True}, {}, CTX)
+        res = wst._handle_generate_wsi_questions({"jd_enriched": {"about_role": "x"}, "salary_skipped": True, "screening_mode": "compact"}, {}, CTX)
     assert res.error
     assert "tente novamente" in res.llm_message.lower()
 
@@ -132,7 +136,7 @@ def test_generate_wsi_empty_questions_fail_loud():
     fake_svc = SimpleNamespace(generate_wsi_package=_empty)
 
     with patch("app.domains.cv_screening.services.wsi_service.service.get_wsi_service", lambda: fake_svc):
-        res = wst._handle_generate_wsi_questions({"jd_enriched": {"about_role": "x"}, "salary_skipped": True}, {}, CTX)
+        res = wst._handle_generate_wsi_questions({"jd_enriched": {"about_role": "x"}, "salary_skipped": True, "screening_mode": "compact"}, {}, CTX)
     assert res.error
 
 
@@ -144,7 +148,7 @@ def test_approve_wsi_requires_questions():
 
 @pytest.mark.medium
 def test_approve_wsi_sets_flag():
-    res = _handle_approve_wsi_questions({"wsi_questions": _QS}, {}, CTX)
+    res = _handle_approve_wsi_questions({"wsi_questions": _QS, "screening_mode": "compact"}, {}, CTX)
     assert not res.error
     assert res.state_updates["questions_approved"] is True
 
@@ -188,7 +192,7 @@ def test_regenerate_uses_canonical_package():
         return {"questions": [q], "bigfive_profile": None, "trait_rankings": [], "dropped": []}
     fake_svc = SimpleNamespace(generate_wsi_package=_fake_pkg)
 
-    state = {"jd_enriched": {"about_role": "x"}, "wsi_questions": list(_QS5), "questions_approved": True, "salary_skipped": True,
+    state = {"jd_enriched": {"about_role": "x"}, "wsi_questions": list(_QS5), "questions_approved": True, "salary_skipped": True, "screening_mode": "compact",
              "confirmed_technical_competencies": [{"skill": "A"}], "confirmed_behavioral_competencies": []}
     with patch("app.domains.cv_screening.services.wsi_service.service.get_wsi_service", lambda: fake_svc):
         res = wst._handle_regenerate_wsi_questions(state, {}, CTX)
@@ -270,7 +274,7 @@ def test_generate_wsi_passes_when_salary_skipped():
     async def _fake_pkg(**kw):
         return {"questions": [q], "bigfive_profile": None, "trait_rankings": [], "dropped": []}
     fake_svc = SimpleNamespace(generate_wsi_package=_fake_pkg)
-    state = {"jd_enriched": {"about_role": "z"}, "salary_skipped": True}
+    state = {"jd_enriched": {"about_role": "z"}, "salary_skipped": True, "screening_mode": "compact"}
     with patch("app.domains.cv_screening.services.wsi_service.service.get_wsi_service", lambda: fake_svc):
         res = wst._handle_generate_wsi_questions(state, {}, CTX)
     assert not res.error
@@ -286,7 +290,7 @@ def test_generate_wsi_passes_when_salary_suggested():
     async def _fake_pkg(**kw):
         return {"questions": [q], "bigfive_profile": None, "trait_rankings": [], "dropped": []}
     fake_svc = SimpleNamespace(generate_wsi_package=_fake_pkg)
-    state = {"jd_enriched": {"about_role": "z"}, "intake_salary_suggested": True}
+    state = {"jd_enriched": {"about_role": "z"}, "intake_salary_suggested": True, "screening_mode": "compact"}
     with patch("app.domains.cv_screening.services.wsi_service.service.get_wsi_service", lambda: fake_svc):
         res = wst._handle_generate_wsi_questions(state, {}, CTX)
     assert not res.error

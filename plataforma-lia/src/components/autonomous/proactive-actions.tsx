@@ -130,7 +130,7 @@ export function ProactiveActions({
             Tudo em dia!
           </h3>
           <p className="text-xs text-lia-text-tertiary text-center max-w-sm">
-            Não há ações proativas pendentes no momento. A LIA está monitorando e notificará quando houver sugestões.
+            Não há ações proativas pendentes no momento. A IA está monitorando e notificará quando houver sugestões.
           </p>
         </CardContent>
       </Card>
@@ -237,7 +237,7 @@ export function ProactiveActions({
                           <span className="text-micro text-lia-text-secondary">
                             {action.action_type ? (ACTION_TYPE_LABELS[action.action_type] || action.action_type) : 'Ação'}
                           </span>
-                          <span className="text-micro text-lia-text-disabled">•</span>
+                          <span className="text-micro text-lia-text-muted">•</span>
                           <span className="text-micro text-lia-text-secondary">
                             {formatTimeAgo(action.created_at)}
                           </span>

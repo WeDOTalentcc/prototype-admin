@@ -20,8 +20,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from app.auth.dependencies import get_current_active_user
 from app.auth.models import User, UserRole
 from app.core.database import get_db
-from app.domains.client_users.dependencies import get_client_user_repo
-from app.domains.client_users.repositories.client_user_repository import ClientUserRepository
+from app.repositories.dependencies import get_client_user_repo
+from app.repositories.client_user_repository import ClientUserRepository
 from app.domains.communication.services.email_service import get_email_service
 from app.domains.communication.services.email_service import EmailService
 from app.models.client_user import (
@@ -552,6 +552,7 @@ company_id: str = Depends(require_company_id)):
                 logger.warning(
                     "[client_users] can_view_salary sync to users failed (non-blocking): %s", sync_exc
                 )
+
 
         # Sprint 2 RBAC (2026-05-25): SYNC client_users.department_id → users.department_id (auth table).
         # Filter logic em app/api/v1/job_vacancies/crud.py:list_job_vacancies usa users.department_id.

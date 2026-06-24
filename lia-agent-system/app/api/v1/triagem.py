@@ -43,11 +43,11 @@ import logging
 import re
 from typing import Any
 
-from fastapi import APIRouter, Depends, File, Form, Header, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, Form, Header, HTTPException, Query, UploadFile
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
-from app.domains.triagem.dependencies import get_triagem_repo
+from app.repositories.dependencies import get_triagem_repo
 # P2 D (2026-05-23): canonical TriagemSessionRepository em domain recruitment.
 # Re-export via domains.triagem.repositories.__init__ mantém backward compat.
 from app.domains.recruitment.repositories.triagem_session_repository import (
@@ -87,6 +87,228 @@ class InviteRequest(WeDoBaseModel):
     invite_channel: str = "email"
     expires_days: int = 7
     voice_mode: bool = False
+
+
+@router.get("/sessions", response_model=None)
+async def get_eligibility_results_for_candidate_job(
+    candidate_id: str = Query(..., description="Internal candidate ID"),
+    job_id: str = Query(..., description="Job vacancy ID"),
+    company_id: str = Depends(require_company_id),
+):
+    """Busca os resultados de elegibilidade da triagem mais recente de um candidato numa vaga.
+
+    Usado pelo WSITextScreeningModal ao abrir para exibir a seção de elegibilidade
+    mesmo quando o payload do kanban não inclui esse campo.
+
+    Retorna lista vazia quando não há sessão ou quando a fase de elegibilidade não foi
+    iniciada (vaga sem perguntas eliminatórias). Nunca lança 4xx/5xx por ausência de dados
+    — o cliente faz fallback silencioso.
+
+    Tenant guard: queries diretas com company_id no WHERE (triagem_sessions não tem RLS
+    clássico — defesa app-layer, igual ao /wsi/sessions endpoint, Onda 4.2c-P0).
+
+    Response shape (v2 — enriquecido):
+        {
+            "eligibility_results": [
+                {
+                    "id": str,
+                    "question": str,
+                    "answer": str | None,
+                    "passed": bool,
+                    "is_eliminatory": bool,
+                    "reconsideration": str | None,
+                }
+            ],
+            "eliminated": bool,
+            "elimination_reason_text": str | None,
+            "session_status": str | None,
+            "session_id": str | None,
+        }
+    """
+    from sqlalchemy import select, desc, and_
+    from app.core.database import AsyncSessionLocal
+    from lia_models.triagem import TriagemSession, TriagemMessage
+
+    try:
+        async with AsyncSessionLocal() as _db:
+            result = await _db.execute(
+                select(TriagemSession)
+                .where(
+                    TriagemSession.candidate_id == candidate_id,
+                    TriagemSession.job_id == job_id,
+                    TriagemSession.company_id == company_id,
+                )
+                .order_by(desc(TriagemSession.created_at))
+                .limit(1)
+            )
+            session = result.scalar_one_or_none()
+
+            if not session:
+                return {
+                    "eligibility_results": [],
+                    "eliminated": False,
+                    "elimination_reason_text": None,
+                    "session_status": None,
+                    "session_id": None,
+                }
+
+            elig = (session.metadata_json or {}).get("eligibility") or {}
+            items = _extract_eligibility_items(elig)
+
+            # Busca TODAS as mensagens do candidato na sessão (sem LIMIT) para
+            # detectar tentativas extras de reconsideração além das N respostas finais.
+            # A elegibilidade é SEMPRE a primeira fase; wsi_block=999 é o sentinela
+            # canônico de eligibility_phase.py mas não filtramos por ele aqui porque
+            # a ordenação temporal já garante a sequência correta.
+            if items:
+                msgs_result = await _db.execute(
+                    select(TriagemMessage)
+                    .where(
+                        and_(
+                            TriagemMessage.session_id == session.id,
+                            TriagemMessage.sender == "candidate",
+                        )
+                    )
+                    .order_by(TriagemMessage.created_at)
+                )
+                candidate_msgs = list(msgs_result.scalars().all())
+
+                n_questions = len(items)
+                n_answers = len(candidate_msgs)
+                phase = elig.get("phase", "asking")
+                # fail_idx: índice da pergunta que falhou (só relevante em talent_pool)
+                fail_idx = int(elig.get("index") or 0)
+
+                # Msgs extras (além de n_questions) são tentativas de reconsideração.
+                # Layout cronológico quando há reconsideração na pergunta K:
+                #   msgs[0..K-1]           → respostas finais das perguntas 0..K-1
+                #   msgs[K..K+extra-1]     → tentativa(s) antes de reconsiderar
+                #   msgs[K+extra..K+extra+(N-K)-1] → respostas finais das perguntas K..N-1
+                # Para phase=talent_pool com fail em K e extra=1:
+                #   msgs[0..K-1]   → respostas finais 0..K-1 (passaram)
+                #   msgs[K]        → 1ª tentativa (falhou + reconsiderou)
+                #   msgs[K+1]      → resposta final da pergunta K (ainda falhou → eliminada)
+                extra_count = max(0, n_answers - n_questions)
+
+                if extra_count > 0 and phase == "talent_pool" and fail_idx < n_questions:
+                    # Respostas finais das perguntas anteriores ao fail_idx
+                    for i in range(fail_idx):
+                        if i < n_answers:
+                            items[i]["answer"] = candidate_msgs[i].content
+
+                    # Tentativas (extras) ficam em posições fail_idx .. fail_idx+extra_count-1
+                    first_attempt_content = candidate_msgs[fail_idx].content if fail_idx < n_answers else None
+
+                    # Resposta final da pergunta que falhou
+                    final_answer_pos = fail_idx + extra_count
+                    if final_answer_pos < n_answers:
+                        items[fail_idx]["answer"] = candidate_msgs[final_answer_pos].content
+                    elif fail_idx < n_answers:
+                        items[fail_idx]["answer"] = candidate_msgs[fail_idx].content
+
+                    # Nota de reconsideração
+                    final_ans = items[fail_idx].get("answer")
+                    if first_attempt_content and first_attempt_content != final_ans:
+                        items[fail_idx]["reconsideration"] = (
+                            f"1ª tentativa: '{first_attempt_content}' "
+                            f"→ Candidata reconsiderou antes da resposta final"
+                        )
+
+                    # Respostas das perguntas após fail_idx (se houver)
+                    for i in range(fail_idx + 1, n_questions):
+                        src_pos = i + extra_count
+                        if src_pos < n_answers:
+                            items[i]["answer"] = candidate_msgs[src_pos].content
+                else:
+                    # Sem reconsideração: atribuição posicional direta
+                    for i, item in enumerate(items):
+                        if i < n_answers:
+                            item["answer"] = candidate_msgs[i].content
+
+            # Campos de eliminação
+            phase = elig.get("phase", "asking")
+            eliminated = phase == "talent_pool"
+            elimination_reason_text: str | None = None
+            if eliminated:
+                questions_list = elig.get("questions") or []
+                fail_idx_val = int(elig.get("index") or 0)
+                fail_q = questions_list[fail_idx_val] if fail_idx_val < len(questions_list) else {}
+                elimination_reason_text = _build_elimination_reason(fail_q)
+
+        return {
+            "eligibility_results": items,
+            "eliminated": eliminated,
+            "elimination_reason_text": elimination_reason_text,
+            "session_status": session.status,
+            "session_id": str(session.id),
+        }
+    except Exception as exc:
+        logger.warning("[triagem/sessions] Failed to fetch eligibility results: %s", exc)
+        return {
+            "eligibility_results": [],
+            "eliminated": False,
+            "elimination_reason_text": None,
+            "session_status": None,
+            "session_id": None,
+        }
+
+
+def _extract_eligibility_items(elig: dict) -> list[dict]:
+    """Reconstrói resultados por-pergunta a partir do snapshot de elegibilidade na session.
+
+    Regra de pass/fail baseada em eligibility_phase.py:
+    - phase == 'complete': todas passaram (index >= len(questions))
+    - phase == 'talent_pool': questions[0..index-1] passaram; questions[index] falhou
+    - outros (asking/reconsidering/confirming): mostra o que já foi processado
+
+    Campos retornados por item:
+        id, question, passed, is_eliminatory
+        answer: str | None          — preenchido pelo endpoint após busca no DB
+        reconsideration: str | None — preenchido pelo endpoint se houver tentativas extras
+    """
+    questions = elig.get("questions") or []
+    phase = elig.get("phase", "asking")
+    idx = int(elig.get("index") or 0)
+
+    results = []
+    for i, q in enumerate(questions):
+        if phase == "complete":
+            passed = True
+        elif phase == "talent_pool":
+            passed = i < idx
+        else:
+            passed = i < idx
+
+        results.append({
+            "id": str(q.get("id") or i),
+            "question": q.get("question") or q.get("question_text") or "",
+            "answer": None,           # preenchido pelo endpoint
+            "passed": passed,
+            "is_eliminatory": bool(q.get("is_eliminatory", True)),
+            "reconsideration": None,  # preenchido pelo endpoint se houver reconsideração
+        })
+
+    return results
+
+
+def _build_elimination_reason(fail_question: dict) -> str:
+    """Constrói texto descritivo da razão de eliminação baseado na categoria da pergunta.
+
+    Usado pelo endpoint GET /triagem/sessions para popular elimination_reason_text.
+    """
+    category = (fail_question.get("category") or "default").lower()
+    question_text = (fail_question.get("question") or fail_question.get("question_text") or "").lower()
+
+    if category == "legal" or "inglês" in question_text or "ingles" in question_text:
+        return "O candidato não atendeu ao critério de inglês fluente"
+    if category == "work_model" or "presencial" in question_text or "modalidade" in question_text:
+        return "O candidato não atendeu ao critério de modalidade de trabalho"
+    if category == "location" or "localiza" in question_text or "cidade" in question_text:
+        return "O candidato não atendeu ao critério de localização"
+    if (category == "availability" or "disponibilidade" in question_text
+            or "início" in question_text or "inicio" in question_text):
+        return "O candidato não atendeu ao critério de disponibilidade para início"
+    return "O candidato não atendeu a um critério eliminatório"
 
 
 @router.get("/{token}", response_model=None)
@@ -302,6 +524,128 @@ async def request_phone_call(
 
     return JSONResponse(content=result)
 
+
+
+
+class StartWhatsAppRequest(WeDoBaseModel):
+    candidate_phone: str | None = None  # optional if already on file in session metadata
+
+    def model_post_init(self, __context: object = None) -> None:
+        if self.candidate_phone is not None:
+            phone = self.candidate_phone.strip()
+            digits = re.sub(r"\D", "", phone)
+            if not phone.startswith("+"):
+                if len(digits) == 10 or len(digits) == 11:
+                    phone = f"+55{digits}"
+                elif len(digits) == 12 or len(digits) == 13:
+                    phone = f"+{digits}"
+            if not _E164_BR_PATTERN.match(phone):
+                raise ValueError(
+                    "Telefone invalido. Use formato (DDD) + numero, ex: (11) 99999-9999"
+                )
+            object.__setattr__(self, "candidate_phone", phone)
+
+
+@router.post("/{token}/start-whatsapp", response_model=None)
+async def start_whatsapp_triagem(
+    token: str,
+    request: StartWhatsAppRequest | None = None,
+    repo: TriagemRepository = Depends(get_triagem_repo),
+    triagem_svc: TriagemSessionService = Depends(get_triagem_service),
+):
+    # multi-tenancy: tenant resolved via session.company_id (set at invite time by
+    # authenticated recruiter). Token = UUID v4 in URL is the auth credential. (B.1 2026-05-23)
+    """Initiate WhatsApp screening for a candidate.
+
+    Sends a WhatsApp consent/screening message to the candidate phone number.
+    If candidate_phone is omitted, looks for it in session metadata.
+
+    Phase 1a LGPD Consent (2026-06-11).
+    """
+    validation = await triagem_svc.validate_token(repo.db, token)
+
+    if not validation.get("valid"):
+        error = validation.get("error")
+        if error == "not_found":
+            raise HTTPException(status_code=404, detail="Token invalido")
+        if error == "expired":
+            raise HTTPException(status_code=410, detail="Link expirado")
+
+    if validation.get("completed"):
+        raise HTTPException(status_code=409, detail="Triagem ja foi concluida")
+
+    session_data = validation.get("session") or {}
+
+    # Resolve phone: from request body, or from session metadata
+    candidate_phone: str | None = (request.candidate_phone if request else None)
+    if not candidate_phone:
+        meta = session_data.get("metadata_json") or {}
+        candidate_phone = (
+            meta.get("candidate_phone")
+            or meta.get("phone")
+            or meta.get("whatsapp_phone")
+        )
+    if not candidate_phone:
+        raise HTTPException(
+            status_code=422,
+            detail="Numero de telefone do candidato nao disponivel. Forneca candidate_phone.",
+        )
+
+    # Validate E.164 format for stored phone values
+    digits_only = re.sub(r"\D", "", candidate_phone)
+    if not candidate_phone.startswith("+"):
+        if len(digits_only) in (10, 11):
+            candidate_phone = f"+55{digits_only}"
+        elif len(digits_only) in (12, 13):
+            candidate_phone = f"+{digits_only}"
+    if not _E164_BR_PATTERN.match(candidate_phone):
+        raise HTTPException(status_code=422, detail="Telefone invalido - use formato E.164 ou (DDD) numero")
+
+    # Persist phone in session metadata so subsequent webhook messages can be matched
+    session_orm = await repo.get_session_by_token(token)
+    if session_orm:
+        meta = dict(session_orm.metadata_json or {})
+        meta["candidate_phone"] = candidate_phone
+        session_orm.metadata_json = meta
+        await repo.db.flush()
+
+    # Send WhatsApp consent/screening invite using communication_dispatcher
+    try:
+        from app.domains.communication.services.communication_dispatcher import (
+            communication_dispatcher,
+        )
+        from app.templates.communication_templates import WhatsAppTemplates
+
+        is_aff = bool((session_orm.metadata_json or {}).get("is_affirmative", False)) if session_orm else False
+        consent_text = WhatsAppTemplates.consent_request(
+            job_title=session_data.get("job_title") or "a vaga",
+            is_affirmative=is_aff,
+        )
+        result = communication_dispatcher.send_whatsapp(
+            to_phone=candidate_phone,
+            message=consent_text,
+        )
+    except Exception as exc:
+        logger.error(
+            "[Triagem][start-whatsapp] send failed: %s token=%s", exc, token[:8], exc_info=True
+        )
+        raise HTTPException(status_code=502, detail="Falha ao enviar mensagem WhatsApp. Tente novamente.")
+
+    if not result.get("success"):
+        err = result.get("error") or "unknown"
+        logger.warning("[Triagem][start-whatsapp] WA send failed: %s", err)
+        raise HTTPException(status_code=502, detail=f"Falha ao enviar WhatsApp: {err}")
+
+    logger.info(
+        "[Triagem][start-whatsapp] consent sent to %s for token=%s",
+        candidate_phone[-4:],
+        token[:8],
+    )
+    return JSONResponse(content={
+        "ok": True,
+        "phone_masked": candidate_phone[:-4] + "****",
+        "message": "Mensagem WhatsApp enviada. Aguarde a mensagem no seu WhatsApp.",
+    })
 
 class StartSessionRequest(WeDoBaseModel):
     voice_mode: bool | None = None

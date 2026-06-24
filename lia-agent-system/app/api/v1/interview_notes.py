@@ -43,6 +43,7 @@ from app.shared.services.interview_notes_service import (
 from app.domains.ai.services.llm import llm_service
 from app.shared.compliance.fairness_guard import FairnessGuard
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError, LIAInternalError
 from typing import Annotated
 from fastapi import Path
 from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
@@ -710,10 +711,7 @@ Responda em formato JSON com a estrutura:
         raise
     except Exception as e:
         logger.error(f"Error generating interview questions: {e}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to generate interview questions: {str(e)}"
-        )
+        raise LIAInternalError("Internal server error")
 
 
 def _create_default_blocks(wsi_level: str | None = None) -> list[QuestionBlock]:
@@ -942,10 +940,7 @@ company_id: str = Depends(require_company_id)) -> WSIScore:
         raise
     except Exception as e:
         logger.error(f"Error calculating WSI score: {e}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to calculate WSI score: {str(e)}"
-        )
+        raise LIAInternalError("Internal server error")
 
 
 @router.post("/generate-parecer", response_model=GenerateParecerResponse)
@@ -1020,7 +1015,6 @@ Responda em formato JSON:
         import re
 
 # RAILS-DEPRECATED: This endpoint manages Rails-owned entities (candidates/jobs/applies/users).
-# Direct DB calls will be replaced by RailsAdapter after ats-api-rails handoff.
 # See: app/domains/integrations_hub/services/rails_adapter.py
         
         json_match = re.search(r'\{[\s\S]*\}', response)
@@ -1074,10 +1068,7 @@ Responda em formato JSON:
         raise
     except Exception as e:
         logger.error(f"Error generating interview parecer: {e}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to generate interview parecer: {str(e)}"
-        )
+        raise LIAInternalError("Internal server error")
 
 
 @router.post("", response_model=InterviewNoteCreateResponse)
@@ -1129,7 +1120,7 @@ company_id: str = Depends(require_company_id)) -> InterviewNoteCreateResponse:
         raise
     except Exception as e:
         logger.error(f"Error creating interview note: {e}")
-        raise HTTPException(status_code=500, detail=f"Failed to create interview note: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/{note_id}", response_model=InterviewNoteResponse)

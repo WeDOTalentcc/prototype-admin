@@ -14,11 +14,38 @@ from contextvars import ContextVar
 from typing import AsyncGenerator
 import sqlalchemy as sa
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
+from sqlalchemy import event
+from sqlalchemy import text as _sa_text
 from sqlalchemy.orm import declarative_base
 
 from lia_config.config import settings
 
 logger = logging.getLogger(__name__)
+
+# -------------------------------------------------------------------
+# N+1 query detection (GAP-12-006) --- development mode only
+# Counts SQL statements per HTTP request via SQLAlchemy sync event.
+# ContextVar is async-safe: each coroutine scope has its own token.
+# Disabled in production or when N_PLUS_ONE_DETECT=0.
+# -------------------------------------------------------------------
+_request_query_count: ContextVar[int] = ContextVar("_request_query_count", default=0)
+
+N_PLUS_ONE_THRESHOLD: int = int(os.getenv("N_PLUS_ONE_THRESHOLD", "10"))
+N_PLUS_ONE_ENABLED: bool = (
+    os.getenv("APP_ENV", "development") != "production"
+    and os.getenv("N_PLUS_ONE_DETECT", "1") != "0"
+)
+
+
+def get_request_query_count() -> int:
+    """Return the SQL statement count accumulated for the current ContextVar scope."""
+    return _request_query_count.get(0)
+
+
+def reset_request_query_count() -> None:
+    """Reset the SQL statement counter for the current ContextVar scope."""
+    _request_query_count.set(0)
+
 
 def _get_current_company_id() -> str:
     """Get company_id from AuthEnforcementMiddleware contextvar."""
@@ -77,6 +104,103 @@ AsyncSessionLocal = async_sessionmaker(
     autocommit=False,
     autoflush=False,
 )
+
+
+# ---------------------------------------------------------------------------
+# Producer fix RLS (2026-06-04) — canonical-fix #3 (fix no produtor).
+#
+# Root cause: ~226 tools do agentic loop (LIA-A04) abrem AsyncSessionLocal CRU,
+# fora do middleware HTTP get_db, sem setar o GUC app.company_id. RLS habilitado
+# + FORCED em ~241 tabelas ve app_current_company_id()=NULL e BLOQUEIA tudo ->
+# a tool retorna 0 ("chat nao ve vagas/candidatos"). get_db ja resolvia isso no
+# produtor para o caminho HTTP; este listener replica a MESMA logica para TODA
+# transacao do app (inclui sessoes cruas em tools/jobs/loops), de uma vez +
+# futuras. set_config(is_local=true) e TX-scoped: limpo no fim da transacao
+# (sem vazamento entre tenants no pool). No-op quando o contextvar esta vazio
+# (jobs cross-tenant legitimos seguem status quo; RLS fail-closed).
+# ---------------------------------------------------------------------------
+@event.listens_for(engine.sync_engine, "begin")
+def _inject_tenant_guc_on_begin(conn):
+    cid = _get_current_company_id()
+    if not cid:
+        return
+    try:
+        conn.execute(
+            _sa_text("SELECT set_config('app.company_id', :cid, true)"),
+            {"cid": str(cid)},
+        )
+    except Exception as exc:  # fail-closed: sem GUC, RLS bloqueia (nunca vaza)
+        logger.warning("[RLS] auto-inject app.company_id no begin falhou: %s", exc)
+
+
+# -------------------------------------------------------------------
+# N+1 query counter event (GAP-12-006) --- wired only when N_PLUS_ONE_ENABLED.
+# Fires synchronously before every SQL cursor execute in the pool.
+# ContextVar makes this async-safe: each request increments its own
+# counter without interfering with others (no mutex needed).
+# -------------------------------------------------------------------
+if N_PLUS_ONE_ENABLED:
+    @event.listens_for(engine.sync_engine, "before_cursor_execute")
+    def _count_sql_query(conn, cursor, statement, parameters, context, executemany):
+        _request_query_count.set(_request_query_count.get(0) + 1)
+
+
+
+# ---------------------------------------------------------------------------
+# Sync engine + session (psycopg2) for sync callers (LangGraph nodes, wizard
+# tool handlers). These run inside uvicorn event loop but cannot use asyncpg
+# (connection affinity). Separate pool, smaller (sync callers are fewer).
+# ADR: run_coro_in_threadpool + AsyncSessionLocal = RuntimeError "Future
+# attached to a different loop". This sync pool is the canonical fix.
+# ---------------------------------------------------------------------------
+_sync_database_url = os.environ.get("DATABASE_URL", settings.DATABASE_URL)
+if _sync_database_url and _sync_database_url.startswith("postgresql+asyncpg://"):
+    _sync_database_url = _sync_database_url.replace("postgresql+asyncpg://", "postgresql://", 1)
+elif _sync_database_url and _sync_database_url.startswith("postgresql://"):
+    pass  # already plain psycopg2
+
+if _sync_database_url and "sslmode=" in _sync_database_url:
+    from urllib.parse import urlparse as _sp, parse_qs as _pq, urlencode as _ue, urlunparse as _uu
+    _sp2 = _sp(_sync_database_url)
+    _q2 = _pq(_sp2.query)
+    _q2.pop("sslmode", None)
+    _sync_database_url = _uu((_sp2.scheme, _sp2.netloc, _sp2.path, _sp2.params, _ue(_q2, doseq=True), _sp2.fragment))
+
+from sqlalchemy import create_engine as _create_sync_engine
+from sqlalchemy.orm import sessionmaker as _sync_sessionmaker, Session as _SyncSessionCls
+
+sync_engine = _create_sync_engine(
+    _sync_database_url,
+    pool_size=5,
+    max_overflow=3,
+    pool_pre_ping=True,
+    pool_recycle=3600,
+    echo=settings.DATABASE_ECHO,
+)
+
+SyncSessionLocal = _sync_sessionmaker(
+    bind=sync_engine,
+    class_=_SyncSessionCls,
+    expire_on_commit=False,
+    autocommit=False,
+    autoflush=False,
+)
+
+
+@event.listens_for(sync_engine, "begin")
+def _inject_tenant_guc_on_begin_sync(conn):
+    """RLS tenant injection for sync sessions (mirrors async listener)."""
+    cid = _get_current_company_id()
+    if not cid:
+        return
+    try:
+        conn.execute(
+            _sa_text("SELECT set_config('app.company_id', :cid, true)"),
+            {"cid": str(cid)},
+        )
+    except Exception as exc:
+        logger.warning("[RLS-sync] auto-inject app.company_id failed: %s", exc)
+
 
 # Declarative base for all SQLAlchemy models
 Base = declarative_base()

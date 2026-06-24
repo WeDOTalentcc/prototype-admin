@@ -29,7 +29,7 @@ const nextConfig = {
     : { fetches: { fullUrl: false, hmrRefreshes: false }, incomingRequests: false },
   webpack: (config, { dev }) => {
     if (!dev) {
-      config.parallelism = 1;
+      config.parallelism = 4;
     }
     return config;
   },
@@ -106,6 +106,11 @@ const nextConfig = {
       {
         protocol: "https",
         hostname: "ui-avatars.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "api.dicebear.com",
         pathname: "/**",
       },
     ],
@@ -197,32 +202,42 @@ const nextConfig = {
     ]
   },
   async rewrites() {
-    return [
-      {
-        source: '/api/v1/:path*',
-        destination: `${BACKEND_URL}/api/v1/:path*`,
-      },
-      {
-        source: '/api/backend-proxy/wizard/:path*',
-        destination: `${BACKEND_URL}/api/v1/wizard/:path*`,
-      },
-      {
-        source: '/api/lia/chat/stream',
-        destination: `${BACKEND_URL}/api/v1/chat/stream`,
-      },
-      {
-        source: '/api/backend-proxy/chat',
-        destination: `${BACKEND_URL}/api/v1/chat`,
-      },
-      {
-        source: '/api/backend-proxy/chat/:path*',
-        destination: `${BACKEND_URL}/api/v1/chat/:path*`,
-      },
-      {
-        source: '/ws/:path*',
-        destination: `${BACKEND_URL}/ws/:path*`,
-      },
-    ];
+    return {
+      beforeFiles: [
+        {
+          source: '/__mockup/:path*',
+          destination: 'http://localhost:23636/__mockup/:path*',
+        },
+      ],
+      afterFiles: [
+        {
+          source: '/api/v1/:path*',
+          destination: `${BACKEND_URL}/api/v1/:path*`,
+        },
+        {
+          source: '/api/backend-proxy/wizard/:path*',
+          destination: `${BACKEND_URL}/api/v1/wizard/:path*`,
+        },
+        {
+          source: '/api/lia/chat/stream',
+          destination: `${BACKEND_URL}/api/v1/chat/stream`,
+        },
+        {
+          source: '/ws/:path*',
+          destination: `${BACKEND_URL}/ws/:path*`,
+        },
+      ],
+      fallback: [
+        {
+          source: '/api/backend-proxy/chat',
+          destination: `${BACKEND_URL}/api/v1/chat`,
+        },
+        {
+          source: '/api/backend-proxy/chat/:path*',
+          destination: `${BACKEND_URL}/api/v1/chat/:path*`,
+        },
+      ],
+    };
   },
 };
 

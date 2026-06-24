@@ -45,6 +45,7 @@ export type WizardStage =
   | "competency"
   | "wsi_questions"
   | "eligibility"
+  | "affirmative"
   | "review"
   | "publish"
   | "calibration"
@@ -82,6 +83,10 @@ export type WizardStagePayload = WizardStagePayloadContract
 
 export interface IntakeData {
   raw_input: string
+  /** W1-B (2026-06-12) -- vaga afirmativa detectada via NLP no intake */
+  is_affirmative?: boolean
+  affirmative_criteria_primary?: "disability" | "gender" | "race_ethnicity" | "lgbtqia" | "indigenous" | "refugee" | "other"
+  affirmative_description?: string
 }
 
 export interface JdEnrichmentData {
@@ -97,6 +102,9 @@ export interface JdEnrichmentData {
     earned: number
     status: "sufficient" | "partial" | "insufficient"
     detail?: string
+    count?: number
+    minimum?: number
+    word_count?: number
   }>
   quality_band?: string
   /**
@@ -189,7 +197,19 @@ export interface SalaryData {
   salary_min: number | null
   salary_max: number | null
   salary_currency: string
-  benefits: string[]
+  benefits: Array<string | Record<string, unknown>>
+  variable_compensation?: Array<{
+    name: string
+    kind?: string
+    description?: string
+    target_pct?: number
+    min_pct?: number
+    max_pct?: number
+    min_amount?: number
+    max_amount?: number
+    currency?: string
+    frequency?: string
+  }>
   benchmark: Record<string, unknown> | null
   /** Task #1065 — `true` quando o benchmark fetch caiu em fallback (timeout). */
   salary_used_fallback?: boolean
@@ -235,6 +255,11 @@ export interface WsiQuestionsData {
   wsi_questions_fallback_reason?: string | null
   /** Task #1070 — modo degradado agregado (sessao/tenant). */
   ai_degraded_mode?: AiDegradedMode | null
+  /** Task 7 WSI — distribuicao minima esperada pelo backend (YAML canonical).
+   * Substitui MIN_DISTRIBUTION hardcoded no WsiQuestionsPanel.
+   * Formato: {technical: number, behavioral: number}
+   */
+  expected_distribution?: { technical: number; behavioral: number } | null
 }
 
 export interface ScreeningQuestion {
@@ -299,9 +324,44 @@ export interface CalibrationCandidate {
   current_title: string
   current_company: string
   match_score: number
-  match_criteria: Array<{ criterion: string; score: number; met: boolean }>
-  decision?: "approved" | "rejected"
+  match_criteria: Array<{
+    criterion: string
+    score: number
+    met: boolean
+    /** Reasoning inline por critério — exibido abaixo do chip (como Tezi). */
+    explanation?: string
+  }>
+  decision?: "approved" | "rejected" | "skipped"
   reason?: string
+  /** Tenure stats — exibido como chips de tempo de empresa/cargo. */
+  tenure_stats?: {
+    avg_months?: number
+    current_months?: number
+    total_months?: number
+  }
+  /** Auto-tags geradas pelo backend — ex: ["Scale-up", "Fullstack", "Remoto ✓"]. */
+  auto_tags?: string[]
+  /** URL do avatar do candidato (opcional). */
+  avatar_url?: string
+  /** URL do perfil LinkedIn do candidato (opcional). */
+  linkedin_url?: string
+  /** Histórico de experiências — disponível para o modal "Ver perfil completo". */
+  experiences?: Array<{
+    title: string
+    company: string
+    start_date: string
+    end_date?: string | null
+    duration_label?: string
+    description?: string
+    is_current?: boolean
+  }>
+  /** Formação acadêmica — disponível para o modal "Ver perfil completo". */
+  education?: Array<{
+    institution: string
+    degree: string
+    field: string
+    period?: string
+  }>
 }
 
 export interface HandoffData {
@@ -327,6 +387,7 @@ export const STAGE_LABELS: Record<WizardStage, string> = {
   competency: "Competencias e triagem",
   wsi_questions: "Perguntas WSI",
   eligibility: "Elegibilidade",
+  affirmative: "Vaga Afirmativa",
   review: "Revisao final",
   publish: "Publicacao",
   calibration: "Calibracao",
@@ -351,6 +412,7 @@ export const STAGE_PILL_LABELS: Record<WizardStage, string> = {
   competency: "Criando vaga · Competências",
   wsi_questions: "Criando vaga · Triagem",
   eligibility: "Criando vaga · Elegibilidade",
+  affirmative: "Criando vaga · Ação Afirmativa",
   review: "Criando vaga · Revisão",
   publish: "Criando vaga · Publicação",
   calibration: "Calibrando · Candidatos",
@@ -358,7 +420,7 @@ export const STAGE_PILL_LABELS: Record<WizardStage, string> = {
   // Sprint Pipeline Templates 2026-05-26 — Opção B (Paulo aprovou)
   pipeline_template: "Pipeline · Template",
   done: "Vaga criada",
-  scheduling: "Agendando · Entrevistas",
+  scheduling: "Criando vaga · Agendamento",
 }
 
 export const STAGE_ORDER: WizardStage[] = [
@@ -367,8 +429,8 @@ export const STAGE_ORDER: WizardStage[] = [
   // Stage formal entre jd_enrichment e bigfive.
   "pipeline_template",
   "bigfive", "salary", "competency",
-  "wsi_questions", "eligibility", "review", "publish", "calibration",
-  "handoff", "done", "scheduling",
+  "wsi_questions", "eligibility", "affirmative", "review", "publish", "calibration",
+  "handoff", "done",
 ]
 
 

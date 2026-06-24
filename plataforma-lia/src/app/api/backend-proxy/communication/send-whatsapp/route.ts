@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
+import { getAuthHeaders } from '@/lib/api/auth-headers'
 import { validateBody } from '@/lib/api/validate'
 import { z } from 'zod'
 
@@ -33,7 +34,7 @@ export async function POST(request: NextRequest) {
     const response = await fetch(backendUrl, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        ...getAuthHeaders(request),
         'X-Company-ID': companyId,
       },
       body: JSON.stringify(requestBody),

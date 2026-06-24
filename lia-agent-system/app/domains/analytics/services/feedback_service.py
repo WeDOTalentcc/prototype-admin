@@ -105,9 +105,16 @@ class FeedbackService:
                 f"Recorded {feedback_type} feedback for session {session_id}, "
                 f"message_id={message_context.get('message_id')}"
             )
-            
-            await self._update_patterns_from_feedback(feedback, db)
-            
+
+            # Task #1326: snapshot the committed id BEFORE the learning-pattern
+            # write — a failure there rolls back and EXPIRES `feedback`, so the
+            # caller reading `feedback.id` would otherwise trigger a sync
+            # lazy-load → MissingGreenlet.
+            feedback_id = feedback.id
+            pattern_ok = await self._update_patterns_from_feedback(feedback, db)
+            if not pattern_ok:
+                self._restore_committed_feedback_id(feedback, feedback_id)
+
             return feedback
             
         except Exception as e:
@@ -119,19 +126,126 @@ class FeedbackService:
             if should_close and db:
                 await db.close()
     
+    async def record_implicit_negative(
+        self,
+        session_id: str,
+        company_id: str,
+        user_id: str,
+        signal_type: str,
+        message_context: dict,
+        db: AsyncSession | None = None,
+    ) -> InteractionFeedback:
+        """Task #1299: persist an IMPLICIT negative signal into the SAME
+        ``interaction_feedback`` table + learning-pattern path used by the
+        explicit thumbs/rating/correction loop, WITHOUT setting ``thumbs`` /
+        ``rating`` (so explicit satisfaction metrics stay clean).
+
+        The row is tagged ``feedback_category="implicit_<signal_type>"`` for
+        analytics buckets, and a transient ``_implicit_negative`` marker makes
+        ``_update_patterns_from_feedback`` demote the matching pattern
+        (``negative_feedback_count`` + ``example_bad_responses``).
+
+        Args:
+            signal_type: "regeneration" | "correction_delta" | "abandonment".
+            message_context: same shape as ``record_feedback`` (carries
+                message_id / user_message / lia_response / intent / stage).
+
+        Returns:
+            The created InteractionFeedback row.
+        """
+        should_close = db is None
+        if db is None:
+            db = AsyncSessionLocal()
+
+        try:
+            feedback = InteractionFeedback(
+                id=uuid4(),
+                session_id=session_id,
+                company_id=UUID(company_id),
+                user_id=user_id,
+                message_id=message_context.get("message_id"),
+                user_message=message_context.get("user_message"),
+                lia_response=message_context.get("lia_response"),
+                intent=message_context.get("intent"),
+                stage=message_context.get("stage"),
+                response_time_ms=message_context.get("response_time_ms"),
+                tools_used=message_context.get("tools_used", []),
+                confidence_score=message_context.get("confidence_score"),
+                feedback_category=f"implicit_{signal_type}",
+            )
+            # Transient marker (NOT a column) → _update_patterns_from_feedback
+            # treats this as a negative without touching thumbs/rating.
+            feedback._implicit_negative = True
+
+            db.add(feedback)
+            await db.commit()
+            await db.refresh(feedback)
+            # refresh() reloads from DB and drops the transient attribute — re-set it.
+            feedback._implicit_negative = True
+
+            self.logger.info(
+                "Recorded implicit negative (%s) for session %s message_id=%s",
+                signal_type, session_id, message_context.get("message_id"),
+            )
+
+            # Task #1326: snapshot the committed id BEFORE the learning-pattern
+            # write. The implicit-feedback caller (capture_regeneration /
+            # capture_correction_delta) reads ``fb.id`` — a pattern-write
+            # failure rolls back and EXPIRES this row, so without the snapshot
+            # restore the caller would crash with MissingGreenlet instead of
+            # getting an honest result (the feedback row itself DID commit).
+            feedback_id = feedback.id
+            pattern_ok = await self._update_patterns_from_feedback(feedback, db)
+            if not pattern_ok:
+                self._restore_committed_feedback_id(feedback, feedback_id)
+            return feedback
+        except Exception as e:
+            if db:
+                await db.rollback()
+            self.logger.error(f"Error recording implicit negative: {e}")
+            raise
+        finally:
+            if should_close and db:
+                await db.close()
+
     async def _update_patterns_from_feedback(
         self,
         feedback: InteractionFeedback,
         db: AsyncSession
-    ) -> None:
-        """Update learning patterns based on new feedback."""
+    ) -> bool:
+        """Update learning patterns based on new feedback.
+
+        Task #1297: o early-return original ``if not feedback.intent: return``
+        matava 100% da aprendizagem do chat — os polegares 👍/👎 não carregam
+        ``intent`` no contexto, então NENHUM padrão era gerado (tabela
+        ``learning_patterns`` vazia apesar de 14k+ mensagens). Agora geramos
+        o padrão mesmo sem intent: ``_generate_pattern_key`` já degrada para
+        ``"general"``, criando um sinal agregado por tenant que ainda captura
+        bons/maus exemplos de resposta. Mantém-se a granularidade por intent
+        quando o contexto o fornece.
+
+        Task #1326 (observabilidade): uma falha na escrita de
+        ``learning_patterns`` (ex.: o conflito de mapper UUID-vs-String que
+        bloqueia o INSERT) NÃO pode mais ser engolida silenciosamente. O
+        ``except`` faz rollback, mas agora emite um log estruturado com a causa
+        raiz + ``sentry_sdk.capture_exception`` (sinal atribuível) e RETORNA
+        ``False`` em vez de ``None``. O caller usa esse retorno para devolver um
+        resultado honesto (a feedback row JÁ commitada permanece) sem disparar
+        o ``MissingGreenlet`` secundário do atributo expirado pelo rollback.
+        Sucesso retorna ``True``.
+        """
+        # Snapshot identifying fields BEFORE any rollback can expire the ORM
+        # instance — the failure reporter must never touch the (possibly
+        # expired) `feedback` object, or it would itself raise MissingGreenlet
+        # (a sync lazy-load outside the greenlet), masking the real DB error.
+        pattern_key = "?"
+        company_id = None
+        feedback_id_snapshot = None
         try:
-            if not feedback.intent:
-                return
-            
             pattern_key = self._generate_pattern_key(feedback)
             company_id = feedback.company_id
-            
+            feedback_id_snapshot = feedback.id
+
             repo = FeedbackRepository(db)
             pattern = await repo.find_active_pattern(company_id, pattern_key)
             
@@ -142,7 +256,12 @@ class FeedbackService:
             is_negative = (
                 feedback.thumbs == "down" or 
                 (feedback.rating is not None and feedback.rating <= 2) or
-                feedback.correction is not None
+                feedback.correction is not None or
+                # Task #1299: implicit negative signals (regeneration /
+                # correction-delta) carry no thumbs/rating — they tag a
+                # transient marker so they still demote the pattern WITHOUT
+                # polluting the explicit thumbs/satisfaction metrics.
+                getattr(feedback, "_implicit_negative", False)
             )
             
             if pattern:
@@ -182,14 +301,85 @@ class FeedbackService:
                 db.add(pattern)
             
             await db.commit()
-            
+            return True
+
         except Exception as e:
             try:
                 await db.rollback()
             except Exception:
                 pass
-            self.logger.error(f"Error updating patterns from feedback: {e}")
-    
+            self._report_pattern_write_failure(
+                e, company_id, pattern_key, feedback_id_snapshot
+            )
+            return False
+
+    def _report_pattern_write_failure(
+        self,
+        exc: Exception,
+        company_id: Any,
+        pattern_key: str,
+        feedback_id: Any,
+    ) -> None:
+        """Task #1326: surface a learning-pattern write failure as a clear,
+        attributable signal (structured error log with the root cause +
+        Sentry capture) instead of a swallowed log line.
+
+        Receives ONLY pre-rollback snapshots (never the live ORM instance), so
+        it cannot itself trigger a sync lazy-load → ``MissingGreenlet`` that
+        would mask the real DB error.
+        """
+        self.logger.error(
+            "[FeedbackLearning] learning_patterns write FAILED — pattern "
+            "demotion/promotion LOST (root_cause=%s: %s) company=%s "
+            "pattern_key=%s feedback_id=%s",
+            type(exc).__name__,
+            exc,
+            company_id,
+            pattern_key,
+            feedback_id,
+            exc_info=True,
+        )
+        try:  # best-effort — Sentry is optional and must never block the path
+            import sentry_sdk
+
+            sentry_sdk.capture_exception(
+                exc,
+                tags={
+                    "alert_type": "feedback_learning_pattern_write_failed",
+                    "company_id": str(company_id) if company_id else "unknown",
+                    "pattern_key": pattern_key,
+                },
+            )
+        except Exception as sentry_exc:  # pragma: no cover - defensive
+            self.logger.debug(
+                "[FeedbackLearning] Sentry capture unavailable: %s", sentry_exc
+            )
+
+    def _restore_committed_feedback_id(
+        self, feedback: InteractionFeedback, feedback_id: Any
+    ) -> None:
+        """Task #1326: re-populate the committed ``id`` on a feedback row that a
+        failed learning-pattern write rolled back (and thus EXPIRED), WITHOUT a
+        DB round-trip.
+
+        The interaction_feedback row itself committed before the pattern write,
+        so the id is valid. We restore it via ``set_committed_value`` (no SQL)
+        so callers can read ``feedback.id`` without a sync lazy-load
+        (MissingGreenlet) and without depending on RLS tenant context that the
+        rollback dropped. Best-effort: never raises into the happy path.
+        """
+        if feedback_id is None:
+            return
+        try:
+            from sqlalchemy.orm.attributes import set_committed_value
+
+            set_committed_value(feedback, "id", feedback_id)
+        except Exception as exc:  # pragma: no cover - defensive
+            self.logger.debug(
+                "[FeedbackLearning] could not restore committed feedback id: %s",
+                exc,
+            )
+
     def _generate_pattern_key(self, feedback: InteractionFeedback) -> str:
         """Generate a unique pattern key from feedback context."""
         parts = []
@@ -222,7 +412,13 @@ class FeedbackService:
             
             for feedback in unprocessed:
                 try:
-                    await self._update_patterns_from_feedback(feedback, db)
+                    # Task #1326: only mark processed when the pattern write
+                    # actually committed — a failed write now returns False
+                    # (attributable log + Sentry) instead of raising, so we
+                    # must not flag a row processed when its learning never
+                    # happened.
+                    if not await self._update_patterns_from_feedback(feedback, db):
+                        continue
                     feedback.processed = True
                     processed_count += 1
                     patterns_updated += 1
@@ -288,7 +484,15 @@ class FeedbackService:
             
             relevant = []
             for pattern in all_patterns:
-                if pattern.pattern_type == "intent" and intent in (pattern.pattern_key or ""):
+                # Task #1297: padrões "general" (feedback sem intent explícito —
+                # o caso comum dos polegares no chat) são sempre relevantes;
+                # representam preferência agregada do tenant aplicável a
+                # qualquer turno conversacional.
+                if (pattern.pattern_key or "") == "general":
+                    relevant.append(pattern)
+                    continue
+
+                if pattern.pattern_type == "intent" and intent and intent in (pattern.pattern_key or ""):
                     relevant.append(pattern)
                     continue
                 
@@ -542,6 +746,60 @@ class FeedbackService:
             "response_style_hints": response_hints[:2],
             "average_success_rate": sum(p.success_rate for p in patterns) / len(patterns),
         }
+
+    async def get_learned_examples_block(
+        self,
+        intent: str,
+        user_message: str,
+        company_id: str,
+        db: AsyncSession | None = None,
+    ) -> str:
+        """Task #1297: formata os exemplos bons/ruins aprendidos do feedback
+        real do tenant numa seção de prompt pronta para injeção.
+
+        Fecha o gap "padrões aprendidos só consumidos pelo wizard": este bloco
+        é injetado pelo helper canônico ``build_system_prompt_with_persona``,
+        então TODOS os caminhos de chat (geral + agentes ReAct) passam a
+        respeitar o feedback do recrutador, não só o wizard de criação de vaga.
+
+        Fail-open: retorna ``""`` em qualquer erro ou ausência de padrões —
+        nunca bloqueia a geração de resposta.
+        """
+        try:
+            context = await self.get_pattern_context_for_response(
+                intent=intent or "",
+                user_message=user_message or "",
+                company_id=company_id,
+                db=db,
+            )
+        except Exception as e:
+            self.logger.warning(f"get_learned_examples_block failed: {e}")
+            return ""
+
+        if not context.get("has_patterns"):
+            return ""
+
+        good = context.get("good_response_examples") or []
+        bad = context.get("bad_response_examples") or []
+        hints = context.get("response_style_hints") or []
+        if not (good or bad or hints):
+            return ""
+
+        lines: list[str] = [
+            "\n## Aprendizado do Feedback do Recrutador",
+            "Estes exemplos vêm do feedback real (👍/👎/correção) deste cliente. "
+            "Use-os para calibrar o estilo e o conteúdo da sua resposta.",
+        ]
+        if good:
+            lines.append("\n### Respostas bem avaliadas (espelhe o estilo):")
+            lines.extend(f"- {ex}" for ex in good)
+        if bad:
+            lines.append("\n### Respostas mal avaliadas (evite este padrão):")
+            lines.extend(f"- {ex}" for ex in bad)
+        if hints:
+            lines.append("\n### Preferências de estilo:")
+            lines.extend(f"- {h}" for h in hints)
+        return "\n".join(lines)
 
 
 feedback_service = FeedbackService()

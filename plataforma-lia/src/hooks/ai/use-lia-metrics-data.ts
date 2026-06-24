@@ -154,7 +154,7 @@ export function useLiaMetricsData(candidates: DashboardCandidate[]) {
         total: triageApproved,
         rate: interviewConversionRate,
         avgTime: avgTimeInterview,
-        color: 'text-wedo-purple',
+        color: 'text-wedo-purple-text',
         bgColor: 'bg-wedo-purple/10'
       }
     ]

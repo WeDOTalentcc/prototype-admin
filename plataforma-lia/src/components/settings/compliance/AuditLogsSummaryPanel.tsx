@@ -118,7 +118,7 @@ export function AuditLogsSummaryPanel() {
         <h3 className="text-sm font-medium text-lia-text-primary mb-2">
           {t("totalEventsTitle")}
         </h3>
-        <p className="text-2xl font-semibold text-lia-text-primary">
+        <p className={textStyles.kpi}>
           {loading ? "..." : totalEvents}
         </p>
         <p className="text-xs text-lia-text-secondary mt-1">{t("totalEventsHint")}</p>
@@ -156,7 +156,7 @@ interface SummaryCardProps {
 function SummaryCard({ icon: Icon, label, value, accent }: SummaryCardProps) {
   const accentMap: Record<SummaryCardProps["accent"], string> = {
     neutral: "text-lia-text-secondary bg-lia-bg-tertiary",
-    info: "text-wedo-cyan bg-wedo-cyan/10",
+    info: "text-wedo-cyan-text bg-wedo-cyan/10",
     warning: "text-status-warning bg-status-warning/10",
     danger: "text-status-error bg-status-error/10",
     success: "text-status-success bg-status-success/10",
@@ -170,7 +170,7 @@ function SummaryCard({ icon: Icon, label, value, accent }: SummaryCardProps) {
           </div>
           <span className={textStyles.description}>{label}</span>
         </div>
-        <p className="text-2xl font-semibold text-lia-text-primary">{value}</p>
+        <p className={textStyles.kpi}>{value}</p>
       </CardContent>
     </Card>
   )

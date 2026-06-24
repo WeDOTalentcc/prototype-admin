@@ -4,12 +4,15 @@ import React, { useCallback } from "react"
 import type { FileAnalysisResult } from "@/components/ui/file-upload-button"
 import { toast } from "sonner"
 import { useChatStateStore } from "@/stores/chat-state-store"
+import { useAiPersona } from "@/hooks/company/use-ai-persona"
 import type {
   ArchetypeData,
   UseEAPCallbacksParams,
 } from './useEAPCallbacksTypes'
 
 export function useEAPCommandCallbacks(params: UseEAPCallbacksParams) {
+  const { persona } = useAiPersona()
+  const personaName = persona?.name ?? "IA"
   const {
     parseEntitiesFromQuery,
     candidateContext,
@@ -264,7 +267,7 @@ export function useEAPCommandCallbacks(params: UseEAPCallbacksParams) {
     const selectedCount = selectedCandidates.length
 
     if (selectedCount === 0) {
-      return "Peça à LIA para filtrar candidatos, fazer buscas específicas, analisar perfis, enviar emails, agendar entrevistas, comparar candidatos..."
+      return `Peça à ${personaName} para filtrar candidatos, fazer buscas específicas, analisar perfis, enviar emails, agendar entrevistas, comparar candidatos...`
     }
 
     if (selectedCount === 1) {

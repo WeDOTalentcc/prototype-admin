@@ -25,6 +25,7 @@
  * - Secondary: gray-600 (light) / gray-400 (dark) - Descrições, captions
  * - Muted: gray-500 (light) / gray-500 (dark) - Placeholders, disabled
  */
+import { WSI_VISUAL_3TIER } from '@/lib/wsi/visual'
 
 export const colors = {
   primary: {
@@ -232,10 +233,17 @@ export const textStyles = {
   label: "font-sans text-xs font-medium text-lia-text-primary dark:text-lia-text-primary",
   labelSmall: "font-sans text-micro font-medium text-lia-text-primary dark:text-lia-text-primary",
   
-  // v4: Métricas com Inter
-  metric: "font-sans text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary tabular-nums",
-  metricLarge: "font-sans text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary tabular-nums",
-  metricSmall: "font-sans text-xs font-medium text-lia-text-primary dark:text-lia-text-primary tabular-nums",
+  // Fundação DS: KPIs/métricas usam SEMPRE a fonte de dados Inter (`font-data`)
+  // + `tabular-nums`. Padrão único — Consumo/Compliance não devem divergir.
+  // Para um componente pronto (valor + label + hint), prefira <Metric />.
+  metric: "font-data text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary tabular-nums",
+  metricLarge: "font-data text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary tabular-nums",
+  metricSmall: "font-data text-xs font-medium text-lia-text-primary dark:text-lia-text-primary tabular-nums",
+
+  // Fundação DS: escala de KPI de dashboard (valor isolado, sem label).
+  kpi: "font-data text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary tabular-nums leading-none",
+  kpiLarge: "font-data text-4xl font-bold text-lia-text-primary dark:text-lia-text-primary tabular-nums leading-none",
+  kpiSmall: "font-data text-lg font-semibold text-lia-text-primary dark:text-lia-text-primary tabular-nums leading-none",
   
   // DS v4.1: Sidebar com Open Sans (Source Serif 4 removido)
   sidebarTitle: "font-sans text-base-ui font-semibold text-lia-text-primary dark:text-lia-text-primary",
@@ -243,7 +251,7 @@ export const textStyles = {
   sidebarItemActive: "font-sans text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary",
   
   // v4: Links (cyan para LIA/IA)
-  link: "font-sans text-xs font-medium text-wedo-cyan hover:text-wedo-cyan-dark transition-colors",
+  link: "font-sans text-xs font-medium text-wedo-cyan-text hover:text-wedo-cyan-dark transition-colors",
   linkSubtle: "font-sans text-xs font-medium text-lia-text-secondary hover:text-lia-text-primary dark:text-lia-text-secondary dark:hover:text-lia-text-inverse transition-colors",
 } as const
 
@@ -313,16 +321,16 @@ export const badgeStyles = {
   success: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-status-success/10 text-status-success dark:bg-status-success/30 dark:text-status-success',
   warning: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-status-warning/10 text-status-warning dark:bg-status-warning/30 dark:text-status-warning',
   error: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-status-error/10 text-status-error dark:bg-status-error/30 dark:text-status-error',
-  info: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-wedo-cyan/10 text-wedo-cyan-dark dark:text-wedo-cyan-dark',
+  info: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-wedo-cyan/10 text-wedo-cyan-text dark:text-wedo-cyan-dark',
   
   // v4.1: WeDo accent colors (uso limitado - 10%) com dark mode
-  cyan: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-wedo-cyan/10 text-wedo-cyan-dark dark:bg-wedo-cyan/20 dark:text-wedo-cyan',
+  cyan: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-wedo-cyan/10 text-wedo-cyan-text dark:bg-wedo-cyan/20 dark:text-wedo-cyan',
   green: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-wedo-green/10 text-status-success dark:bg-wedo-green/20 dark:text-wedo-green',
-  orange: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-wedo-orange/10 text-wedo-orange dark:bg-wedo-orange/20 dark:text-wedo-orange',
-  purple: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-wedo-purple/10 text-wedo-purple dark:bg-wedo-purple/20 dark:text-wedo-purple',
+  orange: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-wedo-orange/10 text-wedo-orange-text dark:bg-wedo-orange/20 dark:text-wedo-orange',
+  purple: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-wedo-purple/10 text-wedo-purple-text dark:bg-wedo-purple/20 dark:text-wedo-purple',
 
   // Alias para compatibilidade
-  primary: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-wedo-cyan/10 text-wedo-cyan-dark dark:bg-wedo-cyan/20 dark:text-wedo-cyan',
+  primary: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-wedo-cyan/10 text-wedo-cyan-text dark:bg-wedo-cyan/20 dark:text-wedo-cyan',
   
   // v4.1: Outline variants com dark mode
   outlineDefault: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-transparent border border-lia-border-default text-lia-text-secondary dark:border-lia-border-default dark:text-lia-text-secondary',
@@ -543,7 +551,7 @@ export const kanbanChipStyles = {
     danger:
       'border-status-error/30 dark:border-status-error/30 text-status-error dark:text-status-error',
     info:
-      'border-wedo-cyan/30 dark:border-wedo-cyan/30 text-wedo-cyan-dark dark:text-wedo-cyan',
+      'border-wedo-cyan/30 dark:border-wedo-cyan/30 text-wedo-cyan-text dark:text-wedo-cyan',
   },
   muted: 'text-lia-text-tertiary dark:text-lia-text-tertiary',
 } as const
@@ -787,8 +795,8 @@ export function getScoreColor(score: number, type: 'lia' | 'wsi' = 'lia'): {
     // `lib/wsi/visual.ts` — aqui mantemos a versão simplificada de 3 níveis
     // só para compat com call-sites legados que usam `getScoreColor(_, 'wsi')`.
     // 3-tier WSI 0-10: ver `lib/wsi/visual.ts` (WSI_VISUAL_3TIER).
-    if (score >= 7.5) return { text: 'text-status-success', bg: 'bg-status-success/10', border: 'border-status-success/30' }
-    if (score >= 6.0) return { text: 'text-status-warning', bg: 'bg-status-warning/10', border: 'border-status-warning/30' }
+    if (score >= WSI_VISUAL_3TIER.green) return { text: 'text-status-success', bg: 'bg-status-success/10', border: 'border-status-success/30' }
+    if (score >= WSI_VISUAL_3TIER.yellow) return { text: 'text-status-warning', bg: 'bg-status-warning/10', border: 'border-status-warning/30' }
     return { text: 'text-status-error', bg: 'bg-status-error/10', border: 'border-status-error/30' }
   }
   

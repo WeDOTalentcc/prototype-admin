@@ -100,7 +100,7 @@ class VoiceChannelAdapter(ChannelAdapter):
         cleaned = re.sub(r"[\s\-\(\)]", "", contact)
         return bool(self._PHONE_REGEX.match(cleaned))
 
-    async def is_available(self) -> bool:
+    async def is_available(self, company_id: str | None = None, db: "Any | None" = None) -> bool:
         """At least one of Twilio (PSTN) or Gemini Live (VoIP) must be configured."""
         twilio_ok = False
         gemini_ok = False

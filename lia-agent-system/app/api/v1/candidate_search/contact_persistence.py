@@ -51,6 +51,7 @@ from ._shared import (
 )
 from app.domains.credits.services.credit_service import CreditService, get_credit_service
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 
 router = APIRouter()
 
@@ -168,6 +169,6 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await db.rollback()
         logger.error(f"Error persisting revealed contact: {e}")
-        raise HTTPException(status_code=500, detail=f"Persist failed: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 

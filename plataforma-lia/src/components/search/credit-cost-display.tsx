@@ -112,7 +112,7 @@ export function CreditCostDisplay({
             </div>
           )}
 
-          <div className="flex items-center justify-between text-wedo-cyan">
+          <div className="flex items-center justify-between text-lia-text-secondary">
             <span className="flex items-center gap-1">
               <Mail className="w-3 h-3" />
               Enriquecimento Apify

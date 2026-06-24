@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import React, { useState, useEffect } from "react"
 import { useTranslations } from "next-intl"
 import { useAiPersona } from "@/hooks/company/use-ai-persona"
@@ -16,7 +17,6 @@ import {
   textStyles, cardStyles, badgeStyles, buttonStyles, inputStyles, formStyles
 } from "@/lib/design-tokens"
 import { toast } from "@/lib/toast"
-import { TabSectionHeader } from "@/components/pages-agent-studio/TabSectionHeader"
 
 interface DigitalTwin {
   id: string
@@ -54,17 +54,6 @@ interface TwinEvaluation {
 // (4 cards horizontais "Passo 1-4"), e marketing copy ("DIFERENCIAL", "Unico no mercado",
 // "globalmente", "built-in"). Vide CLAUDE.md "Quiet Operator" + memory
 // project_white_label_ai_assistant.
-export function DigitalTwinHeader() {
-  const t = useTranslations("agents.studio.twins")
-
-  return (
-    <TabSectionHeader
-      title={t("headerTitle")}
-      subtitle={t("subheader")}
-    />
-  )
-}
-
 interface DigitalTwinEmptyStateProps {
   onCreateTwin: () => void
 }
@@ -110,6 +99,9 @@ type ScanPreview = {
 }
 
 export function CreateDigitalTwinModal({ isOpen, onClose, onCreated }: CreateDigitalTwinModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('create-digital-twin', isOpen)
+
   const t = useTranslations("agents.studio.twins.createModal")
   const [step, setStep] = useState<"select" | "scanning" | "preview">("select")
   const [specialists, setSpecialists] = useState<Array<{ id: string; name: string; email: string; role: string }>>([])
@@ -309,13 +301,13 @@ export function CreateDigitalTwinModal({ isOpen, onClose, onCreated }: CreateDig
 
             {preview.decisions_found === 0 ? (
               <div className="rounded-md bg-wedo-orange/10 border border-wedo-orange/30 p-3">
-                <p className="text-sm text-wedo-orange font-medium">{t("preview.noDataTitle")}</p>
-                <p className="text-xs text-wedo-orange">{t("preview.noDataDesc")}</p>
+                <p className="text-sm text-wedo-orange-text font-medium">{t("preview.noDataTitle")}</p>
+                <p className="text-xs text-wedo-orange-text">{t("preview.noDataDesc")}</p>
               </div>
             ) : (
               <>
                 {!preview.has_enough && (
-                  <p className="text-xs text-wedo-orange">{t("preview.lowDataWarning", { count: preview.decisions_found })}</p>
+                  <p className="text-xs text-wedo-orange-text">{t("preview.lowDataWarning", { count: preview.decisions_found })}</p>
                 )}
                 <div>
                   <p className={textStyles.bodySmall + " font-semibold mb-1.5"}>{t("preview.examplesTitle")}</p>
@@ -330,7 +322,7 @@ export function CreateDigitalTwinModal({ isOpen, onClose, onCreated }: CreateDig
                     ))}
                   </div>
                 </div>
-                <p className="text-[11px] italic text-lia-text-disabled">
+                <p className="text-[11px] italic text-lia-text-muted">
                   <Info className="w-3 h-3 inline mr-1" />
                   {t("preview.reasoningInferred")}
                 </p>
@@ -455,6 +447,9 @@ export function EvaluateWithTwinModal({
   isOpen,
   onClose,
 }: EvaluateWithTwinModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('evaluate-with-twin', isOpen)
+
   const t = useTranslations("agents.digitalTwin")
   const [evaluation, setEvaluation] = useState<TwinEvaluation | null>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -643,20 +638,19 @@ export function TwinsList({ onEvaluate, onCreateTwin, refreshKey = 0 }: TwinsLis
   }
 
   // P0 rewrite 2026-05-26 (Paulo): layout canonical idêntico Marketplace/Personalizados.
-  // Header (título + sub-header neutro) + CTA topo direito + grid cards OU empty state.
+  // CTA topo direito + grid cards OU empty state. Header (título + sub-header) é
+  // renderizado pelo pai (AgentStudioPage) via TabSectionHeader — não duplicar aqui.
   // SEM banner concorrente, SEM 4 cards "Passo 1-4" — esses blocos foram removidos.
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between gap-4">
-        <div className="space-y-2 max-w-2xl">
-          <h2 className={textStyles.h3}>{tTwins("headerTitle")}</h2>
-          <p className={textStyles.description}>{tTwins("subheader")}</p>
+      {!isLoading && twins.length > 0 && (
+        <div className="flex items-start justify-end gap-4">
+          <Button className={buttonStyles.primary} onClick={onCreateTwin}>
+            <Plus className="w-4 h-4 mr-1.5" />
+            {tTwins("createCta")}
+          </Button>
         </div>
-        <Button className={buttonStyles.primary} onClick={onCreateTwin}>
-          <Plus className="w-4 h-4 mr-1.5" />
-          {tTwins("createCta")}
-        </Button>
-      </div>
+      )}
 
       {isLoading ? (
         <p className={textStyles.caption}>{t("loadingTwins")}</p>
@@ -693,6 +687,9 @@ interface EvaluateCandidateWithTwinModalProps {
 export function EvaluateCandidateWithTwinModal({
   isOpen, onClose, candidateName, candidateProfile, jobContext,
 }: EvaluateCandidateWithTwinModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('evaluate-candidate-with-twin', isOpen)
+
   const t = useTranslations("agents.studio.twins.evaluateCandidate")
   const [twins, setTwins] = useState<Array<{ id: string; twin_name: string }>>([])
   const [twinId, setTwinId] = useState("")
@@ -789,7 +786,7 @@ export function EvaluateCandidateWithTwinModal({
                 <Chip className="bg-amber-50 text-amber-700">{t("fairnessFlagged")}</Chip>
               )}
               {evaluation.needs_manual_review && (
-                <p className="text-xs text-wedo-orange">{t("needsReview")}</p>
+                <p className="text-xs text-wedo-orange-text">{t("needsReview")}</p>
               )}
             </div>
           )}

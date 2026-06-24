@@ -25,7 +25,10 @@ const normalizeSearchSource = (source: string): SearchSource => {
 
 async function fetchFavoritesFromAPI(): Promise<Map<string, FavoriteCandidate>> {
   try {
-    const response = await fetch("/api/backend-proxy/candidates/favorites")
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 5000)
+    const response = await fetch("/api/backend-proxy/candidates/favorites", { signal: controller.signal })
+    clearTimeout(timeoutId)
     if (!response.ok) {
       return new Map()
     }
@@ -118,7 +121,6 @@ export function useTalentFunnel() {
         setSavedSearches(normalized)
       }
 
-      await new Promise((r) => setTimeout(r, 500))
       const apiFavorites = await fetchFavoritesFromAPI()
       if (apiFavorites.size > 0) {
         setFavorites(apiFavorites)

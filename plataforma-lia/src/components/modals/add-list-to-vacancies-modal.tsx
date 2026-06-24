@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import { useState, useEffect } from"react"
 import { liaApi, JobVacancy } from"@/services/lia-api"
 import { formatJobLocation } from "@/lib/jobs/location"
@@ -39,6 +40,9 @@ export function AddListToVacanciesModal({
   selectedCandidateIds, 
   onSuccess 
 }: AddListToVacanciesModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('add-list-to-vacancies', isOpen)
+
 const [vacancies, setVacancies] = useState<JobVacancy[]>([])
   const [selectedVacancyIds, setSelectedVacancyIds] = useState<Set<string>>(new Set())
   const [searchTerm, setSearchTerm] = useState('')
@@ -59,7 +63,7 @@ const [vacancies, setVacancies] = useState<JobVacancy[]>([])
       const response = await liaApi.listJobVacancies('open', 0, 100)
       setVacancies(response.items || [])
     } catch (error) {
-      toast.error("Erro ao carregar vagas")
+      toast.error("Erro ao carregar vagas", { description: "Verifique sua conexão e reabra o modal." })
     } finally {
       setIsLoading(false)
     }
@@ -108,7 +112,7 @@ const [vacancies, setVacancies] = useState<JobVacancy[]>([])
       onSuccess?.()
       onClose()
     } catch (error) {
-      toast.error("Erro ao adicionar às vagas")
+      toast.error("Erro ao adicionar às vagas", { description: "Verifique sua conexão e tente novamente." })
     } finally {
       setIsSubmitting(false)
     }
@@ -193,7 +197,7 @@ const [vacancies, setVacancies] = useState<JobVacancy[]>([])
             </div>
           ) : vacancies.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
-              <Briefcase className="w-10 h-10 text-lia-text-disabled mb-3" />
+              <Briefcase className="w-10 h-10 text-lia-text-muted mb-3" />
               <p className="text-xs text-lia-text-primary" aria-live="polite" aria-atomic="true">Nenhuma vaga aberta encontrada</p>
               <p className="text-xs text-lia-text-secondary mt-1" aria-live="polite" aria-atomic="true">
                 Crie uma vaga primeiro para poder adicionar candidatos
@@ -201,7 +205,7 @@ const [vacancies, setVacancies] = useState<JobVacancy[]>([])
             </div>
           ) : filteredVacancies.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
-              <Search className="w-10 h-10 text-lia-text-disabled mb-3" />
+              <Search className="w-10 h-10 text-lia-text-muted mb-3" />
               <p className="text-xs text-lia-text-primary" aria-live="polite" aria-atomic="true">Nenhuma vaga encontrada</p>
               <p className="text-xs text-lia-text-secondary mt-1">
                 Tente buscar com outros termos

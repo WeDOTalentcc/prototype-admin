@@ -6,6 +6,7 @@ import {
 } from "@/components/ui/chat-workflow-reels";
 import type { ChatContextType } from "@/contexts/lia-float-context";
 import { cn } from "@/lib/utils";
+import { useDynamicGreeting } from "@/hooks/ui/use-dynamic-greeting";
 import { Brain, Building, FileSpreadsheet, Globe } from "lucide-react";
 import { useTranslations } from "next-intl";
 import React from "react";
@@ -42,6 +43,7 @@ export function UnifiedChatEmptyState({
   const isCompact = mode === "sidebar" || mode === "floating";
   const t = useTranslations("chat");
   const tSettings = useTranslations("chat.emptyState.settings");
+  const greeting = useDynamicGreeting("chat", t("greeting"));
 
   if (contextType === "settings_config") {
     return (
@@ -90,7 +92,7 @@ export function UnifiedChatEmptyState({
                 onClick={() => onSuggestionClick(command)}
                 className="flex items-center gap-3 p-3 rounded-md text-left border border-lia-border-subtle bg-lia-bg-primary hover:bg-lia-bg-secondary hover:border-wedo-cyan/30 transition-all"
               >
-                <div className="p-1.5 rounded-md bg-wedo-cyan/10 text-wedo-cyan flex-shrink-0">
+                <div className="p-1.5 rounded-md bg-wedo-cyan/10 text-wedo-cyan-text flex-shrink-0">
                   <chip.icon className="w-4 h-4" />
                 </div>
                 <span className="text-sm font-medium text-lia-text-primary">
@@ -129,7 +131,7 @@ export function UnifiedChatEmptyState({
           isCompact ? "text-base" : "text-xl",
         )}
       >
-        {t("greeting")}
+        {greeting}
       </h2>
 
       <div

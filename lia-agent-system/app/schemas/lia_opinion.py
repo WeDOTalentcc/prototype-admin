@@ -112,6 +112,7 @@ class LiaOpinionCompact(BaseModel):
     id: UUID
     opinion_type: str
     source: str
+    score_breakdown: dict[str, Any] = Field(default_factory=dict)
     score: float | None = None
     wsi_score: float | None = None
     recommendation: str | None = None

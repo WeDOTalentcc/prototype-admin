@@ -106,6 +106,8 @@ interface CVPreviewProps {
   jobVacancies?: JobVacancy[]
 }
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
+
 export function CVPreview({
   isOpen,
   onClose,
@@ -113,6 +115,8 @@ export function CVPreview({
   onConfirm,
   jobVacancies = [],
 }: CVPreviewProps) {
+  // P0-2 (2026-06-18): notify LIA which modal is open
+  useLiaModalTracking('cv-preview', isOpen)
   const [editedCV, setEditedCV] = useState<ParsedCV | null>(null)
   const [tags, setTags] = useState<string[]>([])
   const [newTag, setNewTag] = useState("")
@@ -217,7 +221,7 @@ export function CVPreview({
   const getConfidenceColor = (score: number) => {
     if (score >= 0.8) return"text-status-success bg-status-success/15"
     if (score >= 0.6) return"text-status-warning bg-status-warning/15"
-    return"text-wedo-orange bg-wedo-orange/15"
+    return"text-wedo-orange-text bg-wedo-orange/15"
   }
 
   const getConfidenceLabel = (score: number) => {

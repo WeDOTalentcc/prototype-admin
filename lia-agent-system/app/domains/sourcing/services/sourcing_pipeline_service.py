@@ -19,15 +19,18 @@ from app.domains.candidates.repositories.candidate_repository import CandidateRe
 from app.domains.interview_scheduling.repositories.interview_repository import (
     InterviewRepository,
 )
+from app.domains.candidates.repositories.vacancy_candidate_repository import (
+    VacancyCandidateRepository,
+)
 from app.domains.job_management.repositories.job_vacancy_crud_repository import (
     JobVacancyCRUDRepository,
 )
-from app.domains.notifications.repositories.alert_repository import AlertRepository
+from app.repositories.alert_repository import AlertRepository
 from app.domains.sourcing.services.pearch_service import pearch_service
 from app.shared.compliance.audit_service import audit_service
 from app.shared.compliance.fairness_guard import FairnessGuard
 from app.services.notification_service import notification_service
-from app.domains.tasks.repositories.tasks_repository import TasksRepository
+from app.repositories.tasks_repository import TasksRepository
 from lia_models.alert import Alert, AlertSeverity, AlertStatus, AlertType
 from lia_models.candidate import Candidate
 from lia_models.interview import Interview
@@ -750,7 +753,24 @@ class SourcingPipelineService:
             
             db.add(interview)
             added_count += 1
-            
+
+            # P1-4: criar VacancyCandidate para retroalimentar lia_score pos-triagem.
+            # Fail-soft: falha no VC nao aborta a adicao do candidato (Interview já foi feito).
+            try:
+                vc_repo = VacancyCandidateRepository(db)
+                await vc_repo.create_sourced(
+                    vacancy_id=str(job.id),
+                    candidate_id=str(candidate.id),
+                    company_id=str(getattr(job, "company_id", "") or ""),
+                    lia_score=match_score,
+                    status="sourced",
+                    stage="initial",
+                    source="local",
+                    origin="pipeline",
+                )
+            except Exception as _vc_exc:
+                logger.warning("[P1-4] VacancyCandidate nao criado (fail-soft): %s", _vc_exc)
+
             candidate.updated_at = datetime.utcnow()
         
         if added_count > 0:
@@ -832,7 +852,25 @@ class SourcingPipelineService:
             
             db.add(interview)
             added_count += 1
-        
+
+            # P1-4: criar VacancyCandidate para candidato sourced via Pearch.
+            # Fail-soft: falha no VC nao aborta a adicao.
+            try:
+                vc_repo_pearch = VacancyCandidateRepository(db)
+                _pearch_lia_score = data.get("match_score") if isinstance(data, dict) else None
+                await vc_repo_pearch.create_sourced(
+                    vacancy_id=str(job.id),
+                    candidate_id=str(candidate.id),
+                    company_id=str(getattr(job, "company_id", "") or ""),
+                    lia_score=_pearch_lia_score,
+                    status="sourced",
+                    stage="initial",
+                    source="pearch",
+                    origin="pipeline",
+                )
+            except Exception as _vc_pearch_exc:
+                logger.warning("[P1-4] VacancyCandidate pearch nao criado (fail-soft): %s", _vc_pearch_exc)
+
         if added_count > 0:
             await db.commit()
         

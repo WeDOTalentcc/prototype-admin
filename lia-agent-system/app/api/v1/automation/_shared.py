@@ -44,6 +44,12 @@ def get_email_service():
     return _canon_factory()
 
 
+def get_mailgun_email_service():
+    """Return MailgunEmailService singleton (send_email(to_email, subject, body))."""
+    from app.domains.communication.services.email_service import get_mailgun_email_service as _mailgun_factory
+    return _mailgun_factory()
+
+
 def get_whatsapp_service():
     """Return canonical WhatsAppService singleton."""
     from app.domains.communication.services.whatsapp_service import whatsapp_service
@@ -222,7 +228,6 @@ async def validate_multi_tenancy(
     from app.models.job_vacancy import JobVacancy
 
 # RAILS-DEPRECATED: This endpoint manages Rails-owned entities (candidates/jobs/applies/users).
-# Direct DB calls will be replaced by RailsAdapter after ats-api-rails handoff.
 # See: app/domains/integrations_hub/services/rails_adapter.py
     
     vacancy_result = await db.execute(

@@ -35,7 +35,7 @@ const JobsHeader = memo(function JobsHeader({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <Briefcase className="h-5 w-5 text-lia-text-disabled" />
+            <Briefcase className="h-5 w-5 text-lia-text-muted" />
             <h1 className="text-lg font-semibold text-lia-text-primary">{t('pageTitle')}</h1>
           </div>
 

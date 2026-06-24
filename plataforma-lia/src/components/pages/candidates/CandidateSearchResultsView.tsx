@@ -1,13 +1,14 @@
 "use client"
 
-import React from "react"
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
+import React, { useState, useCallback } from "react"
 import { useTranslations } from "next-intl"
 import { SearchResultsHeader } from "./SearchResultsHeader"
 import { CrossTabFilterBanner } from "./CrossTabFilterBanner"
 import { ViewingListBanner } from "./ViewingListBanner"
 import { ColumnConfigSidebar } from "./ColumnConfigSidebar"
 import { BulkActionsBar } from "@/components/ui/bulk-actions-bar"
-import { Briefcase, List, Share2, Mail, ClipboardCheck, Star, EyeOff, Database } from "lucide-react"
+import { Briefcase, List, Share2, Mail, ClipboardCheck, Star, EyeOff, Database, Eye, Tag, Download } from "lucide-react"
 import { CandidatesFilterPanel } from "./CandidatesFilterPanel"
 import { SearchControlsBar } from "./SearchControlsBar"
 import { ActiveFiltersBadge } from "./ActiveFiltersBadge"
@@ -18,6 +19,10 @@ import type { TableFilters } from "@/hooks/candidates/use-candidate-filters"
 import type { ParsedEntities } from "@/components/search/smart-search-input"
 import type { TableColumn } from "./CandidateSearchResultsView.types"
 import { toast } from "sonner"
+import { bulkExport } from '@/services/lia-api/bulk-api'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 
 export interface CandidateSearchResultsViewProps {
   // Search query state
@@ -37,6 +42,7 @@ export interface CandidateSearchResultsViewProps {
   candidates: Candidate[]
   onShareSearch: () => void
   onBulkEmail: () => void
+  onBulkReveal: () => void
   onBulkWSIScreening: () => void
   onToggleFavoriteBatch: () => void
   onHideBatch: () => void
@@ -170,6 +176,7 @@ export function CandidateSearchResultsView({
   candidates,
   onShareSearch,
   onBulkEmail,
+  onBulkReveal,
   onBulkWSIScreening,
   onToggleFavoriteBatch,
   onHideBatch,
@@ -269,6 +276,94 @@ export function CandidateSearchResultsView({
   onRetry,
 }: CandidateSearchResultsViewProps) {
   const t = useTranslations('candidates')
+  const [showTagDialog, setShowTagDialog] = useState<'add' | 'remove' | null>(null)
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('tag-dialog', !!showTagDialog)
+  const [tagInput, setTagInput] = useState('')
+  const [isTagLoading, setIsTagLoading] = useState(false)
+  const [isExporting, setIsExporting] = useState(false)
+
+  const handleBulkExport = useCallback(async () => {
+    setIsExporting(true)
+    try {
+      if (selectedCandidatesForBatch.size > 0) {
+        // Export por IDs selecionados manualmente
+        const result = await bulkExport({
+          candidate_ids: Array.from(selectedCandidatesForBatch),
+          format: 'xlsx',
+        })
+        if ('blob' in result) {
+          const url = URL.createObjectURL(result.blob)
+          const a = document.createElement('a')
+          a.href = url
+          a.download = `candidatos-export.${result.formatFallback ? 'csv' : 'xlsx'}`
+          document.body.appendChild(a)
+          a.click()
+          document.body.removeChild(a)
+          URL.revokeObjectURL(url)
+          if (result.formatFallback) {
+            toast.warning(t('results.exportFallback'))
+          } else {
+            toast.success(t('results.exportSuccess'))
+          }
+        }
+      } else {
+        // GAP-03-009: Export por filtros ativos (sem selecao manual)
+        const res = await fetch('/api/backend-proxy/candidates/export-by-filters', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sort_by: sortBy, sort_order: sortOrder }),
+        })
+        if (!res.ok) throw new Error(await res.text())
+        const blob = await res.blob()
+        const total = res.headers.get('X-Export-Total') || '0'
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = 'candidatos-filtros.csv'
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
+        toast.success(t('results.exportSuccess'), { description: total + ' candidatos exportados' })
+      }
+    } catch (err) {
+      toast.error(t('results.exportError'))
+    } finally {
+      setIsExporting(false)
+    }
+  }, [selectedCandidatesForBatch, sortBy, sortOrder, t])
+
+  // Critérios para QualificationMatrixCard: prefere filtros de tabela ativos;
+  // senão usa os critérios parseados da última busca natural.
+  const previewSearchCriteria: Record<string, unknown> | null = (() => {
+    if (tableFilters.skills.length || tableFilters.seniorityLevels.length || tableFilters.locations.length) {
+      return {
+        required_skills: tableFilters.skills,
+        seniority_levels: tableFilters.seniorityLevels,
+        locations: tableFilters.locations,
+      }
+    }
+    if (
+      lastSearchEntities &&
+      (lastSearchEntities.skills?.length ||
+        lastSearchEntities.location ||
+        lastSearchEntities.seniority ||
+        lastSearchEntities.job_title ||
+        lastSearchEntities.years_experience)
+    ) {
+      const rawYears = lastSearchEntities.years_experience
+      const minYears = rawYears ? parseInt(rawYears, 10) : undefined
+      return {
+        required_skills: lastSearchEntities.skills ?? [],
+        seniority_levels: lastSearchEntities.seniority ? [lastSearchEntities.seniority] : [],
+        locations: lastSearchEntities.location ? [lastSearchEntities.location] : [],
+        ...(lastSearchEntities.job_title ? { titles: [lastSearchEntities.job_title] } : {}),
+        ...(minYears && !isNaN(minYears) ? { min_years_experience: minYears } : {}),
+      }
+    }
+    return null
+  })()
 
   return (
     <div data-testid="candidate-search-results-view" className="flex flex-col h-[calc(100vh-9rem)] gap-2">
@@ -346,6 +441,12 @@ export function CandidateSearchResultsView({
             onClick: onBulkEmail,
           },
           {
+            id: 'reveal_contacts',
+            label: `Revelar (${selectedCandidatesForBatch.size})`,
+            icon: <Eye className="w-3.5 h-3.5 text-lia-text-secondary" />,
+            onClick: onBulkReveal,
+          },
+          {
             id: 'wsi_screening',
             label: t('results.wsiScreening'),
             icon: <ClipboardCheck className="w-3.5 h-3.5 text-lia-text-secondary" />,
@@ -378,6 +479,27 @@ export function CandidateSearchResultsView({
             disabled: isSavingToBase,
             loading: isSavingToBase,
             hidden: !(selectedPearchCount > 0),
+          },
+          {
+            id: 'export',
+            label: t('results.export'),
+            icon: <Download className="w-3.5 h-3.5 text-lia-text-secondary" />,
+            onClick: handleBulkExport,
+            disabled: isExporting,
+            loading: isExporting,
+            loadingLabel: t('results.exporting'),
+          },
+          {
+            id: 'add_tags',
+            label: t('results.addTags'),
+            icon: <Tag className="w-3.5 h-3.5 text-lia-text-secondary" />,
+            onClick: () => { setTagInput(''); setShowTagDialog('add') },
+          },
+          {
+            id: 'remove_tags',
+            label: t('results.removeTags'),
+            icon: <Tag className="w-3.5 h-3.5 text-status-error" />,
+            onClick: () => { setTagInput(''); setShowTagDialog('remove') },
           },
         ]}
       />
@@ -504,8 +626,66 @@ export function CandidateSearchResultsView({
           onSendAgendamento={onSendAgendamento}
           onSendFeedback={onSendFeedback}
           setPreviewCandidate={setPreviewCandidate}
+          searchCriteria={previewSearchCriteria}
         />
       </div>
+
+      {/* Tag dialog */}
+      <Dialog open={showTagDialog !== null} onOpenChange={(open) => { if (!open) setShowTagDialog(null) }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {showTagDialog === 'add' ? t('results.addTagsDialog') : t('results.removeTagsDialog')}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-2">
+            <Input
+              placeholder={t('results.tagInputPlaceholder')}
+              value={tagInput}
+              onChange={(e) => setTagInput(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault() }}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowTagDialog(null)}>Cancelar</Button>
+            <Button
+              disabled={isTagLoading || !tagInput.trim()}
+              onClick={async () => {
+                const tags = tagInput.split(',').map(s => s.trim()).filter(Boolean)
+                if (!tags.length) return
+                const ids = Array.from(selectedCandidatesForBatch)
+                const endpoint = showTagDialog === 'add' ? '/api/backend-proxy/candidates/bulk/add-tags' : '/api/backend-proxy/candidates/bulk/remove-tags'
+                setIsTagLoading(true)
+                try {
+                  const res = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ candidate_ids: ids, tags }),
+                  })
+                  if (res.ok) {
+                    const data = await res.json()
+                    const count = data.successful ?? ids.length
+                    if (showTagDialog === 'add') {
+                      toast.success(t('results.tagsAdded'), { description: t('results.tagsAddedDesc', { count }) })
+                    } else {
+                      toast.success(t('results.tagsRemoved'), { description: t('results.tagsRemovedDesc', { count }) })
+                    }
+                    setShowTagDialog(null)
+                  } else {
+                    toast.error('Erro ao processar tags')
+                  }
+                } catch {
+                  toast.error('Erro ao processar tags')
+                } finally {
+                  setIsTagLoading(false)
+                }
+              }}
+            >
+              {isTagLoading ? 'Processando...' : (showTagDialog === 'add' ? t('results.addTags') : t('results.removeTags'))}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

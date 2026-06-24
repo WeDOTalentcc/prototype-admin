@@ -87,7 +87,7 @@ export function renderLiaScoreCell(candidate: Candidate, t?: TranslateFn): React
               {t ? t('scoreCells.noEvaluationDesc') : "Este candidato ainda não participou de nenhum processo seletivo."}
             </div>
             <div className="text-xs text-lia-text-primary mt-1.5">
-              {t ? t('scoreCells.liaScoreInfo') : "O Score LIA é calculado quando o candidato é avaliado para uma vaga específica."}
+              {t ? t('scoreCells.liaScoreInfo') : "O Score é calculado quando o candidato é avaliado para uma vaga específica."}
             </div>
             <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-lia-btn-primary-bg dark:border-t-lia-border-strong"></div>
           </div>

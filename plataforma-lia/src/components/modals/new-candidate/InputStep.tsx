@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
+import { useAiPersona } from "@/hooks/company/use-ai-persona"
 import {
   User, Mail, Phone, Upload, FileText,
   X, Brain, AlertCircle,
@@ -47,12 +48,14 @@ interface InputStepProps {
   handleSubmitManual: () => void
 
   error: string | null
+  fieldErrors: Record<string, string>
+  setFieldErrors: React.Dispatch<React.SetStateAction<Record<string, string>>>
 }
 
 function getFileIcon(filename: string) {
   const ext = filename.split('.').pop()?.toLowerCase()
   if (ext === 'pdf') return <FileText className="w-4 h-4 text-status-error" />
-  if (['doc', 'docx'].includes(ext || '')) return <FileText className="w-4 h-4 text-wedo-cyan-dark" />
+  if (['doc', 'docx'].includes(ext || '')) return <FileText className="w-4 h-4 text-wedo-cyan-text" />
   return <File className="w-4 h-4 text-lia-text-tertiary" />
 }
 
@@ -88,14 +91,18 @@ export function InputStep({
   canSubmitManual,
   handleSubmitManual,
   error,
+  fieldErrors,
+  setFieldErrors,
 }: InputStepProps) {
+  const { persona } = useAiPersona()
+  const personaName = persona?.name ?? "IA"
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   return (
     <div data-testid="new-candidate-input-step" className="space-y-4">
       <div className="flex">
         <button
-          onClick={() => { setActiveTab('cv'); setError(null) }}
+          onClick={() => { setActiveTab('cv'); setError(null); setFieldErrors({}) }}
           className={cn(
             "flex-1 py-2.5 text-xs font-medium transition-colors relative",
             activeTab === 'cv'
@@ -112,7 +119,7 @@ export function InputStep({
           )}
         </button>
         <button
-          onClick={() => { setActiveTab('linkedin'); setError(null) }}
+          onClick={() => { setActiveTab('linkedin'); setError(null); setFieldErrors({}) }}
           className={cn(
             "flex-1 py-2.5 text-xs font-medium transition-colors relative",
             activeTab === 'linkedin'
@@ -129,7 +136,7 @@ export function InputStep({
           )}
         </button>
         <button
-          onClick={() => { setActiveTab('manual'); setError(null) }}
+          onClick={() => { setActiveTab('manual'); setError(null); setFieldErrors({}) }}
           className={cn(
             "flex-1 py-2.5 text-xs font-medium transition-colors relative",
             activeTab === 'manual'
@@ -271,18 +278,23 @@ export function InputStep({
               id="linkedin-url"
               placeholder="https://linkedin.com/in/nome-do-usuario"
               value={linkedinUrl}
-              onChange={(e) => setLinkedinUrl(e.target.value)}
+              onChange={(e) => { setLinkedinUrl(e.target.value); setFieldErrors(prev => { const { linkedinUrl: _, ...rest } = prev; return rest }) }}
+              aria-invalid={!!fieldErrors.linkedinUrl}
               className="h-9 text-xs font-sans"
             />
-            <p className="text-xs text-lia-text-tertiary font-sans">
-              Ex: linkedin.com/in/joao-silva
-            </p>
+            {fieldErrors.linkedinUrl ? (
+              <p role="alert" className="text-xs text-status-error">{fieldErrors.linkedinUrl}</p>
+            ) : (
+              <p className="text-xs text-lia-text-tertiary font-sans">
+                Ex: linkedin.com/in/joao-silva
+              </p>
+            )}
           </div>
 
           <div className="flex items-center gap-2 p-2.5 bg-lia-bg-secondary/50 border border-lia-border-default rounded-xl">
             <Brain className="w-4 h-4 text-wedo-cyan" />
             <p className="text-xs text-lia-text-secondary font-sans" aria-live="polite" aria-atomic="true">
-              A LIA irá buscar os dados do candidato
+              {`${personaName} irá buscar os dados do candidato`}
             </p>
           </div>
 
@@ -312,27 +324,31 @@ export function InputStep({
             <div className="space-y-1.5">
               <Label htmlFor="manual-name" className="text-xs">Nome Completo *</Label>
               <div className="relative">
-                <User className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-lia-text-disabled" />
+                <User className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-lia-text-muted" />
                 <Input
                   id="manual-name"
                   placeholder="João Silva"
                   value={manualData.name}
-                  onChange={(e) => setManualData(prev => ({ ...prev, name: e.target.value }))}
+                  onChange={(e) => { setManualData(prev => ({ ...prev, name: e.target.value })); setFieldErrors(prev => { const { name: _, ...rest } = prev; return rest }) }}
+                  aria-invalid={!!fieldErrors.name}
                   className="pl-8 h-9 text-xs"
                 />
               </div>
+              {fieldErrors.name && (
+                <p role="alert" className="text-xs text-status-error">{fieldErrors.name}</p>
+              )}
             </div>
 
             <div className="space-y-1.5">
               <Label htmlFor="manual-email" className="text-xs">E-mail</Label>
               <div className="relative">
-                <Mail className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-lia-text-disabled" />
+                <Mail className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-lia-text-muted" />
                 <Input
                   id="manual-email"
                   type="email"
                   placeholder="joao.silva@email.com"
                   value={manualData.email}
-                  onChange={(e) => setManualData(prev => ({ ...prev, email: e.target.value }))}
+                  onChange={(e) => { setManualData(prev => ({ ...prev, email: e.target.value })); setFieldErrors(prev => { const { contact: _, ...rest } = prev; return rest }) }}
                   className="pl-8 h-9 text-xs"
                 />
               </div>
@@ -341,21 +357,25 @@ export function InputStep({
             <div className="space-y-1.5">
               <Label htmlFor="manual-phone" className="text-xs">Telefone</Label>
               <div className="relative">
-                <Phone className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-lia-text-disabled" />
+                <Phone className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-lia-text-muted" />
                 <Input
                   id="manual-phone"
                   placeholder="(11) 99999-9999"
                   value={manualData.phone}
-                  onChange={(e) => setManualData(prev => ({ ...prev, phone: e.target.value }))}
+                  onChange={(e) => { setManualData(prev => ({ ...prev, phone: e.target.value })); setFieldErrors(prev => { const { contact: _, ...rest } = prev; return rest }) }}
+                  aria-invalid={!!fieldErrors.contact}
                   className="pl-8 h-9 text-xs"
                 />
               </div>
+              {fieldErrors.contact && (
+                <p role="alert" className="text-xs text-status-error">{fieldErrors.contact}</p>
+              )}
             </div>
 
             <div className="space-y-1.5">
               <Label htmlFor="manual-linkedin" className="text-xs font-sans">LinkedIn (opcional)</Label>
               <div className="relative">
-                <Linkedin className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-lia-text-disabled" />
+                <Linkedin className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-lia-text-muted" />
                 <Input
                   id="manual-linkedin"
                   placeholder="linkedin.com/in/joao-silva"
@@ -367,7 +387,7 @@ export function InputStep({
               {manualData.linkedinUrl.includes('linkedin.com/in/') && (
                 <p className="text-micro text-lia-text-secondary flex items-center gap-1 font-sans">
                   <Brain className="w-3 h-3 text-wedo-cyan" />
-                  A LIA irá buscar os dados do candidato
+                  {`${personaName} irá buscar os dados do candidato`}
                 </p>
               )}
             </div>

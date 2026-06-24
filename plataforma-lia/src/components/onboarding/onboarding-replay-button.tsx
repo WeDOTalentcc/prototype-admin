@@ -9,6 +9,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu"
+import { useAiPersona } from "@/hooks/company/use-ai-persona"
 import {
   BookOpen, HelpCircle,
   Video, FileText, Heart
@@ -23,6 +24,8 @@ export function OnboardingReplayButton({
   variant = 'dropdown',
   className = ""
 }: OnboardingReplayButtonProps) {
+  const { persona } = useAiPersona()
+  const personaName = persona?.name ?? "IA"
   const [isHovered, setIsHovered] = useState(false)
 
   if (variant === 'minimal' || variant === 'button') {
@@ -112,7 +115,7 @@ export function OnboardingReplayButton({
           <div className="flex-1">
             <div className="font-medium">Feedback</div>
             <div className="text-xs text-lia-text-primary">
-              Ajude-nos a melhorar a LIA
+              {`Ajude-nos a melhorar ${personaName}`}
             </div>
           </div>
         </DropdownMenuItem>

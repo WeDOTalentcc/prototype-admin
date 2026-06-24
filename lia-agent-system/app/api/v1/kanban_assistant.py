@@ -12,6 +12,7 @@ from app.domains.recruiter_assistant.services.kanban_assistant_service import ka
 from fastapi import Depends
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+from app.shared.errors import LIAError
 
 logger = logging.getLogger(__name__)
 
@@ -110,12 +111,12 @@ async def kanban_assistant(request: KanbanAssistantRequest, company_id: str = De
         
     except ValueError as e:
         logger.error(f"Configuration error in Kanban assistant: {e}")
-        raise HTTPException(status_code=503, detail=f"AI service not configured: {str(e)}")
+        raise HTTPException(status_code=503, detail="Serviço de IA não configurado — contate o suporte")
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Kanban assistant failed: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 
 class StageMoveContext(BaseModel):

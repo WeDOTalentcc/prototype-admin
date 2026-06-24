@@ -15,6 +15,8 @@ import {
   Users, Wand2, X, Zap
 } from "lucide-react"
 import type { useSmartSearchCore } from "../hooks/useSmartSearchCore"
+import { useSearchSuggestions } from "../hooks/useSearchSuggestions"
+import { usePersonaName } from "@/hooks/company/usePersonaName"
 
 const SEARCH_SUGGESTIONS = [
   'Backend Sênior em São Paulo, 5+ anos em fintechs, Node.js e Python',
@@ -72,6 +74,10 @@ export const SSIModeNatural = React.memo(function SSIModeNatural(props: SSIModeN
     requireEmails, onRequireEmailsChange, requirePhoneNumbers, onRequirePhoneNumbersChange,
   } = props
 
+  const { suggestions: dynamicSuggestions } = useSearchSuggestions()
+  const personaName = usePersonaName()
+  const displaySuggestions = dynamicSuggestions.length > 0 ? dynamicSuggestions : SEARCH_SUGGESTIONS
+
   return (
     <div className="space-y-3">
       <div className="relative">
@@ -124,7 +130,7 @@ export const SSIModeNatural = React.memo(function SSIModeNatural(props: SSIModeN
                     className={cn(
                       "flex items-center justify-center p-1 rounded-md text-xs transition-colors",
                       searchSource === 'local'
-                        ? "bg-wedo-green/15 text-wedo-green"
+                        ? "bg-wedo-green/15 text-wedo-green-text"
                         : "text-lia-border-default hover:text-lia-text-tertiary"
                     )}
                   >
@@ -133,7 +139,7 @@ export const SSIModeNatural = React.memo(function SSIModeNatural(props: SSIModeN
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="!animate-none !duration-0">
                   <p className="text-xs font-medium">Seu banco de talentos</p>
-                  <p className="text-xs text-lia-text-disabled">Gratuito • Local</p>
+                  <p className="text-xs text-lia-text-muted">Gratuito • Local</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -148,7 +154,7 @@ export const SSIModeNatural = React.memo(function SSIModeNatural(props: SSIModeN
                       className={cn(
                         "flex items-center justify-center p-1 rounded-md text-xs transition-colors",
                         searchSource === 'hybrid'
-                          ? "bg-wedo-orange/15 text-wedo-orange"
+                          ? "bg-wedo-orange/15 text-wedo-orange-text"
                           : "text-lia-border-default hover:text-lia-text-tertiary"
                       )}
                     >
@@ -157,7 +163,7 @@ export const SSIModeNatural = React.memo(function SSIModeNatural(props: SSIModeN
                   </TooltipTrigger>
                   <TooltipContent side="bottom" className="!animate-none !duration-0">
                     <p className="text-xs font-medium">Expanda sua busca</p>
-                    <p className="text-xs text-lia-text-disabled" aria-live="polite" aria-atomic="true">Local + Global • 1 cred + $0.01 Apify/cand</p>
+                    <p className="text-xs text-lia-text-muted" aria-live="polite" aria-atomic="true">Local + Global • 1 cred + $0.01 Apify/cand</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -182,7 +188,7 @@ export const SSIModeNatural = React.memo(function SSIModeNatural(props: SSIModeN
                   </TooltipTrigger>
                   <TooltipContent side="bottom" className="!animate-none !duration-0">
                     <p className="text-xs font-medium">Alcance global</p>
-                    <p className="text-xs text-lia-text-disabled" aria-live="polite" aria-atomic="true">800M+ candidatos • 1 cred + $0.01 Apify/cand</p>
+                    <p className="text-xs text-lia-text-muted" aria-live="polite" aria-atomic="true">800M+ candidatos • 1 cred + $0.01 Apify/cand</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -203,7 +209,7 @@ export const SSIModeNatural = React.memo(function SSIModeNatural(props: SSIModeN
                           requireEmails
                             ? "bg-wedo-green/15 ring-1 ring-wedo-green"
                             : "hover:bg-lia-bg-tertiary"
-                        , requireEmails ? "text-wedo-green" : "text-lia-text-tertiary"
+                        , requireEmails ? "text-wedo-green-text" : "text-lia-text-tertiary"
                         )}
                       >
                         <Mail className="w-3.5 h-3.5" />
@@ -211,7 +217,7 @@ export const SSIModeNatural = React.memo(function SSIModeNatural(props: SSIModeN
                     </TooltipTrigger>
                     <TooltipContent side="bottom" className="!animate-none !duration-0">
                       <p className="text-xs font-medium">Apenas com Email</p>
-                      <p className="text-xs text-lia-text-disabled">{requireEmails ? 'Ativo ($0.01/cand)' : 'Clique para ativar ($0.01/cand)'}</p>
+                      <p className="text-xs text-lia-text-muted">{requireEmails ? 'Ativo ($0.01/cand)' : 'Clique para ativar ($0.01/cand)'}</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -227,7 +233,7 @@ export const SSIModeNatural = React.memo(function SSIModeNatural(props: SSIModeN
                           requirePhoneNumbers
                             ? "bg-wedo-green/15 ring-1 ring-wedo-green"
                             : "hover:bg-lia-bg-tertiary"
-                        , requirePhoneNumbers ? "text-wedo-green" : "text-lia-text-tertiary"
+                        , requirePhoneNumbers ? "text-wedo-green-text" : "text-lia-text-tertiary"
                         )}
                       >
                         <Phone className="w-3.5 h-3.5" />
@@ -235,7 +241,7 @@ export const SSIModeNatural = React.memo(function SSIModeNatural(props: SSIModeN
                     </TooltipTrigger>
                     <TooltipContent side="bottom" className="!animate-none !duration-0">
                       <p className="text-xs font-medium">Apenas com Telefone</p>
-                      <p className="text-xs text-lia-text-disabled">{requirePhoneNumbers ? 'Ativo ($0.01/cand)' : 'Clique para ativar ($0.01/cand)'}</p>
+                      <p className="text-xs text-lia-text-muted">{requirePhoneNumbers ? 'Ativo ($0.01/cand)' : 'Clique para ativar ($0.01/cand)'}</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -275,9 +281,9 @@ export const SSIModeNatural = React.memo(function SSIModeNatural(props: SSIModeN
         {/* Ghost Text Tab hint */}
         {ghostTextSuffix && !showAutocomplete && (
           <div
-            className="absolute -bottom-5 right-3 flex items-center gap-1 text-micro text-lia-text-tertiary"
+            className="absolute bottom-2 right-3 flex items-center gap-1 text-micro text-lia-text-secondary data-[state=open]:animate-in data-[state=open]:fade-in-0 animate-in fade-in-0 duration-150"
           >
-            <kbd className="px-1 py-0.5 rounded-full bg-lia-bg-tertiary text-micro font-mono">Tab</kbd>
+            <kbd className="px-1.5 py-0.5 rounded bg-lia-bg-tertiary border border-lia-border-subtle text-micro font-mono text-lia-text-primary">Tab</kbd>
             <span>para aceitar</span>
           </div>
         )}
@@ -348,6 +354,7 @@ export const SSIModeNatural = React.memo(function SSIModeNatural(props: SSIModeN
                 item.icon === "code" ? Code :
                 item.icon === "briefcase" ? Briefcase :
                 item.icon === "map-pin" ? MapPin :
+                item.icon === "map" ? MapPin :
                 item.icon === "building" ? Building2 :
                 item.icon === "award" ? Award :
                 item.icon === "home" ? Building2 :
@@ -512,7 +519,7 @@ export const SSIModeNatural = React.memo(function SSIModeNatural(props: SSIModeN
                   </span>
                 </div>
                 <p className="text-micro text-lia-text-primary">
-                  Enquanto você descreve o perfil, a LIA analisa e sugere melhorias:
+                  Enquanto você descreve o perfil, {`${personaName} analisa e sugere melhorias:`}
                 </p>
                 <ul className="text-micro space-y-1 text-lia-text-primary">
                   <li className="flex items-start gap-1.5">
@@ -653,7 +660,7 @@ export const SSIModeNatural = React.memo(function SSIModeNatural(props: SSIModeN
             Sugestões:
           </span>
           <div className="flex items-center gap-2 flex-nowrap overflow-x-auto">
-            {SEARCH_SUGGESTIONS.map((suggestion) => (
+            {displaySuggestions.map((suggestion) => (
               <button
                 key={suggestion}
                 onClick={() => onChange(suggestion)}

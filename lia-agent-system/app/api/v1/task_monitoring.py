@@ -11,6 +11,7 @@ from app.shared.async_processing.task_persistence import TaskPersistenceService
 from app.shared.async_processing.task_queue import TaskPriority
 from app.shared.async_processing.task_scheduler import TaskScheduler
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 from app.shared.types import WeDoBaseModel
 from typing import Annotated
 from fastapi import Path
@@ -70,7 +71,7 @@ async def submit_task(request: TaskSubmitRequest, current_user: User = Depends(g
         raise
     except Exception as e:
         logger.error(f"Failed to submit task: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/stats", response_model=None)
@@ -83,7 +84,7 @@ async def get_stats(current_user: User = Depends(get_current_user_or_demo), comp
         raise
     except Exception as e:
         logger.error(f"Failed to get stats: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/history", response_model=None)
@@ -112,7 +113,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Failed to get task history: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/schedules", response_model=None)
@@ -131,7 +132,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Failed to list schedules: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/schedules", response_model=None)
@@ -158,7 +159,7 @@ async def create_schedule(request: ScheduleCreateRequest, current_user: User = D
         raise
     except Exception as e:
         logger.error(f"Failed to create schedule: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.delete("/schedules/{schedule_id}", response_model=None)
@@ -174,7 +175,7 @@ async def remove_schedule(schedule_id: Annotated[str, Path(pattern=DUAL_ID_PATH_
         raise
     except Exception as e:
         logger.error(f"Failed to remove schedule: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/dlq", response_model=None)
@@ -196,7 +197,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Failed to list DLQ: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/dlq/{dlq_id}/retry", response_model=None)
@@ -224,7 +225,7 @@ async def retry_dlq_entry(dlq_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTE
         raise
     except Exception as e:
         logger.error(f"Failed to retry DLQ entry {dlq_id}: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/{task_id}", response_model=None)
@@ -240,7 +241,7 @@ async def get_task_status(task_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATT
         raise
     except Exception as e:
         logger.error(f"Failed to get task status: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/", response_model=None)
@@ -268,7 +269,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Failed to list tasks: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.delete("/{task_id}", response_model=None)
@@ -290,6 +291,6 @@ async def cancel_task(task_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)
         raise
     except Exception as e:
         logger.error(f"Failed to cancel task: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 reorder_collection_before_item(router)

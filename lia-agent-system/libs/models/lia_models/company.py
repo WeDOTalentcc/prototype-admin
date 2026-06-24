@@ -92,6 +92,14 @@ class CompanyProfile(Base):
     
     employee_count = Column(Integer, nullable=True)
     revenue_range = Column(String(100), nullable=True)
+
+    # Modelos de contratacao que a empresa usa (CLT, PJ, Estagio, Temporario,
+    # Freelancer). Fonte company-wide para heranca na criacao de vaga (FASE 1,
+    # audit 2026-06-06). A vaga (JobVacancy.employment_type) escolhe UM desta lista.
+    employment_types = Column(ARRAY(String), nullable=False, server_default="{}", default=list)
+    # Contratacao primaria (default herdado pela vaga quando o recrutador nao
+    # especifica). E3 (audit 2026-06-06).
+    primary_employment_type = Column(String(50), nullable=True)
     
     is_active = Column(Boolean, default=True)
     # PR-B (Task #1016) — `is_default` precisa ser NOT NULL com default
@@ -160,7 +168,18 @@ class Department(Base):
     order = Column(Integer, default=0)
     
     hiring_priority = Column(String(50), default="normal")
-    
+    color = Column(String(100), nullable=True)
+
+    # Defaults/template por departamento (work_model, pipeline_template_id,
+    # tech_stack, employment_types, ...). Cadeia de heranca: a criacao de vaga
+    # resolve departamento.defaults[campo] > empresa. JSONB extensivel sem
+    # migration por campo (FASE 1, audit 2026-06-06).
+    defaults = Column(JSONB, nullable=False, server_default="{}", default=dict)
+
+    # Filial / subsidiaria (Fase 2 matching 2026-06-18) -- migration 293.
+    subsidiary_name = Column(String(255), nullable=True)
+    subsidiary_cnpj = Column(String(18), nullable=True)
+
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
@@ -588,7 +607,10 @@ class Approver(Base):
     # NULL can_approve_above_amount = approver pode aprovar qualquer valor.
     department_id = Column(UUID(as_uuid=True), ForeignKey("departments.id", ondelete="SET NULL"), nullable=True, index=True)
     can_approve_above_amount = Column(Numeric(12, 2), nullable=True)
-    
+
+    # Sprint 2 (2026-06-21): 'platform' = usuario interno; 'email_link' = externo magic link.
+    approval_method = Column(String(20), nullable=False, default="email_link")
+
     is_active = Column(Boolean, default=True)
     
     created_at = Column(DateTime, default=datetime.utcnow)

@@ -360,7 +360,7 @@ class TeamsProactivityEngine:
                 new_candidates = (await db.execute(cands_q)).scalar() or 0
 
                 # Stalled pipelines (reuse existing check)
-                stalled = await self._find_stalled_pipelines(db, company_id)
+                stalled = await self._find_stalled_pipelines(company_id)
 
                 # Build digest card
                 from datetime import datetime as _dt
@@ -402,13 +402,14 @@ class TeamsProactivityEngine:
                 if not refs and company_id:
                     # Broader query — all refs for company
                     try:
-                        async for db2 in self._get_db():
+                        from sqlalchemy import text as _text
+                        from app.core.database import AsyncSessionLocal as _ASL
+                        async with _ASL() as db2:
                             result = await db2.execute(
-                                "SELECT DISTINCT service_url, conversation_id FROM teams_conversations WHERE company_id = :cid LIMIT 50",
+                                _text("SELECT DISTINCT service_url, conversation_id FROM teams_conversations WHERE company_id = :cid LIMIT 50"),
                                 {"cid": company_id}
                             )
-                            refs = [{"service_url": r.service_url, "conversation_id": r.conversation_id} for r in result]
-                            break
+                            refs = [{"service_url": r.service_url, "conversation_id": r.conversation_id} for r in result.fetchall()]
                     except Exception:
                         pass
 
@@ -429,3 +430,15 @@ class TeamsProactivityEngine:
 
 
 teams_proactivity_engine = TeamsProactivityEngine()
+
+
+async def _safe_teams_hook(coro_func, **kwargs):
+    # Dispara hook Teams sem propagar excecoes (fire-and-forget).
+    # Uso: asyncio.create_task(_safe_teams_hook(engine.on_candidate_applied, ...))
+    try:
+        await coro_func(**kwargs)
+    except Exception as _exc:
+        import logging as _log
+        _log.getLogger(__name__).warning(
+            "Teams hook falhou (ignorado): %s", _exc, exc_info=False
+        )

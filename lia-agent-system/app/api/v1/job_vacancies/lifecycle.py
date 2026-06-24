@@ -37,6 +37,7 @@ from app.domains.sourcing.services.sourcing_pipeline_service import sourcing_pip
 from app.domains.job_management.services.job_status_webhook_service import job_status_webhook_service
 from app.services.notification_service import NotificationChannel, NotificationType
 from app.shared.types import WeDoBaseModel
+from app.shared.vacancy_stage_validation import validate_stage_requirements
 from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
 
 router = APIRouter()
@@ -116,6 +117,60 @@ class SourcingStatusResponseV2(BaseModel):
     error: str | None = None
 
 
+
+# ─── Request Approval ─────────────────────────────────────────────────────────
+
+class RequestApprovalResponse(BaseModel):
+    success: bool
+    approvals_created: int
+    message: str
+
+
+@router.post("/job-vacancies/{job_id}/request-approval", response_model=RequestApprovalResponse)
+async def request_job_approval(
+    job_id: str = Path(..., pattern=DUAL_ID_PATH_PATTERN),
+    repo: JobVacancyLifecycleRepository = Depends(get_job_vacancy_lifecycle_repo),
+    current_user: User = Depends(get_current_active_user),
+    company_id: str = Depends(require_company_id),
+) -> RequestApprovalResponse:
+    """
+    Trigger approval flow for a vacancy.
+    Called by wizard (chat LIA) and by the manual vacancy form.
+    Single canonical trigger — delegates to approval_trigger_service.
+    """
+    from app.domains.job_creation.services.approval_trigger_service import (
+        trigger_approval_if_required,
+    )
+
+    company_id = get_user_company_id(current_user)
+    job = await repo.get_vacancy_by_id_and_company(job_id, company_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="Vaga não encontrada")
+
+    requested_by_name = getattr(current_user, "name", None) or str(getattr(current_user, "email", "Recrutador"))
+    requested_by_email = str(getattr(current_user, "email", ""))
+
+    approvals = await trigger_approval_if_required(
+        job,
+        requested_by_name=requested_by_name,
+        requested_by_email=requested_by_email,
+        db=repo.db,
+    )
+
+    if not approvals:
+        return RequestApprovalResponse(
+            success=True,
+            approvals_created=0,
+            message="Nenhum aprovador configurado para esta empresa. Vaga pode ser publicada diretamente.",
+        )
+
+    return RequestApprovalResponse(
+        success=True,
+        approvals_created=len(approvals),
+        message=f"Aprovação solicitada para {len(approvals)} aprovador(es). Aguardando aprovação antes de publicar.",
+    )
+
+
 # ─── Publish (job-vacancies prefix) ──────────────────────────────────────────
 
 @router.post("/job-vacancies/{job_id}/publish", response_model=JobPublishResponse)
@@ -131,6 +186,37 @@ company_id: str = Depends(require_company_id)):
     job = await repo.get_vacancy_by_id_and_company(job_id, company_id)
     if not job:
         raise HTTPException(status_code=404, detail="Vaga não encontrada")
+
+    # GAP-06-002: validate required fields before publishing
+    missing_fields = validate_stage_requirements(job, "Ativa")
+    if missing_fields:
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "error": "missing_required_fields",
+                "missing_fields": missing_fields,
+                "target_stage": "publicada",
+                "message": "Campos obrigatórios faltando para publicação: " + ", ".join(missing_fields),
+            },
+        )
+
+    # Sprint 1 gate (2026-06-21): block publish if vacancy awaiting business approval
+    from app.domains.job_creation.services.approval_trigger_service import (
+        ApprovalPendingError,
+        assert_can_publish,
+    )
+    try:
+        await assert_can_publish(job, db=repo.db)
+    except ApprovalPendingError as exc:
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "error": "approval_pending",
+                "approver_name": exc.approver_name,
+                "approver_email": exc.approver_email,
+                "message": str(exc),
+            },
+        )
 
     old_status = job.status
     await repo.publish_vacancy(job)
@@ -154,7 +240,9 @@ company_id: str = Depends(require_company_id)):
             new_status="Ativa",
             previous_status=old_status,
             changed_by=changed_by,
-            job_title=job.title
+            job_title=job.title,
+            # Guard: signal to automation handler that sourcing is handled inline
+            sourcing_already_triggered=request.trigger_sourcing,
         )
     except Exception as e:
         logger.warning(f"Event dispatch failed for job publish: {e}")
@@ -212,7 +300,7 @@ company_id: str = Depends(require_company_id)):
     )
 
     if not search_result.get("success"):
-        raise HTTPException(status_code=500, detail=search_result.get("error", "Erro na busca global"))
+        raise LIAInternalError(search_result.get("error", "Erro na busca global"))
 
     return ConfirmGlobalSearchResponse(
         success=True,
@@ -262,7 +350,8 @@ async def _send_candidates_added_notification(
     job_title: str,
     candidates_added: int,
     recruiter_email: str,
-    is_global: bool = False
+    is_global: bool = False,
+    company_id: str | None = None,
 ) -> None:
     """Send notification when candidates are added to pipeline."""
     try:
@@ -297,9 +386,19 @@ async def _send_candidates_added_notification(
             f"Aprove para iniciar triagem."
         )
 
+        # Resolve per-tenant webhook URL so DB-configured URL drives delivery when env var is absent
+        resolved_webhook_url: str | None = None
+        if company_id:
+            try:
+                from app.api.v1.integrations import _get_tenant_teams_webhook_url
+                resolved_webhook_url, _ = await _get_tenant_teams_webhook_url(company_id, db)
+            except Exception as _url_err:
+                logger.debug("Could not resolve per-tenant Teams URL: %s", _url_err)
+
         await teams_service.send_message(
             text=teams_message,
-            title=f"Pipeline Atualizado - {job_title}"
+            title=f"Pipeline Atualizado - {job_title}",
+            webhook_url=resolved_webhook_url,
         )
 
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
@@ -373,6 +472,37 @@ company_id: str = Depends(require_company_id)):
         if not job_vacancy:
             raise HTTPException(status_code=404, detail="Job vacancy not found")
 
+        # GAP-06-002: validate required fields before publishing
+        missing_fields = validate_stage_requirements(job_vacancy, "Ativa")
+        if missing_fields:
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "error": "missing_required_fields",
+                    "missing_fields": missing_fields,
+                    "target_stage": "publicada",
+                    "message": "Campos obrigatórios faltando para publicação: " + ", ".join(missing_fields),
+                },
+            )
+
+        # Sprint 1 gate (2026-06-21): block publish if vacancy awaiting business approval
+        from app.domains.job_creation.services.approval_trigger_service import (
+            ApprovalPendingError,
+            assert_can_publish,
+        )
+        try:
+            await assert_can_publish(job_vacancy, db=repo.db)
+        except ApprovalPendingError as exc:
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "error": "approval_pending",
+                    "approver_name": exc.approver_name,
+                    "approver_email": exc.approver_email,
+                    "message": str(exc),
+                },
+            )
+
         old_status = job_vacancy.status
         await repo.publish_vacancy_v2(job_vacancy)
 
@@ -406,7 +536,8 @@ company_id: str = Depends(require_company_id)):
                 job_id=str(job_id),
                 job_title=job_vacancy.title,
                 candidates_added=total_added,
-                recruiter_email=job_vacancy.recruiter_email or current_user.email
+                recruiter_email=job_vacancy.recruiter_email or current_user.email,
+                company_id=user_company,
             )
 
         message = f"Vaga '{job_vacancy.title}' publicada com sucesso!"
@@ -429,7 +560,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error publishing job vacancy: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.post("/jobs/{job_id}/confirm-global-search", response_model=ConfirmGlobalSearchResponseV2)
@@ -468,7 +599,8 @@ company_id: str = Depends(require_company_id)):
                 job_title=job_vacancy.title,
                 candidates_added=search_result["candidates_added"],
                 recruiter_email=job_vacancy.recruiter_email or current_user.email,
-                is_global=True
+                is_global=True,
+                company_id=user_company,
             )
 
         message = ""
@@ -490,7 +622,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error confirming global search: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.get("/jobs/{job_id}/sourcing-status", response_model=SourcingStatusResponseV2)
@@ -539,7 +671,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting sourcing status: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 # ─── Close vacancy ────────────────────────────────────────────────────────────
@@ -553,17 +685,18 @@ async def close_vacancy(
     activity_svc: ActivityService = Depends(get_activity_service),
     comm_svc: CommunicationService = Depends(get_communication_service),
 company_id: str = Depends(require_company_id)) -> dict[str, Any]:
-    """Close a vacancy after hiring a candidate."""
+    """Close a vacancy. Pass close_reason='not_filled' when no hire was made."""
     try:
         company_id = get_user_company_id(current_user)
         data = await request.json()
 
         hired_candidate_id = data.get("hired_candidate_id")
+        close_reason = data.get("close_reason", "filled")
         hired_notification = data.get("hired_notification", {})
         other_notifications = data.get("other_notifications", {})
 
-        if not hired_candidate_id:
-            raise HTTPException(status_code=400, detail="hired_candidate_id is required")
+        if not hired_candidate_id and close_reason != "not_filled":
+            raise HTTPException(status_code=400, detail="hired_candidate_id is required when close_reason is 'filled'")
 
         vacancy = await repo.get_vacancy_by_uuid_str(vacancy_id)
 
@@ -657,7 +790,7 @@ company_id: str = Depends(require_company_id)) -> dict[str, Any]:
             await activity_svc.create_activity(
                 activity_type="vacancy_closed",
                 title=f"Vaga Fechada: {vacancy.title}",
-                description=f"Candidato contratado. {len(other_candidate_ids)} candidatos notificados.",
+                description=f"Candidato contratado. {len(other_candidate_ids)} candidatos notificados." if hired_candidate_id else f"Vaga encerrada sem contratação. {len(other_candidate_ids)} candidatos notificados.",
                 actor_id="system",
                 actor_name="LIA",
                 actor_type="system",
@@ -666,7 +799,8 @@ company_id: str = Depends(require_company_id)) -> dict[str, Any]:
                 extra_data={
                     "hired_candidate_id": hired_candidate_id,
                     "notified_count": len(other_candidate_ids),
-                    "company_id": company_id
+                    "company_id": company_id,
+                    "close_reason": close_reason
                 },
                 category="recruitment"
             )
@@ -678,6 +812,7 @@ company_id: str = Depends(require_company_id)) -> dict[str, Any]:
             "vacancy_id": vacancy_id,
             "status": "Concluída",
             "hired_candidate_id": hired_candidate_id,
+            "close_reason": close_reason,
             "notifications_sent": notifications_sent
         }
 
@@ -686,7 +821,7 @@ company_id: str = Depends(require_company_id)) -> dict[str, Any]:
     except Exception as e:
         logger.error(f"Error closing vacancy: {e}")
         await repo.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 # ─── Bulk operations ─────────────────────────────────────────────────────────
@@ -918,6 +1053,65 @@ company_id: str = Depends(require_company_id)):
     )
 
 
+
+
+@router.post("/job-vacancies/bulk/unarchive", response_model=BulkActionResponse)
+async def bulk_unarchive_job_vacancies(
+    request: BulkActionRequest,
+    repo: JobVacancyLifecycleRepository = Depends(get_job_vacancy_lifecycle_repo),
+    current_user: User = Depends(get_current_active_user), 
+company_id: str = Depends(require_company_id)):
+    """Restore archived job vacancies to Rascunho status."""
+    from app.domains.job_management.services.job_audit_service import job_audit_service
+
+    company_id = get_user_company_id(current_user)
+    changed_by = str(current_user.email) if hasattr(current_user, "email") else str(current_user.id)
+
+    successful = 0
+    failed = 0
+    errors: list[BulkActionError] = []
+
+    for job_id in request.job_ids:
+        try:
+            job = await repo.get_vacancy_by_id_and_company(job_id, company_id)
+            if not job:
+                errors.append(BulkActionError(job_id=str(job_id), error_message="Vaga nao encontrada"))
+                failed += 1
+                continue
+            if job.status != "Arquivada":
+                errors.append(BulkActionError(job_id=str(job_id), error_message="Vaga nao esta arquivada"))
+                failed += 1
+                continue
+            await repo.update_vacancy_status(job, "Rascunho")
+            await job_audit_service.log_update(
+                job_id=str(job_id),
+                changes={"status": {"old": "Arquivada", "new": "Rascunho"}},
+                changed_by=changed_by,
+                company_id=company_id,
+                db=repo.db,
+            )
+            await job_status_webhook_service.dispatch_status_change(
+                job_id=str(job_id),
+                old_status="Arquivada",
+                new_status="Rascunho",
+                company_id=company_id,
+                db=repo.db,
+                changed_by=changed_by,
+                job_title=job.title
+            )
+            successful += 1
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).error(f"Error unarchiving job {job_id}: {e}")
+            errors.append(BulkActionError(job_id=str(job_id), error_message=str(e)))
+            failed += 1
+
+    return BulkActionResponse(
+        total_requested=len(request.job_ids),
+        successful=successful,
+        failed=failed,
+        errors=errors
+    )
 @router.post("/job-vacancies/bulk/assign-recruiter", response_model=BulkActionResponse)
 async def bulk_assign_recruiter(
     request: BulkAssignRecruiterRequest,
@@ -1027,6 +1221,16 @@ company_id: str = Depends(require_company_id)):
                 errors.append(BulkActionError(
                     job_id=str(job_id),
                     error_message=f"Transição de status não permitida: '{old_status}' -> '{request.new_status}'"
+                ))
+                failed += 1
+                continue
+
+            # GAP-06-002: validate required fields before status transition
+            missing_fields = validate_stage_requirements(job, request.new_status)
+            if missing_fields:
+                errors.append(BulkActionError(
+                    job_id=str(job_id),
+                    error_message="Campos obrigatórios faltando para " + repr(request.new_status) + ": " + ", ".join(missing_fields)
                 ))
                 failed += 1
                 continue

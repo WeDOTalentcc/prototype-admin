@@ -104,7 +104,7 @@ export function StudioCardShell({
               <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                 {statusBadge}
                 {subtitle && (
-                  <span className="text-xs text-lia-text-disabled">{subtitle}</span>
+                  <span className="text-xs text-lia-text-muted">{subtitle}</span>
                 )}
               </div>
             )}

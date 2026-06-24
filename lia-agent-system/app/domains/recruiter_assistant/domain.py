@@ -138,7 +138,6 @@ class RecruiterAssistantDomain(ComplianceDomainPrompt):
             "compare_candidates": self._handle_compare_candidates,
             "stage_recommendation": self._handle_stage_recommendation,
             "proactive_alerts": self._handle_proactive_alerts,
-            "autonomous_actions": self._handle_autonomous_actions,
             "stakeholder_notify": self._handle_stakeholder_notify,
             "learning_insights": self._handle_learning_insights,
             "help_command": self._handle_help,
@@ -363,14 +362,6 @@ class RecruiterAssistantDomain(ComplianceDomainPrompt):
             except Exception:
                 summary["pending"]["vagas_sla_risco"] = 0
 
-        try:
-            from app.domains.recruiter_assistant.services.autonomous_actions_engine import autonomous_engine
-            executed = autonomous_engine.get_action_log(context.tenant_id or "")
-            today_actions = [a for a in executed if a.created_at.strftime("%Y-%m-%d") == today]
-            summary["activities"]["acoes_autonomas_executadas"] = len(today_actions)
-        except Exception:
-            summary["activities"]["acoes_autonomas_executadas"] = 0
-
         a = summary["activities"]
         p = summary["pending"]
 
@@ -390,7 +381,6 @@ class RecruiterAssistantDomain(ComplianceDomainPrompt):
             f"• **{a.get('candidatos_movidos', 0)}** candidatos atualizados\n"
             f"• **{a.get('contratados_hoje', 0)}** contratações realizadas\n"
             f"• **{a.get('rejeitados_hoje', 0)}** candidatos rejeitados/desistentes\n"
-            f"• **{a.get('acoes_autonomas_executadas', 0)}** ações autônomas executadas pela LIA\n"
         )
 
         if p.get("candidatos_parados", 0) > 0 or p.get("vagas_sla_risco", 0) > 0:
@@ -647,9 +637,48 @@ class RecruiterAssistantDomain(ComplianceDomainPrompt):
         else:
             msg = "Candidatos não encontrados para comparação."
 
+        _rrp_blocks = []
+        if candidates:
+            from app.shared.rrp_blocks import (
+                ComparisonTableBlock, ComparisonColumn, ComparisonRow,
+            )
+
+            def _num(v):
+                try:
+                    return float(v) if v is not None else None
+                except (TypeError, ValueError):
+                    return None
+
+            _table = ComparisonTableBlock(
+                block_id="comparison_table:compare_candidates:"
+                + "-".join(str(c.get("id")) for c in candidates),
+                role="support", layout="wide",
+                title="Comparacao de candidatos", entity_type="candidate",
+                columns=[
+                    ComparisonColumn(key="name", label="Candidato", type="text"),
+                    ComparisonColumn(key="lia_score", label="LIA", type="score"),
+                    ComparisonColumn(key="match_pct", label="Match", type="score"),
+                    ComparisonColumn(key="stage", label="Etapa", type="text"),
+                ],
+                rows=[
+                    ComparisonRow(
+                        entity_id=str(c.get("id")),
+                        cells={
+                            "name": c.get("name") or ("ID " + str(c.get("id"))),
+                            "lia_score": _num(c.get("lia_score")),
+                            "match_pct": _num(c.get("match_pct")),
+                            "stage": c.get("stage") or "-",
+                        },
+                    )
+                    for c in candidates
+                ],
+                total_count=len(candidates), shown_count=len(candidates),
+            )
+            _rrp_blocks = [_table.model_dump(mode="json")]
+
         return DomainResponse.success_response(
             message=msg,
-            data={"action_id": "compare_candidates", "candidates": candidates},
+            data={"action_id": "compare_candidates", "candidates": candidates, "response_blocks": _rrp_blocks},
             domain_id=self.domain_id, action_id="compare_candidates",
         )
 
@@ -757,47 +786,6 @@ class RecruiterAssistantDomain(ComplianceDomainPrompt):
                 "summary": summary,
             },
             domain_id=self.domain_id, action_id="proactive_alerts",
-        )
-
-    async def _handle_autonomous_actions(self, params: dict, context: DomainContext) -> DomainResponse:
-        from app.domains.recruiter_assistant.services.autonomous_actions_engine import autonomous_engine
-
-        pending = autonomous_engine.get_pending_confirmations(context.tenant_id)
-        recent_log = autonomous_engine.get_action_log(context.tenant_id, limit=10)
-
-        lines = []
-
-        if pending:
-            lines.append("**Ações aguardando confirmação:**")
-            for a in pending[:5]:
-                lines.append(
-                    f"• [{a.risk_level.upper()}] {a.description} "
-                    f"(ID: {a.action_id[:8]}...)"
-                )
-
-        executed_today = [
-            a for a in recent_log
-            if a.status.value == "executed"
-            and a.created_at.strftime("%Y-%m-%d") == datetime.now(timezone.utc).strftime("%Y-%m-%d")
-        ]
-        if executed_today:
-            lines.append(f"\n**Ações executadas automaticamente hoje:** {len(executed_today)}")
-            for a in executed_today[:5]:
-                lines.append(f"• {a.description}")
-
-        if not lines:
-            msg = "Nenhuma ação autônoma pendente ou recente."
-        else:
-            msg = "**Ações Autônomas da LIA:**\n\n" + "\n".join(lines)
-
-        return DomainResponse.success_response(
-            message=msg,
-            data={
-                "action_id": "autonomous_actions",
-                "pending": [a.to_dict() for a in pending],
-                "recent": [a.to_dict() for a in recent_log[:10]],
-            },
-            domain_id=self.domain_id, action_id="autonomous_actions",
         )
 
     async def _handle_stakeholder_notify(self, params: dict, context: DomainContext) -> DomainResponse:

@@ -127,6 +127,7 @@ export default {
         'lia-text-primary':         'var(--lia-text-primary)',
         'lia-text-secondary':       'var(--lia-text-secondary)',
         'lia-text-tertiary':        'var(--lia-text-tertiary)',
+        'lia-text-muted':           'var(--lia-text-muted)',
         'lia-text-disabled':        'var(--lia-text-disabled)',
         'lia-text-inverse':         'var(--lia-text-inverse)',
         // ──────────────────────────────────────────────
@@ -191,6 +192,13 @@ export default {
         'wedo-orange': '#D19960',
         'wedo-purple': '#9860D1',
         'wedo-magenta': '#D160AB',
+        // TEXT-SAFE DARKER VARIANTS — WCAG AA ≥ 4.5:1 on white (v4.2.4)
+        'wedo-cyan-text':    '#0D6E82',
+        'wedo-orange-text':  '#7A4E14',
+        'wedo-green-text':   '#1E6B42',
+        'wedo-purple-text':  '#5E35A8',
+        'wedo-magenta-text': '#882B72',
+
         'wedo-amber':       'var(--wedo-amber)',       // bg-wedo-amber, suporta /opacity
         'wedo-amber-light': 'var(--wedo-amber-light)',  // bg-wedo-amber-light → status amber/warning
         'wedo-coral': '#E87575', /* coral suave — atualizado 2026-03-29, era #E16162 */
@@ -244,10 +252,14 @@ export default {
         }
       },
       borderRadius: {
-        // WeDo DS canonical — 2026-03-29
-        // cards/modals: rounded-xl (12px)
-        // inputs/badges: rounded-lg (8px)
-        // interactive chips/pills: rounded-full
+        // WeDo DS canonical (Fundação DS — fonte-da-verdade = código)
+        // cards/modais:            rounded-xl  (12px, = default Tailwind 0.75rem)
+        // botões/inputs/selects:   rounded-md  (calc(var(--radius) - 2px))
+        // chips/badges/pílulas:    rounded-full
+        // interfaces imersivas (chat expandido, login): rounded-2xl
+        // NUNCA sobrescrever o raio em <Button> (sm/lg já resolvem rounded-md).
+        // Paleta: usar SEMPRE tokens status-*/wedo-*/lia-* — NUNCA cores cruas do
+        // Tailwind (amber-50, emerald-600, purple-100, blue-50, red-200…).
         // DEFAULT Tailwind values preserved below
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',
@@ -271,6 +283,10 @@ export default {
         'agent-pulse': {
           '0%, 100%': { opacity: '0.6', transform: 'scale(1)' },
           '50%':      { opacity: '1',   transform: 'scale(1.2)' },
+        },
+        'pulse-dot': {
+          '0%, 80%, 100%': { opacity: '0.2', transform: 'scale(0.8)' },
+          '40%':           { opacity: '1',   transform: 'scale(1)' },
         },
       },
       animation: {

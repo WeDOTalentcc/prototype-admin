@@ -29,6 +29,7 @@ from app.schemas.calendar import (
     TimeSlot,
 )
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.errors import LIAError, LIAInternalError
 from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
@@ -96,7 +97,7 @@ async def check_availability(request: AvailabilityRequest, company_id: str = Dep
         raise
     except Exception as e:
         logger.error(f"Error checking availability: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/find-meeting-times", response_model=list[dict], dependencies=[Depends(check_graph_configured)])
@@ -121,7 +122,7 @@ async def find_meeting_times(request: FindMeetingTimeRequest, company_id: str = 
         raise
     except Exception as e:
         logger.error(f"Error finding meeting times: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/schedule-interview", response_model=dict)
@@ -186,7 +187,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error scheduling interview: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 class CancelInterviewResponse(BaseModel):
@@ -209,7 +210,7 @@ async def cancel_interview(request: CancelInterviewRequest, company_id: str = De
         )
         
         if not success:
-            raise HTTPException(status_code=500, detail="Failed to cancel interview")
+            raise LIAError(message="Failed to cancel interview")
         
         return {"status": "cancelled", "event_id": request.event_id}
         
@@ -217,7 +218,7 @@ async def cancel_interview(request: CancelInterviewRequest, company_id: str = De
         raise
     except Exception as e:
         logger.error(f"Error cancelling interview: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/reschedule-interview", response_model=dict, dependencies=[Depends(check_graph_configured)])
@@ -244,7 +245,7 @@ async def reschedule_interview(request: RescheduleInterviewRequest, company_id: 
         raise
     except Exception as e:
         logger.error(f"Error rescheduling interview: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 # ---------------------------------------------------------------------------
@@ -333,7 +334,7 @@ async def google_check_availability(request: GoogleAvailabilityRequest, company_
         raise
     except Exception as e:
         logger.error("Error checking Google Calendar availability: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 class GoogleScheduleInterviewResponse(BaseModel):
@@ -364,7 +365,7 @@ async def google_schedule_interview(request: GoogleScheduleInterviewRequest, com
         raise
     except Exception as e:
         logger.error("Error scheduling Google Calendar interview: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 class GoogleCancelInterviewResponse(BaseModel):
@@ -386,13 +387,13 @@ async def google_cancel_interview(request: GoogleCancelInterviewRequest, company
             calendar_id=request.calendar_id,
         )
         if not success:
-            raise HTTPException(status_code=500, detail="Failed to cancel Google Calendar event.")
+            raise LIAError(message="Failed to cancel Google Calendar event.")
         return {"status": "cancelled", "event_id": request.event_id}
     except HTTPException:
         raise
     except Exception as e:
         logger.error("Error cancelling Google Calendar interview: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 # ---------------------------------------------------------------------------
@@ -450,10 +451,7 @@ async def google_oauth_auth_url(
         )
         return {"auth_url": auth_url, "state": csrf_state}
     except ImportError:
-        raise HTTPException(
-            status_code=500,
-            detail="google-auth-oauthlib is required for OAuth flow. pip install google-auth-oauthlib",
-        )
+        raise LIAInternalError("google-auth-oauthlib is required for OAuth flow. pip install google-auth-oauthlib")
 
 
 class GoogleOAuthCallbackResponse(BaseModel):
@@ -537,12 +535,12 @@ async def google_oauth_callback(
         return {"status": "connected", "company_id": company_id_str, "provider": "google"}
 
     except ImportError:
-        raise HTTPException(status_code=500, detail="google-auth-oauthlib required. pip install google-auth-oauthlib")
+        raise LIAError(message="google-auth-oauthlib required. pip install google-auth-oauthlib")
     except HTTPException:
         raise
     except Exception as e:
         logger.error("Error in Google OAuth callback: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 # ---------------------------------------------------------------------------
@@ -719,7 +717,7 @@ async def microsoft_oauth_callback(
         raise
     except Exception as e:
         logger.error("Error in Microsoft OAuth callback: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 class MicrosoftOAuthStatusResponse(BaseModel):
@@ -753,7 +751,7 @@ async def microsoft_oauth_status(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
     if creds and creds.is_active:
         return {
@@ -810,7 +808,7 @@ async def google_oauth_status(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
     if creds and creds.is_active:
         return {

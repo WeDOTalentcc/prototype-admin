@@ -48,8 +48,10 @@ _ALLOWED_TTL_TABLES = frozenset([
 
 # Default retention windows (days) — maps data type → TTL
 RETENTION_DAYS = {
-    "rejected": 90,
+    "rejected": 365,       # GAP-10-001: LGPD Art. 17 — 1 year (spec LOTE-002)
     "withdrawn": 90,
+    "draft_candidate": 90,  # GAP-10-001: unlinked "new" candidates older than 90 days
+    "expired_job": 730,    # GAP-10-001: concluded/cancelled vacancies older than 2 years
     "pearch_discovered_profiles": 180,  # Fase 4 LGPD Art. 5 e: minimização; 180d sem engajamento
     "chat_messages": 90,       # LGPD Art. 18 — minimização de dados de conversa
     "interview_data": 180,     # Dados de entrevista e notas WSI
@@ -216,6 +218,8 @@ async def run_cleanup(dry_run: bool = True) -> dict:
         "interview_notes_deleted": 0,
         "screening_logs_deleted": 0,
         "ai_decision_logs_deleted": 0,
+        "draft_candidates_deleted": 0,    # GAP-10-001: new/unlinked candidates > 90d
+        "expired_jobs_deleted": 0,        # GAP-10-001: concluded vacancies > 730d
         "errors": [],
     }
 
@@ -478,6 +482,90 @@ async def run_cleanup(dry_run: bool = True) -> dict:
                 db, deleted_ids, dry_run=True
             )
             summary.update(propagation)
+
+    # GAP-10-001: draft candidate cleanup
+    # Delete Candidate records with status="new" (never progressed through pipeline),
+    # no linked VacancyCandidate records, and created_at older than 90 days.
+    # These are incomplete/abandoned profiles with no active recruitment activity.
+    try:
+        draft_cutoff = now - timedelta(days=RETENTION_DAYS["draft_candidate"])
+        draft_result = await db.execute(
+            select(Candidate.id, Candidate.created_at)
+            .outerjoin(
+                VacancyCandidate,
+                VacancyCandidate.candidate_id == Candidate.id,
+            )
+            .where(
+                and_(
+                    Candidate.status == "new",
+                    Candidate.scheduled_deletion_at.is_(None),
+                    Candidate.created_at <= draft_cutoff,
+                    VacancyCandidate.id.is_(None),  # no vacancy link
+                )
+            )
+        )
+        draft_rows = draft_result.all()
+
+        for row in draft_rows:
+            logger.info(
+                "LGPD deletion%s: draft_candidate (status=new, no vacancy, >90d)",
+                " (dry-run)" if dry_run else "",
+                extra={
+                    "candidate_id": str(row.id),
+                    "created_at": row.created_at.isoformat(),
+                },
+            )
+
+        if not dry_run and draft_rows:
+            ids = [row.id for row in draft_rows]
+            # ADR-001-EXEMPT: draft Candidate erasure — no vacancy link, LGPD Art. 5 (minimização)
+            await db.execute(delete(Candidate).where(Candidate.id.in_(ids)))
+            await db.commit()
+
+        summary["draft_candidates_deleted"] = len(draft_rows)
+
+    except Exception as exc:
+        try:
+            await db.rollback()
+        except Exception:
+            pass
+        logger.error("Error during LGPD draft_candidate cleanup: %s", exc)
+        summary["errors"].append(f"draft_candidates: {exc}")
+
+    # GAP-10-001: expired job vacancy cleanup (dry-run + count only — no hard delete)
+    # Log concluded/cancelled vacancies older than 730 days for compliance audit.
+    # Hard deletion deferred: requires cascade audit (linked candidates, stages, etc.)
+    # Set dry_run=False only after cascade risk assessment.
+    try:
+        expired_cutoff = now - timedelta(days=RETENTION_DAYS["expired_job"])
+        from lia_models.job_vacancy import JobVacancy  # local import — model not used elsewhere in this service
+        expired_result = await db.execute(
+            select(JobVacancy.id, JobVacancy.status, JobVacancy.updated_at)
+            .where(
+                and_(
+                    JobVacancy.status.in_(["Concluída", "Cancelada", "Pausada"]),
+                    JobVacancy.updated_at <= expired_cutoff,
+                )
+            )
+        )
+        expired_rows = expired_result.all()
+
+        for row in expired_rows:
+            logger.info(
+                "LGPD retention%s: expired_job (status=%s, last_updated=%s)",
+                " (dry-run — hard delete not yet enabled)" if dry_run else " (dry-run only — cascade audit pending)",
+                row.status,
+                row.updated_at.isoformat() if row.updated_at else "unknown",
+                extra={"vacancy_id": str(row.id)},
+            )
+
+        # NOTE: actual deletion not implemented — cascade risk assessment required first.
+        # To enable: replace this comment with delete(JobVacancy).where(JobVacancy.id.in_([r.id for r in expired_rows]))
+        summary["expired_jobs_deleted"] = len(expired_rows)  # count = eligible, not yet deleted
+
+    except Exception as exc:
+        logger.error("Error during LGPD expired_job audit: %s", exc)
+        summary["errors"].append(f"expired_jobs: {exc}")
 
     mode = "DRY-RUN" if dry_run else "REAL"
     logger.info(

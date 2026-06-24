@@ -4,6 +4,7 @@ Provides real-time metrics, health scores, and activity tracking for AI agents.
 """
 
 import logging
+from app.shared.errors import LIAInternalError
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
@@ -614,10 +615,7 @@ async def get_execution_reasoning(
     try:
         steps = [AgentReasoningStep(**s) for s in (run.reasoning_payload or [])]
     except Exception as exc:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Reasoning payload corrompido (shape divergente): {exc}",
-        )
+        raise LIAInternalError("Internal server error")
 
     # Aggregate data_fields_accessed across all steps (LGPD audit summary).
     accessed_summary: set[str] = set()

@@ -10,12 +10,13 @@ import os
 import logging
 from typing import Optional
 
+from app.shared.http_client import get_http_client
+
 logger = logging.getLogger(__name__)
 
 TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID", "")
 TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN", "")
 TWILIO_WHATSAPP_NUMBER = os.getenv("LIA_WHATSAPP_NUMBER", "")  # +5511...
-
 
 class WhatsAppClient:
     """
@@ -39,15 +40,13 @@ class WhatsAppClient:
     ) -> dict:
         """Send a Meta-approved template message."""
         try:
-            import httpx
-
             to_number = f"whatsapp:{phone}" if not phone.startswith("whatsapp:") else phone
             url = f"https://api.twilio.com/2010-04-01/Accounts/{self.account_sid}/Messages.json"
 
             # Build content variables for template
             content_vars = {str(i + 1): v for i, v in enumerate(variables)}
 
-            async with httpx.AsyncClient() as client:
+            async with get_http_client("twilio") as client:
                 resp = await client.post(
                     url,
                     auth=(self.account_sid, self.auth_token),
@@ -74,12 +73,10 @@ class WhatsAppClient:
     ) -> dict:
         """Send a free-form message (within 24h window)."""
         try:
-            import httpx
-
             to_number = f"whatsapp:{phone}" if not phone.startswith("whatsapp:") else phone
             url = f"https://api.twilio.com/2010-04-01/Accounts/{self.account_sid}/Messages.json"
 
-            async with httpx.AsyncClient() as client:
+            async with get_http_client("twilio") as client:
                 resp = await client.post(
                     url,
                     auth=(self.account_sid, self.auth_token),
@@ -105,8 +102,6 @@ class WhatsAppClient:
     ) -> dict:
         """Send interactive message with quick reply buttons (max 3)."""
         try:
-            import httpx
-
             to_number = f"whatsapp:{phone}" if not phone.startswith("whatsapp:") else phone
             url = f"https://api.twilio.com/2010-04-01/Accounts/{self.account_sid}/Messages.json"
 
@@ -123,7 +118,7 @@ class WhatsAppClient:
                 },
             }
 
-            async with httpx.AsyncClient() as client:
+            async with get_http_client("twilio") as client:
                 resp = await client.post(
                     url,
                     auth=(self.account_sid, self.auth_token),
@@ -162,8 +157,6 @@ class WhatsAppClient:
     ) -> dict:
         """Trigger a WhatsApp Flow (multi-screen form)."""
         try:
-            import httpx
-
             to_number = f"whatsapp:{phone}" if not phone.startswith("whatsapp:") else phone
             url = f"https://api.twilio.com/2010-04-01/Accounts/{self.account_sid}/Messages.json"
 
@@ -184,7 +177,7 @@ class WhatsAppClient:
                 },
             }
 
-            async with httpx.AsyncClient() as client:
+            async with get_http_client("twilio") as client:
                 resp = await client.post(
                     url,
                     auth=(self.account_sid, self.auth_token),

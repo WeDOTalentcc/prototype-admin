@@ -1,4 +1,3 @@
-# Direct DB calls will be replaced by RailsAdapter after ats-api-rails handoff.
 # See: app/domains/integrations_hub/services/rails_adapter.py
 """
 WSI package — F11 report and ranking routes.
@@ -20,7 +19,7 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.domains.cv_screening.services.wsi_deterministic_scorer import (
+from app.domains.cv_screening.constants.wsi_scale import (
     GATE_G3_THRESHOLD as _GATE_G3_THRESHOLD_CANONICAL,
 )
 from app.domains.cv_screening.services.wsi_deterministic_scorer import (
@@ -35,6 +34,7 @@ from ._shared import (
     WSI_CLASSIFICATION_MAP,
 )
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 # Recovery #3 (2026-05-23) — imports restored para get_wsi_audit_trail
 # (endpoint compliance EU AI Act Art. 12 / LGPD Art. 20 perdido no merge 02361f41c).
 from app.auth.dependencies import (
@@ -53,7 +53,7 @@ router = APIRouter()
 # ---------------------------------------------------------------------------
 
 _GATE_G3_THRESHOLD = _GATE_G3_THRESHOLD_CANONICAL
-_GATE_G4_THRESHOLD = 1.5   # /5 scale (= 3.0/10)
+_GATE_G4_THRESHOLD = 3.0   # /10 scale (audit P1-1 tail 2026-06-05)
 _INJECTION_KEYWORDS = ["ignore", "esquece", "esqueça", "novo prompt", "sys:", "system:", "jailbreak", "prompt injection"]
 
 _SENIORITY_WEIGHTS = SENIORITY_WEIGHTS
@@ -145,7 +145,7 @@ def _build_attention_flags(analyses: list[dict], gates: GateStatus) -> list[str]
     low_star = sum(1 for a in analyses if sum(a.get("star", {}).values()) <= 1)
     if low_star >= 2:
         flags.append(f"{low_star} respostas com STAR incompleto")
-    critical_gaps = [a for a in analyses if a.get("is_critical") and a.get("final_score", 5) < 3.0]
+    critical_gaps = [a for a in analyses if a.get("is_critical") and a.get("final_score", 10) < 6.0]
     if critical_gaps:
         flags.append(f"{len(critical_gaps)} competência(s) crítica(s) abaixo do esperado")
     return flags
@@ -163,26 +163,26 @@ def _compute_decision_confidence(
     if (
         "G2" in failed_gates
         or llm_fallback_count >= 2
-        or score_variance > 2.0
+        or score_variance > 4.0
     ):
         return "baixa", True
 
-    if overall_wsi >= 4.5 and not failed_gates:
+    if overall_wsi >= 9.0 and not failed_gates:
         return "alta", False
 
     if failed_gates and clear_reject_gates.intersection(failed_gates) and not ambiguous_gates.intersection(failed_gates):
         return "alta", False
 
-    if 3.0 <= overall_wsi < 3.75:
+    if 6.0 <= overall_wsi < 7.5:
         return "media", True
 
-    if 3.75 <= overall_wsi < 4.5 and not failed_gates:
+    if 7.5 <= overall_wsi < 9.0 and not failed_gates:
         return "media", False
 
     if failed_gates and ambiguous_gates.issuperset(failed_gates):
         return "media", True
 
-    return "media", overall_wsi < 3.75
+    return "media", overall_wsi < 7.5
 
 
 def _f11_fallback_questions(gaps: list[dict[str, Any]]) -> list[CBIQuestion]:
@@ -239,7 +239,7 @@ async def _generate_cbi_questions_llm(
     from app.shared.providers.llm_factory import get_provider_for_tenant
 
     gaps_formatted = "\n".join(
-        f"[{g.get('severity','MÉDIO')}] {g.get('competency','')} ({g.get('type','técnico')}) — score {g.get('score',0):.1f}/5 — sinais ausentes: {g.get('missing_signals','n/a')}"
+        f"[{g.get('severity','MÉDIO')}] {g.get('competency','')} ({g.get('type','técnico')}) — score {g.get('score',0):.1f}/10 — sinais ausentes: {g.get('missing_signals','n/a')}"
         for g in gaps[:3]
     ) or "Nenhum gap crítico identificado — perguntas de aprofundamento"
 
@@ -370,25 +370,28 @@ async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db), co
     Spec: WSI_METHODOLOGY_COMPLETE_v2.md sections 11.1–11.5.
     """
     try:
-        # F11-3 — garantir que a coluna de cache existe (idempotente)
+        # F11-3 — cache: lê o relatório pré-gerado se existir. A coluna
+        # f11_report_json é criada pela migration 244 (o ALTER TABLE inline foi
+        # REMOVIDO daqui: adquiria lock ACCESS EXCLUSIVE em wsi_results e, sob
+        # leitura concorrente, falhava + derrubava o endpoint inteiro com 500).
+        # Cache-read graceful: sem a migração, loga + rollback (limpa a transação
+        # envenenada pelo UndefinedColumn) e regenera, em vez de 500.
         try:
-            await db.execute(text(
-                "ALTER TABLE wsi_results ADD COLUMN IF NOT EXISTS f11_report_json JSONB"
-            ))
-        except Exception:
+            cache_r = await db.execute(text("""
+                SELECT f11_report_json FROM wsi_results
+                WHERE session_id = :sid AND f11_report_json IS NOT NULL
+                ORDER BY created_at DESC LIMIT 1
+            """), {"sid": session_id})
+            cached = cache_r.fetchone()
+            if cached and cached[0]:
+                report = F11ReportResponse(**cached[0])
+                report.already_generated = True
+                return report
+        except Exception as _cache_read_err:
+            logger.warning(
+                f"[F11] cache-read indisponível, regenerando: {_cache_read_err}"
+            )
             await db.rollback()
-
-        # F11-3 — verificar cache antes de regenerar
-        cache_r = await db.execute(text("""
-            SELECT f11_report_json FROM wsi_results
-            WHERE session_id = :sid AND f11_report_json IS NOT NULL
-            ORDER BY created_at DESC LIMIT 1
-        """), {"sid": session_id})
-        cached = cache_r.fetchone()
-        if cached and cached[0]:
-            report = F11ReportResponse(**cached[0])
-            report.already_generated = True
-            return report
 
         sess_r = await db.execute(text("""
             SELECT s.id, s.candidate_id, s.job_vacancy_id, s.screening_type, s.mode,
@@ -469,7 +472,12 @@ async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db), co
             if q and q_scoring.get("is_critical") is not None:
                 q_is_critical = bool(q_scoring["is_critical"])
             else:
-                q_is_critical = float(q[5]) >= 1.5 if q else False
+                # q[5] é o PESO da pergunta (CHECK 0-1) — NÃO expressa criticalidade
+                # (o produtor grava weight=1.0 fixo; nenhum peso > 1.0 é possível, o
+                # antigo `>= 1.5` era sempre-falso). Sem is_critical explícito no
+                # scoring_criteria, não inferir crítico do peso: default False
+                # (G4 só dispara em skill marcada crítica de forma explícita).
+                q_is_critical = False
 
             bloom_exp_info = BLOOM_LEVELS.get(q_bloom_expected, BLOOM_LEVELS[3])
             dreyfus_exp_info = DREYFUS_LEVELS.get(q_dreyfus_expected, DREYFUS_LEVELS[3])
@@ -567,7 +575,7 @@ async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db), co
             g2_prompt_injection=not g2_failed,
             g2_detail=f"{injection_count} tentativa(s) de manipulação detectada(s)" if g2_failed else "Sem injeção de prompt detectada",
             g3_wsi_tecnico=not g3_failed,
-            g3_detail=f"WSI Técnico {tech_wsi:.2f}/5 {'< limiar 2.0 — reprovado' if g3_failed else '≥ limiar 2.0 — aprovado'}",
+            g3_detail=f"WSI Técnico {tech_wsi:.2f}/10 {'< limiar 4.0 — reprovado' if g3_failed else '≥ limiar 4.0 — aprovado'}",
             g4_skill_critica=not g4_failed,
             g4_detail="Skill crítica com score abaixo do mínimo absoluto" if g4_failed else "Nenhuma skill crítica abaixo do mínimo",
             g5_engajamento=not g5_failed,
@@ -594,15 +602,15 @@ async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db), co
             decision_result = "REPROVADO"
             gate_reasons = [gate_labels.get(g, g) for g in failed_gates]
             decision_reason = f"Gate(s) ativado(s): {', '.join(gate_reasons)}"
-        elif overall_wsi >= 3.75:
+        elif overall_wsi >= 7.5:
             decision_result = "APROVADO"
             decision_reason = None
-        elif overall_wsi >= 3.0:
+        elif overall_wsi >= 6.0:
             decision_result = "EM_AVALIACAO"
-            decision_reason = f"Score WSI {overall_wsi:.2f}/5 requer revisão humana (faixa 3.0–3.74)"
+            decision_reason = f"Score WSI {overall_wsi:.2f}/10 requer revisão humana (faixa 6.0–7.49)"
         else:
             decision_result = "REPROVADO"
-            decision_reason = f"Score WSI {overall_wsi:.2f}/5 abaixo do mínimo (< 3.0)"
+            decision_reason = f"Score WSI {overall_wsi:.2f}/10 abaixo do mínimo (< 6.0)"
 
         decision_confidence, human_review_required = _compute_decision_confidence(
             overall_wsi=overall_wsi,
@@ -613,19 +621,19 @@ async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db), co
 
         sorted_analyses = sorted(analyses_list, key=lambda x: x["final_score"], reverse=True)
         strengths = [
-            f"{a['competency']} — {a['final_score']:.1f}/5"
+            f"{a['competency']} — {a['final_score']:.1f}/10"
             for a in sorted_analyses[:3]
-            if a["final_score"] >= 3.5
+            if a["final_score"] >= 7.0
         ]
 
         gap_items = [
-            a for a in sorted_analyses if a["final_score"] < 3.0 and a["final_score"] > 0.0
+            a for a in sorted_analyses if a["final_score"] < 6.0 and a["final_score"] > 0.0
         ]
         gap_items.sort(key=lambda x: x["final_score"])
         gaps = []
         for a in gap_items[:3]:
-            delta = 3.0 - a["final_score"]
-            severity = "ALTO" if delta >= 1.5 else ("MÉDIO" if delta >= 0.75 else "BAIXO")
+            delta = 6.0 - a["final_score"]
+            severity = "ALTO" if delta >= 3.0 else ("MÉDIO" if delta >= 1.5 else "BAIXO")
             gaps.append({
                 "competency": a["competency"],
                 "type": a["question_type"],
@@ -697,13 +705,44 @@ async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db), co
                 logger.warning(f"F11-3: falha ao persistir cache do relatório: {_cache_err}")
                 await db.rollback()
 
+        # Débito 3 — espelhar subset do relatório F11 no parecer WSI (score_breakdown),
+        # para o card exibir o relatório completo. Sem SQL inline: via OpinionsRepository.
+        try:
+            from uuid import UUID as _UUID
+            from app.repositories.opinions_repository import (
+                OpinionsRepository,
+            )
+            _repo = OpinionsRepository(db)
+            _cid = cand_id if isinstance(cand_id, _UUID) else _UUID(str(cand_id))
+            _jv = str(jv_id) if jv_id else None
+            _rd = report.model_dump()
+            _subset = {
+                k: _rd.get(k)
+                for k in (
+                    "classification", "classification_label", "gates",
+                    "decision_result", "decision_confidence", "decision_reason",
+                    "strengths", "gaps", "attention_flags", "generated_at",
+                )
+            }
+            for _op in await _repo.get_current_by_candidate(_cid, company_id):
+                _op_jv = str(_op.job_vacancy_id) if _op.job_vacancy_id else None
+                if _op.opinion_type == "wsi" and _op_jv == _jv:
+                    _sb = dict(_op.score_breakdown or {})
+                    _sb["f11_report"] = _subset
+                    _op.score_breakdown = _sb
+                    await _repo.update(_op)
+                    break
+        except Exception as _fold_err:
+            logger.warning(f"F11 fold into WSI opinion skipped: {_fold_err}")
+            await db.rollback()
+
         return report
 
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"F11 report generation failed for session {session_id}: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Erro ao gerar relatório F11: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/ranking/{job_vacancy_id}", summary="F11-6 — Ranking de candidatos por vaga", response_model=None)
@@ -725,7 +764,7 @@ company_id: str = Depends(require_company_id)):
                 r.id            AS result_id,
                 r.candidate_id,
                 COALESCE(c.name, 'Candidato') AS candidate_name,
-                COALESCE(c.current_position, '') AS candidate_title,
+                COALESCE(c.current_title, '') AS candidate_title,
                 r.overall_wsi,
                 r.technical_wsi,
                 r.behavioral_wsi,
@@ -734,10 +773,10 @@ company_id: str = Depends(require_company_id)):
                 r.created_at
             FROM wsi_results r
             LEFT JOIN wsi_sessions s ON s.id = r.session_id
-            LEFT JOIN candidates c   ON c.id::text = r.candidate_id
+            LEFT JOIN candidates c   ON c.id = r.candidate_id
             INNER JOIN job_vacancies jv ON jv.id = r.job_vacancy_id
-            WHERE r.job_vacancy_id = :jv_id
-              AND jv.company_id = :company_id
+            WHERE r.job_vacancy_id::text = :jv_id
+              AND jv.company_id::text = :company_id
             ORDER BY r.overall_wsi DESC, r.created_at DESC
         """), {"jv_id": job_vacancy_id, "company_id": company_id})
         rows = rows_r.fetchall()
@@ -767,9 +806,9 @@ company_id: str = Depends(require_company_id)):
                 "candidate_id": str(row[1]),
                 "candidate_name": row[2],
                 "candidate_title": row[3],
-                "overall_wsi": round(score * 2, 2),        # /5 → /10
-                "technical_wsi": round(float(row[5]) * 2, 2),
-                "behavioral_wsi": round(float(row[6]) * 2, 2),
+                "overall_wsi": round(score, 2),
+                "technical_wsi": round(float(row[5]), 2),
+                "behavioral_wsi": round(float(row[6]), 2),
                 "classification": row[7] or "regular",
                 "percentile": percentile,
                 "screening_type": row[8] or "text",
@@ -780,9 +819,9 @@ company_id: str = Depends(require_company_id)):
             "job_vacancy_id": job_vacancy_id,
             "total_screened": total,
             "averages": {
-                "overall":    round(sum(overall_vals) / total * 2, 2),
-                "technical":  round(sum(tech_vals) / total * 2, 2),
-                "behavioral": round(sum(behav_vals) / total * 2, 2),
+                "overall":    round(sum(overall_vals) / total, 2),
+                "technical":  round(sum(tech_vals) / total, 2),
+                "behavioral": round(sum(behav_vals) / total, 2),
             },
             "ranking": ranking,
         }
@@ -790,7 +829,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"F11-6 vacancy ranking failed for {job_vacancy_id}: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get(
@@ -818,7 +857,7 @@ company_id: str = Depends(require_company_id)):
 
         cand_r = await db.execute(text("""
             SELECT id, overall_wsi FROM wsi_results
-            WHERE candidate_id = :cid AND job_vacancy_id = :jv_id
+            WHERE candidate_id::text = :cid AND job_vacancy_id::text = :jv_id
             ORDER BY created_at DESC LIMIT 1
         """), {"cid": candidate_id, "jv_id": job_vacancy_id})
         cand_row = cand_r.fetchone()
@@ -830,7 +869,7 @@ company_id: str = Depends(require_company_id)):
 
         total_r = await db.execute(text("""
             SELECT COUNT(*), SUM(CASE WHEN overall_wsi > :score THEN 1 ELSE 0 END)
-            FROM wsi_results WHERE job_vacancy_id = :jv_id
+            FROM wsi_results WHERE job_vacancy_id::text = :jv_id
         """), {"jv_id": job_vacancy_id, "score": cand_score})
         total_row = total_r.fetchone()
         total = int(total_row[0]) if total_row else 1
@@ -843,13 +882,13 @@ company_id: str = Depends(require_company_id)):
             "ranked": True,
             "rank": rank,
             "total": total,
-            "overall_wsi": round(cand_score * 2, 2),
+            "overall_wsi": round(cand_score, 2),
         }
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"F11-6 candidate ranking failed for {candidate_id}/{job_vacancy_id}: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 # ---------------------------------------------------------------------------

@@ -28,6 +28,10 @@ _CHANNEL_PREFIX = "ws:session:"
 _USER_SESSIONS_KEY_PREFIX = "ws:user:"
 _USER_SESSIONS_TTL_S = 24 * 3600  # 1 day — refreshed on every connect
 
+# Task #1355 — backoff on unexpected listen() exit to avoid tight loops
+_RECONNECT_BASE_DELAY_S = 1.0
+_RECONNECT_MAX_DELAY_S = 30.0
+
 
 class WSManager:
     def __init__(self):
@@ -313,30 +317,56 @@ class WSManager:
             logger.debug("[WS] Redis subscribe failed for session=%s: %s", session_id, e)
 
     async def _subscriber_loop(self):
-        """Background task that listens to all subscribed Redis channels."""
-        try:
-            while True:
+        """Background task that listens to all subscribed Redis channels.
+
+        Task #1355 — uses async listen() (event-driven) instead of polling
+        get_message() in a tight loop. This reduces Redis commands to zero
+        when there are no Pub/Sub messages, eliminating the ~100 req/s
+        idle consumption that exhausted the Upstash daily limit.
+
+        On unexpected exit (connection drop, etc.) the loop reconnects with
+        exponential backoff up to _RECONNECT_MAX_DELAY_S.
+        """
+        delay = _RECONNECT_BASE_DELAY_S
+        while True:
+            try:
                 if self._pubsub is None:
                     break
-                message = await self._pubsub.get_message(
-                    ignore_subscribe_messages=True, timeout=1.0
-                )
-                if message and message["type"] == "message":
-                    channel = message["channel"]
+                async for raw_message in self._pubsub.listen():
+                    if raw_message is None:
+                        continue
+                    if raw_message.get("type") != "message":
+                        continue
+                    channel = raw_message["channel"]
                     if isinstance(channel, bytes):
                         channel = channel.decode()
                     session_id = channel.removeprefix(_CHANNEL_PREFIX)
                     try:
-                        data = json.loads(message["data"])
+                        data = json.loads(raw_message["data"])
                     except (json.JSONDecodeError, TypeError):
-                        data = message["data"]
+                        data = raw_message["data"]
                     await self._deliver_local(session_id, data)
-                else:
-                    await asyncio.sleep(0.01)
-        except asyncio.CancelledError:
-            pass
-        except Exception as e:
-            logger.error("[WS] Subscriber loop error: %s", e)
+                # listen() returned normally (channel closed / unsubscribed)
+                break
+            except asyncio.CancelledError:
+                break
+            except Exception as e:
+                logger.error(
+                    "[WS] Subscriber loop error (reconnecting in %.1fs): %s",
+                    delay,
+                    e,
+                )
+                await asyncio.sleep(delay)
+                delay = min(delay * 2, _RECONNECT_MAX_DELAY_S)
+                # Re-acquire pubsub on reconnect so listen() gets a fresh iterator
+                try:
+                    redis = await self._get_redis()
+                    if redis is not None and self._pubsub is not None:
+                        await self._pubsub.reset()
+                        logger.info("[WS] Subscriber loop reconnected")
+                        delay = _RECONNECT_BASE_DELAY_S
+                except Exception as reconnect_err:
+                    logger.warning("[WS] Reconnect failed: %s", reconnect_err)
 
     async def _deliver_local(self, session_id: str, data: Any):
         """Deliver message to a locally connected WebSocket (if present)."""

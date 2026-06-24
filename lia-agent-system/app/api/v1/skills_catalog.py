@@ -11,7 +11,9 @@ Endpoints:
 - POST /wizard/suggest-skills - Get intelligent skill suggestions
 - POST /wizard/record-skill-usage - Record skill usage for learning loop
 """
+from app.middleware.request_id import get_correlation_id
 import logging
+from app.shared.errors import LIAInternalError
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -256,10 +258,7 @@ async def get_company_catalog(
         raise
     except Exception as e:
         logger.error(f"Error retrieving catalog for company {company_id}: {e}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error retrieving skills catalog: {str(e)}"
-        )
+        raise LIAInternalError("Internal server error")
 
 
 @router.post("/company/skills-catalog", response_model=AddSkillResponse)
@@ -299,7 +298,7 @@ company_id: str = Depends(require_company_id)) -> AddSkillResponse:
             from app.shared.compliance.audit_service import AuditService as _AS
             import uuid as _uuid
             await _AS().log_action(
-                trace_id=str(_uuid.uuid4()),
+                trace_id=get_correlation_id(),
                 company_id=str(company_id),
                 action_type="company_tech_stack_update",
                 actor=getattr(current_user, "email", None) or getattr(current_user, "id", "unknown"),
@@ -324,10 +323,7 @@ company_id: str = Depends(require_company_id)) -> AddSkillResponse:
         raise
     except Exception as e:
         logger.error(f"Error adding skill to catalog: {e}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error adding skill: {str(e)}"
-        )
+        raise LIAInternalError("Internal server error")
 
 
 @router.post("/company/skills-catalog/sync", response_model=SyncTechStackResponse)
@@ -364,7 +360,7 @@ company_id: str = Depends(require_company_id)) -> SyncTechStackResponse:
             from app.shared.compliance.audit_service import AuditService as _AS
             import uuid as _uuid
             await _AS().log_action(
-                trace_id=str(_uuid.uuid4()),
+                trace_id=get_correlation_id(),
                 company_id=str(company_id),
                 action_type="company_tech_stack_update",
                 actor=getattr(current_user, "email", None) or getattr(current_user, "id", "unknown"),
@@ -391,10 +387,7 @@ company_id: str = Depends(require_company_id)) -> SyncTechStackResponse:
         raise
     except Exception as e:
         logger.error(f"Error syncing tech stack: {e}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error syncing tech stack: {str(e)}"
-        )
+        raise LIAInternalError("Internal server error")
 
 
 @router.post("/wizard/suggest-skills", response_model=SuggestSkillsResponse)
@@ -482,10 +475,7 @@ company_id: str = Depends(require_company_id)) -> SuggestSkillsResponse:
         raise
     except Exception as e:
         logger.error(f"Error suggesting skills: {e}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error generating skill suggestions: {str(e)}"
-        )
+        raise LIAInternalError("Internal server error")
 
 
 @router.post("/wizard/record-skill-usage", response_model=RecordSkillUsageResponse)
@@ -565,10 +555,7 @@ company_id: str = Depends(require_company_id)) -> RecordSkillUsageResponse:
         raise
     except Exception as e:
         logger.error(f"Error recording skill usage: {e}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error recording skill usage: {str(e)}"
-        )
+        raise LIAInternalError("Internal server error")
 
 
 @router.get("/static/suggest", response_model=None)
@@ -607,10 +594,7 @@ company_id: str = Depends(require_company_id)) -> dict[str, Any]:
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"Error getting static suggestions for {job_title}: {e}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error generating suggestions: {str(e)}"
-        )
+        raise LIAInternalError("Internal server error")
 
 
 @router.get("/search", response_model=None)
@@ -647,7 +631,4 @@ company_id: str = Depends(require_company_id)) -> dict[str, Any]:
         raise
     except Exception as e:
         logger.error(f"Error searching skills for query '{q}': {e}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error searching skills: {str(e)}"
-        )
+        raise LIAInternalError("Internal server error")

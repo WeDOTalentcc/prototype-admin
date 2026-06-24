@@ -94,6 +94,7 @@ interface ScreeningRules {
   experience_policy?: string
   minimum_compatibility_score?: number
   default_screening_questions?: string[]
+  screening_deadline_default_hours?: number
 }
 
 // ─── Internal constants ──────────────────────────────────────────────────────
@@ -133,8 +134,11 @@ export const POLICY_FIELD_TO_BLOCK: Record<string, string> = {
   data_retention_candidate_policy: "screening_rules",
   talent_pool_opt_in_policy: "screening_rules",
   diversity_inclusion_guidelines: "screening_rules",
+  screening_deadline_default_hours: "screening_rules",
   manager_approval_sla_hours: "pipeline_rules",
   vacancy_approval_required: "pipeline_rules",
+  briefing_frequency: "communication_rules",   // B1
+  digest_enabled: "communication_rules",        // B2
 }
 
 // ─── Pure helper functions ───────────────────────────────────────────────────
@@ -159,6 +163,68 @@ export function computeBlockProgress(fields: CardField[]): BlockProgress {
   const filled = dataFields.filter(isFieldFilled).length
   const missingLabels = dataFields.filter(f => !isFieldFilled(f)).map(f => f.label)
   return { filled, total: dataFields.length, missingLabels }
+}
+
+
+// ─── Contratação & Triagem progress helpers (Phase B 2026-06-22) ────────────
+
+export interface OfferRulesData {
+  allowed_start_day_of_month?: number[]
+  min_notice_days?: number
+  negotiation_enabled?: boolean
+  salary_flex_pct_max?: number
+  counter_proposal_max_rounds?: number
+  negotiation_hitl_threshold_pct?: number
+}
+
+export interface ScreeningDefaultsData {
+  channels_master_enabled?: boolean
+  settings?: {
+    min_score?: number
+    min_score_preset?: string
+    response_timeout_hours?: number
+    auto_approval_limit?: number
+    auto_approval_preset?: string
+  }
+  channels?: Record<string, { enabled?: boolean }>
+  scheduling?: {
+    auto_enabled?: boolean
+    min_score_for_auto?: number
+    interview_duration_min?: number
+  }
+}
+
+export function computeOfferRulesProgress(rules: OfferRulesData | null | undefined): BlockProgress {
+  if (!rules) return { filled: 0, total: 4, missingLabels: ["Dias de início", "Aviso prévio", "Negociação", "Flexibilidade salarial"] }
+  const checks: Array<[unknown, string]> = [
+    [rules.allowed_start_day_of_month?.length, "Dias de início"],
+    [rules.min_notice_days != null, "Aviso prévio"],
+    [rules.negotiation_enabled != null, "Negociação"],
+    [rules.salary_flex_pct_max != null, "Flexibilidade salarial"],
+  ]
+  const filled = checks.filter(([v]) => !!v).length
+  const missingLabels = checks.filter(([v]) => !v).map(([, l]) => l)
+  return { filled, total: checks.length, missingLabels }
+}
+
+export function computeScreeningDefaultsProgress(defaults: ScreeningDefaultsData | null | undefined): BlockProgress {
+  if (!defaults) return { filled: 0, total: 4, missingLabels: ["Score mínimo", "Canais", "Timeout resposta", "Agendamento auto"] }
+  const checks: Array<[unknown, string]> = [
+    [defaults.settings?.min_score != null, "Score mínimo"],
+    [defaults.channels && Object.values(defaults.channels).some(c => c?.enabled), "Canais"],
+    [defaults.settings?.response_timeout_hours != null, "Timeout resposta"],
+    [defaults.scheduling?.auto_enabled != null, "Agendamento auto"],
+  ]
+  const filled = checks.filter(([v]) => !!v).length
+  const missingLabels = checks.filter(([v]) => !v).map(([, l]) => l)
+  return { filled, total: checks.length, missingLabels }
+}
+
+export function progressToStatus(progress: BlockProgress): "configured" | "partial" | "pending" {
+  if (progress.total === 0) return "pending"
+  if (progress.filled === 0) return "pending"
+  if (progress.filled === progress.total) return "configured"
+  return "partial"
 }
 
 /** Pure transform: company + benefits + policy → CardBlock[]. No side-effects. */
@@ -244,12 +310,13 @@ export function buildBlocks(
     { key: "preferred_channel", label: "Qual o canal preferido para comunicar com candidatos?", value: cr?.preferred_channel ?? null, type: "text", editable: true, block: "policy" },
     { key: "salary_expectation_filter", label: "Filtrar candidatos fora da faixa salarial automaticamente?", value: scr?.salary_expectation_filter ?? null, type: "boolean", editable: true, block: "policy" },
     { key: "salary_tolerance_percent", label: "Tolerância (em %) entre pretensão salarial e teto da vaga?", value: scr?.salary_tolerance_percent ?? null, type: "number", editable: true, block: "policy" },
+        { key: "screening_deadline_default_hours", label: "Prazo padrao de triagem (horas, a partir da publicacao)", value: scr?.screening_deadline_default_hours ?? 48, type: "number", editable: true, block: "policy" },
     { key: "experience_policy", label: "Mínimo de experiência: por vaga ou política da empresa?", value: scr?.experience_policy ?? null, type: "text", editable: true, block: "policy" },
     { key: "minimum_compatibility_score", label: "Pontuação mínima de compatibilidade para avançar (%)? (0 = sem corte)", value: scr?.minimum_compatibility_score ?? null, type: "number", editable: true, block: "policy" },
     { key: "auto_screening", label: "Triagem inicial dos candidatos deve ser automática?", value: ar?.auto_screening ?? null, type: "boolean", editable: true, block: "policy" },
     { key: "auto_scheduling", label: "Agendamento de entrevistas totalmente automático? (em breve)", value: ar?.auto_scheduling ?? null, type: "boolean", editable: false, block: "policy" },
     { key: "auto_stage_advance", label: "Candidatos avançam etapas automaticamente quando elegíveis?", value: ar?.auto_stage_advance ?? null, type: "boolean", editable: true, block: "policy" },
-    { key: "autonomy_level", label: "Em qual nível de autonomia a LIA deve operar?", value: ar?.autonomy_level ?? null, type: "text", editable: true, block: "policy" },
+    { key: "autonomy_level", label: "Em qual nível de autonomia a IA deve operar?", value: ar?.autonomy_level ?? null, type: "text", editable: true, block: "policy" },
     { key: "setup_progress", label: "Progresso da Configuração", value: hiringPolicy?.setup_progress ? `${hiringPolicy.setup_progress}%` : null, type: "text", editable: false, block: "policy" },
   ]
 
@@ -266,11 +333,6 @@ export function buildBlocks(
   ]
 
   const documentFields: CardField[] = [
-    { key: "onboarding_completed", label: "Onboarding Concluido", value: additionalData?.onboarding_completed_at ? "Sim" : null, type: "text", editable: false, block: "documents" },
-    { key: "responsible_name", label: "Responsavel", value: additionalData?.responsible_name, type: "text", editable: true, block: "documents" },
-    { key: "responsible_position", label: "Cargo do Responsavel", value: additionalData?.responsible_position, type: "text", editable: true, block: "documents" },
-    { key: "additional_notes", label: "Notas Adicionais", value: additionalData?.additional_notes, type: "text", editable: true, block: "documents" },
-    { key: "compensation_structure", label: "Políticas de PRV", value: company.default_salary_ranges && company.default_salary_ranges.length > 0 ? `${company.default_salary_ranges.length} faixa(s)` : null, type: "text", editable: false, block: "documents" },
     { key: "handbook", label: "Manual do Colaborador", value: null, type: "text", editable: false, block: "documents" },
     { key: "org_chart", label: "Organograma", value: null, type: "text", editable: false, block: "documents" },
   ]

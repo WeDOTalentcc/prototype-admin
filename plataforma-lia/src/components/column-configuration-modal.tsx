@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -88,6 +89,9 @@ export function ColumnConfigurationModal({
   onLoadView,
   onDeleteView
 }: ColumnConfigurationModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('column-configuration', isOpen)
+
   const [columns, setColumns] = useState<ColumnConfig[]>(currentColumns)
   const [searchTerm, setSearchTerm] = useState("")
   const [draggedItem, setDraggedItem] = useState<ColumnConfig | null>(null)
@@ -189,7 +193,7 @@ export function ColumnConfigurationModal({
           {/* Search */}
           <div className="p-4 dark:border-lia-border-subtle">
             <div className="relative">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-lia-text-disabled" />
+              <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-lia-text-muted" />
               <Input
                 placeholder="Search"
                 value={searchTerm}
@@ -278,7 +282,7 @@ export function ColumnConfigurationModal({
                       : 'bg-lia-bg-secondary dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle'
                   } hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse`}
                 >
-                  <GripVertical className="w-4 h-4 text-lia-text-disabled" />
+                  <GripVertical className="w-4 h-4 text-lia-text-muted" />
 
                   <button
                     onClick={() => handleToggleColumn(column.id)}
@@ -306,7 +310,7 @@ export function ColumnConfigurationModal({
                   {column.visible ? (
                     <Eye className="w-4 h-4 text-lia-text-primary" />
                   ) : (
-                    <EyeOff className="w-4 h-4 text-lia-text-disabled" />
+                    <EyeOff className="w-4 h-4 text-lia-text-muted" />
                   )}
                 </div>
               ))}

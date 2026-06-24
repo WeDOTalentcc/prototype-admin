@@ -16,6 +16,7 @@ from app.shared.types import WeDoBaseModel
 from typing import Annotated
 from fastapi import Path
 from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
+from app.shared.errors import LIAError
 
 router = APIRouter(prefix="/reports", tags=["reports"])
 
@@ -91,7 +92,7 @@ company_id: str = Depends(require_company_id)):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error generating report: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/comparison", response_model=None)
@@ -113,7 +114,7 @@ company_id: str = Depends(require_company_id)):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error generating comparison: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/candidate/{candidate_id}", response_model=None)
@@ -172,7 +173,7 @@ company_id: str = Depends(require_company_id)):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error sending daily briefing: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/weekly/send", response_model=None)
@@ -205,7 +206,7 @@ async def send_weekly_report(request: WeeklyReportSendRequest, company_id: str =
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error sending weekly report: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/monthly/send", response_model=None)
@@ -238,7 +239,7 @@ async def send_monthly_report(request: MonthlyReportSendRequest, company_id: str
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error sending monthly report: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/preview/{report_type}", response_class=HTMLResponse, response_model=None)
@@ -270,7 +271,7 @@ company_id: str = Depends(require_company_id)):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error generating preview: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/preview/{report_type}/json", response_model=None)
@@ -297,6 +298,6 @@ company_id: str = Depends(require_company_id)):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error generating preview: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 reorder_collection_before_item(router)

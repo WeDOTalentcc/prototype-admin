@@ -151,6 +151,48 @@ export async function requestRegeneration(
   })
 }
 
+export interface ImplicitSignalAck {
+  persisted: boolean
+  signal_type: string
+  signal_id: string | null
+  skipped_reason: string | null
+}
+
+/**
+ * Task #1299: report a frontend-detected IMPLICIT feedback signal.
+ *
+ * Only `correction_delta` (recruiter edited a LIA suggestion before sending)
+ * and `abandonment` (recruiter ignored a substantive answer and switched
+ * topic) flow through here — `regeneration` is captured server-side in the
+ * `/regenerate` endpoint. The backend is the gatekeeper: it re-applies the
+ * FairnessGuard gate and the conservative abandonment criterion, so a
+ * `{ persisted: false, skipped_reason }` reply is a NORMAL, non-error outcome.
+ * `company_id`/`user_id` are derived from the JWT, never the body.
+ */
+export async function reportImplicitSignal(
+  signalType: 'correction_delta' | 'abandonment',
+  args: {
+    sessionId: string
+    messageId: string
+    originalResponse?: string
+    usedText?: string
+    abandonedResponse?: string
+    nextUserMessage?: string
+    messageContext?: MessageContextPayload
+  },
+): Promise<ImplicitSignalAck> {
+  return postJson<ImplicitSignalAck>('/lia/feedback/implicit', {
+    session_id: args.sessionId,
+    message_id: args.messageId,
+    signal_type: signalType,
+    original_response: args.originalResponse,
+    used_text: args.usedText,
+    abandoned_response: args.abandonedResponse,
+    next_user_message: args.nextUserMessage,
+    message_context: args.messageContext,
+  })
+}
+
 export async function getFeedbackMetrics(days?: number): Promise<FeedbackMetrics> {
   const params = days ? `?days=${days}` : ''
   return getJson<FeedbackMetrics>(`/lia/feedback/metrics${params}`)

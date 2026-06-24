@@ -110,7 +110,7 @@ export const BenefitItemCard = React.memo(function BenefitItemCard({
             {benefit.name}
           </h4>
           {benefit.is_highlighted && (
-            <Star className="w-3.5 h-3.5 text-status-warning fill-yellow-500" />
+            <Star className="w-3.5 h-3.5 text-status-warning fill-current" />
           )}
           {suggested && <Chip variant="neutral" className="text-micro">Sugerido</Chip>}
           {benefit.is_mandatory && (

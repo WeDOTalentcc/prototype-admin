@@ -9,6 +9,7 @@ from app.api import orchestrator_routes, wsi_endpoints
 
 # ── Public routes ─────────────────────────────────────────────────────────────
 from app.api.public import candidate_portal
+from app.api.public import offer_portal as public_offer_portal
 from app.api.public import shared_searches as public_shared_searches
 
 # ── Bulk import from app.api.v1 ──────────────────────────────────────────────
@@ -28,10 +29,12 @@ from app.api.v1 import (
     admin_platform,
     admin_token_budget,
     affirmative,
+    cities,
     agent_explainability,
     agent_monitoring,
     ai_consumption,
     alerts,
+    vacancy_alerts,
     analysis,
     applications,
     approvals,
@@ -62,15 +65,18 @@ from app.api.v1 import (
     communication_matrix,
     communication_optout,
     communication_settings,
+    offer_rules_settings,
     communications,
     company,
     company_approvers,
+    approval_resolve_token,
     company_users,
     company_benefits,
     company_compensation_components,
     company_salary_bands,
     company_assessments,
     company_ai_persona,
+    pii_visibility_defaults,
     company_culture,
     company_culture_config,
     company_departments,
@@ -86,6 +92,7 @@ from app.api.v1 import (
     data_subject_requests,
     default_templates,
     digest,
+    digest_schedule,
     drift,
     early_warning,
     eligibility_question_templates,
@@ -108,6 +115,7 @@ from app.api.v1 import (
     integrations_hub,
     intelligence,
     interview_analysis,
+    interview_consent,
     interview_notes,
     interviews,
     jd_generation,
@@ -209,10 +217,12 @@ from app.api.v1 import (
 from app.api.v1 import wsi_async as wsi_async_v1
 from app.api.v1.admin_agents import router as admin_agents_router
 from app.api.v1.admin_external import router as admin_external_router
+from app.api.v1.admin_plan_api import router as admin_plan_api_router
 from app.api.v1.admin_circuit_breakers import router as admin_cb_router
 from app.api.v1.admin_dlq import router as admin_dlq_router
 from app.api.v1.admin_lgpd import router as admin_lgpd_router
-from app.api.v1.agent_chat_ws import router as agent_chat_ws_router
+from app.api.v1.admin_expurgo_audit import router as admin_expurgo_audit_router
+# agent_chat_ws deletado 2026-06-09 — endpoint /sessions/active migrado para agent_chat_sse.py
 from app.api.v1.agent_chat_sse import router as agent_chat_sse_router
 from app.api.v1.agent_memory import router as agent_memory_router
 from app.api.v1.agent_quality import router as agent_quality_router
@@ -248,14 +258,19 @@ from app.api.v1.email_tracking import communication_webhook_router
 from app.api.v1.email_tracking import router as email_tracking_router
 from app.api.v1.event_history import router as event_history_router
 from app.api.v1.granular_consent import router as granular_consent_router
+from app.api.v1.public_consent import router as public_consent_router
+from app.api.v1.public_consent import router as public_consent_router
 from app.api.v1.health_langgraph import router as health_langgraph_router
 from app.api.v1.hitl import router as hitl_router
 from app.api.v1.ml_feedback import router as ml_feedback_router
 from app.api.v1.navigation_intent import router as navigation_intent_router
 from app.api.v1.pipeline_orchestrator import router as pipeline_orchestrator_router
 from app.api.v1.pipeline_policy import router as pipeline_policy_router
+from app.api.v1.kanban_broadcast import router as kanban_broadcast_router
 from app.api.v1.proactive_actions import router as proactive_actions_router
+from app.api.v1.proactive_hints import router as proactive_hints_router
 from app.api.v1.rag_search import router as rag_search_router
+from app.api.v1.search_contextual_hints import router as search_contextual_hints_router
 from app.api.v1.recruiter_behavior import router as recruiter_behavior_router
 from app.api.v1.salary_benchmark import router as salary_benchmark_router
 from app.api.v1.short_lists import router as short_lists_router
@@ -265,9 +280,11 @@ from app.api.v1.traces import router as traces_router
 from app.api.v1.user_agent_preferences import router as user_prefs_router
 from app.api.v1.wsi import router as wsi_router
 from app.api.v1.rh_dashboard import router as rh_dashboard_router
-from app.api.v1.rails_health import router as rails_health_router
 from app.api.v1.rails_sync import router as rails_sync_router
 from app.api.v1.llm_config import router as llm_config_router
+from app.api.v1.inline_chat import router as inline_chat_router
+from app.api.v1.linkedin_integration import router as linkedin_integration_router
+
 
 
 def register_all_routes(app: FastAPI) -> None:
@@ -277,7 +294,6 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(system_health.router, prefix="/api/v1")
     app.include_router(health_langgraph_router, prefix="/api/v1")
     app.include_router(health_check.router, prefix="/api/v1", tags=["health-check"])
-    app.include_router(rails_health_router, prefix="/api/v1", tags=["rails-integration"])
     app.include_router(rails_sync_router, prefix="/api/v1", tags=["rails-sync"])
 
     # ── Internal LLM (used by Next.js frontend routes) ────────────────────────
@@ -311,6 +327,7 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(experience_highlights.router, prefix="/api/v1", tags=["experience-highlights"])
     app.include_router(big_five.router, prefix="/api/v1", tags=["big-five"])
     app.include_router(affirmative.router, prefix="/api/v1", tags=["affirmative"])
+    app.include_router(cities.router, prefix="/api/v1", tags=["cities"])
 
     # ── Jobs ──────────────────────────────────────────────────────────────────
     app.include_router(job_vacancies.router, prefix="/api/v1", tags=["job_vacancies"])
@@ -331,6 +348,7 @@ def register_all_routes(app: FastAPI) -> None:
 
     # ── Pipeline ──────────────────────────────────────────────────────────────
     app.include_router(pipeline.router, prefix="/api/v1/pipeline", tags=["pipeline"])
+    app.include_router(kanban_broadcast_router, tags=["kanban-broadcast"])
     app.include_router(applications.router, prefix="/api/v1", tags=["applications"])
     app.include_router(recruitment_stages.router, prefix="/api/v1/recruitment-stages", tags=["recruitment-stages"])
     app.include_router(recruitment_stages.screening_questions_router, prefix="/api/v1", tags=["screening-questions"])
@@ -355,6 +373,7 @@ def register_all_routes(app: FastAPI) -> None:
 
     # ── Interviews & Scheduling ───────────────────────────────────────────────
     app.include_router(interviews.router, prefix="/api/v1", tags=["interviews"])
+    app.include_router(interview_consent.router, prefix="/api/v1", tags=["interview-consent"])
     app.include_router(scheduling.router, prefix="/api/v1", tags=["scheduling"])
     app.include_router(interview_notes.router, prefix="/api/v1", tags=["interview-notes"])
     app.include_router(interview_analysis.router, prefix="/api/v1", tags=["interview-analysis"])
@@ -375,6 +394,7 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(communications.router, prefix="/api/v1", tags=["communications"])
     app.include_router(communication.router, prefix="/api/v1", tags=["communication"])
     app.include_router(communication_settings.router, prefix="/api/v1", tags=["company"])
+    app.include_router(offer_rules_settings.router, prefix="/api/v1", tags=["company"])
     app.include_router(communication_matrix.router, prefix="/api/v1", tags=["communication-matrix"])
     app.include_router(communication_optout.router, prefix="/api/v1", tags=["communication-optout"])
     app.include_router(email.router, prefix="/api/v1", tags=["email"])
@@ -384,15 +404,18 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(communication_webhook_router, prefix="/api/v1", tags=["email-tracking"])
     app.include_router(notifications.router, prefix="/api/v1", tags=["notifications"])
     app.include_router(digest.router, prefix="/api/v1", tags=["digest"])
+    app.include_router(digest_schedule.router, prefix="/api/v1", tags=["notifications"])
 
     # ── Company ───────────────────────────────────────────────────────────────
     app.include_router(company.router, prefix="/api/v1", tags=["company"])
     app.include_router(company_approvers.router, prefix="/api/v1", tags=["company"])
+    app.include_router(approval_resolve_token.router, prefix="/api/v1", tags=["approvals"])
     app.include_router(company_users.router, prefix="/api/v1", tags=["company"])
     app.include_router(lia_field_toggles.router, prefix="/api/v1", tags=["field-toggles"])
     app.include_router(company_culture.router, prefix="/api/v1", tags=["company-culture"])
     app.include_router(company_culture_config.router, prefix="/api/v1", tags=["company"])
     app.include_router(company_ai_persona.router, prefix="/api/v1", tags=["company-ai-persona"])
+    app.include_router(pii_visibility_defaults.router, prefix="/api/v1", tags=["pii-visibility"])
     app.include_router(eligibility_question_templates.router, prefix="/api/v1", tags=["eligibility-question-templates"])
     app.include_router(learning_loops_config.router, prefix="/api/v1", tags=["learning-loops"])
     app.include_router(company_departments.router, prefix="/api/v1", tags=["company"])
@@ -420,6 +443,7 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(search_assistant.router, prefix="/api/v1", tags=["search-assistant"])
     app.include_router(search_archetypes.router, prefix="/api/v1", tags=["search-archetypes"])
     app.include_router(search_feedback.router, prefix="/api/v1", tags=["search-feedback"])
+    app.include_router(search_contextual_hints_router, prefix="/api/v1", tags=["search-contextual"])
     app.include_router(semantic_search.router, prefix="/api/v1", tags=["semantic-search"])
     app.include_router(rag_search_router, prefix="/api/v1", tags=["rag-search"])
     app.include_router(shared_searches.router, prefix="/api/v1/shared-searches", tags=["shared-searches"])
@@ -443,6 +467,7 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(reports.router, prefix="/api/v1", tags=["reports"])
     app.include_router(dashboard_data.router, prefix="/api/v1", tags=["dashboard"])
     app.include_router(alerts.router, prefix="/api/v1", tags=["alerts"])
+    app.include_router(vacancy_alerts.router, prefix="/api/v1", tags=["alerts"])
     app.include_router(agent_monitoring.router, prefix="/api/v1", tags=["agent-monitoring"])
     app.include_router(saturation.router, prefix="/api/v1", tags=["saturation"])
     app.include_router(fairness_reports.router, prefix="/api/v1", tags=["fairness-reports"])
@@ -495,6 +520,7 @@ def register_all_routes(app: FastAPI) -> None:
     # ── HITL ──────────────────────────────────────────────────────────────────
     app.include_router(hitl_router, prefix="/api/v1", tags=["hitl"])
     app.include_router(proactive_actions_router, prefix="/api/v1")
+    app.include_router(proactive_hints_router, prefix="/api/v1", tags=["proactive-hints"])
     app.include_router(agent_memory_router, prefix="/api/v1")
     app.include_router(agent_explainability.router, prefix="/api/v1", tags=["agent-explainability"])
 
@@ -510,7 +536,6 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(agent_quality_dashboard_router, prefix="/api/v1", tags=["agent-quality-dashboard"])
     app.include_router(ml_predictions_router, prefix="/api/v1", tags=["ml-predictions"])
     app.include_router(calibration_dashboard_v2_router, prefix="/api/v1", tags=["calibration-dashboard"])
-    app.include_router(agent_chat_ws_router, prefix="/api/v1")
     app.include_router(agent_chat_sse_router, prefix="/api/v1")
 
     # ── WebSocket ─────────────────────────────────────────────────────────────
@@ -533,8 +558,11 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(data_subject_requests.router, prefix="/api/v1", tags=["data-subject-requests"])
     app.include_router(consent_management.router, prefix="/api/v1", tags=["consent-management"])
     app.include_router(granular_consent_router, prefix="/api/v1", tags=["granular-consent"])
+    app.include_router(public_consent_router, prefix="/api/v1", tags=["public-consents"])
+    app.include_router(public_consent_router, prefix="/api/v1", tags=["public-consents"])
     app.include_router(data_request.router, prefix="/api/v1", tags=["data-requests"])
     app.include_router(admin_lgpd_router, prefix="/api/v1")
+    app.include_router(admin_expurgo_audit_router, prefix="/api/v1")  # Phase 3b LGPD expurgo
     app.include_router(admin_compliance_fairness.router, prefix="/api/v1")
     app.include_router(bias_audit.router, prefix="/api/v1", tags=["bias-audit"])
     app.include_router(admin_bias_audit.router, prefix="/api/v1", tags=["bias-audit-admin"])
@@ -553,6 +581,7 @@ def register_all_routes(app: FastAPI) -> None:
     # NOTE: Do NOT add job-status-webhook routes here; they live under /api/v1/job-status-webhooks.
     app.include_router(webhooks.router, prefix="/api/v1", tags=["webhooks"])
     app.include_router(integrations.router, prefix="/api/v1", tags=["integrations"])
+    app.include_router(linkedin_integration_router, prefix="/api/v1/integrations/linkedin", tags=["linkedin-integration"])
     app.include_router(integrations_hub.router, prefix="/api/v1", tags=["integration-hub"])
     app.include_router(external_webhooks.router, prefix="/api/v1", tags=["external-webhooks"])
     app.include_router(merge_webhooks.router, prefix="/api/v1", tags=["merge-webhooks"])
@@ -601,6 +630,7 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(admin_cb_router, prefix="/api/v1")
     app.include_router(admin_agents_router, prefix="/api/v1")
     app.include_router(admin_external_router, prefix="/api/v1", tags=["admin-external"])
+    app.include_router(admin_plan_api_router, prefix="/api/v1", tags=["admin-integration"])
     app.include_router(admin_dlq_router, prefix="/api/v1")
 
     # ── Short Lists / RAG ─────────────────────────────────────────────────────
@@ -648,3 +678,5 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(rh_dashboard_router, prefix="/api/v1", tags=["rh-dashboard"])
     # ── Public (no /api/v1 prefix) ────────────────────────────────────────────
     app.include_router(candidate_portal.router, tags=["candidate-portal"])
+    app.include_router(public_offer_portal.router, tags=["offer-portal"])
+    app.include_router(inline_chat_router, prefix="/api/v1/inline-chat", tags=["inline-chat"])

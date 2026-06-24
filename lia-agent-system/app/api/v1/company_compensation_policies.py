@@ -36,6 +36,7 @@ from app.domains.company.repositories.compensation_policy_repository import (
     CompensationPolicyRepository,
 )
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.errors import LIAError
 
 router = APIRouter(
     prefix="/company/compensation-policies", tags=["compensation-policies"]
@@ -259,7 +260,7 @@ gated_company_id: str = Depends(require_company_id_strict_match("query.company_i
         raise
     except Exception as e:
         logger.error(f"Error listing compensation policies: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/", response_model=CompensationPolicyResponse)
@@ -293,7 +294,7 @@ gated_company_id: str = Depends(require_company_id_strict_match("query.company_i
     except Exception as e:
         await db.rollback()
         logger.error(f"Error creating compensation policy: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/{policy_id}", response_model=CompensationPolicyResponse)
@@ -315,7 +316,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting compensation policy: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.put("/{policy_id}", response_model=CompensationPolicyResponse)
@@ -350,7 +351,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await db.rollback()
         logger.error(f"Error updating compensation policy: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.delete("/{policy_id}", response_model=None)
@@ -387,7 +388,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await db.rollback()
         logger.error(f"Error deleting compensation policy: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/seed-defaults", response_model=None)
@@ -431,7 +432,7 @@ gated_company_id: str = Depends(require_company_id_strict_match("query.company_i
     except Exception as e:
         await db.rollback()
         logger.error(f"Error seeding default policies: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/policy-types/list", response_model=None)

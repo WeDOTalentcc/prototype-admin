@@ -20,6 +20,7 @@ from app.domains.job_management.repositories.webhook_repository import WebhookRe
 from app.domains.job_management.services.job_status_webhook_service import job_status_webhook_service
 from app.models.webhook_registration import JOB_STATUS_WEBHOOK_EVENTS, WebhookDeliveryLog, WebhookRegistration
 from app.shared.types import WeDoBaseModel
+from app.shared.errors import LIAError
 
 router = APIRouter(prefix="/webhooks", tags=["webhooks"])
 logger = logging.getLogger(__name__)
@@ -204,7 +205,7 @@ async def register_webhook(
         raise
     except Exception as e:
         logger.error(f"Error registering webhook: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/", response_model=WebhookListResponse)
@@ -262,7 +263,7 @@ async def list_webhooks(
         raise
     except Exception as e:
         logger.error(f"Error listing webhooks: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/{webhook_id}", response_model=WebhookResponse)
@@ -308,7 +309,7 @@ async def get_webhook(
         raise
     except Exception as e:
         logger.error(f"Error getting webhook: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.patch("/{webhook_id}", response_model=WebhookResponse)
@@ -370,7 +371,7 @@ async def update_webhook(
         raise
     except Exception as e:
         logger.error(f"Error updating webhook: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.delete("/{webhook_id}", response_model=None)
@@ -404,7 +405,7 @@ async def delete_webhook(
         raise
     except Exception as e:
         logger.error(f"Error deleting webhook: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/{webhook_id}/test", response_model=WebhookTestResponse)
@@ -446,7 +447,7 @@ async def test_webhook(
         raise
     except Exception as e:
         logger.error(f"Error testing webhook: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/{webhook_id}/logs", response_model=WebhookLogsResponse)
@@ -496,7 +497,7 @@ async def get_webhook_logs(
         raise
     except Exception as e:
         logger.error(f"Error getting webhook logs: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/events/available", response_model=list[WebhookEventResponse])

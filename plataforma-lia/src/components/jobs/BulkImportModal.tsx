@@ -467,7 +467,7 @@ export function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImportModalP
                   onClick={() => setMode("file")}
                   className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                     mode === "file"
-                      ? "bg-wedo-cyan/10 text-wedo-cyan border border-wedo-cyan/30"
+                      ? "bg-wedo-cyan/10 text-wedo-cyan-text border border-wedo-cyan/30"
                       : "bg-lia-bg-secondary text-lia-text-secondary border border-lia-border-subtle"
                   }`}
                 >
@@ -478,7 +478,7 @@ export function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImportModalP
                   onClick={() => setMode("json")}
                   className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                     mode === "json"
-                      ? "bg-wedo-cyan/10 text-wedo-cyan border border-wedo-cyan/30"
+                      ? "bg-wedo-cyan/10 text-wedo-cyan-text border border-wedo-cyan/30"
                       : "bg-lia-bg-secondary text-lia-text-secondary border border-lia-border-subtle"
                   }`}
                 >
@@ -489,7 +489,7 @@ export function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImportModalP
                   onClick={() => setMode("ats")}
                   className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                     mode === "ats"
-                      ? "bg-wedo-cyan/10 text-wedo-cyan border border-wedo-cyan/30"
+                      ? "bg-wedo-cyan/10 text-wedo-cyan-text border border-wedo-cyan/30"
                       : "bg-lia-bg-secondary text-lia-text-secondary border border-lia-border-subtle"
                   }`}
                 >
@@ -535,7 +535,7 @@ export function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImportModalP
                   >
                     <Upload
                       className={`w-10 h-10 mx-auto mb-2 ${
-                        isDragging ? "text-wedo-cyan" : "text-lia-text-disabled"
+                        isDragging ? "text-wedo-cyan-text" : "text-lia-text-disabled"
                       }`}
                     />
                     <div className="text-sm font-medium text-lia-text-primary">
@@ -596,12 +596,12 @@ export function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImportModalP
                     {Object.entries(mappedHeaders).map(([csv, jsonField]) => (
                       <div key={csv} className="text-lia-text-secondary">
                         <code className="bg-lia-bg-primary px-1 rounded">{csv}</code> →{" "}
-                        <code className="text-wedo-cyan">{jsonField}</code>
+                        <code className="text-lia-text-secondary">{jsonField}</code>
                       </div>
                     ))}
                   </div>
                   {unmappedHeaders.length > 0 && (
-                    <div className="text-xs text-lia-text-disabled mt-2">
+                    <div className="text-xs text-lia-text-muted mt-2">
                       Ignorados: {unmappedHeaders.join(", ")}
                     </div>
                   )}

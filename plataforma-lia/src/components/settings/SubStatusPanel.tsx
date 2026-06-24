@@ -80,7 +80,7 @@ export function SubStatusPanel({ stage, isEditMode, onToggleSubStatus }: SubStat
               </span>
 
               {ss.is_waiting && ss.is_active && (
-                <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-wedo-cyan/10 text-wedo-cyan-dark text-micro font-medium">
+                <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-wedo-cyan/10 text-wedo-cyan-text text-micro font-medium">
                   {t("waiting")}
                 </span>
               )}
@@ -91,16 +91,16 @@ export function SubStatusPanel({ stage, isEditMode, onToggleSubStatus }: SubStat
                   disabled={togglingId === `default-${ss.id}`}
                   aria-label={ss.is_default ? t("removeDefault", { name: ss.display_name }) : t("setDefault", { name: ss.display_name })}
                   title={ss.is_default ? t("removeDefaultShort") : t("setDefaultShort")}
-                  className="p-0.5 rounded-xl hover:bg-lia-bg-tertiary dark:hover:bg-lia-border-medium transition-colors motion-reduce:transition-none"
+                  className="p-0.5 rounded-md hover:bg-lia-bg-tertiary dark:hover:bg-lia-border-medium transition-colors motion-reduce:transition-none"
                   data-testid={`sub-status-default-toggle-${ss.id}`}
                   type="button"
                 >
                   {togglingId === `default-${ss.id}` ? (
                     <Loader2 className="h-3 w-3 animate-spin motion-reduce:animate-none text-lia-text-tertiary" />
                   ) : ss.is_default ? (
-                    <Star className="h-3 w-3 text-status-warning fill-amber-400" />
+                    <Star className="h-3 w-3 text-status-warning fill-current" />
                   ) : (
-                    <Star className="h-3 w-3 text-lia-text-disabled hover:text-status-warning" />
+                    <Star className="h-3 w-3 text-lia-text-muted hover:text-status-warning" />
                   )}
                 </button>
               )}
@@ -117,7 +117,7 @@ export function SubStatusPanel({ stage, isEditMode, onToggleSubStatus }: SubStat
               )}
 
               {!canManage && ss.is_default && (
-                <Star className="h-3 w-3 text-status-warning fill-amber-400 flex-shrink-0" />
+                <Star className="h-3 w-3 text-status-warning fill-current flex-shrink-0" />
               )}
             </div>
           ))}

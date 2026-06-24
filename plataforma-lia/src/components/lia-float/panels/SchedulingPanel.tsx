@@ -84,7 +84,7 @@ export function SchedulingPanel({ data, onUpdateData }: SchedulingPanelProps) {
           <User className="w-3.5 h-3.5 text-lia-text-secondary" />
           <span className="text-xs font-medium text-lia-text-primary">{candidateName}</span>
         </div>
-        {jobTitle && <p className="text-micro text-lia-text-disabled ml-5">{jobTitle}</p>}
+        {jobTitle && <p className="text-micro text-lia-text-muted ml-5">{jobTitle}</p>}
       </div>
 
       {confirmed ? (
@@ -112,7 +112,7 @@ export function SchedulingPanel({ data, onUpdateData }: SchedulingPanelProps) {
                         !slot.available
                           ? "bg-lia-bg-tertiary text-lia-text-disabled border-transparent cursor-not-allowed line-through"
                           : selectedSlot === slot.id
-                            ? "bg-wedo-cyan/10 text-wedo-cyan border-wedo-cyan"
+                            ? "bg-wedo-cyan/10 text-wedo-cyan-text border-wedo-cyan"
                             : "bg-lia-bg-primary text-lia-text-primary border-lia-border-subtle hover:border-wedo-cyan/50"
                       )}
                     >

@@ -7,6 +7,7 @@ from typing import Any, Literal, Optional
 from lia_agents_core.agent_interface import AgentInput, AgentOutput, AgentAction
 from lia_agents_core.enhanced_agent_mixin import EnhancedAgentMixin
 from lia_agents_core.langgraph_react_base import LangGraphReActBase
+from app.shared.agents.tenant_aware_agent import TenantAwareAgentMixin
 
 logger = logging.getLogger(__name__)
 
@@ -18,28 +19,27 @@ logger = logging.getLogger(__name__)
 from app.middleware.auth_enforcement import _current_company_id as _CURRENT_COMPANY_ID  # noqa: F401
 from app.shared.observability.tracing import trace_span
 
-PLATFORM_TOOLS_REGISTRY: dict[str, str] = {
-    "search_candidates": "read",
-    "list_jobs": "read",
-    "get_job_details": "read",
-    "get_candidate_details": "read",
-    "summarize_context": "read",
-    "clarify_request": "read",
-    "get_evaluation_criteria": "read",  # Wave 3 #24 audit 2026-05-22: tool REAL implementada
-    "get_pipeline_summary": "read",     # Wave 3 #25 audit 2026-05-22: tool REAL implementada
-    "search_talent_pool": "read",       # Wave 3+ audit 2026-05-22: tool REAL implementada
-    "get_company_culture": "read",      # Wave 3+ audit 2026-05-22: tool REAL implementada
-    "get_analytics_summary": "read",    # Wave 3+ audit 2026-05-22: tool REAL implementada
-    "move_candidate": "write",
-    "create_note": "write",             # Wave 3+ audit 2026-05-22: tool REAL implementada
-    "send_email": "write",
-    "update_candidate_field": "write",
-    "schedule_interview": "write",
-}
+# Platform tools registry loaded from config/platform_tools.yaml (single source of truth).
+# Migrated from inline Python dict to declarative YAML — see platform_tools_loader.py.
+from app.domains.agent_studio.platform_tools_loader import (
+    get_platform_tools_registry as _load_registry,
+    get_hitl_required_tools as _load_hitl,
+    get_domain_tool_loaders as _load_domain_loaders,
+    get_available_tool_names,
+)
+
+PLATFORM_TOOLS_REGISTRY: dict[str, str] = _load_registry()
 
 
-def get_available_tool_names() -> list[str]:
-    return list(PLATFORM_TOOLS_REGISTRY.keys())
+HITL_REQUIRED_TOOLS: frozenset[str] = _load_hitl()
+
+
+# ── P0-2 Onda 0 (2026-06-12): review gate constants ──────────────────────────
+# Marketplace-installed agents stay in pending_review until a wedotalent_admin
+# explicitly approves them. These constants are the source of truth for the
+# review gate in _handle_execute_custom_agent (domain.py) and for contract tests.
+REVIEW_STATUS_PENDING: str = "pending_review"
+REVIEW_STATUS_ACTIVE: str = "active"
 
 
 # ── Q4.1 Sandbox dry-run (2026-05-29) ─────────────────────────────────────────
@@ -86,7 +86,14 @@ def _summarize_tool_args(kwargs: dict[str, Any]) -> dict[str, Any]:
     return out
 
 
-class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
+class CustomAgentRuntime(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgentMixin):
+    # Gap G (2026-06-08): TenantAwareAgentMixin PRIMEIRO no MRO. execute()
+    # chama self._process_langgraph (linha ~829) → o override do mixin
+    # pré-resolve o snippet de tenant + aplica strict-mode gate
+    # (MissingTenantContextError) e o filtro de snippet degradado
+    # ("sua empresa"). Antes, agentes do Studio escapavam desses controles.
+    # _get_system_prompt próprio do runtime (sync) ainda vence no MRO e lê
+    # ctx['tenant_context_snippet'] que o mixin injeta.
 
     def __init__(
         self,
@@ -167,32 +174,17 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
         "advance_campaign_stage", "move_pool_to_job",
     })
 
+    # HITL_REQUIRED_TOOLS loaded from config/platform_tools.yaml (module-level)
+
     def _get_tools(self) -> list:
         from lia_agents_core.tool_adapter import tool_definition_to_langchain_tool
 
-        # GAP 5: Load tools from autonomous pool + domain-specific registries
+        # GAP 5: Load tools from domain-specific registries
         all_tools = []
-
-        # Pool 1: Autonomous tools (40 curated cross-domain tools)
-        try:
-            # Pool 1 cross-domain canonical (46 tools curadas) — Studio agents usam autonomous
-            # como baseline cross-domain + Pool 2 domain-specific (sem substituto em agent_studio).
-            from app.domains.autonomous.agents.autonomous_tool_registry import get_autonomous_tools
-            all_tools.extend(get_autonomous_tools())
-        except Exception:
-            pass
 
         # Pool 2: Domain-specific tools based on agent domain
         domain = self._domain.split(":")[0] if ":" in self._domain else self._domain
-        domain_tool_loaders = {
-            "sourcing": "app.domains.sourcing.agents.sourcing_tool_registry.get_sourcing_tools",
-            "pipeline": "app.domains.pipeline.agents.pipeline_tool_registry.get_pipeline_tools",
-            "screening": "app.domains.cv_screening.agents.pipeline_tool_registry.get_pipeline_tools",
-            "communication": "app.domains.communication.agents.communication_tool_registry.get_communication_tools",
-            "analytics": "app.domains.analytics.agents.analytics_tool_registry.get_analytics_tools",
-            "job_management": "app.domains.job_management.agents.wizard_tool_registry.get_wizard_tools",
-            "automation": "app.domains.automation.agents.automation_tool_registry.get_automation_tools",
-        }
+        domain_tool_loaders = _load_domain_loaders()
         loader_path = domain_tool_loaders.get(domain)
         if loader_path:
             try:
@@ -212,8 +204,21 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
                 all_available[td.name] = td
 
         filtered = []
-        # If allowed_tools is empty, allow ALL available tools (minus restricted/excluded)
-        tool_names_to_use = self._allowed_tools if self._allowed_tools else list(all_available.keys())
+        # P1-10 fail-closed: allowlist vazia = sem tools (agente responde so com texto).
+        # Sem flag allow_all_tools explicita, allowed_tools=[] nunca concede acesso
+        # a todas as tools da plataforma -- evita escalada de privilegio por omissao.
+        if self._allowed_tools:
+            tool_names_to_use = self._allowed_tools
+        else:
+            logger.warning(
+                "[CustomAgentRuntime] agent_runtime_empty_allowlist: "
+                "agent_id=%s company_id=%s -- nenhuma tool sera carregada (fail-closed). "
+                "Defina allowed_tools explicitamente ou adicione campo allow_all_tools=True "
+                "ao schema do agente para acesso irrestrito intencional.",
+                getattr(self, "_agent_id", "unknown"),
+                self._company_id,
+            )
+            tool_names_to_use = []
         for tool_name in tool_names_to_use:
             if tool_name in all_available:
                 td = all_available[tool_name]
@@ -259,6 +264,27 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
                             "would_execute": {"tool": _fn.__name__, "args": _safe_args},
                         }
 
+                    # ── P0-1 HITL gate for sensitive tools (Onda 0, 2026-06-12) ──────────
+                    # HITL_REQUIRED_TOOLS are tools with irreversible/high-impact effects.
+                    # They return hitl_pending regardless of confirm flag — the LLM cannot
+                    # self-approve these. Only the human via the approval UI can unblock.
+                    # This gate runs BEFORE the AUD-4 generic confirm check.
+                    if _fn.__name__ in HITL_REQUIRED_TOOLS:
+                        logger.info(
+                            "[Studio][P0-1] HITL_REQUIRED gate held tool=%s tenant=%s — requer aprovacao humana",
+                            _fn.__name__, request_company_id or "unknown",
+                        )
+                        return {
+                            "status": "hitl_pending",
+                            "requires_approval": True,
+                            "tool": _fn.__name__,
+                            "message": (
+                                f"A acao '{_fn.__name__}' requer aprovacao humana. "
+                                "Use o painel de aprovacao para autorizar ou rejeitar."
+                            ),
+                            "hitl_gate": "P0-1",
+                        }
+
                     # ── AUD-4 HITL gate (canonical, registrado Wave C2.6 2026-05-27) ──
                     # `confirm=True` em write tools E O gate Human-in-the-Loop canonical
                     # do Agent Studio. LLM custom NAO pode bypass — runtime intercepta
@@ -285,6 +311,8 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
                     # Wave 2 audit 2026-05-21: ANTES log-only, output bias passava direto pro LLM.
                     # AGORA bloqueia o output e retorna sanitized placeholder. LLM recebe sinal
                     # de bias e raciocina sobre alternativa. Audit trail via logger.warning.
+                    # P0-4 fix (2026-06-14): camada 3B — adicionar log_check() para audit
+                    # trail + falhar com logger.error (não warning) em crash do guard.
                     try:
                         from app.shared.compliance.fairness_guard import FairnessGuard
                         _fg_out = FairnessGuard()
@@ -296,6 +324,22 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
                                     "[Studio] FairnessGuard BLOCKED tool output: tool=%s category=%s",
                                     _fn.__name__, _fg_check.category,
                                 )
+                                # Audit trail camada 3B (P0-4): espelha Fix B do mixin
+                                try:
+                                    import asyncio as _asyncio_fg3b
+                                    _asyncio_fg3b.get_event_loop().create_task(
+                                        _fg_out.log_check(
+                                            result=_fg_check,
+                                            context="agent_studio_tool_output",
+                                            company_id=request_company_id or None,
+                                            agent_id=_fn.__name__,
+                                        )
+                                    )
+                                except Exception as _lc3b_exc:
+                                    logger.debug(
+                                        "[Studio] 3B log_check enqueue failed (fail-open): %s",
+                                        _lc3b_exc,
+                                    )
                                 # Sanitize: replace tool_result com mensagem explicativa pro LLM.
                                 # LLM vê o bloqueio e ajusta raciocínio em vez de propagar bias.
                                 return (
@@ -303,8 +347,14 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
                                     f"categoria={_fg_check.category or 'bias_detectado'}. "
                                     f"Reformule a consulta sem critérios discriminatórios.]"
                                 )
-                    except Exception as _fg_exc:
-                        logger.warning("[Studio] FairnessGuard check failed: %s", _fg_exc)
+                    except Exception as _fg3b_exc:
+                        # P0-4: logger.error (não warning) quando guard crasha na camada 3B
+                        logger.error(
+                            "[Studio] fairness_guard_failed_layer_3b tool=%s",
+                            _fn.__name__,
+                            exc_info=True,
+                            extra={"layer": "3B_output", "tool": _fn.__name__},
+                        )
 
                     return _tool_result
 
@@ -323,6 +373,7 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
         session_id: str,
         audit_callback: Any = None,
         streaming_callback: Any = None,
+        conversation_id: Any = None,
     ) -> dict:
         compiled = self._get_compiled_graph()
         if compiled is None:
@@ -804,18 +855,61 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
             pass
 
         # === Existing FairnessGuard ===
+        # P0-4 fix (2026-06-14): fail-closed + audit trail (espelha Fix A de agent_chat_sse.py).
+        # Antes: except Exception: pass — silenciava crash do guard, execução continuava,
+        # log_check() nunca era chamado. Agora: crash → logger.error + bloqueio (fail-closed).
         try:
             from app.shared.compliance.fairness_guard import FairnessGuard
             _fg = FairnessGuard()
             _fg_result = _fg.check(message)
             if _fg_result.is_blocked:
+                # Audit trail: log_check() registra no FairnessAuditLog + FairnessPolicyViolation
+                # (espelha Fix A: agent_chat_sse.py LIA-P03 / Fix B: mixin_fairness_pre_check)
+                try:
+                    import asyncio as _asyncio_fg3a
+                    _asyncio_fg3a.get_event_loop().create_task(
+                        _fg.log_check(
+                            result=_fg_result,
+                            context="agent_studio_input",
+                            company_id=effective_company_id or None,
+                            session_id=session_id or None,
+                            agent_id=self._agent_id,
+                        )
+                    )
+                except Exception as _lc_exc:
+                    logger.debug(
+                        "[Studio:%s] log_check enqueue failed (fail-open): %s",
+                        self._agent_name, _lc_exc,
+                    )
                 return AgentOutput(
                     message=_fg_result.educational_message or "Solicitação bloqueada por critérios de equidade.",
                     confidence=1.0,
-                    metadata={"blocked": True, "reason": "fairness_guard"},
+                    metadata={"blocked": True, "reason": "fairness_guard", "category": _fg_result.category},
                 )
-        except Exception:
-            pass
+        except Exception as _fg3a_exc:
+            # Fail-closed: compliance check failed = execução bloqueada.
+            # Espelha o princípio do agent_chat_sse.py Fix A: se o guard crasha,
+            # NÃO continuar — logar o erro e bloquear a request.
+            logger.error(
+                "[Studio:%s] fairness_guard_failed_layer_3a — bloqueando execução (fail-closed)",
+                self._agent_name,
+                exc_info=True,
+                extra={
+                    "company_id": effective_company_id,
+                    "agent_id": self._agent_id,
+                    "layer": "3A_input",
+                },
+            )
+            return AgentOutput(
+                message="Verificação de conformidade falhou. Tente novamente.",
+                confidence=0.0,
+                metadata={
+                    "blocked": True,
+                    "reason": "compliance_check_failed",
+                    "layer": "3A_input",
+                    "error": str(_fg3a_exc),
+                },
+            )
 
         try:
             agent_input = AgentInput(
@@ -1245,6 +1339,8 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
 
 
 _runtime_cache: dict[str, CustomAgentRuntime] = {}
+_RUNTIME_CACHE_MAX_SIZE = 500
+_RUNTIME_CACHE_WARN_SIZE = 200
 
 
 def get_or_create_runtime(
@@ -1267,7 +1363,22 @@ def get_or_create_runtime(
     pricing_tier: str = "pro",
 ) -> CustomAgentRuntime:
     cache_key = f"{agent_id}:{company_id}"
-    if cache_key not in _runtime_cache or force_new:
+    # ── GAP-5 fix: evict oldest entry when cache exceeds max size ──
+    # ADR-004: cache sem maxsize permite memory leak silencioso.
+    # LRU simples: evicta a primeira chave (oldest insertion) quando cheio.
+    _cache_size = len(_runtime_cache)
+    if _cache_size >= _RUNTIME_CACHE_WARN_SIZE and _cache_size % 50 == 0:
+        logger.warning(
+            "[CustomAgentRuntime][cache] size=%d (warn=%d, max=%d)",
+            _cache_size, _RUNTIME_CACHE_WARN_SIZE, _RUNTIME_CACHE_MAX_SIZE,
+        )
+    if _cache_size >= _RUNTIME_CACHE_MAX_SIZE and cache_key not in _runtime_cache:
+        _evict_key = next(iter(_runtime_cache))
+        del _runtime_cache[_evict_key]
+        logger.info("[CustomAgentRuntime][cache] evicted oldest entry: %s", _evict_key)
+    _is_hit = cache_key in _runtime_cache and not force_new
+    if not _is_hit:
+        logger.debug("[CustomAgentRuntime][cache] MISS key=%s force_new=%s", cache_key, force_new)
         _runtime_cache[cache_key] = CustomAgentRuntime(
             agent_id=agent_id,
             agent_name=agent_name,
@@ -1286,4 +1397,6 @@ def get_or_create_runtime(
             persona=persona,
             pricing_tier=pricing_tier,
         )
+    if _is_hit:
+        logger.debug("[CustomAgentRuntime][cache] HIT key=%s", cache_key)
     return _runtime_cache[cache_key]

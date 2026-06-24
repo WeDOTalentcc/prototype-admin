@@ -65,6 +65,7 @@ export interface DynamicStageItem {
   name: string
   displayName: string
   color?: string
+  subStatuses?: Array<{ name: string; display_name: string }>
 }
 
 export interface KanbanTableCellRendererProps {
@@ -94,5 +95,6 @@ export interface KanbanTableCellRendererProps {
   openTransition: (candidates: KanbanCandidate[], fromStage: string, toStage: string) => void
   onTransitionRequired: (candidates: KanbanCandidate[], fromStage: string, toStage: string) => void
   onStatusChange: (candidateId: string, newSubStatus: string, stage: string, jobVacancyId?: string) => Promise<boolean>
+  onDirectTransition?: (candidate: KanbanCandidate, toStage: string, subStatus: string, jobVacancyId?: string) => Promise<void>
   onCandidateClick: (candidate: KanbanCandidate) => void
 }

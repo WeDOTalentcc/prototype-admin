@@ -7,6 +7,7 @@ from pydantic import BaseModel
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.errors import LIAError
 from typing import Annotated
 from fastapi import Path
 from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
@@ -80,7 +81,7 @@ async def get_timeline(session_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATT
         raise
     except Exception as e:
         logger.error(f"Error fetching timeline for session {session_id}: {e}")
-        raise HTTPException(status_code=500, detail="Failed to fetch timeline")
+        raise LIAError(message="Failed to fetch timeline")
 
 
 @router.get("/session/{session_id}/summary", response_model=SessionSummaryResponse)
@@ -117,7 +118,7 @@ async def get_session_summary(session_id: Annotated[str, Path(pattern=DUAL_ID_PA
         raise
     except Exception as e:
         logger.error(f"Error fetching summary for session {session_id}: {e}")
-        raise HTTPException(status_code=500, detail="Failed to fetch session summary")
+        raise LIAError(message="Failed to fetch session summary")
 
 
 @router.get("/company/{company_id}/recent", response_model=list[ExecutionSummaryResponse])
@@ -151,7 +152,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
         raise
     except Exception as e:
         logger.error(f"Error fetching recent executions for company {company_id}: {e}")
-        raise HTTPException(status_code=500, detail="Failed to fetch recent executions")
+        raise LIAError(message="Failed to fetch recent executions")
 
 
 @router.get("/stats/{company_id}", response_model=StatsResponse)
@@ -164,6 +165,6 @@ async def get_company_stats(company_id: Annotated[str, Path(pattern=DUAL_ID_PATH
         raise
     except Exception as e:
         logger.error(f"Error fetching stats for company {company_id}: {e}")
-        raise HTTPException(status_code=500, detail="Failed to fetch stats")
+        raise LIAError(message="Failed to fetch stats")
 
 reorder_collection_before_item(router)

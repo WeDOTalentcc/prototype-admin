@@ -23,6 +23,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
 import { BenefitBadgeList } from"@/components/benefits/BenefitBadgeList"
 import { toCompanyBenefit, type CompanyBenefit } from"@/types/benefits"
+import usePersonaName from "@/hooks/company/usePersonaName"
 
 export interface VacancyFullDetails {
   id: string
@@ -143,13 +144,14 @@ export function VacancyFullSummary({
   lockedFields,
   isLoading = false
 }: VacancyFullSummaryProps) {
+  const personaName = usePersonaName()
   if (isLoading) {
     return (
       <div className="flex items-start gap-3 max-w-[85%]">
         <Avatar className="h-8 w-8 flex-shrink-0 border-2 border-lia-border-default">
-          <AvatarImage src="/images/lia-avatar.png" alt="LIA" />
+          <AvatarImage src="/images/lia-avatar.png" alt={personaName} />
           <AvatarFallback className="bg-gradient-to-br from-lia-bg-tertiary dark:from-lia-bg-tertiary to-wedo-cyan-dark text-white text-xs font-medium">
-            LIA
+            {personaName}
           </AvatarFallback>
         </Avatar>
         <div className="rounded-xl rounded-tl-sm bg-lia-bg-primary border border-lia-border-subtle p-4" role="status" aria-live="polite" aria-label="Carregando...">
@@ -170,9 +172,9 @@ export function VacancyFullSummary({
   return (
     <div className="flex items-start gap-3 max-w-[95%]">
       <Avatar className="h-8 w-8 flex-shrink-0 border-2 border-lia-border-default">
-        <AvatarImage src="/images/lia-avatar.png" alt="LIA" />
+        <AvatarImage src="/images/lia-avatar.png" alt={personaName} />
         <AvatarFallback className="bg-gradient-to-br from-lia-bg-tertiary dark:from-lia-bg-tertiary to-wedo-cyan-dark text-white text-xs font-medium">
-          LIA
+            {personaName}
         </AvatarFallback>
       </Avatar>
 
@@ -235,7 +237,7 @@ export function VacancyFullSummary({
                     <DollarSign className="h-4 w-4 text-wedo-cyan-dark" />
                     <div className="flex-1">
                       <p className="text-micro text-lia-text-tertiary">Bônus</p>
-                      <p className="text-xs font-semibold text-wedo-cyan-dark">
+                      <p className="text-xs font-semibold text-lia-text-secondary">
                         {vacancy.salary_range.bonus_min ? formatCurrency(vacancy.salary_range.bonus_min) : 'N/A'} - {vacancy.salary_range.bonus_max ? formatCurrency(vacancy.salary_range.bonus_max) : 'N/A'}
                       </p>
                     </div>

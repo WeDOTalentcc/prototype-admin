@@ -13,12 +13,13 @@ hardcoded — toda DSR LGPD era misturada num tenant ficticio. Handlers agora
 usam company_id JWT canonical via require_company_id.
 """
 import logging
+import re
 from datetime import datetime
 from typing import Any
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, EmailStr, Field, field_validator
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db, get_tenant_db
@@ -35,6 +36,8 @@ from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
+
+_VALID_CHANNELS = frozenset({"email", "whatsapp", "voice", "web"})
 
 router = APIRouter(prefix="/data-requests", tags=["Data Requests"])
 
@@ -55,8 +58,21 @@ class FieldSchema(BaseModel):
     allowed_file_types: list[str] | None = None
 
 
+# GAP-06-007: Phone format — Brazilian numbers
+_PHONE_PATTERN = re.compile(
+    r"^(?:\+?55\s?)?(?:\(?\d{2}\)?\s?)?9?\d{4}[-\s]?\d{4}$"
+)
+
+
 class CreateDataRequestRequest(WeDoBaseModel):
-    """Request to create a new data request."""
+    """Request to create a new data request.
+
+    GAP-06-007: field-level validation added (2026-06-16):
+    - contact_email: optional override email, validated via EmailStr
+    - contact_phone: optional override phone, validated against Brazilian format
+    - notification_channels: validated against _VALID_CHANNELS
+    - candidate_id existence is verified at the handler level (requires DB)
+    """
     candidate_id: UUID
     vacancy_id: UUID | None = None
     template_id: UUID | None = None
@@ -66,7 +82,43 @@ class CreateDataRequestRequest(WeDoBaseModel):
     is_blocking: bool = False
     expiration_days: int = Field(default=7, ge=1, le=90)
     send_notification: bool = True
-    notification_channels: list[str] = Field(default=["email"])
+    notification_channels: list[str] | None = None  # None = usar canal preferido da empresa (CompanyHiringPolicy)
+    contact_email: EmailStr | None = Field(
+        default=None,
+        description="Override email for notification delivery. Must be a valid email address.",
+    )
+    contact_phone: str | None = Field(
+        default=None,
+        description="Override phone for WhatsApp notification. Brazilian format: +55 11 91234-5678.",
+    )
+
+    @field_validator("notification_channels", mode="before")
+    @classmethod
+    def validate_notification_channels(cls, v: list[str] | None) -> list[str] | None:
+        """Reject unknown channel names early with a structured error."""
+        if v is None:
+            return v
+        invalid = [ch for ch in v if ch not in _VALID_CHANNELS]
+        if invalid:
+            raise ValueError(
+                f"invalid_channel: {invalid!r}. "
+                f"Allowed channels: {sorted(_VALID_CHANNELS)}"
+            )
+        return v
+
+    @field_validator("contact_phone", mode="before")
+    @classmethod
+    def validate_contact_phone(cls, v: str | None) -> str | None:
+        """Validate Brazilian phone format."""
+        if v is None:
+            return v
+        v_stripped = str(v).strip()
+        if not _PHONE_PATTERN.match(v_stripped):
+            raise ValueError(
+                "invalid_phone_format: expected Brazilian format, "
+                "e.g. +55 11 91234-5678 or (11) 91234-5678 or 11912345678"
+            )
+        return v_stripped
 
 
 class DataRequestResponse(BaseModel):
@@ -300,7 +352,7 @@ def _data_request_to_response(dr) -> DataRequestResponse:
 @router.get("", response_model=DataRequestListResponse)
 async def list_data_requests(
     vacancy_id: UUID | None = Query(None, description="Filter by vacancy ID"),
-    candidate_id: UUID | None = Query(None, description="Filter by candidate ID"),
+    candidate_id: str | None = Query(None, description="Filter by candidate ID (UUID/local id; ids globais nao-UUID retornam vazio)"),
     status: str | None = Query(None, description="Filter by status"),
     db: AsyncSession = Depends(get_db),
 company_id: str = Depends(require_company_id)):
@@ -324,9 +376,19 @@ company_id: str = Depends(require_company_id)):
                 raise HTTPException(status_code=400, detail=f"Invalid status: {status}")
         
         if candidate_id:
-            requests = await data_request_service.get_candidate_data_requests(
-                db, candidate_id, status_enum, include_expired=True
-            )
+            # Candidatos globais (pearch) carregam id sintetico nao-UUID e nao
+            # possuem data requests locais. Aceitar str e retornar vazio em vez
+            # de 422/500 (canonical: fail-soft p/ candidato nao-persistido).
+            try:
+                _cid = UUID(candidate_id)
+            except (ValueError, TypeError):
+                _cid = None
+            if _cid is None:
+                requests = []
+            else:
+                requests = await data_request_service.get_candidate_data_requests(
+                    db, _cid, status_enum, include_expired=True
+                )
         elif vacancy_id:
             requests = await data_request_service.get_vacancy_data_requests(
                 db, vacancy_id, status_enum
@@ -346,7 +408,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error listing data requests: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.post("", response_model=DataRequestResponse, status_code=201)
@@ -363,7 +425,24 @@ company_id: str = Depends(require_company_id)):
     """
     try:
         # Onda 4.2d-P0-4 (2026-05-23): override removido (era placeholder UUID hardcoded) — usar company_id JWT injetado
-        
+
+        # GAP-06-007: candidate_id existence check — fail-closed before any side effect
+        from app.domains.candidates.repositories.candidate_repository import CandidateRepository
+        _candidate = await CandidateRepository(db).get_by_id(
+            request.candidate_id, company_id=company_id
+        )
+        if _candidate is None:
+            raise HTTPException(
+                status_code=422,
+                detail=[
+                    {
+                        "field": "candidate_id",
+                        "error": "candidate_not_found",
+                        "message": f"Candidate {request.candidate_id} not found in this company.",
+                    }
+                ],
+            )
+
         try:
             trigger_type = TriggerType(request.trigger_type)
         except ValueError:
@@ -387,8 +466,27 @@ company_id: str = Depends(require_company_id)):
         )
         
         if request.send_notification:
+            channels = request.notification_channels
+            if channels is None:
+                # Enforcement Item4: carregar canal preferido da empresa.
+                # CompanyHiringPolicy.communication_rules.preferred_data_channel
+                # é o que o DataChannelSettings.tsx escreve em Configurações → Comunicação.
+                try:
+                    from app.domains.hiring_policy.repositories.hiring_policy_repository import (
+                        HiringPolicyRepository,
+                    )
+                    _hp = await HiringPolicyRepository(db).get_by_company(company_id)
+                    _pref = (
+                        (_hp.communication_rules or {}).get("preferred_data_channel")
+                        if _hp and _hp.communication_rules
+                        else None
+                    )
+                    channels = [_pref] if (_pref and _pref in _VALID_CHANNELS) else ["email"]
+                except Exception as _e:
+                    logger.warning("Falha ao carregar canal preferido (%s), fallback=email", _e)
+                    channels = ["email"]
             await data_request_service.send_notification(
-                db, data_request.id, request.notification_channels
+                db, data_request.id, channels
             )
             await db.refresh(data_request)
         
@@ -400,7 +498,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error creating data request: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.get("/config", response_model=ConfigResponse)
@@ -422,7 +520,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting config: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.put("/config", response_model=ConfigResponse)
@@ -450,7 +548,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error updating config: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.post("/config/collection-settings", response_model=CollectionSettingsResponse)
@@ -499,7 +597,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error updating collection settings: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.get("/config/collection-settings", response_model=CollectionSettingsResponse)
@@ -529,7 +627,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting collection settings: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.get("/templates", response_model=list[TemplateResponse])
@@ -572,7 +670,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error listing templates: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.post("/templates", response_model=TemplateResponse, status_code=201)
@@ -631,7 +729,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error creating template: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.put("/templates/{template_id}", response_model=TemplateResponse)
@@ -682,7 +780,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error updating template: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.delete("/templates/{template_id}", status_code=204, response_model=None)
@@ -705,7 +803,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error deleting template: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.get("/fields", response_model=list[FieldResponse])
@@ -728,7 +826,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error listing fields: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.post("/fields", response_model=FieldResponse, status_code=201)
@@ -793,7 +891,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error creating field: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.get("/stage-field-mappings", response_model=None)
@@ -868,7 +966,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting vacancy triggers: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.put("/triggers/{vacancy_id}", response_model=TriggerConfigResponse)
@@ -909,7 +1007,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await db.rollback()
         logger.error(f"Error updating vacancy triggers: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.get("/triggers/{vacancy_id}/stage/{stage_name}", response_model=None)
@@ -957,7 +1055,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting stage trigger: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.get("/{data_request_id}", response_model=DataRequestResponse)
@@ -983,7 +1081,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting data request: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.delete("/{data_request_id}", status_code=204, response_model=None)
@@ -1007,7 +1105,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error cancelling data request: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.post("/{data_request_id}/resend", response_model=ResendNotificationResponse)
@@ -1034,7 +1132,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error resending notification: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.get("/{data_request_id}/status", response_model=None)
@@ -1058,7 +1156,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error checking status: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 class WhatsAppStartRequest(WeDoBaseModel):
@@ -1140,7 +1238,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error starting WhatsApp collection: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.post("/{data_request_id}/whatsapp/process-message", response_model=None)
@@ -1185,7 +1283,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error processing WhatsApp message: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.get("/{data_request_id}/whatsapp/status", response_model=WhatsAppStatusResponse)
@@ -1227,4 +1325,4 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting WhatsApp status: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise

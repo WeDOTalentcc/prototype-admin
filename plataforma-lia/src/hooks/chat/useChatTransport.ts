@@ -3,6 +3,8 @@
 import { useState, useRef, useCallback, useEffect } from "react"
 
 import type { TransportMode } from "./lia-chat-connection-types"
+import { useFocusedJobStore } from "@/stores/focused-job-store"
+import { usePathname } from "next/navigation"
 export type { TransportMode }
 
 const WS_BASE_URL =
@@ -86,6 +88,100 @@ export function maybeDispatchSettingsUpdated(event: TransportEvent): void {
   }
 }
 
+// FE-1 (wizard panel SSE parity) — Bridge the wizard panel signal to the
+// `lia:wizard-stage-payload` window event from the SSE/WS transport, mirroring
+// useChatSocket.ts (WS) and useChatMessages.ts (REST) 1:1 so the dynamic panel
+// opens regardless of transport. Backend ships the signal in THREE shapes over
+// this stream:
+//   1. a top-level `wizard_stage` frame (mirrors the WS frame, commit 54f2d48d);
+//   2. nested as `ws_stage_payload` on the structured `message` frame (bubble);
+//   3. a `panel_update` frame with `panel_type:"wizard_stage"` — the ONLY shape
+//      the live chat-page SSE backend (agent_chat_sse.py) emits for the wizard.
+//      There `panel_title` carries the `stage` string and `panel_data` carries
+//      the inner `data` dict (`serialize_panel_update`), so we re-shape it back
+//      into the canonical payload before dispatch.
+// Dedup: the same logical payload (thread_id:stage:completeness) is fired at
+// most once even if it arrives via more than one shape.
+let _lastWizardStageKey: string | null = null
+
+// Hash estável (djb2) de string — barato, determinístico, sem deps. Torna a
+// chave de dedup SENSÍVEL AO CONTEÚDO (fix 2026-06-05 painel congelado).
+function _djb2(input: string): number {
+  let h = 5381
+  for (let i = 0; i < input.length; i++) h = ((h << 5) + h + input.charCodeAt(i)) | 0
+  return h
+}
+
+function dispatchWizardStagePayload(src: Record<string, unknown>): void {
+  const stage = src.stage
+  if (typeof stage !== "string" || stage.length === 0) return // incompleto — ignora
+  const threadId = src.thread_id
+  const completeness = (src.completeness as number) ?? 0
+  const data = (src.data as Record<string, unknown>) || {}
+  const requiresApproval = Boolean(src.requires_approval)
+  // Dedup SENSÍVEL AO CONTEÚDO: hash de data + requires_approval. Cross-shape
+  // duplicates (mesmo payload via WS+SSE+REST) têm data idêntica -> mesma chave
+  // -> deduplica. NOVO turno do MESMO stage tem data diferente -> re-despacha.
+  // A chave antiga (thread_id:stage:completeness) era constante dentro de um
+  // stage (completeness e por-stage em calculate_completeness), entao congelava
+  // o painel no 1o payload (ex.: intake mostrava "Aguardando" mesmo apos o
+  // recrutador informar titulo/senioridade). Sensor: useChatTransport.wizard-bridge.
+  let dataHash = 0
+  try { dataHash = _djb2(JSON.stringify(data)) } catch { dataHash = 0 }
+  const key = `${String(threadId ?? "")}:${stage}:${completeness}:${dataHash}:${requiresApproval}`
+  if (key === _lastWizardStageKey) return // dedup — payload idêntico já despachado
+  _lastWizardStageKey = key
+  window.dispatchEvent(
+    new CustomEvent("lia:wizard-stage-payload", {
+      detail: {
+        type: "wizard_stage",
+        thread_id: threadId,
+        stage,
+        data,
+        completeness,
+        requires_approval: requiresApproval,
+      },
+    }),
+  )
+}
+
+export function maybeDispatchWizardStage(event: TransportEvent): void {
+  if (typeof window === "undefined") return
+  // chat-page path — dedicated top-level SSE/WS frame IS the payload.
+  if (event.type === "wizard_stage") {
+    dispatchWizardStagePayload(event as unknown as Record<string, unknown>)
+    return
+  }
+  // bubble path — nested inside the structured message frame.
+  if (event.type === "message") {
+    const nested = (event as unknown as Record<string, unknown>)
+      .ws_stage_payload
+    if (nested && typeof nested === "object") {
+      dispatchWizardStagePayload(nested as Record<string, unknown>)
+    }
+    return
+  }
+  // chat-page SSE path — agent_chat_sse.py emits the wizard as a `panel_update`
+  // frame (panel_type "wizard_stage"), never a bare `wizard_stage` frame. Mirror
+  // the WS hook's bridge: re-shape panel_title→stage + panel_data→data into the
+  // canonical payload. (thread_id/completeness/requires_approval are not on this
+  // frame; dispatchWizardStagePayload defaults them — the panel opens regardless.)
+  if (event.type === "panel_update") {
+    const pe = event as unknown as Record<string, unknown>
+    if (pe.panel_type === "wizard_stage") {
+      const stage = pe.panel_title
+      const data = pe.panel_data
+      dispatchWizardStagePayload({
+        stage,
+        thread_id: pe.thread_id,
+        data: data && typeof data === "object" ? data : {},
+        completeness: pe.completeness,
+        requires_approval: pe.requires_approval,
+      })
+    }
+  }
+}
+
 export interface UseChatTransportOptions {
   autoReconnect?: boolean
   maxReconnectAttempts?: number
@@ -118,6 +214,7 @@ export interface UseChatTransportResult {
     domain?: string,
     context?: Record<string, unknown>,
     conversationId?: string | null,
+    onExhausted?: () => void,
   ) => void
 }
 
@@ -151,7 +248,13 @@ export function useChatTransport(
   const heartbeatIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const sseFailureCountRef = useRef(0)
   const lastEventIdRef = useRef<string>("")
+  // GAP-09-002: track active and completed turn IDs for SSE idempotency
+  const activeTurnIdRef = useRef<string | null>(null)
+  const completedTurnIdsRef = useRef<Set<string>>(new Set())
   const onEventRef = useRef(onEvent)
+
+  const { focusedJob } = useFocusedJobStore()
+  const _pathname = usePathname()
 
   useEffect(() => {
     onEventRef.current = onEvent
@@ -205,6 +308,10 @@ export function useChatTransport(
     // Out-of-band: never fires for UI-originated saves (those carry
     // `source: "ui"` and are handled by the existing origin guard).
     maybeDispatchSettingsUpdated(event)
+
+    // FE-1 — open the wizard side-panel from the SSE/WS transport, at parity
+    // with the WS (useChatSocket.ts) and REST (useChatMessages.ts) paths.
+    maybeDispatchWizardStage(event)
 
     switch (event.type) {
       case "thinking":
@@ -401,10 +508,15 @@ export function useChatTransport(
       domain = "recruiter_assistant",
       context: Record<string, unknown> = {},
       conversationId: string | null = null,
+      onExhausted?: () => void,
     ) => {
       if (sseAbortRef.current) {
         sseAbortRef.current.abort()
       }
+
+      // Reset Last-Event-ID on each new message so new turns are not mis-identified
+      // as reconnects of the previous turn by the server-side dedup guard.
+      lastEventIdRef.current = ""
 
       const controller = new AbortController()
       sseAbortRef.current = controller
@@ -413,22 +525,68 @@ export function useChatTransport(
       setTokens("")
       setError(null)
 
+      // SSE inactivity watchdog — se nenhum dado chegar em 90s, aborta e surface erro.
+      // O reader.read() pode travar indefinidamente se o backend parar de enviar
+      // sem fechar o stream (done=true nunca chega → isThinking fica preso).
+      const SSE_INACTIVITY_TIMEOUT_MS = 90_000
+      let inactivityTimerRef: ReturnType<typeof setTimeout> | null = null
+
+      const resetInactivity = () => {
+        if (inactivityTimerRef) clearTimeout(inactivityTimerRef)
+        inactivityTimerRef = setTimeout(() => {
+          if (mountedRef.current) {
+            setIsStreaming(false)
+            onEventRef.current?.({
+              type: "error",
+              message: "Sem resposta do servidor por 90 segundos. Tente novamente.",
+            } as TransportEvent)
+          }
+          controller.abort()
+        }, SSE_INACTIVITY_TIMEOUT_MS)
+      }
+
+      // start watchdog immediately
+      resetInactivity()
+
       // BUG-AUDIT #277 / H7: rastrear se um evento terminal (message/clarification/error)
       // foi recebido. Se o stream fechar (done=true) sem terminal, emitimos "error"
       // pra destravar isThinking em useChatSocket.
       let receivedTerminal = false
       const wrappedHandleParsedEvent = (event: TransportEvent) => {
-        if (event.type === "message" || event.type === "clarification" || event.type === "error") {
+        // GAP-09-002: track turn_id for idempotent reconnect
+        if (event.type === "stream_start" && event.turn_id) {
+          const tid = event.turn_id as string
+          activeTurnIdRef.current = tid
+          // If FE already completed this turn, abort to prevent double-processing
+          if (completedTurnIdsRef.current.has(tid)) {
+            controller.abort()
+            return
+          }
+        }
+        if (event.type === "message" || event.type === "clarification" || event.type === "error" || event.type === "done") {
           receivedTerminal = true
+        }
+        // GAP-09-002: mark turn as completed on terminal event (prevents re-processing on reconnect)
+        if (receivedTerminal && activeTurnIdRef.current) {
+          completedTurnIdsRef.current.add(activeTurnIdRef.current)
         }
         handleParsedEvent(event)
       }
 
+      // AUD-4 1b-c: levanta approve_pending_id do context pro top-level do
+      // body (o backend le req.approve_pending_id). Mantem o context limpo.
+      const { approve_pending_id: _approvePendingId, ...ctxRest } =
+        (context as Record<string, unknown>) || {}
       const body = JSON.stringify({
         message,
         domain,
-        context,
+        context: ctxRest,
         conversation_id: conversationId,
+        approve_pending_id: (_approvePendingId as string | null) ?? null,
+        focused_job_id: focusedJob?.id ?? null,
+        focused_job_mode: focusedJob?.id
+          ? (_pathname?.includes(focusedJob.id) ? "active" : "background")
+          : null,
       })
 
       const headers: Record<string, string> = {
@@ -443,7 +601,7 @@ export function useChatTransport(
       }
 
       const attemptSSE = (attempt: number) => {
-        fetch(`${API_BASE_URL}/api/v1/chat/${sseSessionId}/stream`, {
+        fetch(`/api/backend-proxy/chat/${sseSessionId}/stream`, {
           method: "POST",
           headers: {
             ...headers,
@@ -471,6 +629,7 @@ export function useChatTransport(
               if (done) break
 
               buffer += decoder.decode(value, { stream: true })
+              resetInactivity() // reset watchdog on each received chunk
               const lines = buffer.split("\n")
               buffer = lines.pop() || ""
 
@@ -491,6 +650,7 @@ export function useChatTransport(
               }
             }
 
+            if (inactivityTimerRef) clearTimeout(inactivityTimerRef)
             sseFailureCountRef.current = 0
             if (mountedRef.current) {
               setIsStreaming(false)
@@ -505,12 +665,20 @@ export function useChatTransport(
             }
           })
           .catch((err) => {
+            if (inactivityTimerRef) clearTimeout(inactivityTimerRef)
             if (err.name === "AbortError") return
             sseFailureCountRef.current += 1
 
             if (!mountedRef.current) return
 
             if (sseFailureCountRef.current < maxSseFailures) {
+              // GAP-09-002: skip retry if turn already received terminal event
+              // (message/clarification/error) — re-POST would cause double processing
+              if (receivedTerminal) {
+                setIsStreaming(false)
+                console.warn("[useChatTransport] Stream dropped after terminal event — skipping retry to avoid duplicate processing")
+                return
+              }
               const retryDelay = reconnectBaseDelay * Math.pow(2, attempt)
               setError(
                 `Erro na conexão SSE (tentativa ${sseFailureCountRef.current}/${maxSseFailures}). Reconectando...`,
@@ -519,6 +687,11 @@ export function useChatTransport(
                 () => attemptSSE(attempt + 1),
                 retryDelay,
               )
+            } else if (onExhausted) {
+              // 0.3a: esgotou SSE -> fallback de transporte (reenvia via REST no caller).
+              setIsStreaming(false)
+              setError(null)
+              onExhausted?.()
             } else {
               setIsStreaming(false)
               setError(
@@ -538,7 +711,7 @@ export function useChatTransport(
 
       attemptSSE(0)
     },
-    [authToken, handleParsedEvent, maxSseFailures, reconnectBaseDelay],
+    [authToken, handleParsedEvent, maxSseFailures, reconnectBaseDelay, focusedJob],
   )
 
   useEffect(() => {

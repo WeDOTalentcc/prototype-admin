@@ -14,7 +14,7 @@ import pytest
 
 class TestSubagentForSourcing:
     def _fn(self, msg):
-        from app.api.v1.agent_chat_ws import _subagent_for_sourcing
+        from app.api.v1.chat_shared import _subagent_for_sourcing
         return _subagent_for_sourcing(msg)
 
     def test_engagement_abordagem(self):

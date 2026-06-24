@@ -8,6 +8,7 @@ import { useAuthStore } from "@/stores/auth-store"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Brain, Clock, Lightbulb, AlertTriangle, CheckCircle, ArrowRight } from "lucide-react"
 import './onboarding-styles.css'
+import { useAiPersona } from "@/hooks/company/use-ai-persona"
 
 interface OnboardingControllerProps {
   children: React.ReactNode
@@ -33,6 +34,8 @@ interface UserData {
 }
 
 export function OnboardingController({ children, forceOnboarding = false }: OnboardingControllerProps) {
+  const { persona } = useAiPersona()
+  const personaName = persona?.name ?? "IA"
   const [isFirstAccess, setIsFirstAccess] = useState(false)
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [showSetupIntroModal, setShowSetupIntroModal] = useState(false)
@@ -223,7 +226,7 @@ export function OnboardingController({ children, forceOnboarding = false }: Onbo
           Acesso Restrito
         </h2>
         <p className="text-lia-text-primary mb-6">
-          Você precisa de um convite para acessar a plataforma LIA.
+          Você precisa de um convite para acessar a WeDOTalent.
         </p>
         <div className="space-y-3">
           <button
@@ -239,6 +242,8 @@ export function OnboardingController({ children, forceOnboarding = false }: Onbo
 }
 
 function SetupIntroModal({ onStartSetup, onSkip }: { onStartSetup: () => void, onSkip: () => void }) {
+  const { persona } = useAiPersona()
+  const personaName = persona?.name ?? "LIA"
   return (
     <div className="fixed inset-0 z-50 overflow-hidden lia-bg-lavender">
       {/* OPT-027: Decorative particles — static (replaced framer-motion infinite float) */}
@@ -272,7 +277,7 @@ function SetupIntroModal({ onStartSetup, onSkip }: { onStartSetup: () => void, o
             <p
               className="lia-text-medium animate-in fade-in slide-in-from-bottom-3 duration-300"
             >
-              Personalize a LIA para atender às necessidades da sua empresa
+              {`Personalize ${personaName} para atender às necessidades da sua empresa`}
             </p>
           </div>
 
@@ -293,7 +298,7 @@ function SetupIntroModal({ onStartSetup, onSkip }: { onStartSetup: () => void, o
               <li className="flex items-start gap-3">
                 <div className="w-2 h-2 rounded-full lia-bg-coral mt-2 flex-shrink-0" />
                 <span className="lia-text-medium">
-                  Calibrar a LIA para funcionar de forma personalizada considerando as particularidades da sua empresa e processo de recrutamento
+                  Calibrar a IA para funcionar de forma personalizada considerando as particularidades da sua empresa e processo de recrutamento
                 </span>
               </li>
             </ul>

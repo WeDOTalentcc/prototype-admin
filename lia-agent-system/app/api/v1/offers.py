@@ -10,9 +10,11 @@ Routes:
   DELETE /api/v1/offers/drafts/{id}              cancel
 """
 import logging
+from datetime import datetime
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_tenant_db
@@ -21,6 +23,7 @@ from app.schemas.offer import (
     OfferCancelRequest,
     OfferDraftCreate,
     OfferDraftResponse,
+    OfferDraftListResponse,
     OfferDraftUpdate,
     OfferPrepareManualResponse,
     OfferSendAutoResponse,
@@ -29,6 +32,23 @@ from app.shared.security.require_company_id import require_company_id
 
 router = APIRouter(prefix="/offers", tags=["offers"])
 logger = logging.getLogger(__name__)
+
+
+@router.get("/drafts", response_model=OfferDraftListResponse)
+async def list_offer_drafts(
+    job_vacancy_id: UUID = Query(..., description="Filter by job vacancy"),
+    limit: int = Query(default=50, ge=1, le=200),
+    db: AsyncSession = Depends(get_tenant_db),
+    current_user=Depends(get_current_user),
+    company_id: str = Depends(require_company_id),
+):
+    """List all offer proposals for a job vacancy (multi-tenant scoped)."""
+    company_id = current_user.company_id
+    from app.domains.offer.repositories.offer_repository import OfferRepository
+    repo = OfferRepository(db)
+    proposals = await repo.list_by_job(company_id, job_vacancy_id, limit=limit)
+    items = [OfferDraftResponse.model_validate(p) for p in proposals]
+    return OfferDraftListResponse(offers=items)
 
 
 @router.post("/drafts", response_model=OfferDraftResponse, status_code=status.HTTP_201_CREATED)
@@ -47,6 +67,8 @@ company_id: str = Depends(require_company_id)):
     from app.domains.offer.tools.create_offer_draft import _fetch_job_snapshot, _fetch_candidate_snapshot
     from app.domains.base import DomainContext
     ctx = DomainContext(
+        domain_id="offer",
+        session_id=str(current_user.id),
         user_id=current_user.id,
         tenant_id=company_id,
         metadata={"auth_token": getattr(current_user, "_raw_token", "")},
@@ -116,6 +138,8 @@ company_id: str = Depends(require_company_id)):
     from app.domains.base import DomainContext
     company_id = current_user.company_id
     ctx = DomainContext(
+        domain_id="offer",
+        session_id=str(current_user.id),
         user_id=current_user.id,
         tenant_id=company_id,
         metadata={"auth_token": getattr(current_user, "_raw_token", "")},
@@ -128,9 +152,10 @@ company_id: str = Depends(require_company_id)):
     return OfferSendAutoResponse(
         offer_id=offer_id,
         status="sent",
-        email_log_id=_UUID(result["email_log_id"]) if result.get("email_log_id") else offer_id,
+        email_log_id=_UUID(result["email_log_id"]) if result.get("email_log_id") else None,
         sent_at=datetime.utcnow(),
         message=result.get("message", "Enviado"),
+        offer_link=result.get("offer_link"),
     )
 
 
@@ -145,6 +170,8 @@ company_id: str = Depends(require_company_id)):
     from app.domains.base import DomainContext
     company_id = current_user.company_id
     ctx = DomainContext(
+        domain_id="offer",
+        session_id=str(current_user.id),
         user_id=current_user.id,
         tenant_id=company_id,
         metadata={"auth_token": getattr(current_user, "_raw_token", "")},
@@ -183,3 +210,68 @@ company_id: str = Depends(require_company_id)):
     if not cancelled:
         raise HTTPException(status_code=404, detail="Proposta nao encontrada")
     await db.commit()
+
+
+class OfferStatusResponse(BaseModel):
+    offer_id: UUID
+    status: str
+    sent_at: "datetime | None" = None
+    candidate_viewed_at: "datetime | None" = None
+    accepted_at: "datetime | None" = None
+    declined_at: "datetime | None" = None
+    response_deadline: "datetime | None" = None
+    offer_link: str | None = None
+
+
+@router.get("/drafts/{offer_id}/status", response_model=OfferStatusResponse)
+async def get_offer_status(
+    offer_id: UUID,
+    db: AsyncSession = Depends(get_tenant_db),
+    current_user=Depends(get_current_user),
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: company_id from current_user (sensor false positive)
+    """Lightweight status endpoint — polled by OfferStatusTracker FE component."""
+    from app.domains.offer.services.offer_service import OfferService
+    company_id = current_user.company_id
+    svc = OfferService(db)
+    proposal = await svc.get_draft(offer_id, company_id)
+    if not proposal:
+        raise HTTPException(status_code=404, detail="Proposta nao encontrada")
+    return OfferStatusResponse(
+        offer_id=proposal.id,
+        status=proposal.status,
+        sent_at=proposal.sent_at,
+        candidate_viewed_at=proposal.candidate_viewed_at,
+        accepted_at=proposal.accepted_at,
+        declined_at=proposal.declined_at,
+        response_deadline=proposal.response_deadline,
+        offer_link=proposal.acceptance_url,
+    )
+
+
+@router.get("/by-candidate/{candidate_id}", response_model=OfferStatusResponse | None)
+async def get_offer_by_candidate(
+    candidate_id: str,
+    db: AsyncSession = Depends(get_tenant_db),
+    current_user=Depends(get_current_user),
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: company_id from current_user (sensor false positive)
+    """Latest offer for a candidate — polled by OfferStatusBadge in kanban."""
+    from app.domains.offer.repositories.offer_repository import OfferRepository
+    company_id = current_user.company_id
+    repo = OfferRepository(db)
+    proposals = await repo.list_by_candidate(company_id, candidate_id)
+    if not proposals:
+        return None
+    # Prefer most-recent non-draft (sent/accepted/etc)
+    proposal = next((p for p in proposals if p.status != "draft"), proposals[0])
+    return OfferStatusResponse(
+        offer_id=proposal.id,
+        status=proposal.status,
+        sent_at=proposal.sent_at,
+        candidate_viewed_at=proposal.candidate_viewed_at,
+        accepted_at=proposal.accepted_at,
+        declined_at=proposal.declined_at,
+        response_deadline=proposal.response_deadline,
+        offer_link=proposal.acceptance_url,
+    )

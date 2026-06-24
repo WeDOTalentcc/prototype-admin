@@ -31,6 +31,7 @@ logger = logging.getLogger(__name__)
 from app.shared.agents.agent_registry import register_agent
 from app.shared.agents.tenant_aware_agent import TenantAwareAgentMixin
 from app.shared.prompts.prompt_composer import PromptComposer
+from app.shared.hitl.hitl_canonical_actions import HITL_REQUIRED_ACTIONS
 
 @register_agent("communication", aliases=['comms'])
 class CommunicationReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgentMixin):
@@ -42,7 +43,6 @@ class CommunicationReActAgent(TenantAwareAgentMixin, LangGraphReActBase, Enhance
     """ReAct agent for multi-channel candidate communications with LGPD compliance."""
 
     # Message types that require human approval before sending (LGPD + EU AI Act Art.14)
-    _HITL_MESSAGE_TYPES = frozenset({"initial_contact", "rejection_feedback", "offer_letter"})
 
     def __init__(self) -> None:
         super().__init__()
@@ -228,7 +228,7 @@ class CommunicationReActAgent(TenantAwareAgentMixin, LangGraphReActBase, Enhance
                         context="communication",
                         company_id=str(input.company_id or ""),
                     )
-                except Exception:
+                except Exception:  # ADR-031-R3-EXEMPT: log_check de fairness e opcional; bloqueio ja ocorre antes; falha nao cancela a resposta educativa
                     pass
                 return AgentOutput(
                     message=_fg_result.educational_message,
@@ -241,7 +241,7 @@ class CommunicationReActAgent(TenantAwareAgentMixin, LangGraphReActBase, Enhance
         # AUD-4: HITL — primeiro contato e feedback de rejeição exigem aprovação humana
         _hitl_approved = input.context.get("hitl_approved", False)
         _msg_type = input.context.get("message_type", "")
-        if not _hitl_approved and _msg_type in self._HITL_MESSAGE_TYPES:
+        if not _hitl_approved and _msg_type in HITL_REQUIRED_ACTIONS:
             try:
                 import app.services.hitl_service as _hitl_svc_mod
                 hitl_service = _hitl_svc_mod.hitl_service

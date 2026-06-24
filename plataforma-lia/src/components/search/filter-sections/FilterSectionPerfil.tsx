@@ -54,7 +54,7 @@ export const FilterSectionPerfil = React.memo(function FilterSectionPerfil({
       field: "profile" as const,
       key: "isStartup",
       icon: Rocket,
-      iconColor: "text-wedo-purple",
+      iconColor: "text-lia-text-secondary",
       label: "Experiência em Startup",
       description: "Trabalhou em startups (cultura ágil)",
       value: filters.profile?.isStartup || false,

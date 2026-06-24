@@ -1,9 +1,8 @@
 "use client"
 
-import React from "react"
+import React, { useState, useRef, useCallback, useEffect } from "react"
 import dynamic from "next/dynamic"
 import { useTranslations } from "next-intl"
-import { LoadingModal } from "@/components/ui/loading"
 import { Plus, Users } from "lucide-react"
 import { EmptyState } from "@/components/ui/empty-state"
 import { KanbanFiltersPanel } from "@/components/pages/job-kanban/KanbanFiltersPanel"
@@ -13,7 +12,10 @@ import { JobFairnessBlockBanner } from "@/components/jobs/JobFairnessBlockBanner
 import type { KanbanPageCoreState } from "@/components/pages/job-kanban/hooks/useKanbanPageCore"
 import { useOfferReviewFlow } from "@/hooks/offers/useOfferReviewFlow"
 
-const CandidatePreview = dynamic(() => import("@/components/candidate-preview").then(m => ({ default: m.CandidatePreview })), { ssr: false, loading: () => <LoadingModal /> })
+const PANEL_MIN_WIDTH = 360
+const PANEL_MAX_WIDTH = 900
+
+const CandidatePreview = dynamic(() => import("@/components/candidate-preview").then(m => ({ default: m.CandidatePreview })), { ssr: false, loading: () => null })
 
 interface KanbanBoardSectionProps {
   state: KanbanPageCoreState
@@ -22,6 +24,42 @@ interface KanbanBoardSectionProps {
 export function KanbanBoardSection({ state }: KanbanBoardSectionProps) {
   const t = useTranslations('kanban')
   const { openOfferReview } = useOfferReviewFlow()
+
+  const [panelWidth, setPanelWidth] = useState(480)
+  const isDragging = useRef(false)
+  const dragStartX = useRef(0)
+  const dragStartWidth = useRef(0)
+
+  const onMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault()
+    isDragging.current = true
+    dragStartX.current = e.clientX
+    dragStartWidth.current = panelWidth
+    document.body.style.cursor = 'col-resize'
+    document.body.style.userSelect = 'none'
+  }, [panelWidth])
+
+  useEffect(() => {
+    const onMouseMove = (e: MouseEvent) => {
+      if (!isDragging.current) return
+      const delta = dragStartX.current - e.clientX
+      const newWidth = Math.min(PANEL_MAX_WIDTH, Math.max(PANEL_MIN_WIDTH, dragStartWidth.current + delta))
+      setPanelWidth(newWidth)
+    }
+    const onMouseUp = () => {
+      if (!isDragging.current) return
+      isDragging.current = false
+      document.body.style.cursor = ''
+      document.body.style.userSelect = ''
+    }
+    document.addEventListener('mousemove', onMouseMove)
+    document.addEventListener('mouseup', onMouseUp)
+    return () => {
+      document.removeEventListener('mousemove', onMouseMove)
+      document.removeEventListener('mouseup', onMouseUp)
+    }
+  }, [])
+
   const {
     dynamicStages, setDynamicStages, candidatesData, setCandidatesData,
     isLoadingCandidates, hasMounted, searchQuery,
@@ -147,7 +185,7 @@ export function KanbanBoardSection({ state }: KanbanBoardSectionProps) {
       <div className="flex-1 overflow-x-auto overflow-y-hidden" suppressHydrationWarning>
         <div className="p-4 h-full" suppressHydrationWarning>
           {(currentJob as { id?: string })?.id ? (
-            <JobFairnessBlockBanner jobId={(currentJob as { id: string }).id} />
+            <JobFairnessBlockBanner jobId={((currentJob as { backendId?: string; id?: string })?.backendId || (currentJob as { id?: string })?.id) as string} />
           ) : null}
           {(!hasMounted || isLoadingCandidates) ? (
             <div className="flex gap-3 h-full min-w-max" suppressHydrationWarning>
@@ -156,12 +194,12 @@ export function KanbanBoardSection({ state }: KanbanBoardSectionProps) {
                   <div className="flex-shrink-0 p-2.5 pb-1.5">
                     <div className="flex items-center gap-1.5">
                       <div className="w-2 h-2 rounded-full animate-pulse motion-reduce:animate-none" style={{backgroundColor: stage.color}}></div>
-                      <h3 className="font-medium text-xs text-lia-text-disabled">{stage.displayName}</h3>
-                      <span className="text-micro text-lia-text-disabled bg-lia-bg-tertiary px-1.5 py-0.5 rounded-full animate-pulse motion-reduce:animate-none">...</span>
+                      <h3 className="font-medium text-xs text-lia-text-tertiary">{stage.displayName}</h3>
+                      <span className="text-micro text-lia-text-muted bg-lia-bg-tertiary px-1.5 py-0.5 rounded-full animate-pulse motion-reduce:animate-none">...</span>
                     </div>
                   </div>
                   <div className="flex-1 flex items-center justify-center">
-                    <div className="animate-pulse motion-reduce:animate-none text-lia-text-disabled text-xs" suppressHydrationWarning>{t('loadingEllipsis')}</div>
+                    <div className="animate-pulse motion-reduce:animate-none text-lia-text-muted text-xs" suppressHydrationWarning>{t('loadingEllipsis')}</div>
                   </div>
                 </div>
               ))}
@@ -201,9 +239,9 @@ export function KanbanBoardSection({ state }: KanbanBoardSectionProps) {
                   onClick={() => setShowAddColumnPopover(true)}
                 >
                   <div className="w-10 h-10 rounded-full bg-lia-bg-tertiary group-hover:bg-lia-interactive-active flex items-center justify-center transition-colors motion-reduce:transition-none">
-                    <Plus className="w-5 h-5 text-lia-text-disabled group-hover:text-lia-text-secondary" />
+                    <Plus className="w-5 h-5 text-lia-text-muted group-hover:text-lia-text-secondary" />
                   </div>
-                  <span className="text-xs text-lia-text-disabled group-hover:text-lia-text-secondary font-medium transition-colors motion-reduce:transition-none">
+                  <span className="text-xs text-lia-text-tertiary group-hover:text-lia-text-secondary font-medium transition-colors motion-reduce:transition-none">
                     {t('addColumn')}
                   </span>
                 </div>
@@ -230,8 +268,18 @@ export function KanbanBoardSection({ state }: KanbanBoardSectionProps) {
       </div>
 
       {isPreviewOpen && previewCandidate && (
-        <div className={`flex-shrink-0 transition-colors motion-reduce:transition-none duration-300 ${isPreviewMaximized ? 'w-[600px]' : 'w-panel-lg'}`}>
-          <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle h-[calc(100vh-6rem)] overflow-hidden">
+        <div
+          className="flex-shrink-0 h-full flex"
+          style={{ width: isPreviewMaximized ? 700 : panelWidth }}
+        >
+          <div
+            className="w-1.5 flex-shrink-0 cursor-col-resize group flex items-center justify-center hover:bg-lia-border-medium/40 transition-colors motion-reduce:transition-none rounded-l-md"
+            onMouseDown={onMouseDown}
+            title="Arraste para redimensionar"
+          >
+            <div className="w-0.5 h-8 rounded-full bg-lia-border-medium group-hover:bg-lia-text-disabled transition-colors motion-reduce:transition-none" />
+          </div>
+          <div className="flex-1 bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle h-full overflow-hidden">
           <CandidatePreview
             candidate={previewCandidate}
             isOpen={isPreviewOpen}
@@ -265,7 +313,7 @@ export function KanbanBoardSection({ state }: KanbanBoardSectionProps) {
             onSendTriagem={(candidate) => handleSendTriagem(candidate)}
             onSendAgendamento={(candidate) => handleSendAgendamento(candidate)}
             onSendFeedback={(candidate) => handleSendFeedback(candidate)}
-            jobId={jobData.id?.toString()}
+            jobId={((jobData.backendId || jobData.id) as string | number | undefined)?.toString()}
           />
           </div>
         </div>

@@ -114,6 +114,10 @@ class JobCreationState(TypedDict, total=False):
     auth_token: str
     language: str  # default "pt-BR"
 
+    # --- Create-from-source (PR-A) ---
+    seed_source: Optional[Dict[str, Any]]      # {"type","id","name"} of the chosen template/vacancy
+    seed_provenance: Dict[str, Any]            # per-field provenance for the review surface
+
     # --- Current stage ---
     current_stage: WizardStage
     stage_history: List[WizardStage]
@@ -133,6 +137,10 @@ class JobCreationState(TypedDict, total=False):
     parsed_employment_type: Optional[str]  # CLT/PJ/estagio/temporario/freelancer (P0-A)
     parsed_manager_name: Optional[str]  # gestor responsavel (FASE 5 ficha viva)
     parsed_manager_email: Optional[str]  # email do gestor (FASE 5 ficha viva)
+    parsed_recruiter_name: Optional[str]  # recrutador responsavel (W0-A)
+    parsed_recruiter_email: Optional[str]  # email do recrutador (W0-A)
+    parsed_stakeholders: Optional[list]  # T10: stakeholders/envolvidos [{name, email, role}]
+    jd_similar_reuse_id: Optional[str]  # ID da JD similar reutilizada pelo recruiter (W0-B)
     intake_confidence: float
 
     # --- F1: JD Enrichment ---
@@ -191,10 +199,12 @@ class JobCreationState(TypedDict, total=False):
     # VagaBenefit (snapshot+ref) serializado como dict. Normalizado no
     # boundary (publish_node) via helpers.vaga_benefits.parse_vaga_benefits.
     benefits: List[Any]
+    variable_compensation: Optional[List[Dict[str, Any]]]
     salary_benchmark: Optional[Dict[str, Any]]
     # Fase 5 — recrutador confirmou a faixa via right_panel_form (salary_node).
     # Declarado p/ sobreviver ao merge do LangGraph (mesmo motivo de company_id).
     salary_confirmed: Optional[bool]
+    salary_provenance: Optional[str]  # company_salary_band | market_benchmark | manual (audit 2026-06-06)
     # Recrutador optou explicitamente por seguir SEM divulgar faixa
     # (set_salary decline_to_disclose=true). Conta como 'salário tratado'
     # no gate de geração de triagem — não é pulo silencioso.
@@ -214,6 +224,11 @@ class JobCreationState(TypedDict, total=False):
 
     # --- Eligibility ---
     eligibility_questions: List[EligibilityQuestion]
+    eligibility_skip_confirmed: bool
+
+    # --- Competencies confirmation ---
+    competencies_confirmed: bool
+    confirmed_competencies: Optional[Dict[str, Any]]
 
     # --- Review ---
     readiness_check: Optional[Dict[str, Any]]
@@ -240,6 +255,14 @@ class JobCreationState(TypedDict, total=False):
     screening_pipeline_id: Optional[str]
     auto_screen_enabled: bool
 
+    # W1-B (2026-06-12): vaga afirmativa detectada via NLP no intake.
+    is_affirmative: bool
+    affirmative_criteria_primary: Optional[str]
+    affirmative_criteria_secondary: Optional[str]  # segundo critério (ex: mulheres negras = gender + race)
+    affirmative_description: Optional[str]
+    affirmative_document_required: bool  # exige laudo/autodeclaração do candidato
+    affirmative_document_types: List[str]  # ex: ['laudo_pcd', 'autodeclaracao_racial']
+
     # --- T6 (Task #1088) review gate dual-confirmation ---
     # ``pending_publish_confirmation`` é setado por ``review_gate_node``
     # no PRIMEIRO ``publish_now`` (chat). Segundo ``publish_now`` dentro
@@ -262,6 +285,7 @@ class JobCreationState(TypedDict, total=False):
     calibration_candidates: List[CalibrationCandidate]
     calibration_threshold: int  # default 3
     calibration_complete: bool
+    calibration_search_fingerprint: Optional[str]  # fingerprint da busca inicial (Fase A/B/C)
 
     # --- Handoff ---
     handoff_url: Optional[str]  # URL to the job page
@@ -273,6 +297,34 @@ class JobCreationState(TypedDict, total=False):
     intake_approved: Optional[bool]              # True quando recrutador confirmou criação
     intake_salary_suggested: Optional[bool]      # True após sugestão salarial emitida
     intake_gate_seen_user_query: Optional[str]   # evita re-processar mesma msg (anti-loop)
+
+    # --- Sub-estado 1.5: criação de departamento inline (2026-06-18) ---
+    # OBRIGATÓRIO declarar aqui: LangGraph descarta keys não-declaradas no merge
+    # (mesma razão que gate_seen_user_query e company_id acima).
+    department_candidate_from_title: Optional[str]  # nome inferido do título (não existe no DB)
+    existing_departments: List[str]                  # top-10 depts ativos do tenant (lista para o recruiter)
+    department_creation_done: Optional[bool]         # True = sub-fluxo encerrado (criou ou escolheu existente)
+    department_created_id: Optional[str]             # UUID do dept criado inline (para audit trail)
+
+    # --- Sub-estado 2.0: beneficios inferidos + confirmacao (2026-06-18) ---
+    # OBRIGATÓRIO declarar aqui: LangGraph descarta keys nao-declaradas no merge.
+    # wizard_session_service.py:1206 ja le confirmed_benefits deste state.
+    benefits_suggested: Optional[bool]              # True apos sugestao de benefits emitida
+    confirmed_benefits: List[Dict[str, Any]]        # [{id, name, category, value, ...}] confirmados pelo recruiter
+
+    # --- Sub-estado 2.1: remuneracao variavel inferida + confirmacao (2026-06-18) ---
+    # wizard_session_service.py:1209 ja le confirmed_variable_compensation deste state.
+    variable_comp_suggested: Optional[bool]         # True apos sugestao de var comp emitida
+    confirmed_variable_compensation: List[Dict[str, Any]]  # [{kind, target_pct, frequency, ...}]
+
+    # --- Fase 2: subsidiary / CNPJ propagado do dept.defaults para matching (2026-06-18) ---
+    # Fonte: Department.defaults["subsidiary_name"] + ["subsidiary_cnpj"].
+    # Propagado em intake.py apos _match_department() para que benefits_node e
+    # variable_comp_node possam filtrar elegibilidade por filial (5a dimensao).
+    parsed_subsidiary: Optional[str]          # nome da filial/subsidiaria (ex: "Filial SP")
+    parsed_subsidiary_cnpj: Optional[str]     # CNPJ da filial (ex: "12.345.678/0001-90")
+
+
 
     # --- Fase 3 (2026-05-30): confirmação assistida de competências ---
     # intake_gate sugere competências (via CompetencyBenchmarkService, Fase 2),
@@ -297,6 +349,19 @@ class JobCreationState(TypedDict, total=False):
     pipeline_template_skipped: Optional[bool]  # True quando recrutador opta por "Usar Padrão da Empresa"
     pipeline_template_score: Optional[float]
     interview_stages: List[Dict[str, Any]]
+    # Derived from interview_stages.sla_days by pipeline_template_node.
+    # Shape: [{name, order, sla_days, offset_start, offset_end}]
+    # FE computes absolute dates as: today + offset_end days.
+    derived_chronogram: Optional[List[Dict[str, Any]]]
+
+    # --- W3-A: campos operacionais ---
+    # Todos têm defaults seguros — wizard seta via set_operational_fields tool.
+    priority: Optional[str]          # "normal" | "high" | "urgent" — default "normal"
+    urgency_level: Optional[int]     # 0=normal, 1=alta, 2=critica — default 0
+    is_confidential: Optional[bool]  # vaga sigilosa — default False
+    masked_company_name: Optional[str]  # nome mascarado quando is_confidential=True
+    visibility: Optional[str]           # "public" | "internal" | "unlisted" — default "public"
+    computed_deadline: Optional[str] # ISO date derivado do derived_chronogram
 
     # --- WS protocol fields ---
     ws_stage_payload: Optional[Dict[str, Any]]  # last wizard_stage WS message sent

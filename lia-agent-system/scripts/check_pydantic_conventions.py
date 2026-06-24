@@ -59,6 +59,7 @@ SKIP_R1: set[str] = {
     # Classes que legitimamente precisam de extra=allow (externas, schema drift)
     # Formato: "ModelName" ou "module.path:ModelName"
     # Sempre adicionar com motivo + ticket associado.
+    "RegenerateQuestionsRequest",  # FE envia company_id no payload; extra='ignore' intencional: campo silenciado, JWT canônico (REGRA 2 / wsi/questions.py).
 }
 
 SKIP_R2: set[str] = {
@@ -171,21 +172,28 @@ def _inherits_canonical_base(class_node: ast.ClassDef) -> bool:
 
 
 def _has_extra_forbid(class_node: ast.ClassDef) -> bool:
-    """True se classe declara model_config = ConfigDict(extra='forbid')."""
+    """True se classe declara model_config com extra=forbid (ConfigDict call ou dict literal)."""
     for stmt in class_node.body:
         if not isinstance(stmt, ast.Assign):
             continue
         if not any(isinstance(t, ast.Name) and t.id == "model_config" for t in stmt.targets):
             continue
-        # Verifica se valor contém extra='forbid'
-        if isinstance(stmt.value, ast.Call):
-            for kw in stmt.value.keywords:
+        val = stmt.value
+        # ConfigDict(extra='forbid') -- forma ast.Call
+        if isinstance(val, ast.Call):
+            for kw in val.keywords:
                 if kw.arg == "extra" and isinstance(kw.value, ast.Constant):
                     if kw.value.value == "forbid":
                         return True
+        # {"extra": "forbid"} -- forma dict literal
+        if isinstance(val, ast.Dict):
+            for k, v in zip(val.keys, val.values):
+                if (
+                    isinstance(k, ast.Constant) and k.value == "extra"
+                    and isinstance(v, ast.Constant) and v.value == "forbid"
+                ):
+                    return True
     return False
-
-
 def _is_request_body_schema(class_name: str) -> bool:
     return any(class_name.endswith(suffix) for suffix in REQUEST_BODY_SUFFIXES)
 

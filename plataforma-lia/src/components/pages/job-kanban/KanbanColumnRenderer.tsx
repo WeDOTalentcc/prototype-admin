@@ -5,7 +5,6 @@ import { useTranslations } from "next-intl"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Checkbox } from "@/components/ui/checkbox"
 import { ScoreIconButton } from "@/components/ui/score-icon-button"
-import { ScoreBreakdownBadgeLazy } from "@/components/score/ScoreBreakdownBadge"
 import { AISuggestionBadge } from "@/components/ai"
 import { OverrideApproveButton } from "@/components/kanban/components/OverrideApproveButton"
 import { SaturationBadge } from "@/components/kanban/components/SaturationBadge"
@@ -33,7 +32,6 @@ import {
   MessageCircle,
   Calendar,
   ClipboardList,
-  MessageSquareText,
   Bookmark,
   Heart,
   Gauge,
@@ -69,6 +67,9 @@ import { KanbanCardActions } from "./KanbanCardActions"
 import { KanbanCardScores } from "./KanbanCardScores"
 import { KanbanCardStatusBadges } from "./KanbanCardStatusBadges"
 import { KanbanCardInterviewButtons } from "./KanbanCardInterviewButtons"
+import { CandidateChatPopover } from "@/components/shared/CandidateChatPopover"
+import { sortKanbanCandidates } from "./utils/kanbanHelpers"
+import { useKanbanStore } from "@/stores/kanban-store"
 
 type KanbanCandidate = CandidateLocal & {
   score?: number
@@ -278,14 +279,10 @@ export function KanbanColumnRenderer({
   const stageInfo = getStageByName(stageId)
   const displayTitle = dynamicStage?.displayName || stageInfo?.displayName || stageId
 
-  let sortedCandidates = [...candidates]
-  if (stageId === "screening") {
-    sortedCandidates = candidates.sort((a, b) => {
-      if (a.needsAction && !b.needsAction) return -1
-      if (!a.needsAction && b.needsAction) return 1
-      return (b.score ?? 0) - (a.score ?? 0)
-    })
-  }
+  // GAP-03-006: sort by store-driven field+order (replaces hardcoded screening-only sort)
+  const kanbanSortBy = useKanbanStore((s) => s.kanbanSortBy)
+  const kanbanSortOrder = useKanbanStore((s) => s.kanbanSortOrder)
+  const sortedCandidates = sortKanbanCandidates(candidates, kanbanSortBy, kanbanSortOrder)
 
   const filteredCandidates = sortedCandidates.filter((candidate) => {
     if (searchQuery) {
@@ -475,6 +472,10 @@ export function KanbanColumnRenderer({
                 onSendFeedback={onSendFeedback as (c: unknown) => void}
                 onToggleShortList={onToggleShortList}
                 onToggleFavorite={onToggleFavorite}
+                jobId={String(currentJob?.backendId || currentJob?.id || "")}
+                vacancyCandidateId={(candidate as Record<string, unknown>).vacancy_candidate_id as string | undefined}
+                currentStage={stageId}
+                onMoveRequested={(toStage) => openTransition([candidate], stageId, toStage)}
               />
 
               {/* Header do Card - Checkbox, Avatar, Nome */}
@@ -529,7 +530,7 @@ export function KanbanColumnRenderer({
                       className={
                         "inline-flex items-center justify-center w-4 h-4 rounded-full flex-shrink-0 border transition-colors motion-reduce:transition-none " +
                         (isCompareSelected
-                          ? "bg-wedo-cyan/20 border-wedo-cyan text-wedo-cyan-dark dark:text-wedo-cyan"
+                          ? "bg-wedo-cyan/20 border-wedo-cyan text-wedo-cyan-text dark:text-wedo-cyan"
                           : "border-lia-border-default text-lia-text-tertiary hover:bg-lia-interactive-hover hover:text-lia-text-secondary") +
                         (isCompareLocked ? " opacity-40 cursor-not-allowed" : " cursor-pointer")
                       }
@@ -570,10 +571,21 @@ export function KanbanColumnRenderer({
                 </div>
 
                 {/* Nome do candidato + Data Request Indicator */}
-                <div className="flex items-center gap-1 flex-1 min-w-0">
-                  <h4 className="font-medium text-xs truncate text-lia-text-primary">
-                    {candidate.name}
-                  </h4>
+                <div className="flex items-center gap-1 flex-1 min-w-0 group/name">
+                  <CandidateChatPopover
+                    candidateId={candidate.id}
+                    candidateName={candidate.name}
+                    jobId={currentJob.backendId || currentJob.id}
+                  >
+                    <h4
+                      className="font-medium text-xs truncate text-lia-text-primary"
+                      data-lia-entity-type="candidate"
+                      data-lia-entity-id={candidate.id}
+                      data-lia-entity-label={candidate.name}
+                    >
+                      {candidate.name}
+                    </h4>
+                  </CandidateChatPopover>
                   {(() => {
                     const dataRequest = getDataRequestForCandidate(candidate.id)
                     if (!dataRequest) return null
@@ -617,7 +629,7 @@ export function KanbanColumnRenderer({
                     <span className="truncate">{candidate.location}</span>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-1 text-xs text-lia-text-disabled">
+                  <div className="flex items-center gap-1 text-xs text-lia-text-muted">
                     <MapPin className="w-2.5 h-2.5 flex-shrink-0" />
                     <span className="truncate">{t('notAvailable')}</span>
                   </div>

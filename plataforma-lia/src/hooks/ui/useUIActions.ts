@@ -1,3 +1,8 @@
+/**
+ * @deprecated Pre-unified-chat hook. Zero external callers.
+ * Canonical: useLiaPanelStore (wizard panel focus) + openDynamicPanel (panel content).
+ * This file may be removed in a future cleanup sprint.
+ */
 "use client"
 
 import { useState, useCallback, useEffect, useRef } from "react"
@@ -31,7 +36,7 @@ export function useUIActions(options: UseUIActionsOptions = {}) {
     onPanelClose, 
     onChatCardAction,
     websocketUrl,
-    enableWebSocket = false
+    enableWebSocket = true
   } = options
   
   const [state, setState] = useState<UIActionsState>({
@@ -160,6 +165,7 @@ export function useUIActions(options: UseUIActionsOptions = {}) {
               handleUIAction(message.action as UIAction)
             }
           } catch (error) {
+            console.error("[useUIActions] Error:", error)
           }
         }
         

@@ -92,6 +92,10 @@ from lia_models.communication_history import (
     CommunicationStatus,
     CommunicationType,
 )
+from lia_models.scheduled_message import (
+    ScheduledMessage,
+    ScheduledMessageStatus,
+)
 from lia_models.communication_settings import (
     DEFAULT_COMMUNICATION_SETTINGS,
     CommunicationSettings,
@@ -671,4 +675,7 @@ __all__ = [
     # Triagem WSI
     "TriagemSession",
     "TriagemMessage",
+    # Scheduled Messages (GAP-07-007)
+    "ScheduledMessage",
+    "ScheduledMessageStatus",
 ]

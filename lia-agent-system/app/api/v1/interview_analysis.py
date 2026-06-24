@@ -35,6 +35,7 @@ from app.services.notification_service import (
     notification_service,
 )
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.errors import LIAError
 from app.shared.types import WeDoBaseModel
 from typing import Annotated
 from fastapi import Path
@@ -345,7 +346,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"❌ Failed to analyze interview {interview_id}: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/analyze-transcript", response_model=None)
@@ -396,7 +397,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         raise
     except Exception as e:
         logger.error(f"❌ Failed to analyze raw transcript: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/teams-webhook", response_model=None)
@@ -506,7 +507,7 @@ company_id: str = Depends(require_company_id)) -> AnalysisStatusResponse:
         raise
     except Exception as e:
         logger.error(f"❌ Failed to get analysis status for {interview_id}: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/results/{interview_id}", response_model=None)
@@ -547,7 +548,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"❌ Failed to get analysis results for {interview_id}: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 async def process_meeting_transcript(resource_data: dict, resource_path: str = ""):

@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import React from"react"
 import { useTranslations } from "next-intl"
 import { textStyles } from"@/lib/design-tokens"
@@ -80,18 +81,21 @@ export function BenefitTemplateModal({
   onSelectTemplate,
   onOpenBenefitModal,
 }: BenefitTemplateModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('benefit-template', open)
+
   const t = useTranslations("settings.benefits")
 
   const BENEFIT_CATEGORIES = [
     { id:"health", name: t("categoryHealth"), icon: Stethoscope, color:"text-status-error", bgColor:"bg-status-error/10 dark:bg-status-error/20" },
-    { id:"food", name: t("categoryFood"), icon: Utensils, color:"text-wedo-orange", bgColor:"bg-wedo-orange/10 dark:bg-wedo-orange/20" },
+    { id:"food", name: t("categoryFood"), icon: Utensils, color:"text-wedo-orange-text", bgColor:"bg-wedo-orange/10 dark:bg-wedo-orange/20" },
     { id:"transport", name: t("categoryTransport"), icon: Car, color:"text-lia-text-primary", bgColor:"bg-lia-bg-tertiary dark:bg-lia-bg-secondary" },
-    { id:"education", name: t("categoryEducation"), icon: GraduationCap, color:"text-wedo-purple", bgColor:"bg-wedo-purple/10 dark:bg-wedo-purple/20" },
-    { id:"wellness", name: t("categoryHealth"), icon: Stethoscope, color:"text-wedo-cyan", bgColor:"bg-wedo-cyan/10 dark:bg-wedo-cyan/20" },
+    { id:"education", name: t("categoryEducation"), icon: GraduationCap, color:"text-wedo-purple-text", bgColor:"bg-wedo-purple/10 dark:bg-wedo-purple/20" },
+    { id:"wellness", name: t("categoryHealth"), icon: Stethoscope, color:"text-wedo-cyan-text", bgColor:"bg-wedo-cyan/10 dark:bg-wedo-cyan/20" },
     { id:"financial", name: t("categoryFinancial"), icon: Wallet, color:"text-status-success", bgColor:"bg-status-success/10 dark:bg-status-success/20" },
     { id:"quality_life", name: t("categoryQualityLife"), icon: Home, color:"text-lia-text-secondary", bgColor:"bg-lia-bg-tertiary dark:bg-lia-bg-secondary" },
-    { id:"family", name: t("categoryFamily"), icon: Baby, color:"text-wedo-magenta", bgColor:"bg-wedo-magenta/10 dark:bg-wedo-magenta/20" },
-    { id:"flexibility", name: t("categoryQualityLife"), icon: Clock, color:"text-wedo-purple", bgColor:"bg-wedo-purple/10 dark:bg-wedo-purple/20" },
+    { id:"family", name: t("categoryFamily"), icon: Baby, color:"text-wedo-magenta-text", bgColor:"bg-wedo-magenta/10 dark:bg-wedo-magenta/20" },
+    { id:"flexibility", name: t("categoryQualityLife"), icon: Clock, color:"text-wedo-purple-text", bgColor:"bg-wedo-purple/10 dark:bg-wedo-purple/20" },
     { id:"security", name: t("categorySecurity"), icon: Shield, color:"text-lia-text-primary", bgColor:"bg-lia-bg-secondary dark:bg-lia-bg-secondary/50" },
     { id:"other", name: t("noDescription"), icon: Gift, color:"text-lia-text-secondary", bgColor:"bg-lia-bg-tertiary dark:bg-lia-bg-secondary" },
   ]
@@ -166,7 +170,7 @@ export function BenefitTemplateModal({
             </div>
           ) : filteredTemplates.length === 0 ? (
             <div className="text-center py-6">
-              <Gift className="w-4 h-4 mx-auto text-lia-text-disabled mb-2" />
+              <Gift className="w-4 h-4 mx-auto text-lia-text-muted mb-2" />
               <p className={`${textStyles.description}`} aria-live="polite" aria-atomic="true">
                 {t("noBenefitFound")}
               </p>
@@ -217,7 +221,7 @@ export function BenefitTemplateModal({
                                   {template.name}
                                 </h4>
                                 {template.is_popular && (
-                                  <Star className="w-3 h-3 text-status-warning fill-yellow-500 flex-shrink-0" />
+                                  <Star className="w-3 h-3 text-status-warning fill-current flex-shrink-0" />
                                 )}
                               </div>
                               <p className={`${textStyles.caption} truncate`}>

@@ -12,6 +12,7 @@ from app.domains.cv_screening.services.wsi_question_adjuster import wsi_question
 from fastapi import Depends
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+from app.shared.errors import LIAError
 
 router = APIRouter(prefix="/wsi", tags=["WSI Question Adjust"])
 logger = logging.getLogger(__name__)
@@ -95,7 +96,7 @@ async def adjust_questions(request: AdjustQuestionsRequest, company_id: str = De
         raise
     except Exception as e:
         logger.error(f"Error adjusting WSI questions: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/jd-evaluate", response_model=None)
@@ -117,7 +118,7 @@ async def evaluate_jd(request: EvaluateJDRequest, company_id: str = Depends(requ
         raise
     except Exception as e:
         logger.error(f"Error evaluating JD: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/questions/save", response_model=SaveQuestionsResponse)
@@ -169,7 +170,7 @@ async def save_questions(request: SaveQuestionsRequest, company_id: str = Depend
         raise
     except Exception as e:
         logger.error(f"Error saving WSI questions for job {request.job_id}: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/questions/{job_id}", response_model=GetQuestionsResponse)

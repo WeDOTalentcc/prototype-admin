@@ -182,7 +182,7 @@ export function CreateJobWithCandidatesModal({
                 >
                   Criar vaga com candidatos
                 </h2>
-                <p className="text-xs text-lia-text-disabled">
+                <p className="text-xs text-lia-text-muted">
                   Os candidatos serão adicionados após a criação
                 </p>
               </div>
@@ -207,7 +207,7 @@ export function CreateJobWithCandidatesModal({
               </span>
             </div>
             
-            <p className="text-xs text-lia-text-disabled mb-3">
+            <p className="text-xs text-lia-text-muted mb-3">
               Serão adicionados automaticamente à vaga após sua criação
             </p>
             
@@ -242,7 +242,7 @@ export function CreateJobWithCandidatesModal({
 
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label className="text-xs font-medium text-lia-text-disabled">
+              <Label className="text-xs font-medium text-lia-text-tertiary">
                 Etapa inicial
               </Label>
               <Select value={selectedStage} onValueChange={setSelectedStage}>
@@ -276,7 +276,7 @@ export function CreateJobWithCandidatesModal({
                     htmlFor="include-comments"
                     className="text-xs font-medium text-lia-text-inverse cursor-pointer flex items-center gap-1.5"
                   >
-                    <MessageSquare className="w-3.5 h-3.5 text-lia-text-disabled" />
+                    <MessageSquare className="w-3.5 h-3.5 text-lia-text-muted" />
                     Incluir comentários como notas
                   </Label>
                   <p className="text-micro text-lia-text-tertiary mt-1">
@@ -294,8 +294,8 @@ export function CreateJobWithCandidatesModal({
                 <p className="text-xs text-lia-text-secondary font-medium">
                   Próximo passo
                 </p>
-                <p className="text-micro text-lia-text-disabled mt-1">
-                  A LIA vai te guiar na criação da vaga. Após finalizar, os candidatos serão adicionados automaticamente.
+                <p className="text-micro text-lia-text-muted mt-1">
+                  A IA vai te guiar na criação da vaga. Após finalizar, os candidatos serão adicionados automaticamente.
                 </p>
               </div>
             </div>
@@ -306,7 +306,7 @@ export function CreateJobWithCandidatesModal({
           <Button
             variant="outline"
             onClick={onClose}
-            className="h-9 px-4 text-xs font-medium bg-transparent border-lia-border-medium text-lia-text-disabled hover:bg-lia-btn-primary-hover hover:text-lia-text-inverse hover:border-lia-border-medium"
+            className="h-9 px-4 text-xs font-medium bg-transparent border-lia-border-medium text-lia-text-tertiary hover:bg-lia-btn-primary-hover hover:text-lia-text-inverse hover:border-lia-border-medium"
           >
             Cancelar
           </Button>

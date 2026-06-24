@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import React, { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -90,6 +91,9 @@ export function EscalationRuleFormModal({
   onSubmit,
   initialData,
 }: EscalationRuleFormModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('escalation-rule-form', open)
+
   const [form, setForm] = useState<EscalationRuleInput>(emptyInput())
   const [conditionText, setConditionText] = useState<string>("{}")
   const [escalateToText, setEscalateToText] = useState<string>("")

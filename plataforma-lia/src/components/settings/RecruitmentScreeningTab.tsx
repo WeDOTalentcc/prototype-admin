@@ -19,6 +19,7 @@ import {
 } from "@/hooks/screening/use-eligibility-templates"
 import { EligibilityTemplatesManager } from "./EligibilityTemplatesManager"
 import { useTranslations } from "next-intl"
+import { useAuth } from "@/contexts/auth-context"
 import { textStyles, actionButtonStyles } from '@/lib/design-tokens'
 import { useRecruitmentHub, type NewQuestionForm } from './useRecruitmentHub'
 import { InteractiveSurface } from "@/components/ui/interactive-surface"
@@ -30,6 +31,11 @@ export function RecruitmentScreeningTab() {
 
   const t = useTranslations("settings")
   const hub = useRecruitmentHub('screening')
+  // P1-18 (auditoria Configuracoes): isAdmin/currentUserId reais do contexto
+  // auth (antes hardcoded true/null — todo usuario virava admin nos templates).
+  const { user } = useAuth()
+  const isAdmin = user?.role === "admin" || user?.role === "wedotalent_admin"
+  const currentUserId = user?.email ?? null
   const error = hub.error
   const successMessage = hub.successMessage
   const questions = hub.questions
@@ -57,13 +63,13 @@ export function RecruitmentScreeningTab() {
   return (
     <div className="space-y-6">
       {error && (
-        <div className="px-2 py-1.5 rounded-xl flex items-center gap-2 bg-status-error/10 border border-status-error/30 text-status-error">
+        <div className="px-2 py-1.5 rounded-full flex items-center gap-2 bg-status-error/10 border border-status-error/30 text-status-error">
           <AlertCircle className="w-4 h-4" />
           <span className={textStyles.body}>{error}</span>
         </div>
       )}
       {successMessage && (
-        <div className="px-2 py-1.5 rounded-xl flex items-center gap-2 bg-status-success/10 border border-status-success/30 text-status-success dark:bg-status-success/20 dark:border-status-success/30 dark:text-status-success">
+        <div className="px-2 py-1.5 rounded-full flex items-center gap-2 bg-status-success/10 border border-status-success/30 text-status-success dark:bg-status-success/20 dark:border-status-success/30 dark:text-status-success">
           <CheckCircle className="w-4 h-4" />
           <span className={textStyles.body}>{successMessage}</span>
         </div>
@@ -202,8 +208,8 @@ export function RecruitmentScreeningTab() {
       </Card>
 
       <EligibilityTemplatesManager
-        isAdmin={true}
-        currentUserId={null}
+        isAdmin={isAdmin}
+        currentUserId={currentUserId}
       />
     </div>
   )
@@ -281,7 +287,7 @@ function QuestionBankSection({
                               : 'bg-lia-bg-primary border-lia-border-subtle hover:border-lia-border-subtle dark:bg-lia-bg-secondary dark:border-lia-border-subtle dark:hover:border-lia-border-medium'
                         }`}
                       >
-                        <input type="checkbox" checked={isSelected} disabled={isAdded} onChange={() => onToggleBankQuestion(q.id)} className="mt-0.5 rounded-xl border-lia-border-default" />
+                        <input type="checkbox" checked={isSelected} disabled={isAdded} onChange={() => onToggleBankQuestion(q.id)} className="mt-0.5 rounded-sm border-lia-border-default" />
                         <div className="flex-1 min-w-0">
                           <p className={textStyles.bodySmall}>{q.question}</p>
                           <div className="flex items-center gap-1.5 mt-1">

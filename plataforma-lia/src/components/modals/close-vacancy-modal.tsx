@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import React, { useState, useEffect, useCallback, useMemo } from"react"
 import {
   Dialog,
@@ -113,6 +114,9 @@ export function CloseVacancyModal({
   onConfirm,
   closeWithoutHire = false,
 }: CloseVacancyModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('close-vacancy', isOpen)
+
   const { user } = useAuth()
   const { companyId: resolvedCompanyId } = useCompanyId()
 
@@ -308,7 +312,7 @@ export function CloseVacancyModal({
       toast.success('Vaga fechada com sucesso!')
       onClose()
     } catch (error) {
-      toast.error('Erro ao fechar vaga. Tente novamente.')
+      toast.error('Erro ao fechar vaga. Tente novamente.', { description: "Verifique sua conexão e tente novamente." })
     } finally {
       setIsSubmitting(false)
     }
@@ -623,7 +627,7 @@ export function CloseVacancyModal({
                 <span className="font-medium">1</span>
                 <span className="hidden sm:inline">Parabéns</span>
               </div>
-              <ChevronRight className="h-4 w-4 text-lia-text-disabled" />
+              <ChevronRight className="h-4 w-4 text-lia-text-muted" />
               <div
                 className={cn(
                   'flex items-center gap-2 px-3 py-1.5 rounded-full text-sm transition-colors',

@@ -130,7 +130,7 @@ export function ScoreBreakdownBadgeLazy({
           <div className="flex items-center gap-1.5 pb-2 dark:border-lia-border-subtle">
             <Brain className="h-3.5 w-3.5 text-wedo-cyan-dark" />
             <span className="text-xs font-semibold text-lia-text-primary">
-              Score LIA: {Math.round(score)}
+              Score: {Math.round(score)}
             </span>
           </div>
 
@@ -258,7 +258,7 @@ export function ScoreBreakdownBadge({
               <div className="flex items-center gap-1.5 mb-2">
                 <Brain className="h-3.5 w-3.5 text-wedo-cyan-dark" />
                 <span className="text-xs font-semibold text-lia-text-primary">
-                  Score LIA: {Math.round(score)}
+                  Score: {Math.round(score)}
                 </span>
               </div>
               {dimensions.map((dim) => (

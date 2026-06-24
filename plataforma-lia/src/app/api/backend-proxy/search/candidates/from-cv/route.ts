@@ -5,7 +5,7 @@ import { validateQuery } from '@/lib/api/validate'
 import { getAuthHeadersForForm } from '@/lib/api/auth-headers'
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8001'
-const MAX_FILE_SIZE = 10 * 1024 * 1024
+import { MAX_FILE_SIZE } from '@/constants/upload'
 
 const fromCvQuerySchema = z.object({
   limit: z.string().regex(/^\d+$/).optional().default('20'),

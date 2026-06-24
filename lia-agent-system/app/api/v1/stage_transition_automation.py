@@ -21,6 +21,7 @@ from app.domains.automation.services.stage_transition_automation import SubStatu
 from app.shared.compliance.audit_service import audit_service  # module-level for test patchability
 from app.shared.compliance.fairness_guard import FairnessGuard as _FairnessGuard
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 from app.shared.types import WeDoBaseModel
 _fairness_guard_sta = _FairnessGuard()
 
@@ -186,7 +187,7 @@ async def predict_substatus(request: PredictSubStatusRequest, company_id: str = 
         raise
     except Exception as e:
         logger.error(f"Error predicting substatus: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/generate-message", response_model=GenerateMessageResponse)
@@ -220,7 +221,7 @@ async def generate_message(request: GenerateMessageRequest, company_id: str = De
         raise
     except Exception as e:
         logger.error(f"Error generating message: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/regenerate-for-substatus", response_model=RegenerateMessageResponse)
@@ -267,7 +268,7 @@ async def regenerate_for_substatus(request: RegenerateMessageRequest, company_id
         raise
     except Exception as e:
         logger.error(f"Error regenerating message: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/get-actions", response_model=GetActionsResponse)
@@ -300,7 +301,7 @@ async def get_available_actions(request: GetActionsRequest, company_id: str = De
         raise
     except Exception as e:
         logger.error(f"Error getting actions: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/substatus-options/{stage}", response_model=None)
@@ -346,7 +347,7 @@ async def get_substatus_options(stage: str, company_id: str = Depends(require_co
         raise
     except Exception as e:
         logger.error(f"Error getting substatus options: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 class BulkPredictSubStatusRequest(WeDoBaseModel):

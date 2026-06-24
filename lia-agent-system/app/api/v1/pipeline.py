@@ -9,6 +9,7 @@ from app.shared.compliance.audit_service import AuditService, get_audit_service
 from app.shared.pii_masking import get_masked_logger
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+from app.shared.errors import LIAError
 
 logger = get_masked_logger(__name__)
 
@@ -45,7 +46,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error fetching stale candidates: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/action", response_model=None)
@@ -99,4 +100,4 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error executing pipeline action: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")

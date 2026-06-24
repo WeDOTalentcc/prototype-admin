@@ -27,8 +27,8 @@ from app.domains.job_creation.repositories.jd_similar_history_repository import 
 logger = logging.getLogger(__name__)
 
 
-# Embedding dim válida (consistente com OpenAI text-embedding-3-small)
-JD_EMBEDDING_DIM = 1536
+# Embedding dim válida (alinhada com Vector(768) cols e saída OpenAI text-embedding-3-small 768-dim)
+JD_EMBEDDING_DIM = 768
 
 
 # ── PII Redactor (Sprint B Phase 1, gap C4) ────────────────────────────────
@@ -216,6 +216,7 @@ class JdSimilarService:
         try:
             embedding = await self.embedding_service.generate_embedding(
                 embedding_text,
+                company_id=company_id,
             )
         except Exception as exc:
             logger.warning(
@@ -369,7 +370,7 @@ class JdSimilarService:
         embedding_text = _build_embedding_text(title, jd_enriched)
         embedding: list[float] | None = None
         try:
-            embedding = await self.embedding_service.generate_embedding(embedding_text)
+            embedding = await self.embedding_service.generate_embedding(embedding_text, company_id=company_id)
             if embedding and len(embedding) != JD_EMBEDDING_DIM:
                 logger.warning(
                     "[JdSimilar.record_jd] invalid embedding dim (job_id=%s)",
@@ -532,3 +533,69 @@ def record_jd_fire_and_forget(
 
     thread = threading.Thread(target=_runner, daemon=True, name=f"jd-record-{job_id[:8]}")
     thread.start()
+
+
+def increment_reuse_fire_and_forget(
+    company_id: str,
+    record_id: str,
+) -> None:
+    """Fire-and-forget wrapper for sync callers (e.g., LangGraph publish_node).
+
+    Increments the reuse counter on a JdSimilarHistory record when the recruiter
+    chose to reuse an existing JD. Spawns a daemon thread; NEVER raises.
+
+    Multi-tenancy: company_id required.
+    """
+    if not company_id or not record_id:
+        logger.debug(
+            "[JdSimilar.increment_reuse_f2f] missing required fields (company=%s record=%s)",
+            bool(company_id), bool(record_id),
+        )
+        return
+
+    import threading
+
+    def _runner() -> None:
+        import asyncio
+
+        async def _run() -> None:
+            try:
+                from lia_config.database import async_session_factory
+                from app.shared.intelligence.embedding_service import EmbeddingService
+                from app.domains.job_creation.repositories.jd_similar_history_repository import (
+                    JdSimilarHistoryRepository,
+                )
+
+                async with async_session_factory() as db:
+                    repo = JdSimilarHistoryRepository(db)
+                    svc = JdSimilarService(
+                        repository=repo, embedding_service=EmbeddingService(),
+                    )
+                    await svc.increment_reuse(
+                        company_id=company_id,
+                        record_id=record_id,
+                    )
+                    logger.info(
+                        "[JdSimilar.increment_reuse_f2f] reuse counted (record=%s)",
+                        record_id,
+                    )
+            except Exception as exc:
+                logger.warning(
+                    "[JdSimilar.increment_reuse_f2f] failed (record=%s): %s",
+                    record_id, str(exc)[:200],
+                )
+
+        try:
+            asyncio.run(_run())
+        except Exception as exc:
+            logger.warning(
+                "[JdSimilar.increment_reuse_f2f] event loop error (record=%s): %s",
+                record_id, str(exc)[:200],
+            )
+
+    t = threading.Thread(
+        target=_runner,
+        daemon=True,
+        name=f"jd-reuse-{record_id[:8] if len(record_id) >= 8 else record_id}",
+    )
+    t.start()

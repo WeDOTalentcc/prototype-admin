@@ -14,8 +14,8 @@ from app.auth.dependencies import get_current_user_or_demo, get_user_company_id
 from lia_models.candidate import VacancyCandidate
 from app.auth.models import User
 from app.domains.communication.services.email_providers import get_email_provider
-from app.domains.shared_searches.dependencies import get_shared_search_repo
-from app.domains.shared_searches.repositories.shared_search_repository import (
+from app.repositories.dependencies import get_shared_search_repo
+from app.repositories.shared_search_repository import (
     SharedSearchRepository,
 )
 from app.models.shared_search import (
@@ -31,6 +31,7 @@ from app.schemas.shared_search import (
     ShareChannel,
 )
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 from app.shared.types import WeDoBaseModel
 from typing import Annotated
 from fastapi import Path
@@ -66,6 +67,32 @@ def parse_company_uuid(company_id: str):
     except (ValueError, TypeError):
         pass
     return None
+
+
+def _validate_recipient_domains(requester_email, recipient_emails):
+    """Garante que todos os destinatarios pertencem ao mesmo dominio do recrutador.
+
+    Fail-safe: sem dominio do requester -> bloqueia qualquer destinatario.
+    Raises ValueError com codigo domain_not_allowed se qualquer destinatario
+    tiver dominio diferente do dominio organizacional do recrutador.
+    """
+    if not requester_email or "@" not in str(requester_email):
+        if recipient_emails:
+            raise ValueError(
+                "domain_not_allowed: dominio da organizacao nao pode ser determinado"
+            )
+        return
+    org_domain = str(requester_email).split("@", 1)[1].lower()
+    for email in recipient_emails:
+        if "@" not in str(email):
+            continue
+        recipient_domain = str(email).split("@", 1)[1].lower()
+        if recipient_domain != org_domain:
+            raise ValueError(
+                f"domain_not_allowed: destinatario '{email}' nao pertence ao dominio "
+                f"@{org_domain} da organizacao. So e permitido compartilhar com "
+                f"emails do mesmo dominio."
+            )
 
 
 def generate_access_token() -> str:
@@ -291,6 +318,28 @@ company_id: str = Depends(require_company_id)):
             raise HTTPException(status_code=400, detail="Company ID inválido para criar compartilhamento")
 
         candidate_uuids = [uuid.UUID(str(cid)) for cid in data.candidate_ids]
+
+        # G6 LGPD consent gate — sharing PII with third parties requires explicit consent (Art. 7)
+        # ADR-LGPD-002: this is NOT recruiter viewing own data (Art. 7 II legítimo interesse);
+        # this is sharing with EXTERNAL recipients (hiring managers) via link+OTP = third-party disclosure
+        candidates_for_consent = await repo.get_candidates_by_ids(candidate_uuids)
+        candidates_without_consent = [
+            str(c.id) for c in candidates_for_consent
+            if not getattr(c, "communication_consent", False)
+        ]
+        if candidates_without_consent:
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "error": "lgpd_consent_missing",
+                    "message": (
+                        f"{len(candidates_without_consent)} candidato(s) não consentiram com "
+                        f"compartilhamento de dados. Obtenha o consentimento antes de compartilhar."
+                    ),
+                    "candidate_ids_without_consent": candidates_without_consent,
+                },
+            )
+
         snapshot_data = await build_candidate_snapshot(repo, candidate_uuids)
 
         if not snapshot_data:
@@ -313,6 +362,21 @@ company_id: str = Depends(require_company_id)):
             created_at=datetime.utcnow(),
             updated_at=datetime.utcnow()
         )
+
+        # G6-Domain: valida dominio dos destinatarios antes de criar registros de acesso
+        try:
+            _validate_recipient_domains(
+                requester_email=getattr(current_user, "email", None),
+                recipient_emails=[r.email for r in data.recipients],
+            )
+        except ValueError as exc:
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "error": "domain_not_allowed",
+                    "message": str(exc),
+                },
+            )
 
         await repo.create_shared_search(shared_search)
 
@@ -478,7 +542,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error(f"Error creating shared search: {e}", exc_info=True)
         await repo.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("", response_model=None)
@@ -572,7 +636,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error listing shared searches: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/{search_id}", response_model=None)
@@ -678,7 +742,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting shared search: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/{search_id}/resend", response_model=None)
@@ -730,7 +794,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error(f"Error resending invite: {e}", exc_info=True)
         await repo.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.patch("/{search_id}", response_model=None)
@@ -782,7 +846,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error(f"Error updating shared search: {e}", exc_info=True)
         await repo.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.delete("/{search_id}", response_model=None)
@@ -815,7 +879,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error(f"Error deleting shared search: {e}", exc_info=True)
         await repo.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/{search_id}/add-to-job", response_model=None)
@@ -878,16 +942,26 @@ company_id: str = Depends(require_company_id)):
 
             notes = feedback_comments.get(candidate_id) if data.include_notes else None
 
+            # Task #1306: record the structural stage link so SLA detection can
+            # join by id instead of fragile name matching.
+            from app.shared.services.stage_id_resolver import (
+                resolve_recruitment_stage_id,
+            )
+
+            recruitment_stage_id = await resolve_recruitment_stage_id(
+                repo.db, str(company_uuid), "sourcing"
+            )
+
             new_vacancy_candidate = VacancyCandidate(
                 id=uuid.uuid4(),
                 company_id=company_uuid,
-                job_vacancy_id=job_uuid,
+                vacancy_id=job_uuid,
                 candidate_id=candidate_id,
                 stage="sourcing",
-                sub_status="sourced",
+                recruitment_stage_id=recruitment_stage_id,
+                status="sourced",
                 source="shared_search",
                 notes=notes,
-                is_active=True,
                 created_at=datetime.utcnow(),
                 updated_at=datetime.utcnow()
             )
@@ -909,6 +983,6 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error(f"Error adding candidates to job: {e}", exc_info=True)
         await repo.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 reorder_collection_before_item(router)

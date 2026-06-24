@@ -127,7 +127,7 @@ export function OnboardingProgressBar({
           <span className="text-sm font-medium text-lia-text-primary">
             Configuração da empresa
           </span>
-          <span className="text-sm font-semibold text-wedo-cyan tabular-nums">
+          <span className="text-sm font-semibold text-lia-text-secondary tabular-nums">
             {progress}%
           </span>
         </div>
@@ -153,7 +153,7 @@ export function OnboardingProgressBar({
       {showLabel && (
         <div className="flex justify-between text-[10px] text-lia-text-secondary">
           {MILESTONES.map((m) => (
-            <span key={m} className={progress >= m ? "text-wedo-cyan font-medium" : ""}>
+            <span key={m} className={progress >= m ? "text-wedo-cyan-text font-medium" : ""}>
               {m === 100 && progress >= 100 ? (
                 <CheckCircle2 className="w-3 h-3 inline" aria-hidden="true" />
               ) : (

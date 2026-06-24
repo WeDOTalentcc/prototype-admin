@@ -56,6 +56,36 @@ from app.domains.job_creation.orchestrator.wizard_tools import (
 logger = logging.getLogger(__name__)
 
 
+# Anti-silent-degradation sensor (harness, 2026-06-05): canary counter para o
+# caso em que o LLM produz ZERO texto em TODAS as iterações do turno e o reply
+# cai no fallback genérico ("Certo! Como deseja seguir?"). Esse era um defeito
+# INVISÍVEL — o turno respondia HTTP 200 com texto plausível enquanto o painel
+# não abria e o recrutador via uma resposta sem sentido (custou um debug longo).
+# Agora a anomalia é OBSERVÁVEL: WARNING sempre + (quando prometheus_client está
+# disponível) counter ``wizard_empty_reply_fallback_total`` para alarme.
+# Mesmo pattern canonical de lia_voice_wsi_persist_total (wsi_pipeline.py).
+try:
+    from prometheus_client import REGISTRY as _PROM_REGISTRY
+    from prometheus_client import Counter as _PromCounter
+
+    _EMPTY_REPLY_METRIC_NAME = "wizard_empty_reply_fallback_total"
+    _existing_empty_reply = getattr(
+        _PROM_REGISTRY, "_names_to_collectors", {}
+    ).get(_EMPTY_REPLY_METRIC_NAME)
+    if _existing_empty_reply is not None:
+        _EMPTY_REPLY_COUNTER = _existing_empty_reply
+    else:
+        _EMPTY_REPLY_COUNTER = _PromCounter(
+            _EMPTY_REPLY_METRIC_NAME,
+            "WizardOrchestrator turns whose LLM produced no text across all "
+            "iterations and fell back to the generic reply (harness 2026-06-05).",
+        )
+    _EMPTY_REPLY_METRICS_AVAILABLE = True
+except (ImportError, ValueError):  # pragma: no cover — prometheus opcional
+    _EMPTY_REPLY_COUNTER = None
+    _EMPTY_REPLY_METRICS_AVAILABLE = False
+
+
 _DEFAULT_MODEL = os.environ.get("LIA_WIZARD_ORCHESTRATOR_MODEL", CANONICAL_SONNET_MODEL)
 
 
@@ -100,9 +130,36 @@ _SYSTEM_PROMPT_BASE = (
     "recrutador informar/ajustar valores, use set_salary; se ele optar por "
     "seguir SEM divulgar a faixa, registre com set_salary(decline_to_disclose"
     "=true). Só trate o salário como resolvido após uma dessas ações.\n"
+    "- Benefícios e remuneração variável: após confirmar o salário, OFEREÇA "
+    "proativamente os benefícios chamando suggest_benefits e também chame "
+    "suggest_variable_compensation para oferecer remuneração variável ao "
+    "recrutador. Ambos buscam o catálogo da empresa e "
+    "preenchem a vaga automaticamente — o recrutador só confirma ou remove "
+    "itens. Se o catálogo estiver vazio, oriente o recrutador a informar "
+    "manualmente via chat.\n"
+    "- Vaga afirmativa: se o recrutador mencionar ação afirmativa, PcD, "
+    "mulheres, pessoas negras, LGBTQIA+, 50+, indígenas, refugiados, ou "
+    "similarés, OU se o state já tiver is_affirmative=True (detectado pelo "
+    "intake via NLP), chame set_affirmative_fields com o critério correto. "
+    "Isso ativa o FairnessGuard na triagem e persiste os campos no publish. "
+    "Mostre um resumo do que foi configurado (critério + documentação exigida "
+    "se aplicável). NÃO afirme que configurou sem ter chamado a tool.\n"
+    "- Perguntas de elegibilidade (eliminatorias): quando o stage for 'eligibility' ou o recrutador mencionar requisitos que BLOQUEIAM candidatos (CNH, presencial, PcD, documentacao, viagens), chame suggest_eligibility_templates PROATIVAMENTE. Apresente as opcoes e para cada aprovado chame apply_eligibility_template (necessario o template_id do suggest). Para customizadas use create_custom_eligibility_template + apply_eligibility_template. NUNCA invente texto de pergunta eliminatoria sem ter chamado a tool. Se o recrutador quiser avancar SEM nenhum criterio de elegibilidade, EXPLIQUE que nenhuma pergunta eliminatoria sera aplicada aos candidatos e pergunte se confirma. Ao confirmar, chame confirm_skip_eligibility. Nao adiante para outros stages.\n"
+    "- Banco de perguntas: quando receber mensagem com o padr\u00e3o "
+    "'Adicionar do banco pergunta id=UUID', extraia o UUID EXATAMENTE como est\u00e1 "
+    "(sem modificar nenhum caractere) e chame add_bank_question com question_id=UUID. "
+    "Confirme qual pergunta foi adicionada pelo texto retornado pela tool.\n"
+    "- Calibra\u00e7\u00e3o de candidatos: quando receber mensagem com o padr\u00e3o "
+    "'[calibration_action candidate_id=ID signal=SIGNAL]', extraia candidate_id e signal "
+    "EXATAMENTE como est\u00e3o e chame calibration_action(candidate_id=ID, signal=SIGNAL). "
+    "signal: like=aprovar, dislike=rejeitar, skip=pular. "
+    "Ap\u00f3s chamar, relate o progresso (sinais: N/threshold). "
+    "Quando receber '[calibration_complete]', chame advance_calibration. "
+    "N\u00e3o afirme que avan\u00e7ou sem ter chamado advance_calibration.\n"
     "- Navegação: se o recrutador pedir para ir à página de vagas ou abrir a "
-    "vaga, chame navigate_to_jobs (você CONSEGUE navegá-lo — não diga que não "
-    "consegue).\n"
+    "vaga, chame navigate_to_jobs (você CONSEGUE — não diga que não consegue). "
+    "Se pedir 'chat full', 'tela cheia', 'chat dedicado', 'chat completo', "
+    "chame open_fullscreen_chat (você CONSEGUE — não diga que não consegue).\n"
     "- Se o recrutador mencionar IDIOMAS (ex.: 'inglês avançado'), registre com "
     "confirm_languages (idioma + nível) — senão o dado se perde.\n"
     "- Junto com as competências, pergunte as RESPONSABILIDADES da vaga e "
@@ -120,10 +177,12 @@ _SYSTEM_PROMPT_BASE = (
     "SEMPRE chamando generate_wsi_questions (metodologia canônica CBI + Bloom + "
     "Dreyfus + Big Five + fairness, dimensionada pelo modo). **NUNCA escreva, "
     "liste ou enumere o texto das perguntas você mesmo no chat** — as perguntas "
-    "SÓ existem (e aparecem no painel lateral) se generate_wsi_questions foi "
-    "chamada e retornou sucesso. Depois de chamá-la, apenas RESUMA (quantas "
-    "técnicas/comportamentais, metodologia) e diga que estão no painel ao lado "
-    "para revisão — jamais redija o conteúdo das perguntas. Ajustes: regenerar "
+    "SÓ existem (e aparecem como card interativo DIRETAMENTE NO CHAT, logo acima "
+    "do campo de mensagem) se generate_wsi_questions foi chamada e retornou sucesso. "
+    "Depois de chamá-la, apenas RESUMA (quantas técnicas/comportamentais, metodologia) "
+    "— as perguntas aparecem automaticamente como card inline no chat para revisão. "
+    "NAO existe painel lateral separado para perguntas WSI — tudo aparece no chat. "
+    "Jamais redija o conteúdo das perguntas no texto da sua resposta. Ajustes: regenerar "
     "tudo (regenerate_wsi_questions), remover (remove_wsi_question), reescrever "
     "(edit_wsi_question), adicionar (add_wsi_question). Quando ele aprovar, chame "
     "approve_wsi_questions. Só então publish_job (com confirm=true).\n"
@@ -139,14 +198,125 @@ _SYSTEM_PROMPT_BASE = (
     "ou um pré-requisito falta, diga a verdade sobre o estado atual e qual é o "
     "próximo passo real — jamais finja sucesso. Não diga 'publicada com sucesso' "
     "a menos que publish_job tenha retornado um job_id.\n\n"
-    "## Email do gestor\n"
-    "O email do gestor é capturado AUTOMATICAMENTE do texto pelo sistema (por "
-    "LGPD você verá '[EMAIL REMOVIDO]' no lugar — é normal). NÃO peça o formato "
-    "do email, NÃO valide, NÃO insista: se o recrutador mencionou um email, ele "
-    "já está registrado. Confira a ficha viva para ver se o email já consta.\n\n"
+    "## REGRA ABSOLUTA \u2014 ficha viva \xe9 autoritativa (nunca reiniciar coleta)\n"
+    "A se\xe7\xe3o 'Estado real da vaga (ficha viva)' abaixo \xe9 a "
+    "\xdaNICA fonte de verdade sobre o progresso desta vaga. "
+    "LEIA-A antes de responder. Se 'Campos preenchidos' listar "
+    "qualquer campo, voc\xea J\xc1 tem esse dado \u2014 "
+    "n\xe3o pe\xe7a novamente, n\xe3o reinicie a coleta, "
+    "NUNCA diga 'vamos come\xe7ar do zero'. "
+    "Continue sempre do pr\xd3ximo campo faltante. A ficha \xe9 "
+    "a \xdaNICA fonte de verdade.\n\n"
+    "## Painel lateral (ficha viva)\n"
+    "O painel lateral inicia MINIMIZADO como um card acima do campo de "
+    "mensagem — o recrutador expande/minimiza quando quiser, e a escolha "
+    "dele prevalece. Você TAMBÉM pode controlá-lo por tools: open_panel "
+    "(expandir) e close_panel (minimizar para o card).\n"
+    "REGRAS OBRIGATÓRIAS para open_panel e close_panel:\n"
+    "- NUNCA chame open_panel automaticamente no início do wizard nem "
+    "durante coleta de dados (perguntas ao recrutador). O painel começa "
+    "e permanece MINIMIZADO por padrão.\n"
+    "- SÓ chame open_panel quando: (a) o recrutador EXPLICITAMENTE pedir "
+    "para ver/expandir/abrir o painel (frases como 'pode abrir o painel', "
+    "'mostra no painel', 'expande', 'quero ver a ficha'); OU (b) você "
+    "acabou de gerar um artefato principal completo (JD com enrich_job_description "
+    "bem-sucedida, ou perguntas WSI com generate_wsi_questions bem-sucedida) — "
+    "nesses casos o recrutador precisa revisar o conteúdo no painel.\n"
+    "- Exemplos PROIBIDOS: ❌ open_panel no 1º turno; ❌ open_panel ao fazer "
+    "pergunta sobre título/senioridade/modelo; ❌ open_panel ao registrar um campo.\n"
+    "- Use close_panel quando ele pedir 'fechar o painel' ou 'seguir só pelo chat'.\n"
+    "- NUNCA afirme que abriu/fechou o painel sem ter chamado a tool e recebido "
+    "sucesso (mentira de ação, igual fingir publicação).\n\n"
+    "## Responsáveis pela vaga\n"
+    "Após definir título e departamento, pergunte proativamente:\n"
+    "- Nome e email do gestor da vaga (quem aprova e acompanha)\n"
+    "- Nome e email do recrutador responsável (quem conduz o processo)\n"
+    "Esses campos são importantes para briefings e notificações. Use "
+    "`set_job_fields` com os campos: manager_name, manager_email, "
+    "recruiter, recruiter_email.\n"
+    "Se o recrutador mencionar um email e você vir '[EMAIL REMOVIDO]' "
+    "(LGPD), o email já está registrado automaticamente — não insista.\n"
+    "JAMAIS invente nomes ou emails de responsáveis. Se não foram informados, "
+    "PERGUNTE.\n"
+    "**ATENÇÃO: gestor ≠ recrutador.** Se o usuário diz 'eu sou o recrutador' "
+    "ou 'a recrutadora é Maria', use campos `recruiter`/`recruiter_email`. "
+    "Campos `manager_name`/`manager_email` são APENAS para o gestor/hiring "
+    "manager (quem aprova a vaga, não quem conduz o processo).\n"
+    "Após gestor e recrutador, pergunte se há outros envolvidos no processo "
+    "(ex: HRBP, líder de área, comitê de contratação, entrevistadores). "
+    "Se sim, use `set_stakeholders` para registrá-los. Se não, prossiga.\n\n"
     "- Respostas curtas, calorosas e objetivas em PT-BR. Termine com um próximo "
     "passo claro ou uma pergunta de continuidade.\n"
-    "- NUNCA repita literalmente sua última resposta; consulte o histórico."
+    "- NUNCA repita literalmente sua última resposta; consulte o histórico.\n\n"
+    "## Stage done (vaga criada)\n"
+    "Quando a vaga foi publicada e o stage é 'done', o recrutador pode:\n"
+    "- Clicar em 'Ir para a vaga' para abrir a vaga diretamente.\n"
+    "- Clicar em 'Fechar wizard' para encerrar o assistente de criação de vaga.\n"
+    "Você pode mencionar que pode navegar livremente pela plataforma após a publicação. "
+    "NÃO afirme que vai fechar nenhum painel lateral — não há painel lateral neste modo."
+    "\n\n"
+    "## Briefing para o gestor\n"
+    "Após publicar a vaga com sucesso, ofereça proativamente ao recrutador: "
+    "'Deseja que eu envie um briefing executivo para o gestor da vaga?' "
+    "Use a tool `send_manager_briefing` para isso. Se o e-mail do gestor "
+    "foi informado no intake, um briefing básico já foi enviado automaticamente "
+    "— ofereça enviar a versão completa com contexto de triagem e cultura.\n"
+
+    "\n\n"
+    "## Valores can\u00f4nicos de triagem (NUNCA inventar)\n"
+    "- Modo COMPACTO: 7 perguntas (5 t\u00e9cnicas + 2 comportamentais), ~15 min\n"
+    "- Modo COMPLETO: 12 perguntas (8 t\u00e9cnicas + 4 comportamentais), ~25 min\n"
+    "Estes s\u00e3o os \u00daNICOS valores. N\u00e3o cite n\u00fameros diferentes. Quando o "
+    "recrutador perguntar sobre modos de triagem, use EXATAMENTE estes valores.\n"
+    "- Prazo de triagem: default da empresa = 48h a partir da publicacao. "
+    "Presets: 24h, 48h, 72h, 96h, 120h, 168h (7 dias). O recrutador pode "
+    "ajustar livremente (12h-720h). Use set_screening_deadline para registrar.\n\n"
+    "## Disciplina de tool-calling (INEGOCI\u00c1VEL)\n"
+    "1. Quando o recrutador informar QUALQUER dado (t\u00edtulo, senioridade, modelo, "
+    "departamento, gestor, contrato, local, etc.), chame set_job_fields "
+    "IMEDIATAMENTE nesse turno \u2014 ANTES de responder textualmente.\n"
+    "2. NUNCA cite benef\u00edcios, faixa salarial, ou compet\u00eancias sem ter chamado "
+    "a tool correspondente (suggest_benefits, suggest_salary, suggest_competencies) "
+    "e recebido o resultado. Inventar dados \u00e9 proibido.\n"
+    "3. Se uma tool falhar, informe o erro ao recrutador e sugira alternativa "
+    "(ex.: informar manualmente). NUNCA invente o que a tool teria retornado.\n\n"
+    "## Auto-preenchimento proativo\n"
+    "O contexto da empresa (miss\u00e3o, valores, cultura, stack tecnol\u00f3gico, benef\u00edcios, "
+    "faixas salariais) est\u00e1 dispon\u00edvel na ficha viva abaixo. USE-O proativamente:\n"
+    "- Sugira departamento/gestor se a empresa j\u00e1 tem essa informa\u00e7\u00e3o.\n- Ap\u00f3s definir o t\u00edtulo da vaga com set_job_fields, se o departamento ainda n\u00e3o foi informado, chame infer_department_from_title para tentar inferir automaticamente. Se a infer\u00eancia tiver confian\u00e7a alta, confirme com o recrutador; se n\u00e3o, pergunte entre os departamentos dispon\u00edveis.\n"
+    "- Ao configurar benef\u00edcios, chame suggest_benefits para buscar o cat\u00e1logo "
+    "da empresa \u2014 NUNCA invente um cat\u00e1logo.\n"
+    "- Ao sugerir sal\u00e1rio, chame suggest_salary \u2014 NUNCA invente faixa.\n\n"
+    "## Formatação de resposta — cards inline\n"
+    "Quando uma tool produz dados estruturados (set_job_fields, enrich_job_description, "
+    "confirm_competencies, generate_wsi_questions, suggest_salary, suggest_benefits, "
+    "suggest_variable_compensation), esses dados aparecem AUTOMATICAMENTE como cards "
+    "enriquecidos inline no chat como cards interativos. O recrutador já vê o resultado "
+    "visualmente. Portanto:\n"
+    "- NUNCA repita os dados da tool como tabela markdown, lista de bullets, ou "
+    "bloco de código na sua resposta textual. Isso duplica a informação.\n"
+    "- Em vez disso, RESUMA brevemente o que aconteceu (ex.: 'Registrei o título e a "
+    "senioridade. O card acima mostra a ficha atualizada.') e faça a pergunta de "
+    "continuidade.\n"
+    "- Para competências: diga quantas técnicas/comportamentais, NÃO liste cada uma.\n"
+    "- Para JD: diga o score e se ficou boa, NÃO reproduza o texto da descrição.\n"
+    "- Para salário/benefícios: confirme o que foi aplicado em uma frase, NÃO liste "
+    "o catálogo inteiro.\n"
+    "- Exceção: se o recrutador PEDIR explicitamente para ver o conteúdo no chat "
+    "(ex.: 'me mostra as competências aqui'), aí sim liste — mas prefira sugerir "
+    "que ele veja no card inline do chat.\n\n"
+    "## Consultas sobre vagas existentes\n"
+    "Quando o recrutador perguntar sobre vagas existentes da empresa "
+    "(ex.: quantas vagas temos, temos algo parecido, me mostra as vagas "
+    "ativas), use list_company_jobs para consultar o banco de dados REAL. "
+    "NUNCA invente vagas. Apos responder a consulta, SEMPRE retome o fluxo "
+    "de criacao da vaga atual: relembre onde parou (consulte a ficha viva) "
+    "e faca a proxima pergunta ao recrutador.\n\n"
+    "## Tokens de mascara\u00e7\u00e3o PII\n"
+    "Se voc\u00ea vir tokens como [EMAIL REMOVIDO], [CPF REMOVIDO], [TELEFONE REMOVIDO], "
+    "[PERSON REMOVIDO] no texto ou hist\u00f3rico, NUNCA os reproduza na sua resposta. "
+    "Esses s\u00e3o marcadores internos de privacidade. Se precisar referir-se ao dado, "
+    "consulte a ficha viva (parsed_manager_email, parsed_manager_name, etc.)."
 )
 
 
@@ -160,6 +330,40 @@ class OrchestratorResult:
     tool_calls: list[str] = field(default_factory=list)
     iterations: int = 0
     error: bool = False
+    response_blocks: list[dict] = field(default_factory=list)
+
+
+def _emit_reasoning_sync(label: str) -> None:
+    """Emite reasoning_step para o SSE sink atual (best-effort, thread-safe).
+
+    wizard_orchestrator.process_turn() e sincrono e roda via asyncio.to_thread.
+    asyncio.to_thread copia o contextvars.Context, entao _sse_frame_sink esta
+    disponivel na thread via ContextVar. Porem o sink e uma coroutine: usamos
+    run_coroutine_threadsafe para despachar ao event loop do caller.
+
+    Falha silenciosa (try/except amplo): reasoning e best-effort, nunca
+    interrompe o fluxo do wizard.
+    """
+    try:
+        import asyncio as _asyncio
+        from lia_agents_core.streaming_callback import _sse_frame_sink as _sink_cv
+        _sink = _sink_cv.get(None)
+        if _sink is None:
+            return
+        from app.shared.chat_event_serializer import serialize_reasoning_step
+        _frame = serialize_reasoning_step(label=label, detail='')
+        try:
+            _loop = _asyncio.get_running_loop()
+            _loop.create_task(_sink(_frame))
+        except RuntimeError:
+            try:
+                _loop = _asyncio.get_event_loop()
+                if _loop.is_running():
+                    _asyncio.run_coroutine_threadsafe(_sink(_frame), _loop)
+            except Exception:
+                pass
+    except Exception:
+        pass
 
 
 def _extract_history_messages(state: dict, n: int = 6) -> list[dict[str, Any]]:
@@ -197,9 +401,11 @@ class WizardOrchestrator:
         *,
         tools: Optional[tuple[WizardTool, ...]] = None,
         model: Optional[str] = None,
+        service_tools_degraded: bool = False,
     ) -> None:
         self._registry = build_tool_registry(tools or ())
         self._model = model or _DEFAULT_MODEL
+        self._service_tools_degraded = service_tools_degraded
 
     # ── LLM client (produção) ──────────────────────────────────────────
     @staticmethod
@@ -224,7 +430,7 @@ class WizardOrchestrator:
             api_key = tenant_keys.get("claude") or _resolve_provider_api_key("claude")
             base_url = _resolve_provider_base_url("claude")
         except Exception as exc:  # noqa: BLE001 — fail-open ao env global
-            logger.debug("[WizardOrchestrator] factory resolve failed (fallback env): %s", exc)
+            logger.warning("[WizardOrchestrator] factory resolve failed (fallback env): %s", exc, exc_info=True)
         # Fallback ao env global se a factory não resolveu a chave.
         api_key = api_key or (
             os.environ.get("AI_INTEGRATIONS_ANTHROPIC_API_KEY")
@@ -252,7 +458,7 @@ class WizardOrchestrator:
             logger.warning("[WizardOrchestrator] client init failed: %s", exc)
             return None
 
-    def _build_system_prompt(self, state: dict) -> str:
+    def _build_system_prompt(self, state: dict, company_id: Optional[str] = None) -> str:
         try:
             from app.domains.job_creation.internal.utils import (
                 _build_wizard_state_summary,
@@ -264,10 +470,53 @@ class WizardOrchestrator:
         tenant_block = (
             f"\n\n## Contexto da empresa\n{tenant[:600]}" if tenant else ""
         )
+        # ADR-008: creation-modes capability is derived from the registries via
+        # the shared view — the wizard no longer hardcodes (or omits) what it can
+        # create. Same wording as SystemPromptBuilder + the meta helper, so the
+        # answer to "consegue criar a partir de existente/template/zero?" is one
+        # truth everywhere. Fail-open: no block if the view raises.
+        modes_block = ""
+        try:
+            from app.shared.capabilities import (
+                get_tenant_allowed_creation_actions,
+                render_creation_modes_block,
+            )
+            # Task #1324: scope the claimed creation modes to this tenant's
+            # permitted actions (tool_permissions.yaml). None → all-modes default.
+            _allowed = (
+                get_tenant_allowed_creation_actions(company_id)
+                if company_id
+                else None
+            )
+            rendered = render_creation_modes_block(allowed_actions=_allowed)
+            if rendered and rendered.strip():
+                modes_block = f"\n\n## Capacidades de criação\n{rendered}"
+        except Exception as exc:  # noqa: BLE001  # REGRA-4-EXEMPT: bloco de modos é enriquecimento cosmético — falha não quebra o turn
+            logger.warning("[WizardOrchestrator] creation modes block skipped: %s", type(exc).__name__, exc_info=True)
+        # Recruiter identity — explicit so LLM never guesses the name
+        recruiter_name = str(state.get("parsed_recruiter_name") or "").strip()
+        recruiter_email = str(state.get("parsed_recruiter_email") or "").strip()
+        recruiter_block = (
+            f"\n\n## Recrutador desta sessão\nVocê está auxiliando **{recruiter_name}**."
+            f" Use este nome ao se referir ao recrutador — nunca use outro nome."
+            f" NÃO pergunte o nome nem o e-mail do recrutador nesta sessão — o recrutador logado é **{recruiter_name}** ({recruiter_email if recruiter_email else 'e-mail não disponível'})."
+            if recruiter_name
+            else ""
+        )
+        degraded_block = (
+            "\n\n## ⚠️ Dados de serviço indisponíveis\n"
+            "As ferramentas de acesso a departamentos, benefícios, gestores e competências não puderam ser carregadas nesta sessão. "
+            "Informe ao recrutador que os dados não estão disponíveis e peça as informações manualmente quando necessário. "
+            "NUNCA invente departamentos, gestores, benefícios ou competências."
+            if self._service_tools_degraded else ""
+        )
         return (
-            f"{_SYSTEM_PROMPT_BASE}\n\n"
+            f"{_SYSTEM_PROMPT_BASE}"
+            f"{modes_block}\n\n"
             f"## Estado real da vaga (ficha viva)\n{ficha}"
             f"{tenant_block}"
+            f"{recruiter_block}"
+            f"{degraded_block}"
         )
 
     # ── Loop principal ─────────────────────────────────────────────────
@@ -300,8 +549,18 @@ class WizardOrchestrator:
                     or "Não posso seguir com critérios discriminatórios.",
                     fairness_blocked=True,
                 )
-        except Exception as exc:  # noqa: BLE001 — fail-open: guard não trava fluxo
-            logger.debug("[WizardOrchestrator] FairnessGuard failed (open): %s", exc)
+        except Exception as exc:
+            logger.error(
+                "[WizardOrchestrator] FairnessGuard L1 exception — compliance check unavailable",
+                exc_info=True,
+            )
+            return OrchestratorResult(
+                reply=(
+                    "Verificação de compliance temporariamente indisponível. "
+                    "Por favor, tente novamente em instantes."
+                ),
+                error=True,
+            )
 
         client = llm_client or self._build_anthropic_client(getattr(ctx, "company_id", None))
         if client is None:
@@ -313,17 +572,28 @@ class WizardOrchestrator:
                 error=True,
             )
 
-        system_prompt = self._build_system_prompt(state)
+        system_prompt = self._build_system_prompt(
+            state, company_id=getattr(ctx, "company_id", None)
+        )
         tool_schemas = [t.anthropic_schema() for t in self._registry.values()]
         messages: list[dict[str, Any]] = _extract_history_messages(state)
         messages.append({"role": "user", "content": msg})
 
         # Working copy do state — tools veem mutações acumuladas dentro do loop.
         working_state = dict(state)
+        working_state["_current_user_message"] = msg
         accumulated_updates: dict[str, Any] = {}
         tool_calls: list[str] = []
+        # Acumula o texto emitido em QUALQUER iteração. O modelo pode emitir
+        # texto + tool_use no MESMO turno (ex.: "Registrei o título" + chamada
+        # a set_job_fields); sem acumular, esse texto se perderia quando o loop
+        # executa a tool e continua, e a iteração seguinte (vazia) cairia no
+        # fallback genérico. Ver TDD test_wizard_orchestrator_text_accumulation.
+        accumulated_text: list[str] = []
+        accumulated_response_blocks: list[dict] = []
         max_iters = _get_max_iterations()
 
+        _emit_reasoning_sync('Analisando sua mensagem...')
         for iteration in range(1, max_iters + 1):
             try:
                 response = client.messages.create(
@@ -360,15 +630,45 @@ class WizardOrchestrator:
                 for b in content_blocks
                 if getattr(b, "type", None) == "text"
             ]
+            accumulated_text.extend(p for p in text_parts if p)
 
             # Sem tool_use → turno termina com a resposta textual do modelo.
+            # Usa o texto ACUMULADO (não só o desta iteração): se o modelo
+            # falou + chamou tool numa iteração anterior, esse texto persiste
+            # mesmo que a iteração final venha vazia.
             if not tool_uses:
-                reply = " ".join(p for p in text_parts if p).strip()
+                reply = " ".join(accumulated_text).strip()
+                if not reply:
+                    # Anomalia: o LLM não emitiu texto em NENHUMA iteração.
+                    # Mantemos o fallback genérico (UX), mas a tornamos
+                    # OBSERVÁVEL — antes era um silent-degradation que custava
+                    # debug longo (reply sem sentido, painel não abre).
+                    _thread = "n/a"
+                    try:
+                        _thread = str(
+                            (state or {}).get("thread_id")
+                            or (state or {}).get("session_id")
+                            or "n/a"
+                        )
+                    except Exception:  # noqa: BLE001 — telemetria nunca derruba
+                        _thread = "n/a"
+                    logger.warning(
+                        "[WizardOrchestrator] empty-reply fallback: LLM produced "
+                        "no text across %d iter(s) thread=%s tools_called=%s — "
+                        "using generic fallback",
+                        iteration, _thread, tool_calls,
+                    )
+                    if _EMPTY_REPLY_COUNTER is not None:
+                        try:
+                            _EMPTY_REPLY_COUNTER.inc()
+                        except Exception:  # noqa: BLE001 — métrica é best-effort
+                            pass
                 return OrchestratorResult(
                     reply=reply or "Certo! Como deseja seguir?",
                     state_updates=accumulated_updates,
                     tool_calls=tool_calls,
                     iterations=iteration,
+                    response_blocks=accumulated_response_blocks,
                 )
 
             # Há tool_use → executa cada uma, monta tool_result, continua loop.
@@ -394,6 +694,7 @@ class WizardOrchestrator:
                 tool_input = getattr(tu, "input", {}) or {}
                 tu_id = getattr(tu, "id", "")
                 tool_calls.append(name)
+                _emit_reasoning_sync(f'Executando: {name}...')
                 tool = self._registry.get(name)
                 if tool is None:
                     result_text = (
@@ -409,9 +710,22 @@ class WizardOrchestrator:
                         if result.state_updates:
                             accumulated_updates.update(result.state_updates)
                             working_state.update(result.state_updates)
+                        if name == "enrich_job_description" and not result.error:
+                            _jd = (accumulated_updates or {}).get("jd_enriched") or {}
+                            if _jd:
+                                accumulated_response_blocks.append({
+                                    "kind": "jd_preview",
+                                    "block_id": f"jd_preview_{id(_jd)}",
+                                    "role": "answer",
+                                    "layout": "wide",
+                                    "state": "ready",
+                                    "title": _jd.get("titulo_padronizado", "Descrição da Vaga"),
+                                    "body": _jd.get("about_role", ""),
+                                    "data": _jd,
+                                })
                     except Exception as exc:  # noqa: BLE001 — fail-soft p/ o LLM
                         logger.warning(
-                            "[WizardOrchestrator] tool %s raised: %s", name, exc
+                            "[WizardOrchestrator] tool %s raised: %s", name, exc, exc_info=True
                         )
                         result_text = (
                             f"A tool {name} falhou: {exc}. Tente outra abordagem "
@@ -438,6 +752,7 @@ class WizardOrchestrator:
             state_updates=accumulated_updates,
             tool_calls=tool_calls,
             iterations=max_iters,
+            response_blocks=accumulated_response_blocks,
         )
 
 
@@ -463,5 +778,8 @@ def get_wizard_orchestrator() -> WizardOrchestrator:
                 "[WizardOrchestrator] service tools indisponíveis: %s", exc
             )
             SERVICE_TOOLS = ()
-        _default_orchestrator = WizardOrchestrator(tools=SERVICE_TOOLS)
+        _default_orchestrator = WizardOrchestrator(
+            tools=SERVICE_TOOLS,
+            service_tools_degraded=(len(SERVICE_TOOLS) == 0),
+        )
     return _default_orchestrator

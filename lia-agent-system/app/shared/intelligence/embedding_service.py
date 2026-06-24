@@ -62,6 +62,9 @@ class EmbeddingService:
         self,
         text: str,
         provider: str | None = None,
+        *,
+        mask_names: bool = False,
+        company_id: str | None = None,
     ) -> list[float]:
         """Generate embedding for text.
 
@@ -85,6 +88,13 @@ class EmbeddingService:
                 pass
             default_prov = EmbeddingProviderFactory.get_default()
             return [0.0] * default_prov.dimensions
+
+        # LGPD (audit 2026-06-06): redige PII ANTES de cache/API no
+        # chokepoint -- nenhum caller pode esquecer. Estruturada sempre
+        # (CPF/email/tel/etc); nomes (Presidio NER) quando mask_names=True
+        # (superficies de candidato/conversa). Default False = base segura.
+        from app.shared.pii_masking import strip_pii_for_llm_prompt
+        text = strip_pii_for_llm_prompt(text, mask_names=mask_names)
 
         ck = self._cache_key(text, provider)
         cached = self._cache_get(ck)
@@ -111,6 +121,7 @@ class EmbeddingService:
                 vector, _provider_name, _model = await EmbeddingProviderFactory.embed_with_fallback(
                     text=text,
                     preferred_provider=provider,
+                    company_id=company_id,
                 )
                 _elapsed = (time.perf_counter() - _t0) * 1000
                 api_span.set_attribute("latency_ms", f"{_elapsed:.2f}")
@@ -128,6 +139,9 @@ class EmbeddingService:
         self,
         text: str,
         provider: str | None = None,
+        *,
+        mask_names: bool = False,
+        company_id: str | None = None,
     ) -> tuple[list[float], str, str]:
         """Generate embedding and return (vector, provider_name, model_name).
 
@@ -144,6 +158,13 @@ class EmbeddingService:
                 default_prov.default_model,
             )
 
+        # LGPD (audit 2026-06-06): redige PII ANTES de cache/API no
+        # chokepoint -- nenhum caller pode esquecer. Estruturada sempre
+        # (CPF/email/tel/etc); nomes (Presidio NER) quando mask_names=True
+        # (superficies de candidato/conversa). Default False = base segura.
+        from app.shared.pii_masking import strip_pii_for_llm_prompt
+        text = strip_pii_for_llm_prompt(text, mask_names=mask_names)
+
         tracer = get_tracer()
         async with tracer.start_span("embedding.api_call", attributes={
             "service": "embedding_service", "tier_name": "embedding_api_call",
@@ -153,6 +174,7 @@ class EmbeddingService:
             result = await EmbeddingProviderFactory.embed_with_fallback(
                 text=text,
                 preferred_provider=provider,
+                company_id=company_id,
             )
             _elapsed = (time.perf_counter() - _t0) * 1000
             api_span.set_attribute("latency_ms", f"{_elapsed:.2f}")
@@ -165,6 +187,9 @@ class EmbeddingService:
         self,
         texts: list[str],
         provider: str | None = None,
+        *,
+        mask_names: bool = False,
+        company_id: str | None = None,
     ) -> list[list[float]]:
         """Generate embeddings for multiple texts.
 
@@ -180,6 +205,13 @@ class EmbeddingService:
         if not texts:
             return []
 
+        # LGPD (audit 2026-06-06): redige PII ANTES de cache/API no
+        # chokepoint -- nenhum caller pode esquecer. Estruturada sempre
+        # (CPF/email/tel/etc); nomes (Presidio NER) quando mask_names=True
+        # (superficies de candidato/conversa). Default False = base segura.
+        from app.shared.pii_masking import strip_pii_for_llm_prompt
+        texts = [strip_pii_for_llm_prompt(t, mask_names=mask_names) for t in texts]
+
         tracer = get_tracer()
         try:
             async with tracer.start_span("embedding.api_call", attributes={
@@ -192,6 +224,7 @@ class EmbeddingService:
                     await EmbeddingProviderFactory.embed_batch_with_fallback(
                         texts=texts,
                         preferred_provider=provider,
+                        company_id=company_id,
                     )
                 )
                 _elapsed = (time.perf_counter() - _t0) * 1000
@@ -209,6 +242,9 @@ class EmbeddingService:
         self,
         texts: list[str],
         provider: str | None = None,
+        *,
+        mask_names: bool = False,
+        company_id: str | None = None,
     ) -> tuple[list[list[float]], str, str]:
         """Generate batch embeddings and return (vectors, provider_name, model_name)."""
         from app.shared.providers.embedding_factory import EmbeddingProviderFactory
@@ -216,6 +252,13 @@ class EmbeddingService:
         if not texts:
             default_prov = EmbeddingProviderFactory.get_default()
             return [], default_prov.provider_name, default_prov.default_model
+
+        # LGPD (audit 2026-06-06): redige PII ANTES de cache/API no
+        # chokepoint -- nenhum caller pode esquecer. Estruturada sempre
+        # (CPF/email/tel/etc); nomes (Presidio NER) quando mask_names=True
+        # (superficies de candidato/conversa). Default False = base segura.
+        from app.shared.pii_masking import strip_pii_for_llm_prompt
+        texts = [strip_pii_for_llm_prompt(t, mask_names=mask_names) for t in texts]
 
         tracer = get_tracer()
         async with tracer.start_span("embedding.api_call", attributes={
@@ -227,6 +270,7 @@ class EmbeddingService:
             result = await EmbeddingProviderFactory.embed_batch_with_fallback(
                 texts=texts,
                 preferred_provider=provider,
+                company_id=company_id,
             )
             _elapsed = (time.perf_counter() - _t0) * 1000
             api_span.set_attribute("latency_ms", f"{_elapsed:.2f}")

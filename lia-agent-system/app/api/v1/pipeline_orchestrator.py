@@ -34,6 +34,33 @@ async def pipeline_react_orchestrate(request: Request, company_id: str = Depends
             context=body.get("context", {}),
         )
 
+        # FairnessGuard: bloquear inputs discriminatórios antes do agente
+        from app.shared.compliance.fairness_guard import FairnessGuard
+        _fg_po = FairnessGuard()
+        _fr_po = _fg_po.check(body.get("message", ""))
+        if _fr_po and _fr_po.is_blocked:
+            import asyncio as _asyncio
+            try:
+                _asyncio.get_event_loop().create_task(
+                    _fg_po.log_check(
+                        result=_fr_po,
+                        context="pipeline_orchestrator",
+                        company_id=company_id or None,
+                        recruiter_id=user_id or None,
+                    )
+                )
+            except Exception:
+                pass
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error": "fairness_blocked",
+                    "fairness_blocked": True,
+                    "educational_message": _fr_po.educational_message,
+                    "category": _fr_po.category,
+                },
+            )
+
         agent = PipelineReActAgent()
         output = await agent.process(agent_input)
 
@@ -44,6 +71,8 @@ async def pipeline_react_orchestrate(request: Request, company_id: str = Depends
             "actions": [{"type": a.action_type, "data": a.params} for a in output.actions] if output.actions else [],
             "metadata": output.metadata or {},
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Pipeline ReAct error: {e}", exc_info=True)
         return {"message": "Desculpe, ocorreu um erro ao processar sua solicitação. Tente novamente.", "confidence": 0, "error": str(e)}

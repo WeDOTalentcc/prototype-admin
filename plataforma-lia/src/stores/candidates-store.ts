@@ -31,6 +31,14 @@ export function getInitialDisplayedResultsCount(): number {
 type SearchSource = 'local' | 'global' | 'hybrid'
 type ActiveTab = 'search' | 'favorites' | 'lists' | 'history' | 'saved-searches' | 'agents'
 
+/**
+ * Overlay autoritativo de contatos revelados (email/phone) por candidate.id.
+ * SSOT canonical (P2 #5): espelha searchFeedbacks — mesmo formato per-id, mesmo
+ * helper setOrUpdate. O produtor (useRevealContact) escreve via updater funcional
+ * com merge; consumidores leem revealedContacts[id]?.x ?? candidate.x.
+ */
+export type RevealedContacts = Record<string, { email?: string; phone?: string }>
+
 interface CreditModalsState {
   hybrid: boolean
   global: boolean
@@ -92,8 +100,10 @@ interface CandidatesSearchState {
   searchExecutionId: number
   searchSortBy: string
   searchFeedbacks: Record<string, 'like' | 'dislike'>
+  revealedContacts: RevealedContacts
   displayedResultsCount: number
   isLoadingMore: boolean
+  canLoadMore: boolean
   showOnlyNew: boolean
   isDroppingCV: boolean
   cvUploadLoading: boolean
@@ -156,8 +166,10 @@ interface CandidatesActions {
   setSearchExecutionId: (v: number | ((prev: number) => number)) => void
   setSearchSortBy: (v: string) => void
   setSearchFeedbacks: (v: Record<string, 'like' | 'dislike'> | ((prev: Record<string, 'like' | 'dislike'>) => Record<string, 'like' | 'dislike'>)) => void
-  setDisplayedResultsCount: (v: number) => void
+  setRevealedContacts: (v: RevealedContacts | ((prev: RevealedContacts) => RevealedContacts)) => void
+  setDisplayedResultsCount: (v: number | ((prev: number) => number)) => void
   setIsLoadingMore: (v: boolean) => void
+  setCanLoadMore: (v: boolean) => void
   setShowOnlyNew: (v: boolean) => void
   setIsDroppingCV: (v: boolean) => void
   setCvUploadLoading: (v: boolean) => void
@@ -223,8 +235,10 @@ const initialState: CandidatesFullState = {
   searchExecutionId: 0,
   searchSortBy: 'relevance',
   searchFeedbacks: {},
+  revealedContacts: {},
   displayedResultsCount: getInitialDisplayedResultsCount(),
   isLoadingMore: false,
+  canLoadMore: false,
   showOnlyNew: false,
   isDroppingCV: false,
   cvUploadLoading: false,
@@ -308,8 +322,10 @@ export const useCandidatesStore = create<CandidatesStore>()(
       setSearchExecutionId: setOrUpdate<number>(set, 'searchExecutionId', 'search/setSearchExecutionId'),
       setSearchSortBy: (v) => set({ searchSortBy: v }, false, 'search/setSearchSortBy'),
       setSearchFeedbacks: setOrUpdate<Record<string, 'like' | 'dislike'>>(set, 'searchFeedbacks', 'search/setSearchFeedbacks'),
-      setDisplayedResultsCount: (v) => set({ displayedResultsCount: v }, false, 'search/setDisplayedResultsCount'),
+      setRevealedContacts: setOrUpdate<RevealedContacts>(set, 'revealedContacts', 'search/setRevealedContacts'),
+      setDisplayedResultsCount: setOrUpdate<number>(set, 'displayedResultsCount', 'search/setDisplayedResultsCount'),
       setIsLoadingMore: (v) => set({ isLoadingMore: v }, false, 'search/setIsLoadingMore'),
+      setCanLoadMore: (v) => set({ canLoadMore: v }, false, 'search/setCanLoadMore'),
       setShowOnlyNew: (v) => set({ showOnlyNew: v }, false, 'search/setShowOnlyNew'),
       setIsDroppingCV: (v) => set({ isDroppingCV: v }, false, 'search/setIsDroppingCV'),
       setCvUploadLoading: (v) => set({ cvUploadLoading: v }, false, 'search/setCvUploadLoading'),

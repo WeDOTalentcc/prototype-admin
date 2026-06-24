@@ -5,12 +5,10 @@ Shared cross-cutting hooks for action handlers:
 - Conditional Rails sync on data-modifying actions
 """
 import logging
-import os
 from typing import Any
 
 logger = logging.getLogger(__name__)
 
-RAILS_ENABLED = bool(os.environ.get("RAILS_API_URL"))
 
 _TRIGGER_MAP = {
     "candidate_created": "candidate_created",
@@ -143,39 +141,3 @@ def _infer_entity_type(action_type: str) -> str:
         return "message"
     return "action"
 
-
-async def sync_to_rails(
-    event_type: str,
-    entity_type: str,
-    entity_id: str | None = None,
-    data: dict[str, Any] | None = None,
-) -> None:
-    if not RAILS_ENABLED:
-        return
-    try:
-        from app.domains.ats_integration.services.ats_sync_service import (
-            ATSSyncService,
-            ATSSyncTrigger,
-        )
-
-        trigger_value = _TRIGGER_MAP.get(event_type, "candidate_updated")
-        try:
-            trigger = ATSSyncTrigger(trigger_value)
-        except ValueError:
-            trigger = ATSSyncTrigger.CANDIDATE_UPDATED
-
-        candidate_id = (data or {}).get("candidate_id") or (entity_id if entity_type == "candidate" else None)
-        job_id = (data or {}).get("job_id") or (entity_id if entity_type == "job" else None)
-
-        sync_svc = ATSSyncService()
-        await sync_svc.trigger_sync(
-            trigger=trigger,
-            source_agent="lia_chat_action",
-            ats_type="rails",
-            candidate_id=candidate_id,
-            job_id=job_id,
-            data=data,
-        )
-    except Exception as e:
-        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
-        logger.warning(f"Rails sync skipped for {event_type}/{entity_type}: {e}")

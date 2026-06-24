@@ -549,7 +549,7 @@ class PipelinePredictionService:
                       AND (
                           created_by = :uid
                           OR recruiter_email = (
-                              SELECT email FROM users WHERE id = :uid LIMIT 1
+                              SELECT email FROM users WHERE id = CAST(:uid AS uuid) LIMIT 1
                           )
                       )
                     LIMIT 20

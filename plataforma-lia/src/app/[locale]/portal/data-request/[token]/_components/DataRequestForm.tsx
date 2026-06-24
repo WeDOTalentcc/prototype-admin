@@ -2,15 +2,19 @@
 
 import React from "react"
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { 
   Loader2, 
   CheckCircle2, 
   AlertCircle, 
+  AlertTriangle,
   Mail,
-  User
+  User,
+  ShieldCheck
 } from "lucide-react"
 import { PortalFieldRenderer } from "../PortalFieldRenderer"
+import { SENSITIVE_DATA_REQUEST_FIELDS } from "../_hooks/useDataRequest"
 import type { useDataRequest } from "../_hooks/useDataRequest"
 
 type DataRequestReturn = ReturnType<typeof useDataRequest>
@@ -49,6 +53,9 @@ export function DataRequestForm({ hook }: DataRequestFormProps) {
     handleFileChange,
     saveProgress,
     submitForm,
+    consentChecked,
+    setConsentChecked,
+    hasSensitiveFields,
   } = hook
 
   if (step === "loading") {
@@ -68,7 +75,7 @@ export function DataRequestForm({ hook }: DataRequestFormProps) {
         <Card className="w-full max-w-md">
           <CardContent className="pt-6 text-center">
             <AlertCircle className="w-16 h-16 text-status-error mx-auto mb-4" />
-            <h1 className="text-xl font-semibold text-lia-text-primary dark:text-lia-text-disabled mb-2">Ops!</h1>
+            <h1 className="text-xl font-semibold text-lia-text-primary dark:text-lia-text-tertiary mb-2">Ops!</h1>
             <p className="text-lia-text-secondary dark:text-lia-text-disabled">{errorMessage}</p>
           </CardContent>
         </Card>
@@ -82,7 +89,7 @@ export function DataRequestForm({ hook }: DataRequestFormProps) {
         <Card className="w-full max-w-md">
           <CardContent className="pt-6 text-center">
             <AlertCircle className="w-16 h-16 text-status-warning mx-auto mb-4" />
-            <h1 className="text-xl font-semibold text-lia-text-primary dark:text-lia-text-disabled mb-2">Link Expirado</h1>
+            <h1 className="text-xl font-semibold text-lia-text-primary dark:text-lia-text-tertiary mb-2">Link Expirado</h1>
             <p className="text-lia-text-secondary dark:text-lia-text-disabled">{errorMessage}</p>
             <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary mt-4">
               Entre em contato com o recrutador para solicitar um novo link.
@@ -136,7 +143,7 @@ export function DataRequestForm({ hook }: DataRequestFormProps) {
                           : "border-lia-border-subtle hover:border-lia-border-default"
                       }`}
                     >
-                      <Mail className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-disabled" />
+                      <Mail className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-muted" />
                       <div className="text-left">
                         <p className="text-sm font-medium">E-mail</p>
                         <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
@@ -180,7 +187,7 @@ export function DataRequestForm({ hook }: DataRequestFormProps) {
                         onChange={(e) => handleOtpChange(index, e.target.value)}
                         onKeyDown={(e) => handleOtpKeyDown(index, e)}
                         onPaste={index === 0 ? handleOtpPaste : undefined}
-                        className="w-12 h-14 text-center text-2xl font-semibold border-2 border-lia-border-default dark:border-lia-border-medium rounded-xl focus:border-lia-border-medium focus:outline-none focus:ring-2 focus:ring-lia-border-subtle dark:bg-lia-btn-primary-hover dark:text-lia-text-disabled"
+                        className="w-12 h-14 text-center text-2xl font-semibold border-2 border-lia-border-default dark:border-lia-border-medium rounded-xl focus:border-lia-border-medium focus:outline-none focus:ring-2 focus:ring-lia-border-subtle dark:bg-lia-btn-primary-hover dark:text-lia-text-tertiary"
                       />
                     ))}
                   </div>
@@ -252,7 +259,7 @@ export function DataRequestForm({ hook }: DataRequestFormProps) {
               >
                 <CheckCircle2 className="w-10 h-10" style={{color: primaryColor}} />
               </div>
-              <h1 className="text-2xl font-semibold text-lia-text-primary dark:text-lia-text-disabled mb-3">
+              <h1 className="text-2xl font-semibold text-lia-text-primary dark:text-lia-text-tertiary mb-3">
                 Obrigado!
               </h1>
               <p className="text-lia-text-secondary dark:text-lia-text-disabled mb-6">
@@ -264,7 +271,7 @@ export function DataRequestForm({ hook }: DataRequestFormProps) {
                   <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary uppercase tracking-wider mb-1" aria-live="polite" aria-atomic="true">
                     Vaga
                   </p>
-                  <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-disabled">
+                  <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-tertiary">
                     {portalData.vacancy_info.title}
                   </p>
                   {portalData.vacancy_info.department && (
@@ -324,13 +331,67 @@ export function DataRequestForm({ hook }: DataRequestFormProps) {
               <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary uppercase tracking-wider mb-1">
                 Preenchendo dados para
               </p>
-              <p className="text-base font-medium text-lia-text-primary dark:text-lia-text-disabled">
+              <p className="text-base font-medium text-lia-text-primary dark:text-lia-text-tertiary">
                 {portalData.vacancy_info.title}
               </p>
               {portalData.vacancy_info.department && (
                 <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">{portalData.vacancy_info.department}</p>
               )}
             </div>
+          )}
+
+          {/* Phase 3a: LGPD Art. 11 sensitive-field consent block */}
+          {hasSensitiveFields && (
+            <Card className="mb-6 border-amber-200 dark:border-amber-700 bg-amber-50 dark:bg-amber-950">
+              <CardContent className="pt-5 space-y-4">
+                <div className="flex items-start gap-3">
+                  <ShieldCheck className="w-5 h-5 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-sm font-semibold text-amber-800 dark:text-amber-300 mb-1">
+                      Este formulario coleta dados sensiveis (LGPD Art. 11)
+                    </p>
+                    <p className="text-xs text-amber-700 dark:text-amber-400">
+                      Sua privacidade e protegida. Os dados abaixo sao coletados somente com seu consentimento
+                      explicito, conforme a Lei Geral de Protecao de Dados.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="pl-8">
+                  <p className="text-xs font-medium text-amber-700 dark:text-amber-400 mb-2">
+                    Campos sensiveis que serao coletados:
+                  </p>
+                  <ul className="space-y-1">
+                    {portalData?.fields
+                      .filter((f) => SENSITIVE_DATA_REQUEST_FIELDS.has(f.name) || SENSITIVE_DATA_REQUEST_FIELDS.has(f.field_type))
+                      .map((f) => (
+                        <li key={f.name} className="text-xs text-amber-700 dark:text-amber-400 flex items-center gap-1.5">
+                          <AlertTriangle className="w-3 h-3" />
+                          {f.label}
+                        </li>
+                      ))}
+                  </ul>
+                </div>
+
+                <div className="pl-8">
+                  <p className="text-xs text-amber-600 dark:text-amber-500 mb-3">
+                    <strong>Base legal:</strong> Art. 11, paragrafo 2, II LGPD — Consentimento explicito do titular
+                  </p>
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <Checkbox
+                      id="lgpd-art11-consent"
+                      checked={consentChecked}
+                      onCheckedChange={(v) => setConsentChecked(v === true)}
+                      className="mt-0.5 border-amber-500 data-[state=checked]:bg-amber-600"
+                    />
+                    <span className="text-sm text-amber-800 dark:text-amber-300 leading-snug">
+                      Consinto com a coleta e tratamento dos dados sensiveis listados acima para fins do
+                      processo seletivo, conforme a LGPD.
+                    </span>
+                  </label>
+                </div>
+              </CardContent>
+            </Card>
           )}
 
           <Card className="mb-6">
@@ -354,7 +415,7 @@ export function DataRequestForm({ hook }: DataRequestFormProps) {
           <div className="space-y-3 pb-8">
             <Button
               onClick={submitForm}
-              disabled={submitting || saving}
+              disabled={submitting || saving || (hasSensitiveFields && !consentChecked)}
               className="w-full h-12 text-base font-medium"
               style={{backgroundColor: primaryColor}}
             >
@@ -391,7 +452,7 @@ export function DataRequestForm({ hook }: DataRequestFormProps) {
                   href={portalData.branding.privacy_policy_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="underline hover:text-lia-text-primary dark:hover:text-lia-text-disabled"
+                  className="underline hover:text-lia-text-primary dark:hover:text-lia-text-muted"
                 >
                   Política de Privacidade
                 </a>
@@ -402,7 +463,7 @@ export function DataRequestForm({ hook }: DataRequestFormProps) {
                       href={portalData.branding.terms_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="underline hover:text-lia-text-primary dark:hover:text-lia-text-disabled"
+                      className="underline hover:text-lia-text-primary dark:hover:text-lia-text-muted"
                     >
                       Termos de Uso
                     </a>

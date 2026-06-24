@@ -3,6 +3,21 @@
 import { useState, useEffect, useRef, useCallback } from "react"
 import { useParams } from "next/navigation"
 
+// Phase 3a: LGPD Art. 11 — campos sensiveis que requerem consentimento explicito
+export const SENSITIVE_DATA_REQUEST_FIELDS = new Set([
+  "disability_info",
+  "pcd_type",
+  "pcd_document",
+  "gender",
+  "race_ethnicity",
+  "racial_autodeclaration",
+])
+
+export function hasSensitiveDataRequestFields(fields: FieldConfig[]): boolean {
+  return fields.some((f) => SENSITIVE_DATA_REQUEST_FIELDS.has(f.name) || SENSITIVE_DATA_REQUEST_FIELDS.has(f.field_type))
+}
+
+
 export interface PortalData {
   id: string
   status: string
@@ -119,6 +134,9 @@ export function useDataRequest() {
   const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({})
   const [submitting, setSubmitting] = useState(false)
   const [saving, setSaving] = useState(false)
+  // Phase 3a: LGPD Art. 11 sensitive-field consent
+  const [consentChecked, setConsentChecked] = useState(false)
+  const [consentId, setConsentId] = useState<string | null>(null)
 
   const fetchPortalData = useCallback(async () => {
     try {
@@ -443,6 +461,39 @@ export function useDataRequest() {
   const submitForm = async () => {
     if (!validateForm()) return
 
+    // Phase 3a: if sensitive fields present and not yet consented, record consent first
+    const _hasSensitive = portalData ? hasSensitiveDataRequestFields(portalData.fields) : false
+    if (_hasSensitive && !consentId) {
+      if (!consentChecked) {
+        // UI should disable submit button until consentChecked — this is belt-and-suspenders
+        return
+      }
+      // Record consent before submitting
+      try {
+        const consentResp = await fetch(`/api/portal/data-request/${token}/consent`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ canal: "web", versao_disclaimer: "1.0" }),
+        })
+        const consentData = await consentResp.json()
+        if (!consentResp.ok || !consentData.consent_id) {
+          setErrorMessage(consentData.detail || "Erro ao registrar consentimento LGPD.")
+          return
+        }
+        setConsentId(consentData.consent_id)
+        // Continue with submit using the fresh consent_id
+        await _doSubmit(consentData.consent_id)
+        return
+      } catch {
+        setErrorMessage("Erro de conexão ao registrar consentimento.")
+        return
+      }
+    }
+
+    await _doSubmit(consentId)
+  }
+
+  const _doSubmit = async (_consentId: string | null) => {
     setSubmitting(true)
     try {
       for (const [fieldName, upload] of Object.entries(fileUploads)) {
@@ -461,7 +512,7 @@ export function useDataRequest() {
       const response = await fetch(`/api/portal/data-request/${token}/submit`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fields, is_final: true }),
+        body: JSON.stringify({ fields, is_final: true, consent_id: _consentId }),
       })
 
       const data = await response.json()
@@ -527,5 +578,10 @@ export function useDataRequest() {
     handleFileChange,
     saveProgress,
     submitForm,
+    // Phase 3a: LGPD sensitive-field consent state
+    consentChecked,
+    setConsentChecked,
+    consentId,
+    hasSensitiveFields: portalData ? hasSensitiveDataRequestFields(portalData.fields) : false,
   }
 }

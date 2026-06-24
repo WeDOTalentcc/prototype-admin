@@ -7,9 +7,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   Eye, ChevronsLeftRight, MapPin,
 } from "lucide-react"
+import { CandidateChatPopover } from "@/components/shared/CandidateChatPopover"
 import { SearchFeedbackButtons } from "@/components/search/SearchFeedbackButtons"
 import { textStyles } from "@/lib/design-tokens"
 import type { Candidate } from "@/components/pages/candidates/types"
+import type { RevealedContacts } from "@/stores/candidates-store"
 import { renderSourceCell } from "./cells/SourceCell"
 import { renderMatchScoreCell, renderLiaScoreCell } from "./cells/ScoreCells"
 import { renderEmailCell, renderPhoneCell, renderLinkedinCell, renderGithubCell, renderPortfolioCell } from "./cells/ContactCells"
@@ -19,7 +21,7 @@ type TranslateFn = (key: string, values?: Record<string, unknown>) => string
 
 export interface CellRendererDeps {
   searchFeedbacks: Record<string, "like" | "dislike">
-  revealedContacts: Record<string, { email?: string; phone?: string }>
+  revealedContacts: RevealedContacts
   searchQuery: string
   viewedCandidateIds: Set<string>
   expandedRows: Set<string>
@@ -107,7 +109,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
                 (candidate as unknown as Record<string, unknown>).match_score as number || candidate.lia_score || candidate.score
               }
               initialFeedback={searchFeedbacks[candidate.id] || null}
-              onFeedbackChange={onSearchFeedbackChange as any}
+              onFeedbackChange={(id, fb) => onSearchFeedbackChange(candidate.id, candidate.name, fb)}
               size="sm"
               alwaysVisible={hasFeedback}
             />
@@ -129,9 +131,9 @@ export function createCellRenderer(deps: CellRendererDeps) {
         if (!candidate.enrichment_source) return <span className="text-xs text-lia-text-tertiary">—</span>
         const esrc = String(candidate.enrichment_source).toLowerCase()
         const eConfig = esrc === 'apify'
-          ? { label: 'Apify', cls: 'bg-wedo-orange/15 text-wedo-orange' }
+          ? { label: 'Apify', cls: 'bg-wedo-orange/15 text-wedo-orange-text' }
           : esrc === 'pearch'
-            ? { label: 'Pearch', cls: 'bg-wedo-cyan/15 text-wedo-cyan' }
+            ? { label: 'Pearch', cls: 'bg-wedo-cyan/15 text-wedo-cyan-text' }
             : esrc === 'local'
               ? { label: 'Local', cls: 'bg-stone-400/15 text-stone-500' }
               : { label: candidate.enrichment_source, cls: 'bg-lia-bg-tertiary text-lia-text-secondary' }
@@ -181,10 +183,17 @@ export function createCellRenderer(deps: CellRendererDeps) {
               )}
             </div>
             <div className="flex flex-col min-w-0">
-              <div className="flex items-center gap-1.5">
-                <span className="font-medium text-lia-text-primary truncate text-xs">
-                  {candidate.name}
-                </span>
+              <div className="flex items-center gap-1.5 group/name">
+                <CandidateChatPopover candidateId={candidate.id} candidateName={candidate.name}>
+                  <span
+                    className="font-medium text-lia-text-primary truncate text-xs"
+                    data-lia-entity-type="candidate"
+                    data-lia-entity-id={candidate.id}
+                    data-lia-entity-label={candidate.name}
+                  >
+                    {candidate.name}
+                  </span>
+                </CandidateChatPopover>
               </div>
             </div>
           </div>
@@ -533,7 +542,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
         const statusColors: Record<string, string> = {
           novo: "bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary",
           triagem: "bg-status-warning/15 dark:bg-status-warning/30 text-status-warning dark:text-status-warning",
-          entrevista: "bg-wedo-purple/15 dark:bg-wedo-purple/30 text-wedo-purple dark:text-wedo-purple",
+          entrevista: "bg-wedo-purple/15 dark:bg-wedo-purple/30 text-wedo-purple-text dark:text-wedo-purple",
           aprovado: "bg-status-success/15 dark:bg-status-success/30 text-status-success dark:text-status-success",
           reprovado: "bg-status-error/15 dark:bg-status-error/30 text-status-error dark:text-status-error",
         }

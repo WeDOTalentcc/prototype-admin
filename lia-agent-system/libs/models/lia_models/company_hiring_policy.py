@@ -16,7 +16,7 @@ One record per company (company_id is unique).
 """
 from datetime import datetime
 from sqlalchemy import Column, String, DateTime, Boolean, JSON, Text, Integer, Float, Index
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 import uuid
 
 from lia_config.database import Base
@@ -42,12 +42,55 @@ COMMUNICATION_RULES_DEFAULTS = {
     "rejection_feedback_deadline_hours": 48,
     "preferred_channel": "whatsapp",
     "lia_tone": "professional",
+    "briefing_frequency": "daily",   # B1 canonical — lido por briefing_dispatch.py
+    "digest_enabled": True,           # B2 opt-in digest — gated em WeeklyDigestService
+    "show_wedotalent_branding": True,   # Phase 1a: "Powered by WeDOTalent" footer in InterviewLobby
+    "preferred_data_channel": "email",   # Fase 7: canal padrão de coleta de dados do candidato (email/web/whatsapp/voice)
 }
 
 SCREENING_RULES_DEFAULTS = {
+    "screening_deadline_default_hours": 48,
     "experience_policy": "per_job",
     "minimum_compatibility_score": 0,   # P3a — reclassificado de narrativo (0 = sem corte)
     "default_screening_questions": [],
+    # Thresholds de aprovação automática — None = usa padrão da plataforma (fairness_policy_rules)
+    # Tenant pode configurar valor >= ao mínimo da plataforma (nunca abaixo)
+    # auto_approve_threshold: 0.0-1.0 (equivalente a score/100)
+    # review_threshold: 0.0-1.0 — candidatos entre review e auto_approve vão para revisão humana
+    "auto_approve_threshold": None,   # None → usa fairness_policy_rules decision_threshold
+    "review_threshold": None,         # None → usa 73% do auto_approve_threshold
+    "sector": None,                   # setor da empresa (tech/varejo/financeiro/saude/logistica/rpo)
+}
+
+SCREENING_CONFIG_DEFAULTS = {
+    "settings": {
+        "min_score": 76,
+        "min_score_preset": "recommended",
+        "response_timeout_hours": 48,
+        "max_retries": 2,
+        "auto_approval_limit": 10,
+        "auto_approval_preset": "recommended",
+        "auto_approvals_count": 0,
+        "auto_approval_paused": False,
+    },
+    "channels": {
+        "chat_web": {"enabled": True, "label": "Chat Web"},
+        "whatsapp": {"enabled": True, "label": "WhatsApp"},
+        "phone_pstn": {"enabled": False, "label": "Ligacao (PSTN)"},
+        "voice_web": {"enabled": False, "label": "Voz no Navegador"},
+    },
+    "screening_channels": {
+        "primary_channel": "chat_web",
+        "fallback_order": ["whatsapp"],
+    },
+    "scheduling": {
+        "auto_enabled": False,
+        "min_score_for_auto": 76,
+        "min_score_for_auto_preset": "recommended",
+        "calendar_provider": "Microsoft",
+        "available_hours": "9h-18h",
+        "interview_duration_min": 45,
+    },
 }
 
 AUTOMATION_RULES_DEFAULTS = {
@@ -65,14 +108,28 @@ AUTOMATION_RULES_DEFAULTS = {
     },
 }
 
+
+OFFER_RULES_DEFAULTS = {
+    "allowed_start_day_of_month": [1, 15],
+    "onboarding_blackout_periods": [],
+    "min_notice_days": 30,
+    "negotiation_enabled": False,
+    "salary_flex_pct_max": 0,
+    "benefits_flex_items": [],
+    "negotiation_hitl_threshold_pct": 5,
+    "counter_proposal_max_rounds": 2,
+}
+
 ALL_DEFAULTS = {
     "pipeline_rules": PIPELINE_RULES_DEFAULTS,
     "scheduling_rules": SCHEDULING_RULES_DEFAULTS,
     "communication_rules": COMMUNICATION_RULES_DEFAULTS,
     "screening_rules": SCREENING_RULES_DEFAULTS,
     "automation_rules": AUTOMATION_RULES_DEFAULTS,
+    "offer_rules": OFFER_RULES_DEFAULTS,
     "pipeline_templates": [],
     "learned_patterns": [],
+    "screening_config_defaults": None,
 }
 
 
@@ -91,10 +148,19 @@ class CompanyHiringPolicy(Base):
     communication_rules = Column(JSON, default=lambda: COMMUNICATION_RULES_DEFAULTS.copy())
     screening_rules = Column(JSON, default=lambda: SCREENING_RULES_DEFAULTS.copy())
     automation_rules = Column(JSON, default=lambda: AUTOMATION_RULES_DEFAULTS.copy())
+
+    # Per-role PII visibility defaults (2026-06-06): {role: {field: bool}}.
+    pii_visibility_defaults = Column(JSON, default=lambda: {})
+
+    # N2/N3 offer configuration block — negociação, dias de início, aviso prévio
+    offer_rules = Column(JSONB, default=lambda: OFFER_RULES_DEFAULTS.copy())
     # P3b (2026-06-01): instruções narrativas do recrutador por conceito de
     # política (texto livre que orienta a LIA). SEPARADO dos 5 blocos de gate —
     # nunca alimenta um if/gate, só o system prompt. Invariante de segurança.
     policy_instructions = Column(JSON, default=lambda: {})
+
+    # Company-level defaults inherited by new jobs and wizard (Fase triagem 2026-06-19)
+    screening_config_defaults = Column(JSONB, nullable=True, default=lambda: SCREENING_CONFIG_DEFAULTS.copy())
 
     pipeline_templates = Column(JSON, default=lambda: [])
     learned_patterns = Column(JSON, default=lambda: [])
@@ -129,6 +195,8 @@ class CompanyHiringPolicy(Base):
             "pipeline_templates": self.pipeline_templates or [],
             "learned_patterns": self.learned_patterns or [],
             "answered_questions": self.answered_questions or [],
+            "offer_rules": self.offer_rules or OFFER_RULES_DEFAULTS,
+            "screening_config_defaults": self.screening_config_defaults or SCREENING_CONFIG_DEFAULTS,
             "setup_progress": self.setup_progress or 0,
             "setup_completed_at": self.setup_completed_at.isoformat() if self.setup_completed_at else None,
             "created_by": self.created_by,

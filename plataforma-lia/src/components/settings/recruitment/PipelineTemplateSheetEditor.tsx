@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import React, { useState, useCallback, useEffect } from "react"
 import { ChevronDown, ChevronRight, Loader2, Pencil, Save, Trash2, Upload, X } from "lucide-react"
 import { toast } from "sonner"
@@ -109,6 +110,9 @@ export function PipelineTemplateSheetEditor({
   onOpenChange,
   onSaved,
 }: PipelineTemplateSheetEditorProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('pipeline-template-sheet-editor', open)
+
   const { templates, updateTemplate, deleteTemplate } = usePipelineTemplates()
   const template = templates.find((t) => t.id === templateId) ?? null
 
@@ -203,10 +207,10 @@ export function PipelineTemplateSheetEditor({
         toast.success(`Pipeline Padr\u00e3o atualizado com o template "${template.name}"!`)
         onOpenChange(false)
       } else {
-        toast.error('Erro ao aplicar template. Tente novamente.')
+        toast.error('Erro ao aplicar template. Tente novamente.', { description: "O servidor recusou a operação. Verifique as configurações do template." })
       }
     } catch {
-      toast.error('Erro ao aplicar template. Tente novamente.')
+      toast.error('Erro ao aplicar template. Tente novamente.', { description: "Verifique sua conexão e tente novamente." })
     } finally {
       setApplyingPadrao(false)
     }
@@ -266,7 +270,7 @@ export function PipelineTemplateSheetEditor({
       onSaved?.()
       onOpenChange(false)
     } catch {
-      toast.error("Erro ao salvar template. Tente novamente.")
+      toast.error("Erro ao salvar template. Tente novamente.", { description: "Verifique sua conexão e tente novamente." })
     } finally {
       setSaving(false)
     }
@@ -280,7 +284,7 @@ export function PipelineTemplateSheetEditor({
       toast.success("Template excluído.")
       onOpenChange(false)
     } catch {
-      toast.error("Erro ao excluir template.")
+      toast.error("Erro ao excluir template.", { description: "Verifique sua conexão e tente novamente." })
     } finally {
       setDeleting(false)
       setConfirmDelete(false)
@@ -391,7 +395,7 @@ export function PipelineTemplateSheetEditor({
                 <span className="flex items-center gap-2">
                   Configuração de Volume (Saturação)
                   {saturation?.enabled && (
-                    <span className="text-xs text-wedo-cyan font-normal">incluída no template</span>
+                    <span className="text-xs text-lia-text-muted font-normal">incluída no template</span>
                   )}
                 </span>
                 {showSaturation

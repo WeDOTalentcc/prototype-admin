@@ -16,6 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.services.ml import OutcomePredictor, get_model_registry
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 from app.shared.types import WeDoBaseModel
 from typing import Annotated
 from fastapi import Path
@@ -139,7 +140,7 @@ company_id: str = Depends(require_company_id)):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/predict/salary", response_model=SalaryPredictionResponse)
@@ -223,7 +224,7 @@ company_id: str = Depends(require_company_id)):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/predict/skill-success", response_model=SkillSuccessResponse)
@@ -270,7 +271,7 @@ company_id: str = Depends(require_company_id)):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/insights/hiring", response_model=HiringInsightsResponse)
@@ -304,7 +305,7 @@ company_id: str = Depends(require_company_id)):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Insights failed: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/models", response_model=None)

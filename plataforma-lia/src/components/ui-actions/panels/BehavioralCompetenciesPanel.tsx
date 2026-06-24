@@ -7,6 +7,7 @@ import { Chip } from "@/components/ui/chip"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
 import { Loader2, ChevronDown, ChevronRight, MessageCircle, Target } from"lucide-react"
 import { COMPETENCIES_CATALOG, Competency, BehavioralCompetenciesData } from"../types"
+import { toast } from "sonner"
 
 interface PanelProps {
   initialData?: Record<string, unknown>
@@ -69,7 +70,13 @@ export function BehavioralCompetenciesPanel({
         questions: c.questions
       }))
     }
-    await onSubmit(data)
+    try {
+      await onSubmit(data)
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Erro ao salvar competências. Tente novamente."
+      )
+    }
   }
 
   const getAverageLevel = () => {

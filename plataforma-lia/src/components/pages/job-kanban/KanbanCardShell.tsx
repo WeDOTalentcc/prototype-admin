@@ -67,14 +67,10 @@ export const KanbanCardShell = React.forwardRef<HTMLDivElement, KanbanCardShellP
           kanbanCardStyles.shell,
           interactive && kanbanCardStyles.shellInteractive,
           accentClass,
+          isDropping && "animate-pulse motion-reduce:animate-none",
           className,
         )}
-        style={{
-          ...style,
-          ...(isDropping
-            ? { animation: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite" }
-            : null),
-        }}
+        style={style}
         {...rest}
       >
         {ribbon ? <div className={kanbanCardStyles.ribbon}>{ribbon}</div> : null}

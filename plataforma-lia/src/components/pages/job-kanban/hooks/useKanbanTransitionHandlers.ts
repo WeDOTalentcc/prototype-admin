@@ -98,7 +98,19 @@ export function useKanbanTransitionHandlers({
         break
       case 'rejection-feedback':
         if ((context.candidates ?? []).length > 0) {
-          setUnifiedModalCandidate(context.candidates![0])
+          const _c0 = context.candidates![0] as Record<string, unknown>
+          // FE-2b: carrega o contexto para o modal pre-preencher o feedback via IA
+          // (preview-feedback). Read-only ate o recrutador enviar; sem mover aqui.
+          setUnifiedModalCandidate({
+            ..._c0,
+            _aiFeedbackContext: {
+              vacancyCandidateId: _c0.id,
+              toStage: (context.toStage as string) || 'rejected',
+              subStatus: (context.subStatus as string | undefined) ?? null,
+              fromStage: (context.fromStage as string | undefined) ?? null,
+              moveOnSend: (context.moveOnSend as boolean | undefined) ?? false,
+            },
+          })
           setUnifiedModalType('feedback')
           setUnifiedModalSituation('feedback_construtivo')
           setUnifiedModalOpen(true)

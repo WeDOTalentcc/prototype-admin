@@ -38,6 +38,10 @@ class ArchetypeFromDescriptionRequest(WeDoBaseModel):
 
 
 router = APIRouter()
+# FairnessGuard — bloqueio de queries discriminatórias (LGPD/CLT canonical)
+from app.shared.compliance.fairness_guard import FairnessGuard as _FairnessGuard
+_fairness_guard = _FairnessGuard()
+
 
 class ArchetypeDTO(BaseModel):
     """DTO for archetype data in API responses."""
@@ -209,7 +213,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"Error listing archetypes: {e}")
-        raise HTTPException(status_code=500, detail=f"Failed to list archetypes: {str(e)}")
+        raise
 
 
 @router.post("/archetypes", response_model=ArchetypeDTO)
@@ -284,7 +288,7 @@ company_id: str = Depends(require_company_id)):
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"Error creating archetype: {e}")
         await db.rollback()
-        raise HTTPException(status_code=500, detail=f"Failed to create archetype: {str(e)}")
+        raise
 
 
 @router.post("/archetypes/from-search", response_model=ArchetypeFromSearchResponse)
@@ -360,7 +364,7 @@ company_id: str = Depends(require_company_id)):
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"Error creating archetype from search: {e}")
         await db.rollback()
-        raise HTTPException(status_code=500, detail=f"Failed to create archetype from search: {str(e)}")
+        raise
 
 
 # ============================================================================
@@ -461,7 +465,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting closed job suggestions: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 @router.post("/archetypes/from-job/{job_id}", response_model=ArchetypeDTO)
@@ -609,7 +613,7 @@ company_id: str = Depends(require_company_id)):
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"Error creating archetype from job: {e}")
         await db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 @router.get("/archetypes/{archetype_id}", response_model=ArchetypeDTO)
 async def get_archetype(
@@ -653,7 +657,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"Error getting archetype: {e}")
-        raise HTTPException(status_code=500, detail=f"Failed to get archetype: {str(e)}")
+        raise
 
 
 @router.delete("/archetypes/{archetype_id}", response_model=None)
@@ -700,7 +704,7 @@ company_id: str = Depends(require_company_id)):
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"Error deleting archetype: {e}")
         await db.rollback()
-        raise HTTPException(status_code=500, detail=f"Failed to delete archetype: {str(e)}")
+        raise
 
 
 @router.put("/archetypes/{archetype_id}", response_model=ArchetypeDTO)
@@ -775,7 +779,7 @@ company_id: str = Depends(require_company_id)):
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"Error updating archetype: {e}")
         await db.rollback()
-        raise HTTPException(status_code=500, detail=f"Failed to update archetype: {str(e)}")
+        raise
 
 
 @router.post("/archetypes/{archetype_id}/search", response_model=ArchetypeSearchResponse)
@@ -883,7 +887,7 @@ company_id: str = Depends(require_company_id)):
                         "current_title": profile.current_title,
                         "is_opentowork": profile.is_opentowork,
                     }
-                    lia_result = lia_score_service.calculate_score(candidate_data, criteria)
+                    lia_result = lia_score_service.calculate_score(candidate_data, criteria, industry=archetype.industry)
                     candidate_dto.lia_score = lia_result.score
                     candidate_dto.lia_reasoning = lia_result.reasoning
                     candidate_dto.lia_breakdown = lia_result.breakdown.to_dict()
@@ -929,7 +933,7 @@ company_id: str = Depends(require_company_id)):
                         "current_title": profile.current_title,
                         "is_opentowork": profile.is_opentowork,
                     }
-                    lia_result = lia_score_service.calculate_score(candidate_data, criteria)
+                    lia_result = lia_score_service.calculate_score(candidate_data, criteria, industry=archetype.industry)
                     candidate_dto.lia_score = lia_result.score
                     candidate_dto.lia_reasoning = lia_result.reasoning
                     candidate_dto.lia_breakdown = lia_result.breakdown.to_dict()
@@ -1023,7 +1027,7 @@ company_id: str = Depends(require_company_id)):
         logger.error(f"Error searching by archetype: {e}")
         import traceback
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"Archetype search failed: {str(e)}")
+        raise
 
 
 # ============================================================================
@@ -1203,13 +1207,13 @@ Responda APENAS com o JSON, sem explicações adicionais."""
         raise
     except json.JSONDecodeError as e:
         logger.error(f"Failed to parse AI response: {e}")
-        raise HTTPException(status_code=500, detail="Falha ao processar resposta da IA")
+        raise
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"Error generating archetype from job: {e}")
         import traceback
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"Falha ao gerar arquétipo: {str(e)}")
+        raise
 
 
 @router.post("/archetypes/from-description", response_model=ArchetypeGenerationResponse)
@@ -1230,6 +1234,19 @@ company_id: str = Depends(require_company_id)):
     from app.shared.providers.llm_factory import get_provider_for_tenant
 
     try:
+        # LGPD/CLT fairness guard: bloqueia descrições discriminatórias antes de chamar LLM
+        _fg_result = _fairness_guard.check(request.description)
+        if _fg_result.is_blocked:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error": "fairness_blocked",
+                    "fairness_blocked": True,
+                    "educational_message": _fg_result.educational_message,
+                    "category": _fg_result.category,
+                    "blocked_terms": _fg_result.blocked_terms or [],
+                },
+            )
         container = get_provider_for_tenant()
         
         prompt = f"""Você é um especialista em recrutamento. Analise a descrição do perfil ideal e crie um arquétipo de busca.
@@ -1314,13 +1331,13 @@ Responda APENAS com o JSON, sem explicações adicionais."""
         raise
     except json.JSONDecodeError as e:
         logger.error(f"Failed to parse AI response: {e}")
-        raise HTTPException(status_code=500, detail="Falha ao processar resposta da IA")
+        raise
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"Error generating archetype from description: {e}")
         import traceback
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"Falha ao gerar arquétipo: {str(e)}")
+        raise
 
 
 class ClosedJobSuggestionDTO(BaseModel):
@@ -1354,7 +1371,6 @@ company_id: str = Depends(require_company_id)):
     from app.models.job_vacancy import JobVacancy
 
 # RAILS-DEPRECATED: This endpoint manages Rails-owned entities (candidates/jobs/applies/users).
-# Direct DB calls will be replaced by RailsAdapter after ats-api-rails handoff.
 # See: app/domains/integrations_hub/services/rails_adapter.py
     
     try:
@@ -1393,7 +1409,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"Error fetching archetype suggestions: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
 
 # ============================================================================

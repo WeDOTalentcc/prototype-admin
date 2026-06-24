@@ -23,6 +23,9 @@ async function fetchBudgetAlerts(): Promise<BudgetAlertsResponse> {
   const res = await fetch("/api/backend-proxy/ai-consumption/budget-alerts", {
     headers: token ? { Authorization: `Bearer ${token}` } : {},
   })
+  if (res.status === 404) {
+    return { alerts: [] } as unknown as BudgetAlertsResponse
+  }
   if (!res.ok) {
     throw new Error(`Failed to fetch budget alerts: ${res.status}`)
   }

@@ -365,7 +365,14 @@ class EnhancedAgentMixin:
             )
             return True
 
-    async def _fairness_pre_check(self, user_input: str) -> Optional[str]:
+    async def _fairness_pre_check(
+        self,
+        user_input: str,
+        *,
+        company_id: Optional[str] = None,
+        recruiter_id: Optional[str] = None,
+        session_id: Optional[str] = None,
+    ) -> Optional[str]:
         """Camada 1+2 FairnessGuard automático — executar antes de qualquer ReAct loop.
 
         Verifica se a mensagem do recrutador contém critérios discriminatórios
@@ -402,6 +409,22 @@ class EnhancedAgentMixin:
                     result.category,
                     result.blocked_terms,
                 )
+                import asyncio as _asyncio
+                try:
+                    _asyncio.get_event_loop().create_task(
+                        _guard.log_check(
+                            result=result,
+                            context=self._enhanced_domain,
+                            company_id=company_id or None,
+                            recruiter_id=recruiter_id or None,
+                            session_id=session_id or None,
+                        )
+                    )
+                except Exception as _lc_exc:
+                    logger.debug(
+                        "[%s][FairnessGuard] log_check enqueue failed (fail-open): %s",
+                        self._enhanced_domain, _lc_exc,
+                    )
                 return result.educational_message or (
                     "Esta solicitação não pode ser processada pois contém critérios "
                     "que podem ser discriminatórios. Por favor, reformule com base em "

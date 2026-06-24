@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useEffect, useMemo, useCallback, useRef } from "react"
+import { useState, useMemo, useCallback, useRef } from "react"
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { useUIPreferencesStore } from "@/stores/ui-preferences-store"
 import { useJWTAuth } from "@/contexts/auth-context"
 import { toast } from "@/lib/toast"
@@ -317,9 +318,18 @@ async function fetchEndpointWithRetry(url: string, retries = 2, baseDelayMs = 20
   throw new Error("unreachable")
 }
 
+// Query Keys canonical
+const TASKS_QUERY_KEYS = {
+  all: () => ['tasks'] as const,
+  pending: () => ['tasks', 'pending'] as const,
+  summary: () => ['tasks', 'summary'] as const,
+  alerts: () => ['tasks', 'alerts'] as const,
+  jobs: () => ['tasks', 'jobs'] as const,
+}
+
 export function useTasksCore(onNavigate?: (page: string) => void) {
   const { user } = useJWTAuth()
-  const mountedRef = useRef(false)
+  const queryClient = useQueryClient()
   const [jobSearchTerm, setJobSearchTerm] = useState("")
   const [showJobFilters, setShowJobFilters] = useState(false)
   const [selectedDepartments, setSelectedDepartments] = useState<string[]>([])
@@ -337,129 +347,171 @@ export function useTasksCore(onNavigate?: (page: string) => void) {
   const [showActivityModal, setShowActivityModal] = useState(false)
   const [pendingTaskFilter, setPendingTaskFilter] = useState<'all' | 'feedback' | 'sourcing'>('all')
 
-  const [pendingTasks, setPendingTasks] = useState<PendingTask[]>([])
-  const [activeAlerts, setActiveAlerts] = useState<ActiveAlert[]>([])
-  const [jobsWithAlerts, setJobsWithAlerts] = useState<JobWithAlert[]>([])
-  const [metrics, setMetrics] = useState({ total: 0, completed: 0, pending: 0, iaTasks: 0 })
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
   const currentUserId = user?.id || user?.email || 'default_user'
 
-  const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  // Query: Pending Tasks
+  const { data: pendingTasks = [], isLoading: tasksLoading, error: tasksError } = useQuery({
+    queryKey: TASKS_QUERY_KEYS.pending(),
+    queryFn: async () => {
+      const res = await fetchEndpointWithRetry(`${API_BASE}/tasks?limit=50&status=pending`)
+      if (!res.ok) throw new Error('Erro ao carregar tarefas')
+      const tasksData = await res.json()
+      const tasksList: BackendTask[] = Array.isArray(tasksData) ? tasksData : (tasksData.tasks || [])
+      return tasksList.map((t) => ({
+        id: t.id,
+        title: t.title || '',
+        description: t.description || '',
+        type: mapTaskType(t.task_type),
+        priority: mapPriority(t.priority),
+        dueDate: t.due_date ? new Date(t.due_date) : new Date(),
+        relatedJob: t.context?.job_title as string | undefined || undefined,
+        relatedJobId: t.related_job_id || undefined,
+        relatedCandidateId: t.related_candidate_id || t.context?.candidate_id as string | undefined || undefined,
+        rawTaskType: t.task_type || undefined,
+        candidateName: t.context?.candidate_name || undefined,
+        createdAt: t.created_at ? new Date(t.created_at) : new Date(),
+      }))
+    },
+    staleTime: 60_000,
+    refetchInterval: 120_000,
+  })
 
-  useEffect(() => {
-    mountedRef.current = true
-    return () => {
-      mountedRef.current = false
-      if (retryTimerRef.current) clearTimeout(retryTimerRef.current)
-    }
-  }, [])
+  // Query: Task Summary
+  const { data: summary } = useQuery({
+    queryKey: TASKS_QUERY_KEYS.summary(),
+    queryFn: async () => {
+      const res = await fetchEndpointWithRetry(`${API_BASE}/tasks/summary`)
+      if (!res.ok) throw new Error('Erro ao carregar resumo')
+      return (await res.json()) as BackendSummary
+    },
+    staleTime: 60_000,
+  })
 
-  useEffect(() => {
-    fetchAllData()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentUserId])
+  // Query: Alerts (with polling every 2 minutes)
+  const { data: activeAlerts = [], isLoading: alertsLoading } = useQuery({
+    queryKey: TASKS_QUERY_KEYS.alerts(),
+    queryFn: async () => {
+      if (document.hidden) return []
+      const res = await fetchEndpointWithRetry(`${API_BASE}/alerts?limit=20&status=active`)
+      if (!res.ok) throw new Error('Erro ao carregar alertas')
+      const alertsData = await res.json()
+      const alertsList: BackendAlert[] = Array.isArray(alertsData) ? alertsData : (alertsData.alerts || [])
+      return alertsList.map((a) => ({
+        id: a.id,
+        title: a.title || "",
+        description: a.message || a.description || "",
+        severity: mapAlertSeverity(a.severity),
+        jobId: a.job_id || "",
+        jobTitle: a.context?.job_title || a.title || "",
+        createdAt: a.created_at ? new Date(a.created_at) : new Date(),
+        action: a.suggested_actions?.[0] || "Verificar",
+      }))
+    },
+    staleTime: 60_000,
+    refetchInterval: 120_000,
+  })
 
-  const fetchAllData = async () => {
-    if (!mountedRef.current) return
-    setLoading(true)
-    setError(null)
+  // Query: Jobs
+  const { data: jobsWithAlerts = [], isLoading: jobsLoading, error: jobsError } = useQuery({
+    queryKey: TASKS_QUERY_KEYS.jobs(),
+    queryFn: async () => {
+      const res = await fetchEndpointWithRetry(`${API_BASE}/job-vacancies?limit=20`)
+      if (!res.ok) throw new Error('Erro ao carregar vagas')
+      const jobsData = await res.json()
+      const jobsList: Partial<BackendJob>[] = Array.isArray(jobsData)
+        ? jobsData
+        : (jobsData.items || jobsData.jobs || jobsData.vacancies || [])
+      return jobsList.map(mapJobToJobWithAlert)
+    },
+    staleTime: 120_000,
+  })
 
-    console.log('[useTasksCore] fetchAllData starting, userId:', currentUserId)
-
-    try {
-      const [tasksRes, summaryRes, alertsRes, jobsRes] = await Promise.allSettled([
-        fetchEndpointWithRetry(`${API_BASE}/tasks?limit=50&status=pending`),
-        fetchEndpointWithRetry(`${API_BASE}/tasks/summary`),
-        fetchEndpointWithRetry(`${API_BASE}/alerts?limit=20&status=active`),
-        fetchEndpointWithRetry(`${API_BASE}/job-vacancies?limit=20`),
-      ])
-      console.log('[useTasksCore] responses:', {
-        tasks: tasksRes.status === 'fulfilled' ? tasksRes.value.status : 'rejected',
-        summary: summaryRes.status === 'fulfilled' ? summaryRes.value.status : 'rejected',
-        alerts: alertsRes.status === 'fulfilled' ? alertsRes.value.status : 'rejected',
-        jobs: jobsRes.status === 'fulfilled' ? jobsRes.value.status : 'rejected',
+  // Mutation: Confirm Task
+  const confirmTaskMutation = useMutation({
+    mutationFn: async (task: PendingTask) => {
+      const res = await fetch(`${API_BASE}/task-lifecycle/${task.id}/confirm`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ confirmed_by: currentUserId }),
+        signal: AbortSignal.timeout(8000),
       })
-
-      if (!mountedRef.current) return
-
-      let parsedTasks: BackendTask[] = []
-      if (tasksRes.status === 'fulfilled' && tasksRes.value.ok) {
-        const tasksData = await tasksRes.value.json()
-        parsedTasks = Array.isArray(tasksData) ? tasksData : (tasksData.tasks || [])
-        const mapped: PendingTask[] = parsedTasks.map((t) => ({
-          id: t.id,
-          title: t.title || '',
-          description: t.description || '',
-          type: mapTaskType(t.task_type),
-          priority: mapPriority(t.priority),
-          dueDate: t.due_date ? new Date(t.due_date) : new Date(),
-          relatedJob: t.context?.job_title as string | undefined || undefined,
-          relatedJobId: t.related_job_id || undefined,
-          relatedCandidateId: t.related_candidate_id || t.context?.candidate_id as string | undefined || undefined,
-          rawTaskType: t.task_type || undefined,
-          candidateName: t.context?.candidate_name || undefined,
-          createdAt: t.created_at ? new Date(t.created_at) : new Date(),
-        }))
-        setPendingTasks(mapped)
-      }
-
-      if (summaryRes.status === 'fulfilled' && summaryRes.value.ok) {
-        const summaryData: BackendSummary = await summaryRes.value.json()
-        const iaCount = parsedTasks.filter(t => t.is_automated || t.created_by_agent != null).length
-        setMetrics({
-          total: (summaryData.total_active || 0) + (summaryData.completed || 0),
-          completed: summaryData.completed || 0,
-          pending: summaryData.pending || 0,
-          iaTasks: iaCount,
+      if (!res.ok) throw new Error('Erro ao confirmar tarefa')
+      return res.json()
+    },
+    onSuccess: (_, task) => {
+      queryClient.setQueryData(TASKS_QUERY_KEYS.pending(), (old: PendingTask[]) =>
+        old.filter(t => t.id !== task.id)
+      )
+      if (summary) {
+        queryClient.setQueryData(TASKS_QUERY_KEYS.summary(), {
+          ...summary,
+          completed: summary.completed + 1,
+          pending: Math.max(0, summary.pending - 1),
         })
       }
+      toast.success('Tarefa confirmada', task.title)
+    },
+    onError: () => {
+      toast.error('Erro ao confirmar tarefa', 'Tente novamente em instantes')
+    },
+  })
 
-      if (alertsRes.status === 'fulfilled' && alertsRes.value.ok) {
-        const alertsData = await alertsRes.value.json()
-        const alertsList: BackendAlert[] = Array.isArray(alertsData) ? alertsData : (alertsData.alerts || [])
-        const mapped: ActiveAlert[] = alertsList.map((a) => ({
-          id: a.id,
-          title: a.title || '',
-          description: a.message || a.description || '',
-          severity: mapAlertSeverity(a.severity),
-          jobId: a.job_id || '',
-          jobTitle: a.context?.job_title || a.title || '',
-          createdAt: a.created_at ? new Date(a.created_at) : new Date(),
-          action: a.suggested_actions?.[0] || 'Verificar',
-        }))
-        setActiveAlerts(mapped)
-      }
-
-      if (jobsRes.status === 'fulfilled' && jobsRes.value.ok) {
-        const jobsData = await jobsRes.value.json()
-        const jobsList: Partial<BackendJob>[] = Array.isArray(jobsData)
-          ? jobsData
-          : (jobsData.items || jobsData.jobs || jobsData.vacancies || [])
-        const mapped: JobWithAlert[] = jobsList.map(mapJobToJobWithAlert)
-        setJobsWithAlerts(mapped)
-      }
-
-      if (!mountedRef.current) return
-
-      const failedRequests = [tasksRes, summaryRes, alertsRes, jobsRes].filter(
-        r => r.status === 'rejected' || (r.status === 'fulfilled' && !r.value.ok)
+  // Mutation: Reject Task
+  const rejectTaskMutation = useMutation({
+    mutationFn: async (task: PendingTask) => {
+      const res = await fetch(`${API_BASE}/task-lifecycle/${task.id}/reject`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rejected_by: currentUserId }),
+        signal: AbortSignal.timeout(8000),
+      })
+      if (!res.ok) throw new Error('Erro ao rejeitar tarefa')
+      return res.json()
+    },
+    onSuccess: (_, task) => {
+      queryClient.setQueryData(TASKS_QUERY_KEYS.pending(), (old: PendingTask[]) =>
+        old.filter(t => t.id !== task.id)
       )
-      if (failedRequests.length === 4) {
-        setError('Não foi possível conectar ao servidor. Verifique sua conexão.')
-      } else if (failedRequests.length > 0) {
-        setError('Alguns dados podem estar incompletos.')
+      if (summary) {
+        queryClient.setQueryData(TASKS_QUERY_KEYS.summary(), {
+          ...summary,
+          pending: Math.max(0, summary.pending - 1),
+        })
       }
-    } catch {
-      if (!mountedRef.current) return
-      setError('Erro ao carregar dados. Tente novamente.')
-    } finally {
-      if (mountedRef.current) {
-        setLoading(false)
-      }
-    }
-  }
+      toast.success('Tarefa rejeitada', task.title)
+    },
+    onError: () => {
+      toast.error('Erro ao rejeitar tarefa', 'Tente novamente em instantes')
+    },
+  })
+
+  // Mutation: Alert Action (Resolve/Acknowledge)
+  const alertActionMutation = useMutation({
+    mutationFn: async (alert: ActiveAlert) => {
+      const encodedUserId = encodeURIComponent(currentUserId)
+      const isCritical = alert.severity === 'critical' || alert.severity === 'high'
+      const endpoint = isCritical
+        ? `${API_BASE}/alerts/${alert.id}/resolve?user_id=${encodedUserId}`
+        : `${API_BASE}/alerts/${alert.id}/acknowledge?user_id=${encodedUserId}`
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        signal: AbortSignal.timeout(8000),
+      })
+      if (!res.ok) throw new Error('Erro ao processar alerta')
+      return { success: true, isCritical }
+    },
+    onSuccess: (_, alert) => {
+      queryClient.setQueryData(TASKS_QUERY_KEYS.alerts(), (old: ActiveAlert[]) =>
+        old.filter(a => a.id !== alert.id)
+      )
+      const isCritical = alert.severity === 'critical' || alert.severity === 'high'
+      toast.success(isCritical ? 'Alerta resolvido' : 'Alerta reconhecido', alert.title)
+    },
+    onError: (_, alert) => {
+      toast.error('Erro ao processar alerta', 'Redirecionando para o assistente...')
+      navigateToLIA(`${alert.action} para a vaga ${alert.jobTitle} (${alert.jobId}): ${alert.description}`)
+    },
+  })
 
   const tasks: Task[] = []
   const jobRequests = useMemo<JobRequest[]>(() => [], [])
@@ -510,74 +562,20 @@ export function useTasksCore(onNavigate?: (page: string) => void) {
 
   const navigateToLIA = useCallback((prompt: string) => {
     useUIPreferencesStore.getState().setLiaPrompt(prompt)
-    if (onNavigate) onNavigate('Chat com LIA')
+    if (onNavigate) onNavigate('Chat com IA')
   }, [onNavigate])
 
-  const handleConfirmTask = useCallback(async (task: PendingTask) => {
-    try {
-      const res = await fetch(`${API_BASE}/task-lifecycle/${task.id}/confirm`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ confirmed_by: currentUserId }),
-      })
-      if (res.ok) {
-        setPendingTasks(prev => prev.filter(t => t.id !== task.id))
-        setMetrics(prev => ({
-          ...prev,
-          completed: prev.completed + 1,
-          pending: Math.max(0, prev.pending - 1),
-        }))
-        toast.success('Tarefa confirmada', task.title)
-      } else {
-        toast.error('Erro ao confirmar tarefa', 'Tente novamente em instantes')
-      }
-    } catch {
-      toast.error('Erro de conexão', 'Verifique sua conexão e tente novamente')
-    }
-  }, [currentUserId])
+  const handleConfirmTask = useCallback((task: PendingTask) => {
+    confirmTaskMutation.mutate(task)
+  }, [confirmTaskMutation])
 
-  const handleRejectTask = useCallback(async (task: PendingTask) => {
-    try {
-      const res = await fetch(`${API_BASE}/task-lifecycle/${task.id}/reject`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rejected_by: currentUserId }),
-      })
-      if (res.ok) {
-        setPendingTasks(prev => prev.filter(t => t.id !== task.id))
-        setMetrics(prev => ({
-          ...prev,
-          pending: Math.max(0, prev.pending - 1),
-        }))
-        toast.success('Tarefa rejeitada', task.title)
-      } else {
-        toast.error('Erro ao rejeitar tarefa', 'Tente novamente em instantes')
-      }
-    } catch {
-      toast.error('Erro de conexão', 'Verifique sua conexão e tente novamente')
-    }
-  }, [currentUserId])
+  const handleRejectTask = useCallback((task: PendingTask) => {
+    rejectTaskMutation.mutate(task)
+  }, [rejectTaskMutation])
 
-  const handleAlertAction = useCallback(async (alert: ActiveAlert) => {
-    const encodedUserId = encodeURIComponent(currentUserId)
-    const isCritical = alert.severity === 'critical' || alert.severity === 'high'
-    const endpoint = isCritical
-      ? `${API_BASE}/alerts/${alert.id}/resolve?user_id=${encodedUserId}`
-      : `${API_BASE}/alerts/${alert.id}/acknowledge?user_id=${encodedUserId}`
-    try {
-      const res = await fetch(endpoint, { method: 'POST' })
-      if (res.ok) {
-        setActiveAlerts(prev => prev.filter(a => a.id !== alert.id))
-        toast.success(isCritical ? 'Alerta resolvido' : 'Alerta reconhecido', alert.title)
-      } else {
-        toast.error('Erro ao processar alerta', 'Redirecionando para LIA...')
-        navigateToLIA(`${alert.action} para a vaga ${alert.jobTitle} (${alert.jobId}): ${alert.description}`)
-      }
-    } catch {
-      toast.error('Erro de conexão', 'Redirecionando para LIA...')
-      navigateToLIA(`${alert.action} para a vaga ${alert.jobTitle} (${alert.jobId}): ${alert.description}`)
-    }
-  }, [navigateToLIA, currentUserId])
+  const handleAlertAction = useCallback((alert: ActiveAlert) => {
+    alertActionMutation.mutate(alert)
+  }, [alertActionMutation])
 
   const handleLIAAction = useCallback((action: string, job: JobWithAlert) => {
     const prompts: Record<string, string> = {
@@ -611,6 +609,16 @@ export function useTasksCore(onNavigate?: (page: string) => void) {
     setSelectedRequestDepartments([])
   }, [])
 
+  const loading = tasksLoading || jobsLoading || alertsLoading
+  const error = tasksError?.message || jobsError?.message || null
+
+  const metrics = {
+    total: (summary?.total_active || 0) + (summary?.completed || 0),
+    completed: summary?.completed || 0,
+    pending: summary?.pending || 0,
+    iaTasks: pendingTasks.filter(t => t.rawTaskType?.includes('agent') || t.candidateName).length,
+  }
+
   return {
     state: {
       jobSearchTerm, showJobFilters, selectedDepartments, selectedUrgencies, selectedPublications, jobSortBy,
@@ -629,7 +637,9 @@ export function useTasksCore(onNavigate?: (page: string) => void) {
       setSelectedActivity, setShowActivityModal, setPendingTaskFilter,
       handleConfirmTask, handleRejectTask, handleAlertAction,
       handleLIAAction, handleRequestAction, handleActivityClick,
-      refetch: fetchAllData,
+      refetch: () => {
+        queryClient.invalidateQueries({ queryKey: TASKS_QUERY_KEYS.all() })
+      },
     }
   }
 }

@@ -33,7 +33,6 @@ def _make_input(ctx=None):
     ("app.domains.communication.agents.communication_react_agent", "CommunicationReActAgent"),
     ("app.domains.ats_integration.agents.ats_integration_react_agent", "ATSIntegrationReActAgent"),
     ("app.domains.automation.agents.automation_react_agent", "AutomationReActAgent"),
-    ("app.domains.autonomous.agents.autonomous_react_agent", "AutonomousReActAgent"),
 ])
 def test_agent_has_runtime_hook(agent_module, class_name):
     """All 5 Phase-3.4 agents must define _get_runtime_domain_instructions."""
@@ -84,12 +83,6 @@ def _mock_prompt_composer_runtime(result_text="MOCKED_RUNTIME_INSTRUCTIONS"):
         "AUTOMATION_DOMAIN_SPECIFIC",
         "automation",
     ),
-    (
-        "app/domains/autonomous/agents/autonomous_react_agent.py",
-        "autonomous_react_agent",
-        None,  # autonomous uses inline string
-        "autonomous",
-    ),
 ])
 def test_runtime_hook_calls_for_domain_runtime(
     source_file, class_attr, domain_specific_var, expected_domain
@@ -115,7 +108,6 @@ def test_runtime_hook_passes_memory_summary_and_stage_context():
         "app/domains/communication/agents/communication_react_agent.py",
         "app/domains/ats_integration/agents/ats_integration_react_agent.py",
         "app/domains/automation/agents/automation_react_agent.py",
-        "app/domains/autonomous/agents/autonomous_react_agent.py",
     ]:
         src = (ws / source_file).read_text()
         assert 'memory_summary=ctx.get("memory_summary"' in src, (
@@ -133,7 +125,6 @@ def test_runtime_hook_has_fallback_to_domain_instructions():
         "app/domains/communication/agents/communication_react_agent.py",
         "app/domains/ats_integration/agents/ats_integration_react_agent.py",
         "app/domains/automation/agents/automation_react_agent.py",
-        "app/domains/autonomous/agents/autonomous_react_agent.py",
     ]:
         src = (ws / source_file).read_text()
         assert "return self.DOMAIN_INSTRUCTIONS" in src, (

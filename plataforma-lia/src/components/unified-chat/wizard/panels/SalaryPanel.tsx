@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState } from "react"
-import { DollarSign, Gift, CheckCircle2, Edit2 } from "lucide-react"
+import { DollarSign, Gift, CheckCircle2, Edit2, TrendingUp, X } from "lucide-react"
 import type { SalaryData } from "../wizard-types"
 import { FallbackBanner } from "./FallbackBanner"
 import { AiDegradedModeBanner } from "./AiDegradedModeBanner"
@@ -84,7 +84,7 @@ export function SalaryPanel({ data, onUpdate }: Props) {
             <button
               data-testid="salary-adjust-btn"
               onClick={() => setIsAdjusting(true)}
-              className="flex items-center gap-1 text-[10px] text-lia-text-disabled hover:text-wedo-cyan transition-colors"
+              className="flex items-center gap-1 text-[10px] text-lia-text-muted hover:text-wedo-cyan transition-colors"
             >
               <Edit2 className="w-3 h-3" />
               Ajustar
@@ -168,7 +168,7 @@ export function SalaryPanel({ data, onUpdate }: Props) {
       {/* Benchmark */}
       {d.benchmark && (
         <div className="p-2.5 rounded-md bg-wedo-cyan/5 border border-wedo-cyan/20">
-          <p className="text-[10px] font-medium text-wedo-cyan">Benchmark de mercado</p>
+          <p className="text-[10px] font-medium text-lia-text-secondary">Benchmark de mercado</p>
           <div className="mt-1 space-y-0.5">
             {Object.entries(d.benchmark).map(([key, val]) => (
               <div key={key} className="flex items-center justify-between text-xs">
@@ -191,13 +191,68 @@ export function SalaryPanel({ data, onUpdate }: Props) {
             <span className="text-xs font-medium text-lia-text-secondary">Benefícios</span>
           </div>
           <div className="flex flex-wrap gap-1.5">
-            {d.benefits.map((b, i) => (
-              <span
+            {d.benefits.map((b, i) => {
+              const label = typeof b === "string" ? b : (b as Record<string, unknown>).name as string
+              return (
+                <span
+                  key={i}
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-lia-bg-secondary border border-lia-border-subtle text-micro text-lia-text-primary"
+                >
+                  {label}
+                  <button
+                    onClick={() => {
+                      const next = d.benefits.filter((_, j) => j !== i)
+                      onUpdate?.({ benefits: next })
+                    }}
+                    className="text-lia-text-disabled hover:text-status-error transition-colors ml-0.5"
+                    aria-label={`Remover ${label}`}
+                  >
+                    <X className="w-2.5 h-2.5" />
+                  </button>
+                </span>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {d.variable_compensation && d.variable_compensation.length > 0 && (
+        <div>
+          <div className="flex items-center gap-1.5 mb-1.5">
+            <TrendingUp className="w-4 h-4 text-wedo-cyan" />
+            <span className="text-xs font-medium text-lia-text-secondary">Remuneração Variável</span>
+          </div>
+          <div className="space-y-1">
+            {d.variable_compensation.map((vc, i) => (
+              <div
                 key={i}
-                className="px-2 py-0.5 rounded bg-lia-bg-secondary border border-lia-border-subtle text-micro text-lia-text-primary"
+                className="flex items-center justify-between px-2.5 py-1.5 rounded-md bg-lia-bg-secondary border border-lia-border-subtle"
               >
-                {b}
-              </span>
+                <span className="text-xs text-lia-text-primary font-medium">{vc.name}</span>
+                <div className="flex items-center gap-1.5 ml-2">
+                  {(vc.target_pct || vc.min_pct) && (
+                    <span className="text-micro text-lia-text-muted">
+                      {vc.target_pct ? `${vc.target_pct}%` : `${vc.min_pct}–${vc.max_pct}%`}
+                    </span>
+                  )}
+                  {vc.min_amount && (
+                    <span className="text-micro text-lia-text-muted">
+                      {`R$ ${vc.min_amount.toLocaleString("pt-BR")}`}
+                      {vc.max_amount ? `–${vc.max_amount.toLocaleString("pt-BR")}` : ""}
+                    </span>
+                  )}
+                  <button
+                    onClick={() => {
+                      const next = d.variable_compensation!.filter((_, j) => j !== i)
+                      onUpdate?.({ variable_compensation: next })
+                    }}
+                    className="text-lia-text-disabled hover:text-status-error transition-colors"
+                    aria-label={`Remover ${vc.name}`}
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              </div>
             ))}
           </div>
         </div>

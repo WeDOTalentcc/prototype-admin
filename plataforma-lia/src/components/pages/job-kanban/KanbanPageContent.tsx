@@ -2,18 +2,20 @@
 
 import React from "react"
 import { useTranslations } from "next-intl"
-import { X, ArrowRight, List, Share2, Fingerprint, FileText, Mail, Star, XCircle } from "lucide-react"
+import { X, ArrowRight, List, Share2, Fingerprint, FileText, Mail, Star, XCircle, Tag } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { BulkActionsBar, type BulkActionType } from "@/components/ui/bulk-actions-bar"
 import { PipelineStagesCarousel } from "@/components/ui/pipeline-stages-carousel"
 import { JobEditTab } from "@/components/jobs/JobEditTab"
 // Onda 3 F4 (2026-05-28) — aba Agentes da Vaga.
 import { JobAgentsTab } from "@/components/jobs/JobAgentsTab"
+import { VacancyAnalyticsTab } from "@/components/vacancy-preview/VacancyAnalyticsTab"
 import { KanbanToolbar } from "@/components/pages/job-kanban/KanbanToolbar"
 import { KanbanTableView } from "@/components/pages/job-kanban/KanbanTableView"
 import { KanbanBoardSection } from "@/components/pages/job-kanban/KanbanBoardSection"
 import { getLiaAlerts } from "@/components/pages/job-kanban/utils/kanbanHelpers"
 import type { KanbanPageCoreState } from "@/components/pages/job-kanban/hooks/useKanbanPageCore"
+import { DataRequestDetailsModal } from "@/components/ui/data-request-details-modal"
 
 interface KanbanPageContentProps {
   state: KanbanPageCoreState
@@ -59,14 +61,25 @@ export function KanbanPageContent({ state }: KanbanPageContentProps) {
     handleSendEmail, handleSendWhatsApp, handleSendTriagem,
     handleSendAgendamento, handleSendFeedback,
     favoriteCandidates, jobData,
+    dataRequestDetailsId, showDataRequestDetailsModal, setShowDataRequestDetailsModal,
   } = state
 
   if (activeTab === 'agents') {
     return (
       <JobAgentsTab
-        jobId={String(currentJob?.id || jobData?.id || '')}
+        jobId={String((currentJob?.backendId as string | undefined) || (currentJob?.id as string | undefined) || (jobData?.backendId as string | undefined) || (jobData?.id as string | undefined) || '')}
         jobTitle={(currentJob?.title || jobData?.title) as string | undefined}
       />
+    )
+  }
+
+  if ((activeTab as string) === 'indicators') {
+    return (
+      <div className="flex-1 overflow-y-auto bg-lia-bg-primary dark:bg-lia-bg-primary">
+        <div className="px-4 py-4 pb-12">
+          <VacancyAnalyticsTab jobId={String((currentJob?.backendId as string | undefined) || (currentJob?.id as string | undefined) || (jobData?.backendId as string | undefined) || (jobData?.id as string | undefined) || '')} />
+        </div>
+      </div>
     )
   }
 
@@ -99,7 +112,8 @@ export function KanbanPageContent({ state }: KanbanPageContentProps) {
   }
 
   return (
-    <div data-testid="kanban-page-content" className="flex-1 overflow-hidden bg-lia-bg-primary dark:bg-lia-bg-primary flex flex-col min-w-0">
+    <>
+    <div data-testid="kanban-page-content" className="flex-1 overflow-hidden bg-lia-bg-primary dark:bg-lia-bg-primary flex flex-col min-w-0 min-h-0">
       {viewMode === "table" && (
         <div className="flex-shrink-0 bg-lia-bg-primary dark:bg-lia-bg-primary px-4 py-2">
           <div className="w-full">
@@ -197,6 +211,19 @@ export function KanbanPageContent({ state }: KanbanPageContentProps) {
                 label: t('rejectBulk'),
                 icon: <XCircle className="w-3.5 h-3.5" />,
                 onClick: () => handleBulkAction('reject' as BulkActionType | string),
+                variant: 'destructive' as const,
+              },
+              {
+                id: 'add_tags',
+                label: 'Adicionar Tags',
+                icon: <Tag className="w-3.5 h-3.5 text-lia-text-secondary" />,
+                onClick: () => handleBulkAction('add_tags' as BulkActionType | string),
+              },
+              {
+                id: 'remove_tags',
+                label: 'Remover Tags',
+                icon: <Tag className="w-3.5 h-3.5 text-status-error" />,
+                onClick: () => handleBulkAction('remove_tags' as BulkActionType | string),
                 variant: 'destructive' as const,
               },
             ]}
@@ -304,5 +331,11 @@ export function KanbanPageContent({ state }: KanbanPageContentProps) {
         )}
       </div>
     </div>
+    <DataRequestDetailsModal
+      requestId={dataRequestDetailsId}
+      open={showDataRequestDetailsModal}
+      onClose={() => setShowDataRequestDetailsModal(false)}
+    />
+  </>
   )
 }

@@ -4,17 +4,23 @@ import React from "react"
 import {
   Building, Heart, Code, Gift, Network, GitBranch, BarChart3, FileText,
   Loader2, RefreshCw, AlertCircle, CheckCircle, Upload,
+  ChevronDown, ChevronUp, CalendarDays, Settings2,
 } from "lucide-react"
+import { Card, CardContent } from "@/components/ui/card"
 import { useTranslations } from "next-intl"
 import { useCompanySettingsCards } from "@/hooks/settings/use-company-settings-cards"
 import { useSettingsConversational } from "@/hooks/settings/use-settings-conversational"
 import { MinhaEmpresaCard } from "@/components/settings/MinhaEmpresaCard"
+import { CultureApprovalBanner } from "@/components/settings/CultureApprovalBanner"
 import { LearningLoopsPanel } from "@/components/settings/LearningLoopsPanel"
 import { LiaFieldsConfigPanel } from "@/components/settings/LiaFieldsConfigPanel"
+import { ContratacaoHub } from "@/components/settings/ContratacaoHub"
+import { CompanyScreeningConfigHub } from "@/components/settings/CompanyScreeningConfigHub"
 import { AnalyzeWebsiteModal } from "@/components/settings/AnalyzeWebsiteModal"
 import { useLiaChatContext } from "@/contexts/lia-float-context"
 import type { ProposedSaves } from "@/lib/website-proposal-mapper"
 import { buildWebsiteProposalMessage } from "@/components/unified-chat/website-proposal-injector"
+import { toast } from "sonner"
 import { textStyles } from "@/lib/design-tokens"
 import { Globe } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
@@ -22,6 +28,15 @@ import { Button } from "@/components/ui/button"
 import { HubHeader, HubLoadingState, HubErrorState } from "./_shared"
 import { SettingsEditModeToggle } from "@/components/settings/SettingsEditModeToggle"
 import { useSettingsEditMode } from "@/hooks/settings/useSettingsEditMode"
+import { useQuery } from "@tanstack/react-query"
+import { SETTINGS_QUERY_KEYS } from "@/hooks/settings/useSettingsBroadcast"
+import {
+  computeOfferRulesProgress,
+  computeScreeningDefaultsProgress,
+  progressToStatus,
+  type OfferRulesData,
+  type ScreeningDefaultsData,
+} from "@/hooks/settings/useCompanyBlocks"
 
 const ICON_MAP: Record<string, LucideIcon> = {
   Building,
@@ -77,7 +92,6 @@ export function MinhaEmpresaHub({ activeSubsection }: MinhaEmpresaHubProps = {})
     tech: "tech_stack",
     benefits: "benefits",
     workforce: "workforce",
-    policy: "policy",
     documents: "compensation",
   }
 
@@ -116,6 +130,26 @@ export function MinhaEmpresaHub({ activeSubsection }: MinhaEmpresaHubProps = {})
 
   // Task #1180 — botão "Analisar nosso site" agora abre o modal pré-análise
   const [analyzeModalOpen, setAnalyzeModalOpen] = React.useState(false)
+  const [contratacaoExpanded, setContratacaoExpanded] = React.useState(false)
+  const [triagemExpanded, setTriagemExpanded] = React.useState(false)
+
+  // Phase B (2026-06-22): fetch data for progress badges on Contratação & Triagem cards
+  const { data: offerRulesData } = useQuery<OfferRulesData>({
+    queryKey: SETTINGS_QUERY_KEYS.offerRules(),
+    queryFn: () => fetch("/api/backend-proxy/offer-rules").then(r => r.ok ? r.json() : null),
+    staleTime: 30_000,
+  })
+  const { data: screeningDefaultsData } = useQuery<ScreeningDefaultsData>({
+    queryKey: SETTINGS_QUERY_KEYS.screeningDefaults(companyId ?? ""),
+    queryFn: () => fetch("/api/backend-proxy/company/screening-config-defaults").then(r => r.ok ? r.json() : null),
+    staleTime: 30_000,
+    enabled: !!companyId,
+  })
+
+  const contratacaoProgress = React.useMemo(() => computeOfferRulesProgress(offerRulesData), [offerRulesData])
+  const contratacaoStatus = React.useMemo(() => progressToStatus(contratacaoProgress), [contratacaoProgress])
+  const triagemProgress = React.useMemo(() => computeScreeningDefaultsProgress(screeningDefaultsData), [screeningDefaultsData])
+  const triagemStatus = React.useMemo(() => progressToStatus(triagemProgress), [triagemProgress])
   const handleAnalyzeWebsite = React.useCallback(() => {
     setAnalyzeModalOpen(true)
   }, [])
@@ -124,6 +158,7 @@ export function MinhaEmpresaHub({ activeSubsection }: MinhaEmpresaHubProps = {})
   const handleProposed = React.useCallback(
     ({ proposed, companyId: cid }: { proposed: ProposedSaves; companyId: string }) => {
       setChatMessages((prev) => [...prev, buildWebsiteProposalMessage(proposed, cid)])
+      toast.success("Proposta gerada — confira no chat ao lado. 💬")
     },
     [setChatMessages],
   )
@@ -163,6 +198,8 @@ export function MinhaEmpresaHub({ activeSubsection }: MinhaEmpresaHubProps = {})
     return <LiaFieldsConfigPanel />
   }
 
+
+
   // ─── LOADING STATE ────────────────────────────────────────────
   if (watchdogError) {
     return <HubErrorState message={watchdogError} onRetry={refreshAll} />
@@ -172,7 +209,7 @@ export function MinhaEmpresaHub({ activeSubsection }: MinhaEmpresaHubProps = {})
   }
 
   return (
-    <div className="flex flex-col h-full space-y-4">
+    <div className="flex flex-col space-y-4">
       {(error || successMessage) && (
         <div className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm ${
           error
@@ -183,6 +220,8 @@ export function MinhaEmpresaHub({ activeSubsection }: MinhaEmpresaHubProps = {})
           <span>{error || successMessage}</span>
         </div>
       )}
+
+      <CultureApprovalBanner companyId={companyId} />
 
       <div>
         <HubHeader title={t("title")} description={t("description")}>
@@ -208,7 +247,7 @@ export function MinhaEmpresaHub({ activeSubsection }: MinhaEmpresaHubProps = {})
               <RefreshCw className="w-4 h-4 text-lia-text-secondary" />
             </button>
             <span className={`${textStyles.metricSmall} flex-shrink-0`}>
-              {t("configuredSuffix", { progress: overallProgress })}
+              {t("configuredSuffix", { progress: String(Math.round(overallProgress || 0)) })}
             </span>
             {overallProgress >= 80 && (
               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-status-success/10 text-status-success border border-status-success/30 flex-shrink-0">
@@ -221,7 +260,7 @@ export function MinhaEmpresaHub({ activeSubsection }: MinhaEmpresaHubProps = {})
         <div className="w-full bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full h-1.5">
           <div
             className="h-1.5 rounded-full transition-[width] duration-500 bg-lia-btn-primary-bg"
-            style={{ width: `${overallProgress}%` }}
+            style={{ width: `${overallProgress || 0}%` }}
           />
         </div>
       </div>
@@ -233,7 +272,7 @@ export function MinhaEmpresaHub({ activeSubsection }: MinhaEmpresaHubProps = {})
         >
           <div className="flex items-center justify-between mb-1.5">
             <p className={`${textStyles.captionBold} text-lia-text-primary`}>
-              {t("profileCompletePending", { progress: overallProgress, count: totalPendingFields })}
+              {t("profileCompletePending", { progress: String(Math.round(overallProgress || 0)), count: totalPendingFields })}
             </p>
             <span className="text-micro text-lia-text-tertiary">
               {t("sectionsToReview", { count: pendingSections.length })}
@@ -303,6 +342,79 @@ export function MinhaEmpresaHub({ activeSubsection }: MinhaEmpresaHubProps = {})
           />
         ))}
       </div>
+
+      {/* Contratação — expandable card no grid */}
+      <Card className="bg-lia-bg-primary dark:bg-lia-bg-secondary overflow-hidden rounded-xl">
+        <button
+          onClick={() => setContratacaoExpanded((v) => !v)}
+          className="w-full px-4 py-3 flex items-center justify-between hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse duration-150 text-left"
+          aria-expanded={contratacaoExpanded}
+          data-block-anchor="contratacao"
+        >
+          <div className="flex items-center gap-2 min-w-0">
+            <CalendarDays className="w-4 h-4 text-lia-text-secondary flex-shrink-0" />
+            <span className="text-sm font-semibold text-lia-text-primary">Configurações de Contratação</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
+              contratacaoStatus === "configured"
+                ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"
+                : contratacaoStatus === "partial"
+                ? "bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300"
+                : "bg-lia-bg-secondary text-lia-text-tertiary"
+            }`}>
+              {contratacaoProgress.filled}/{contratacaoProgress.total}
+            </span>
+            {contratacaoExpanded ? (
+              <ChevronUp className="w-4 h-4 text-lia-text-tertiary" />
+            ) : (
+              <ChevronDown className="w-4 h-4 text-lia-text-tertiary" />
+            )}
+          </div>
+        </button>
+        {contratacaoExpanded && (
+          <CardContent className="px-4 py-4 border-t border-lia-border-subtle">
+            <ContratacaoHub showHeader={false} />
+          </CardContent>
+        )}
+      </Card>
+
+      {/* Configurações de Triagem — expandable card no grid */}
+      <Card className="bg-lia-bg-primary dark:bg-lia-bg-secondary overflow-hidden rounded-xl">
+        <button
+          onClick={() => setTriagemExpanded((v) => !v)}
+          className="w-full px-4 py-3 flex items-center justify-between hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse duration-150 text-left"
+          aria-expanded={triagemExpanded}
+          data-block-anchor="configuracoes-triagem"
+        >
+          <div className="flex items-center gap-2 min-w-0">
+            <Settings2 className="w-4 h-4 text-lia-text-secondary flex-shrink-0" />
+            <span className="text-sm font-semibold text-lia-text-primary">Configurações de Triagem</span>
+            <span className="text-xs text-lia-text-tertiary truncate">· Score WSI, canais, prazo, paralização e agendamento</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
+              triagemStatus === "configured"
+                ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"
+                : triagemStatus === "partial"
+                ? "bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300"
+                : "bg-lia-bg-secondary text-lia-text-tertiary"
+            }`}>
+              {triagemProgress.filled}/{triagemProgress.total}
+            </span>
+            {triagemExpanded ? (
+              <ChevronUp className="w-4 h-4 text-lia-text-tertiary" />
+            ) : (
+              <ChevronDown className="w-4 h-4 text-lia-text-tertiary" />
+            )}
+          </div>
+        </button>
+        {triagemExpanded && (
+          <CardContent className="px-4 py-4 border-t border-lia-border-subtle">
+            <CompanyScreeningConfigHub showHeader={false} />
+          </CardContent>
+        )}
+      </Card>
 
       <AnalyzeWebsiteModal
         open={analyzeModalOpen}

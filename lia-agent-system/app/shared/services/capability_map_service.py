@@ -29,6 +29,13 @@ class Capability:
     entity_required: list[EntityRequirement] = field(default_factory=list)
     modal_id: str | None = None
     navigate_fallback: str | None = None
+    requires_confirmation: bool = False   # HITL: ação destrutiva/mutante
+    navigate_page: str | None = None   # canonical page p/ navegar (sem modal)
+    required_role: str | None = None   # role-gate: papel exigido (None=todos)
+    label: str | None = None   # rótulo p/ catálogo de comandos (Ctrl+/); None=oculto
+    navigate_query: dict | None = None  # query params extras p/ navegação (ex: {view: 'candidatos'})
+    settings_section: str | None = None     # deep-link direto a seção de configurações
+    settings_subsection: str | None = None  # subsection dentro da seção
 
 
 class CapabilityMapService:
@@ -50,6 +57,13 @@ class CapabilityMapService:
                 entity_required=entity_required,
                 modal_id=cfg.get("modal_id"),
                 navigate_fallback=cfg.get("navigate_fallback"),
+                requires_confirmation=cfg.get("requires_confirmation", False),
+                navigate_page=cfg.get("navigate_page"),
+                required_role=cfg.get("required_role"),
+                label=cfg.get("label"),
+                navigate_query=cfg.get("navigate_query") or None,
+                settings_section=cfg.get("settings_section"),
+                settings_subsection=cfg.get("settings_subsection"),
             )
         return result
 
@@ -76,3 +90,10 @@ class CapabilityMapService:
     def get_navigate_fallback(cls, intent: str) -> str | None:
         cap = cls.get(intent)
         return cap.navigate_fallback if cap else None
+
+    @classmethod
+    def requires_confirmation(cls, intent: str) -> bool:
+        """HITL: True se a capability é destrutiva/mutante e o modal deve
+        confirmar a ação antes de efetivá-la (decisão Paulo 2026-06-06)."""
+        cap = cls.get(intent)
+        return cap.requires_confirmation if cap else False

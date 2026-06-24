@@ -64,7 +64,7 @@ export function BackgroundTaskNotification({
           {isSuccess && onViewResult && (
             <button
               onClick={() => onViewResult(task)}
-              className="inline-flex items-center gap-1 text-xs text-wedo-cyan hover:underline font-medium"
+              className="inline-flex items-center gap-1 text-xs text-lia-text-secondary hover:underline font-medium"
             >
               Ver resultado
               <ArrowRight className="w-3 h-3" />
@@ -73,7 +73,7 @@ export function BackgroundTaskNotification({
           {onDismiss && (
             <button
               onClick={() => onDismiss(task.id)}
-              className="text-xs text-lia-text-disabled hover:text-lia-text-tertiary transition-colors"
+              className="text-xs text-lia-text-muted hover:text-lia-text-tertiary transition-colors"
             >
               Dispensar
             </button>

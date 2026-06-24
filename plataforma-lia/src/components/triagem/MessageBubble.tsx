@@ -217,7 +217,7 @@ const MessageBubble = memo(function MessageBubble({
         {isLia && (
           <div className="flex items-center gap-1.5 px-1">
             <span className="text-xs font-bold text-lia-text-primary font-['Inter',sans-serif]">LIA</span>
-            <span className="text-xs text-lia-text-disabled font-['Inter',sans-serif] tabular-nums">
+            <span className="text-xs text-lia-text-muted font-['Inter',sans-serif] tabular-nums">
               {formatTimestamp(message.timestamp, locale)}
             </span>
           </div>
@@ -243,7 +243,7 @@ const MessageBubble = memo(function MessageBubble({
                 ttsFailed
                   ? "text-status-error"
                   : isAudioPlaying
-                    ? "bg-wedo-cyan/20 text-wedo-cyan"
+                    ? "bg-wedo-cyan/20 text-wedo-cyan-text"
                     : "bg-transparent text-lia-text-disabled hover:text-lia-text-secondary hover:bg-lia-bg-tertiary",
                 isTtsLoading && "cursor-wait"
               )}
@@ -267,7 +267,7 @@ const MessageBubble = memo(function MessageBubble({
           />
         )}
         {!isLia && (
-          <span className="text-xs text-lia-text-disabled font-['Inter',sans-serif] tabular-nums px-1">
+          <span className="text-xs text-lia-text-muted font-['Inter',sans-serif] tabular-nums px-1">
             {formatTimestamp(message.timestamp, locale)}
           </span>
         )}

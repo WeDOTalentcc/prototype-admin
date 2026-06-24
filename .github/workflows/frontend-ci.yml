@@ -98,6 +98,15 @@ jobs:
         # Ver scripts/check_no_legacy_useSourcingAgents.mjs.
         run: node scripts/check_no_legacy_useSourcingAgents.mjs
 
+      - name: Proxy auth sensor (BLOCKING desde 2026-06-05)
+        # Detecta proxies em backend-proxy/*/route.ts que chamam o backend
+        # (BACKEND_URL + fetch) sem encaminhar auth (getAuthHeaders /
+        # Authorization / createProxyHandlers). Raiz do bug do reveal
+        # (2026-06-05): proxy bespoke sem Bearer -> backend respondia
+        # 'No Bearer token'. Baseline 0 apos triagem dos 45 (4 exempt + 41 Bearer).
+        # Honra marker `// proxy-auth-exempt: <motivo>` p/ endpoints publicos.
+        run: node scripts/check_proxy_auth.mjs --blocking
+
 
       - name: Multi-tenancy gate sensor (Phase F, warn-only)
         # Walks app/api/v1/*.py and warns on routes missing
@@ -126,6 +135,24 @@ jobs:
         # vermelho no merge por débito histórico. ratchet protege contra
         # regressão sem bloquear o pipeline com débito pré-existente.
         run: npm run lint:i18n:ratchet
+
+      - name: RRP block schema-sync sensor TS<->Python (BLOCKING desde 2026-06-05)
+        # Verifica que rrp_blocks.py (Pydantic) e rrp-blocks.ts (TS mirror)
+        # declaram os mesmos kinds + enums (BlockRole/Layout/State). Drift =
+        # backend emite kind que o renderer nao conhece (fallback AD6, nunca
+        # renderiza o bloco rico). Baseline 0 na criacao (2026-06-05).
+        # Ver plataforma-lia/scripts/check_rrp_blocks_sync.py.
+        run: npm run lint:rrp-sync:blocking
+
+      - name: proxy-unwrap sensor (RATCHET desde 2026-06-06)
+        # Flag proxies backend-proxy/*/route.ts hand-rolled (res.text()
+        # passthrough) que NAO desembrulham o ResponseEnvelopeMiddleware
+        # do FastAPI ({ok,data,meta}). Sem unwrap o FE le data.data aninhado
+        # (bug 'Banco criado mas nao foi possivel abrir' em talent-pools;
+        # mesma classe da Task #1167 jd/wsi). Baseline 71 (debito legado).
+        # Ratchet: novas rotas devem usar createProxyHandlers/unwrapEnvelope
+        # (a 72a quebra). Ver scripts/check_proxy_unwrap.mjs.
+        run: npm run lint:proxy-unwrap:ratchet
 
       - name: Candidate canonical axis sensors (WSI 0-10 + LGPD field policy) BLOCKING
         # F6 ADR-001/002. WSI 0-10 (Task #512): bloqueia /100 em candidate-* surfaces.
@@ -215,6 +242,18 @@ jobs:
         working-directory: plataforma-lia
         run: python3 scripts/check_wizard_panel_idle_signals.py
 
+      - name: Anti-ghost ui_action sensor (BLOCKING desde 2026-06-04)
+        # Sensor harness P0.2 (2026-06-04): toda ui_action declarada no
+        # contrato BE->FE (src/lib/api/kanban-assistant.ts) DEVE ter handler
+        # FE (global em useUIAction ou case/=== num handler page-specific).
+        # Acao sem handler = ghost descartada em silencio (mesma classe do
+        # lia_field_toggles ghost-setting). Baseline atingiu 0 em 2026-06-04
+        # apos wire de compare_jobs (-> JobCompareModal via useJobsChat) e
+        # remocao do start_candidate_wizard morto -> promovido a --blocking.
+        # Ver scripts/check_ui_action_handlers.py.
+        working-directory: plataforma-lia
+        run: python3 scripts/check_ui_action_handlers.py --blocking
+
       - name: Unit & Component tests
         run: npx vitest run --reporter=verbose
 
@@ -246,6 +285,44 @@ jobs:
         # regressao bloqueia merge. Ver CLAUDE.md secao i18n contract.
         working-directory: plataforma-lia
         run: python3 scripts/check_hardcoded_strings_in_agent_ui.py --blocking
+
+
+      - name: No useState-for-server-data in wizard panel components (Mecanismo 4 -- BLOCKING)
+        # Sensor harness 2026-06-12 (Mecanismo 4 Adaptive Surface):
+        # DynamicContextPanel e paineis do wizard SAO views derivadas -- recebem
+        # dados via props do lia-float-context, nunca buscam dados proprios.
+        # Anti-pattern: useState(null)/useState([]) + useEffect+fetch no mesmo
+        # arquivo de panel (self-fetching). Viola o principio de
+        # "panel = view derivada, sem estado proprio de dados".
+        # Distingue de useState LEGITIMO: localData/draft/form (formulario)
+        # e estado de UI (open, selected, expanded) SAO ok.
+        # Baseline 0 violations na criacao (2026-06-12).
+        # Fix canonical: mover fetch para o parent DynamicContextPanel e
+        # passar os dados como prop para o panel.
+        working-directory: ${{ github.workspace }}
+        run: |
+          PANELS_DIR=plataforma-lia/src/components/unified-chat/wizard/panels
+          VIOLATIONS=''
+          for f in "$PANELS_DIR"/*.tsx; do
+            [[ "$f" == *"test"* || "$f" == *"__tests__"* ]] && continue
+            HAS_NULL_STATE=$(grep -n '= useState(null\|= useState(\[\])' "$f" 2>/dev/null | grep -v 'local[A-Z]\|[Dd]raft\|[Ff]orm\|localData' || true)
+            HAS_FETCH=$(grep -n 'useEffect\|fetch(\|axios\.' "$f" 2>/dev/null | grep -vE '^\s*//' || true)
+            if [ -n "$HAS_NULL_STATE" ] && [ -n "$HAS_FETCH" ]; then
+              VIOLATIONS="$VIOLATIONS$f\n"
+            fi
+          done
+          if [ -n "$VIOLATIONS" ]; then
+            echo "Panel components com useState para dados de servidor -- viola DynamicContextPanel como view derivada (Mecanismo 4)."
+            echo ""
+            echo "Principio: paineis recebem dados via props do contexto central."
+            echo "Anti-pattern: useState(null/[]) + useEffect+fetch no mesmo panel."
+            echo "Fix canonical: mover o fetch para o parent e passar como prop."
+            echo ""
+            echo "Violations:"
+            printf "%s" "$VIOLATIONS"
+            exit 1
+          fi
+          echo "OK: Nenhum panel com useState-para-dados-de-servidor (baseline 0)"
 
       - name: Build
         run: npm run build

@@ -87,7 +87,7 @@ export function CandidateTouchIndicator({
             aria-label={tooltip}
           >
             <Brain
-              className={`${SIZE_CLASS[size]} text-wedo-cyan`}
+              className={`${SIZE_CLASS[size]} text-lia-text-secondary`}
               aria-hidden="true"
             />
           </span>

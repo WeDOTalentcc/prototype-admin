@@ -34,24 +34,16 @@ import {
 import { textStyles } from "@/lib/design-tokens"
 import { HubLoadingState, ConfigurableFieldCard } from "./_shared"
 import { apiFetch } from "@/lib/api/api-fetch"
+import { useAllLiaFieldToggles } from "@/hooks/settings/useLiaFieldTogglesForSection"
+import { useAiPersona } from "@/hooks/company/use-ai-persona"
 import { notifyChatOfSettingsUpdate } from "@/lib/api/settings-notify"
-import useCompanyId from "@/hooks/company/useCompanyId"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Button } from "@/components/ui/button"
 import {
   LIA_FIELD_DEFINITIONS,
   type LiaFieldKey,
 } from "@/hooks/company/use-company-lia-instructions"
 import { LiaImpactSummary } from "@/components/settings/LiaImpactSummary"
-
-interface LiaFieldsConfig {
-  lia_field_toggles: Partial<Record<LiaFieldKey, boolean>>
-  lia_instructions: Partial<Record<LiaFieldKey, string>>
-}
-
-const DEFAULT_CONFIG: LiaFieldsConfig = {
-  lia_field_toggles: {},
-  lia_instructions: {},
-}
 
 // T-13 — Canonical YAML paths permitidos (alinhado com backend _ALLOWED_PATH_PREFIXES).
 const CANONICAL_YAML_PATHS = [
@@ -83,35 +75,10 @@ interface TenantOverrideListResponse {
   overrides: TenantOverrideEntry[]
 }
 
-function ToggleBadge({ type }: { type: "gate" | "prompt" }) {
-  const config = {
-    gate: {
-      label: "Gate",
-      title:
-        "Gate de funcionalidade — quando desativado, a IA não pode usar este recurso (fail-closed).",
-      className: "bg-amber-50 text-amber-700 border border-amber-200",
-    },
-    prompt: {
-      label: "Prompt",
-      title: "Injeção em prompt — quando ativado, este campo é incluído no contexto da IA.",
-      className: "bg-blue-50 text-blue-700 border border-blue-200",
-    },
-  }
-  const c = config[type]
-  return (
-    <span
-      title={c.title}
-      className={`inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium cursor-help ${c.className}`}
-    >
-      {c.label}
-    </span>
-  )
-}
-
-
 export function LiaFieldsConfigPanel() {
   const t = useTranslations("settings.liaFields")
-  const { companyId, isLoading: isLoadingCompany } = useCompanyId()
+  const { persona } = useAiPersona()
+  const personaName = persona?.name ?? "IA"
   // E1 (audit 2026-05-21): only WeDOTalent staff (role wedotalent_admin) can
   // see / edit the raw YAML tenant override tab. Customer-end users — even
   // their org-level admin — must not have access. This is defense-in-depth:
@@ -123,140 +90,33 @@ export function LiaFieldsConfigPanel() {
   // include "wedotalent_admin" canonical (backend role from C1). Type-safe
   // comparison replaces the legacy string cast workaround.
   const canSeeRawYaml = user?.role === "wedotalent_admin"
-  const [config, setConfig] = useState<LiaFieldsConfig>(DEFAULT_CONFIG)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [savingFields, setSavingFields] = useState<Set<string>>(new Set())
+  const lia = useAllLiaFieldToggles()
 
-  const fetchConfig = useCallback(async () => {
-    if (!companyId) return
-    setIsLoading(true)
-    setError(null)
-    try {
-      const res = await apiFetch(
-        `/api/backend-proxy/company/${encodeURIComponent(companyId)}/field-toggles`,
-      )
-      if (!res.ok) {
-        if (res.status === 404 || res.status === 422) {
-          setConfig(DEFAULT_CONFIG)
-          return
-        }
-        throw new Error(`Failed to fetch config: ${res.status}`)
-      }
-      const data = await res.json()
-      // Backend canonical: data.toggles (Record<string,bool>) + data.comments (Record<string,str|null>)
-      // Filter null comments — schema FieldToggleResponse permite comment=null
-      const instructions: Record<string, string> = {}
-      for (const [k, v] of Object.entries(data.comments || {})) {
-        if (typeof v === "string" && v.trim()) instructions[k] = v
-      }
-      setConfig({
-        lia_field_toggles: data.toggles || {},
-        lia_instructions: instructions,
-      })
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Falha ao carregar configurações LIA")
-      setConfig(DEFAULT_CONFIG)
-    } finally {
-      setIsLoading(false)
-    }
-  }, [companyId])
+  const handleToggleChange = (fieldKey: string, isActive: boolean) =>
+    lia.saveToggle(fieldKey, isActive)
 
-  useEffect(() => {
-    if (!isLoadingCompany && companyId) {
-      fetchConfig()
-    } else if (!isLoadingCompany && !companyId) {
-      setConfig(DEFAULT_CONFIG)
-      setIsLoading(false)
-    }
-  }, [fetchConfig, isLoadingCompany, companyId])
-
-  const persistConfig = useCallback(
-    async (next: LiaFieldsConfig, fieldKey: string) => {
-      if (!companyId) return
-      setSavingFields((prev) => new Set(prev).add(fieldKey))
-      try {
-        const res = await apiFetch(
-          `/api/backend-proxy/company/${encodeURIComponent(companyId)}/field-toggles`,
-          {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              toggles: next.lia_field_toggles,
-              comments: next.lia_instructions,
-            }),
-          },
-        )
-        if (!res.ok) throw new Error(`Save failed: ${res.status}`)
-        setConfig(next)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Falha ao salvar configuração LIA")
-      } finally {
-        setSavingFields((prev) => {
-          const n = new Set(prev)
-          n.delete(fieldKey)
-          return n
-        })
-      }
-    },
-    [companyId],
-  )
-
-  const handleToggleChange = useCallback(
-    (fieldKey: string, isActive: boolean) => {
-      const next: LiaFieldsConfig = {
-        ...config,
-        lia_field_toggles: { ...config.lia_field_toggles, [fieldKey]: isActive },
-      }
-      persistConfig(next, fieldKey)
-    },
-    [config, persistConfig],
-  )
-
-  const handleInstructionSave = useCallback(
-    (fieldKey: string, instruction: string) => {
-      const next: LiaFieldsConfig = {
-        ...config,
-        lia_instructions: { ...config.lia_instructions, [fieldKey]: instruction },
-      }
-      persistConfig(next, fieldKey)
-    },
-    [config, persistConfig],
-  )
+  const handleInstructionSave = (fieldKey: string, instruction: string) =>
+    lia.saveInstruction(fieldKey, instruction)
 
   // P2-7 (audit 2026-05-26): batch operations sobre os 34 toggles.
-  // Reset = default canonical (toggle ON, instrucao vazia). Useful pra
-  // recrutador que customizou demais e quer voltar ao baseline.
-  const handleClearAllInstructions = useCallback(() => {
+  const handleClearAllInstructions = () => {
     if (typeof window !== "undefined" && !window.confirm(
       "Limpar TODAS as instruções customizadas dos 34 campos LIA? Esta ação não pode ser desfeita. Os toggles ON/OFF permanecem como estão.",
     )) {
       return
     }
-    const next: LiaFieldsConfig = {
-      ...config,
-      lia_instructions: {},
-    }
-    persistConfig(next, "__batch_clear_instructions__")
-  }, [config, persistConfig])
+    lia.clearAllInstructions()
+  }
 
-  const handleBatchToggleAll = useCallback((targetState: boolean) => {
+  const handleBatchToggleAll = (targetState: boolean) => {
     const action = targetState ? "ativar" : "desativar"
     if (typeof window !== "undefined" && !window.confirm(
       `${action.charAt(0).toUpperCase() + action.slice(1)} TODOS os 34 toggles de campos LIA? Instruções customizadas permanecem inalteradas.`,
     )) {
       return
     }
-    const allToggles: Partial<Record<LiaFieldKey, boolean>> = {}
-    for (const key of Object.keys(LIA_FIELD_DEFINITIONS) as LiaFieldKey[]) {
-      allToggles[key] = targetState
-    }
-    const next: LiaFieldsConfig = {
-      ...config,
-      lia_field_toggles: allToggles,
-    }
-    persistConfig(next, "__batch_toggle_all__")
-  }, [config, persistConfig])
+    lia.toggleAll(targetState)
+  }
 
   const fieldsByCategory = React.useMemo(() => {
     const groups: Record<string, Array<{ key: LiaFieldKey; label: string; location: string }>> = {}
@@ -269,7 +129,7 @@ export function LiaFieldsConfigPanel() {
     return groups
   }, [])
 
-  if (isLoadingCompany || isLoading) {
+  if (lia.isLoading) {
     return <HubLoadingState />
   }
 
@@ -294,12 +154,12 @@ export function LiaFieldsConfigPanel() {
 
       {/* P1-9 (audit 2026-05-26): visualiza diferencial competitivo invisível —
           quantos campos canonical a LIA consome + exemplos por campo. */}
-      <LiaImpactSummary toggles={config.lia_field_toggles} />
+      <LiaImpactSummary toggles={lia.toggles} />
 
-      {error && (
-        <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
-          <AlertCircle className="w-5 h-5 text-red-600 shrink-0" />
-          <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
+      {lia.error && (
+        <div className="flex items-center gap-2 p-3 bg-status-error/10 border border-status-error/30 rounded-xl">
+          <AlertCircle className="w-5 h-5 text-status-error shrink-0" />
+          <p className="text-sm text-status-error">{lia.error}</p>
         </div>
       )}
 
@@ -362,10 +222,11 @@ export function LiaFieldsConfigPanel() {
             </button>
           </div>
 
-          <div className="rounded-md bg-gray-50 border border-gray-100 px-3 py-2 mb-2 text-xs text-gray-500">
-            <ToggleBadge type="prompt" />{" "}
-            quando ativado, este campo é enviado como contexto para a IA.{" "}
-            Desativar oculta o dado do sistema de IA.
+          <div className="rounded-md bg-lia-bg-secondary border border-lia-border-subtle px-3 py-2 mb-2 text-xs text-lia-text-tertiary">
+            <span className="font-medium text-lia-text-secondary">Ativo</span>: o campo é
+            enviado como contexto para a IA.{" "}
+            <span className="font-medium text-lia-text-secondary">Inativo</span>: o dado é
+            ocultado e a LIA usa uma estratégia de fallback.
           </div>
 
           {Object.entries(fieldsByCategory).map(([category, fields]) => (
@@ -378,12 +239,12 @@ export function LiaFieldsConfigPanel() {
                     label={field.label}
                     hint={field.location}
                     showToggle
-                    isActive={config.lia_field_toggles[field.key] ?? false}
+                    isActive={lia.toggles[field.key] ?? false}
                     onToggleChange={(active) => handleToggleChange(field.key, active)}
-                    instruction={config.lia_instructions[field.key] || ""}
+                    instruction={lia.comments[field.key] || ""}
                     onInstructionSave={(text) => handleInstructionSave(field.key, text)}
-                    isSaving={savingFields.has(field.key)}
-                    placeholder="Instrução opcional para a LIA sobre este campo..."
+                    isSaving={lia.savingKeys.has(field.key)}
+                    placeholder={`Instrução opcional para ${personaName} sobre este campo...`}
                   />
                 ))}
               </div>
@@ -401,7 +262,6 @@ export function LiaFieldsConfigPanel() {
     </div>
   )
 }
-
 
 // ---------------------------------------------------------------------------
 // T-13 — Tenant Override YAML editor (sub-component)
@@ -548,12 +408,12 @@ function TenantOverrideYamlEditor() {
   return (
     <div className="space-y-4">
       <div className="flex items-start gap-3 p-4 bg-status-warning-bg rounded-xl border border-status-warning-border">
-        <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+        <AlertCircle className="w-5 h-5 text-status-warning shrink-0 mt-0.5" />
         <div className="space-y-1">
-          <p className="text-sm font-medium text-amber-900 dark:text-amber-200">
+          <p className="text-sm font-medium text-status-warning">
             {t("tenantOverride.title", { default: "Tenant Override (YAML)" })}
           </p>
-          <p className="text-xs text-amber-800 dark:text-amber-300">
+          <p className="text-xs text-status-warning">
             {t("tenantOverride.disclaimer", {
               default:
                 "Modificações em tenant overrides são per-empresa e hot-reload em até 30 segundos. Backup automático mantido. Reverter via Delete.",
@@ -570,7 +430,7 @@ function TenantOverrideYamlEditor() {
         {isLoadingList ? (
           <Loader2 className="w-4 h-4 animate-spin text-lia-text-secondary" />
         ) : listError ? (
-          <p className="text-xs text-red-600">{listError}</p>
+          <p className="text-xs text-status-error">{listError}</p>
         ) : overrides.length === 0 ? (
           <p className="text-xs text-lia-text-secondary italic">
             {t("tenantOverride.empty", {
@@ -605,7 +465,7 @@ function TenantOverrideYamlEditor() {
             onChange={(e) => setSelectedPath(e.target.value)}
             disabled={isFetchingContent || isSaving || isDeleting}
             data-testid="select-yaml-path"
-            className="flex-1 px-3 py-1.5 text-sm bg-lia-bg-primary border border-lia-border-default rounded-lg text-lia-text-primary"
+            className="flex-1 px-3 py-1.5 text-sm bg-lia-bg-primary border border-lia-border-default rounded-md text-lia-text-primary"
           >
             {CANONICAL_YAML_PATHS.map((p) => (
               <option key={p} value={p}>
@@ -632,22 +492,22 @@ function TenantOverrideYamlEditor() {
             data-testid="yaml-editor"
             spellCheck={false}
             rows={18}
-            className="w-full p-3 font-mono text-xs bg-lia-bg-primary border border-lia-border-default rounded-xl text-lia-text-primary"
+            className="w-full p-3 font-mono text-xs bg-lia-bg-primary border border-lia-border-default rounded-md text-lia-text-primary"
             placeholder="metadata:\n  version: 1.0.0-tenant\n..."
           />
         )}
 
         {editorError && (
-          <div className="flex items-start gap-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
-            <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
-            <p className="text-xs text-red-700 dark:text-red-300">{editorError}</p>
+          <div className="flex items-start gap-2 p-3 bg-status-error/10 border border-status-error/30 rounded-xl">
+            <AlertCircle className="w-4 h-4 text-status-error shrink-0 mt-0.5" />
+            <p className="text-xs text-status-error">{editorError}</p>
           </div>
         )}
 
         {savedAt && (
-          <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl">
-            <CheckCircle2 className="w-4 h-4 text-green-600 shrink-0" />
-            <p className="text-xs text-green-700 dark:text-green-300">
+          <div className="flex items-center gap-2 p-3 bg-status-success/10 border border-status-success/30 rounded-xl">
+            <CheckCircle2 className="w-4 h-4 text-status-success shrink-0" />
+            <p className="text-xs text-status-success">
               {t("tenantOverride.saved", { default: "Salvo em" })}{" "}
               {new Date(savedAt).toLocaleString()}
             </p>
@@ -657,7 +517,7 @@ function TenantOverrideYamlEditor() {
         {warnings.length > 0 && (
           <ul className="space-y-1">
             {warnings.map((w, idx) => (
-              <li key={idx} className="text-xs text-amber-700 dark:text-amber-300 flex items-start gap-1">
+              <li key={idx} className="text-xs text-status-warning flex items-start gap-1">
                 <AlertCircle className="w-3 h-3 shrink-0 mt-0.5" />
                 {w}
               </li>
@@ -667,23 +527,24 @@ function TenantOverrideYamlEditor() {
 
         <div className="flex items-center justify-end gap-2 pt-2">
           {hasExistingOverride && (
-            <button
+            <Button
               type="button"
+              variant="destructive"
+              size="sm"
               onClick={handleDelete}
               disabled={isDeleting || isSaving || isFetchingContent}
               data-testid="delete-btn"
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border border-red-200 text-red-700 hover:bg-red-50 disabled:opacity-50"
             >
               {isDeleting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
               {t("tenantOverride.delete", { default: "Remover override" })}
-            </button>
+            </Button>
           )}
-          <button
+          <Button
             type="button"
+            size="sm"
             onClick={handleSave}
             disabled={!isDirty || isSaving || isFetchingContent || isDeleting}
             data-testid="save-btn"
-            className="flex items-center gap-1.5 px-4 py-1.5 text-xs rounded-lg bg-lia-btn-primary-bg text-white hover:opacity-90 disabled:opacity-50"
           >
             {isSaving ? (
               <Loader2 className="w-3 h-3 animate-spin" />
@@ -695,7 +556,7 @@ function TenantOverrideYamlEditor() {
             {hasExistingOverride
               ? t("tenantOverride.save", { default: "Salvar override" })
               : t("tenantOverride.create", { default: "Criar override" })}
-          </button>
+          </Button>
         </div>
       </section>
     </div>

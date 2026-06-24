@@ -16,12 +16,16 @@ import type { NewCandidateUnifiedModalProps } from "./new-candidate-unified-type
 
 export type { NewCandidateUnifiedModalProps } from "./new-candidate-unified-types"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
+
 export function NewCandidateUnifiedModal({
   isOpen,
   onClose,
   onCandidateAdded,
   onOpenFullProfile,
 }: NewCandidateUnifiedModalProps) {
+  // P0-2 (2026-06-18): notify LIA which modal is open
+  useLiaModalTracking('new-candidate', isOpen)
   const modal = useNewCandidateUnifiedModal({
     isOpen,
     onClose,
@@ -69,6 +73,8 @@ export function NewCandidateUnifiedModal({
               canSubmitManual={modal.canSubmitManual}
               handleSubmitManual={modal.handleSubmitManual}
               error={modal.error}
+              fieldErrors={modal.fieldErrors}
+              setFieldErrors={modal.setFieldErrors}
             />
           )}
           {modal.currentStep === 'duplicate-found' && (

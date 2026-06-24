@@ -24,7 +24,7 @@ export function JobPreviewLiaMetrics({ previewJob }: JobPreviewLiaMetricsProps) 
           <Brain className="w-4 h-4 text-wedo-cyan mt-0.5" />
           <div className="flex-1">
             <h4 className={`${textStyles.title} mb-1`}>
-              Performance LIA - Triagens Automatizadas
+              Performance de Triagem
             </h4>
             <p className={`${textStyles.bodySmall}`}>
               Análise detalhada do impacto da inteligência artificial no processo de triagem desta vaga
@@ -49,7 +49,7 @@ export function JobPreviewLiaMetrics({ previewJob }: JobPreviewLiaMetricsProps) 
 
         <div className="bg-lia-bg-tertiary rounded-xl p-3 border border-lia-border-default">
           <div className="flex items-center justify-between mb-1">
-            <span className="text-xs font-medium text-lia-text-primary">Pipeline LIA</span>
+            <span className="text-xs font-medium text-lia-text-primary">Funil de Triagem</span>
             <TrendingUp className="w-3 h-3 text-lia-text-primary" />
           </div>
           <div className="text-2xl font-semibold text-lia-text-primary">
@@ -94,12 +94,12 @@ export function JobPreviewLiaMetrics({ previewJob }: JobPreviewLiaMetricsProps) 
       <div className="bg-lia-bg-secondary rounded-xl p-3">
         <h4 className={`${textStyles.title} mb-3 flex items-center gap-1`}>
           <BarChart3 className="w-3.5 h-3.5 text-lia-text-primary" />
-          Funil de Triagem LIA
+          Funil de Triagem
         </h4>
 
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-lia-text-primary w-24">Pipeline LIA</span>
+            <span className="text-xs text-lia-text-primary w-24">Funil de Triagem</span>
             <div className="flex-1 mx-2">
               <div className="bg-lia-interactive-active rounded-full h-3">
                 <div className="bg-lia-border-medium h-3 rounded-full flex items-center justify-end pr-1 w-full">
@@ -200,7 +200,7 @@ export function JobPreviewLiaMetrics({ previewJob }: JobPreviewLiaMetricsProps) 
           <p className="text-xs text-lia-text-tertiary">
             Sem dados disponíveis
           </p>
-          <p className="text-micro text-lia-text-disabled mt-1">
+          <p className="text-micro text-lia-text-muted mt-1">
             As médias serão exibidas após as triagens serem concluídas
           </p>
         </div>
@@ -273,7 +273,7 @@ export function JobPreviewLiaMetrics({ previewJob }: JobPreviewLiaMetricsProps) 
           <div>
             <div className="flex items-center justify-between mb-1">
               <span className={`${textStyles.bodySmall}`}>Aguardando</span>
-              <span className="text-xs font-bold text-wedo-cyan-dark dark:text-wedo-cyan-dark">
+              <span className="text-xs font-bold text-lia-text-secondary dark:text-wedo-cyan-dark">
                 {(() => {
                   const agendadas = previewJob.liaMetrics?.triagens_agendadas ?? 0
                   const realizadas = previewJob.liaMetrics?.triagens_realizadas ?? 0
@@ -299,7 +299,7 @@ export function JobPreviewLiaMetrics({ previewJob }: JobPreviewLiaMetricsProps) 
           <Lightbulb className="w-3.5 h-3.5 text-lia-text-primary mt-0.5" />
           <div className="flex-1">
             <p className="text-xs font-medium text-lia-text-primary font-semibold mb-1">
-              Resumo da Triagem LIA
+              Resumo da Triagem
             </p>
             <ul className="space-y-1 text-xs text-lia-text-primary">
               <li>• {previewJob.liaMetrics?.triagens_realizadas ?? 0} triagens realizadas de {previewJob.liaMetrics?.triagens_agendadas ?? 0} agendadas</li>

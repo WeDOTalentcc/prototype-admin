@@ -51,7 +51,7 @@ class DomainEmbeddingService:
             # Import embedding service lazily to avoid circular imports
             from app.shared.intelligence.embedding_service import EmbeddingService
             svc = EmbeddingService()
-            embedding = await svc.generate_embedding(content)
+            embedding = await svc.generate_embedding(content, company_id=company_id)
             if embedding is None:
                 return False
             # Persist to routing_cache_vectors with domain

@@ -5,11 +5,13 @@ from typing import Any
 from uuid import UUID
 
 from ._base import analytics_db, error_response, extract_context, success_response
+from app.shared.tool_handler import tool_handler
 from app.tools.context_helpers import require_company_id_from_context
 
 logger = logging.getLogger(__name__)
 
 
+@tool_handler("analytics")
 async def get_recruiter_metrics(
     recruiter_id: str | None = None,
     period: str = "month",
@@ -55,7 +57,7 @@ async def get_recruiter_metrics(
             jobs = result.scalars().all()
 
             total_jobs = len(jobs)
-            closed_jobs = [j for j in jobs if j.status == "Fechada"]
+            closed_jobs = [j for j in jobs if j.status == "Concluída"]
             active_jobs = [j for j in jobs if j.status == "Ativa"]
 
             ttf_values = []
@@ -117,6 +119,7 @@ async def get_recruiter_metrics(
         return error_response(f"❌ Erro ao buscar métricas: {str(e)}", e)
 
 
+@tool_handler("analytics")
 async def get_velocity_metrics(
     period: str = "month",
     recruiter_id: str | None = None,
@@ -150,7 +153,7 @@ async def get_velocity_metrics(
         async with analytics_db() as db:
             conditions = [
                 JobVacancy.company_id == company_id,
-                JobVacancy.status == "Fechada",
+                JobVacancy.status == "Concluída",
                 JobVacancy.closed_at.isnot(None)
             ]
 
@@ -202,6 +205,7 @@ async def get_velocity_metrics(
         return error_response(f"❌ Erro ao buscar métricas de velocidade: {str(e)}", e)
 
 
+@tool_handler("analytics")
 async def get_efficiency_metrics(
     period: str = "month",
     job_id: str | None = None,
@@ -300,6 +304,7 @@ async def get_efficiency_metrics(
         return error_response(f"❌ Erro ao buscar métricas de eficiência: {str(e)}", e)
 
 
+@tool_handler("analytics")
 async def get_comparative_metrics(
     recruiter_id: str | None = None,
     comparison_type: str = "team",
@@ -347,7 +352,7 @@ async def get_comparative_metrics(
                 jobs = result.scalars().all()
 
                 total_jobs = len(jobs)
-                closed_jobs = [j for j in jobs if j.status == "Fechada"]
+                closed_jobs = [j for j in jobs if j.status == "Concluída"]
 
                 ttf_values = []
                 for j in closed_jobs:

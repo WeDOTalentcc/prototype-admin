@@ -43,7 +43,7 @@ export function LiaPerformanceIndicators({ candidate }: LiaPerformanceIndicators
         status: 'in-progress',
         label: 'Em Contato',
         icon: <Clock className="w-3.5 h-3.5" />,
- color: 'bg-lia-bg-tertiary text-wedo-cyan-dark border-lia-border-default dark:border-lia-border-default'
+ color: 'bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-default dark:border-lia-border-default'
       }
     }
 
@@ -100,7 +100,7 @@ export function LiaPerformanceIndicators({ candidate }: LiaPerformanceIndicators
         {candidate.contactStatus !== 'não contatado' && (
           <div
  className="w-6 h-6 rounded-xl bg-lia-bg-tertiary flex items-center justify-center"
-            title="Contato realizado pela LIA"
+            title="Contato realizado pela IA"
           >
  <Phone className="w-3 h-3 text-lia-text-secondary" />
           </div>

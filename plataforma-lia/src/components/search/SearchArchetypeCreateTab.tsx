@@ -5,6 +5,7 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { useAiPersona } from "@/hooks/company/use-ai-persona"
 
 export interface SearchArchetypeCreateTabProps {
   archetypeCreateMode: "job" | "description"
@@ -53,6 +54,8 @@ export function SearchArchetypeCreateTab({
   onCreateArchetypeFromDescription,
   onSearchJobsForArchetype,
 }: SearchArchetypeCreateTabProps) {
+  const { persona } = useAiPersona()
+  const personaName = persona?.name ?? "IA"
   return (
     <div className="space-y-3">
       <div className="flex gap-2">
@@ -163,7 +166,7 @@ export function SearchArchetypeCreateTab({
                           </span>
                           {job.department && (
                             <>
-                              <span className="text-micro text-lia-text-disabled">
+                              <span className="text-micro text-lia-text-muted">
                                 •
                               </span>
                               <span className="text-micro text-lia-text-tertiary">
@@ -173,7 +176,7 @@ export function SearchArchetypeCreateTab({
                           )}
                           {job.seniority_level && (
                             <>
-                              <span className="text-micro text-lia-text-disabled">
+                              <span className="text-micro text-lia-text-muted">
                                 •
                               </span>
                               <span className="text-micro text-lia-text-tertiary">
@@ -246,7 +249,7 @@ export function SearchArchetypeCreateTab({
             ) : (
               <>
                 <Brain className="w-4 h-4 mr-1 text-wedo-cyan" />
-                Criar Arquétipo com LIA
+                {`Criar Arquétipo com ${personaName}`}
               </>
             )}
           </Button>
@@ -255,7 +258,7 @@ export function SearchArchetypeCreateTab({
             <div className="flex items-start gap-2">
               <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-lia-text-secondary" />
               <p className="text-xs text-lia-text-secondary">
-                <strong>Dica:</strong> Descreva o perfil ideal e a LIA vai extrair automaticamente cargo,
+                <strong>Dica:</strong> Descreva o perfil ideal e `a ${personaName} vai extrair automaticamente` cargo,
                 senioridade e skills para criar o arquétipo.
               </p>
             </div>

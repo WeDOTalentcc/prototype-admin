@@ -6,8 +6,8 @@ from fastapi import APIRouter, Depends, Query
 
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
-from app.domains.agent_memory.dependencies import get_agent_memory_repo
-from app.domains.agent_memory.repositories.agent_memory_repository import AgentMemoryRepository
+from app.repositories.dependencies import get_agent_memory_repo
+from app.repositories.agent_memory_repository import AgentMemoryRepository
 from lia_agents_core.working_memory import AgentWorkingMemory
 from app.shared.security.require_company_id import require_company_id
 from typing import Annotated

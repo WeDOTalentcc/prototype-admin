@@ -27,6 +27,7 @@ from app.jobs.tasks import (  # noqa: F401
     send_bulk_email_task,
     send_daily_briefing_task,
     send_weekly_digest_task,
+    process_queued_messages_task,
     apply_audit_lifecycle_policy,
     run_lgpd_cleanup_task,
     conversation_ttl_cleanup_task,
@@ -52,4 +53,5 @@ from app.jobs.tasks import (  # noqa: F401
     recompute_active_ml_jobs_task,
     run_openmic_wsi_pipeline_task,
     check_dlq_health_task,
+    expurgo_gravacoes_audio,
 )

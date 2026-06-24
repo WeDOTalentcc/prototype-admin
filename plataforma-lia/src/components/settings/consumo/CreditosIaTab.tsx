@@ -163,7 +163,7 @@ function parseData<T>(raw: { data?: T; usage_by_day?: T; usage_by_agent?: T } | 
 function MonthlyUsageAlert({ percentage }: { percentage: number }) {
   if (percentage >= 100) {
     return (
-      <div className="flex items-center gap-2 rounded-lg border border-status-error/30 bg-status-error/10 px-4 py-3 text-sm text-status-error">
+      <div className="flex items-center gap-2 rounded-md border border-status-error/30 bg-status-error/10 px-4 py-3 text-sm text-status-error">
         <AlertTriangle className="h-4 w-4 shrink-0" />
         <span>
           <strong>Limite atingido:</strong> O consumo de IA atingiu 100% do limite mensal.
@@ -173,7 +173,7 @@ function MonthlyUsageAlert({ percentage }: { percentage: number }) {
   }
   if (percentage >= 80) {
     return (
-      <div className="flex items-center gap-2 rounded-lg border border-status-warning/30 bg-status-warning/10 px-4 py-3 text-sm text-status-warning">
+      <div className="flex items-center gap-2 rounded-md border border-status-warning/30 bg-status-warning/10 px-4 py-3 text-sm text-status-warning">
         <AlertTriangle className="h-4 w-4 shrink-0" />
         <span>
           <strong>Atenção:</strong> {percentage.toFixed(0)}% do limite mensal de IA utilizado.
@@ -335,7 +335,7 @@ export function CreditosIaTab({ onOpenDrilldown }: CreditosIaTabProps = {}) {
             <p className="text-xl font-semibold text-lia-text-primary">
               {balance ? formatTokens(balance.current_usage) : '—'}
             </p>
-            <p className="mt-0.5 text-xs text-lia-text-disabled">
+            <p className="mt-0.5 text-xs text-lia-text-muted">
               de {balance ? formatTokens(balance.monthly_limit) : '—'} no mês
             </p>
           </CardContent>
@@ -352,7 +352,7 @@ export function CreditosIaTab({ onOpenDrilldown }: CreditosIaTabProps = {}) {
             <p className="text-xl font-semibold text-lia-text-primary">
               {summary ? formatTokens(summary.projected_monthly_tokens) : '—'}
             </p>
-            <p className="mt-0.5 text-xs text-lia-text-disabled">
+            <p className="mt-0.5 text-xs text-lia-text-muted">
               {summary ? formatCost(summary.projected_monthly_cost_cents) : '—'} estimado
             </p>
           </CardContent>
@@ -369,7 +369,7 @@ export function CreditosIaTab({ onOpenDrilldown }: CreditosIaTabProps = {}) {
             <p className="text-xl font-semibold text-lia-text-primary">
               {summary ? formatCost(summary.total_cost_cents) : '—'}
             </p>
-            <p className="mt-0.5 text-xs text-lia-text-disabled">no período atual</p>
+            <p className="mt-0.5 text-xs text-lia-text-muted">no período atual</p>
           </CardContent>
         </Card>
 
@@ -384,7 +384,7 @@ export function CreditosIaTab({ onOpenDrilldown }: CreditosIaTabProps = {}) {
             <p className="text-xl font-semibold text-lia-text-primary">
               {summary ? formatTokens(summary.daily_usage_today) : '—'}
             </p>
-            <p className="mt-0.5 text-xs text-lia-text-disabled">
+            <p className="mt-0.5 text-xs text-lia-text-muted">
               de {summary ? formatTokens(summary.daily_limit) : '—'} diários
             </p>
           </CardContent>
@@ -411,7 +411,7 @@ export function CreditosIaTab({ onOpenDrilldown }: CreditosIaTabProps = {}) {
                 style={{ width: `${Math.min(usagePct, 100)}%` }}
               />
             </div>
-            <div className="mt-1.5 flex justify-between text-xs text-lia-text-disabled">
+            <div className="mt-1.5 flex justify-between text-xs text-lia-text-muted">
               <span>0</span>
               <span>{formatTokens(balance.monthly_limit)}</span>
             </div>
@@ -427,11 +427,11 @@ export function CreditosIaTab({ onOpenDrilldown }: CreditosIaTabProps = {}) {
         </CardHeader>
         <CardContent className="pb-4">
           {dayLoading ? (
-            <div className="flex h-48 items-center justify-center text-xs text-lia-text-disabled">
+            <div className="flex h-48 items-center justify-center text-xs text-lia-text-muted">
               Carregando histórico...
             </div>
           ) : chartData.length === 0 ? (
-            <div className="flex h-48 items-center justify-center text-xs text-lia-text-disabled">
+            <div className="flex h-48 items-center justify-center text-xs text-lia-text-muted">
               Sem dados de consumo no período
             </div>
           ) : (

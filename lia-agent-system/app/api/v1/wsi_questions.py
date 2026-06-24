@@ -53,6 +53,7 @@ class WSIQuestion(BaseModel):
 # Sprint E.1 #44: canonical GenerateQuestionsRequest lives in app/api/v1/wsi/_shared.py.
 from app.api.v1.wsi._shared import GenerateQuestionsRequest  # noqa: F401
 from app.shared.types import WeDoBaseModel
+from app.shared.errors import LIAError
 
 
 class RegenerateQuestionsRequest(WeDoBaseModel):
@@ -320,7 +321,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error generating WSI questions: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/regenerate-questions", response_model=QuestionsResponse)
@@ -477,7 +478,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error regenerating WSI questions: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/question-templates", response_model=None)

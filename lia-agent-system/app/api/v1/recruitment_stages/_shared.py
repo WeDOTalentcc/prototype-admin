@@ -291,6 +291,26 @@ class TransitionExecuteRequest(WeDoBaseModel):
     channel: str | None = "email"
     action_behavior: str | None = None
     extracted_preferences: dict[str, Any] | None = None
+    hitl_approved: bool = False  # AUD-4: FE seta True ao confirmar (gate REST)
+
+
+class PreviewFeedbackRequest(WeDoBaseModel):
+    vacancy_candidate_id: str
+    to_stage: str
+    sub_status: str | None = None
+    channel: str | None = "email"
+    prompt: str | None = None
+
+
+class PreviewFeedbackResponse(BaseModel):
+    body: str
+    subject: str | None = None
+    generated_by: str = "unknown"
+    ai_personalized: bool = False
+    fairness_blocked: bool = False
+    high_risk: bool = False
+    uses_template_only: bool = False
+    channel: str = "email"
 
 
 class TransitionExecuteResponse(BaseModel):
@@ -302,6 +322,7 @@ class TransitionExecuteResponse(BaseModel):
     dispatch_results: list[DispatchResult] | None = None
     predicted_sub_status: str | None = None
     prediction_confidence: float | None = None
+    requires_approval: bool = False  # AUD-4: feedback segurado por HITL gate
 
 
 # ---------------------------------------------------------------------------

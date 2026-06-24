@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react"
 import { cn } from "@/lib/utils"
 import {
@@ -31,6 +32,8 @@ import {
   Archive,
   Database,
   Users2,
+  Copy,
+  RotateCcw,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Chip } from "@/components/ui/chip"
@@ -115,6 +118,7 @@ interface CandidateItem {
   vc_id: string
   vacancy_id: string
   candidate_id?: string
+  stage?: string
   name: string
   vacancy_title?: string | null
   sub_status?: string | null
@@ -232,10 +236,13 @@ export type VacancyActionKind =
   | "open-jd-config"           // ats_importada, rascunho → /jobs/{id}?tab=edit&section=descricao
   | "open-questions-config"    // enriquecida → /jobs/{id}?tab=edit&section=perguntas
   | "request-approval"         // wsi_config → POST approve-stage (Phase I.1 BLOQUEANTE)
-  | "dispatch-screening"       // aguardando_aprovacao → POST dispatch-screening (audience='new_only')
+  | "dispatch-screening"       // pre-screen dispatch POST (audience=newonly)
+  | "view-approval-status"    // aguardando_aprovacao: navigate to /tasks (awaiting manager approval)
   | "open-publish-modal"       // publicada → <JobPublishModal> inline
   | "open-status-modal"        // ao_vivo → <JobStatusModal> inline
-  | "noop"                     // encerrada → CTA disabled
+  | "noop"                     // fallback unknown stage
+  | "duplicate"               // encerrada → POST /job-vacancies/{id}/duplicate
+  | "reactivate"              // encerrada secondary → reopen job to Ativa
 
 export type VacancyStatusModalMode = "pause" | "activate" | "cancel"
 
@@ -244,9 +251,12 @@ export type VacancyAction =
   | { kind: "open-questions-config"; label: string }
   | { kind: "request-approval"; label: string }
   | { kind: "dispatch-screening"; label: string }
+  | { kind: "view-approval-status"; label: string }
   | { kind: "open-publish-modal"; label: string }
   | { kind: "open-status-modal"; label: string; mode: VacancyStatusModalMode }
   | { kind: "noop"; label: string; disabled: true }
+  | { kind: "duplicate"; label: string }
+  | { kind: "reactivate"; label: string }
 
 function assertNeverAction(_kind: never): never {
   throw new Error("Unhandled VacancyActionKind — did you add a stage without updating getVacancyAction?")
@@ -274,13 +284,15 @@ function getVacancyAction(
       // vaga to aguardando_aprovacao.
       return { kind: "request-approval", label: t("vacancyCard.requestApproval") }
     case "aguardando_aprovacao":
-      return { kind: "dispatch-screening", label: t("vacancyCard.openApproval") }
+      // C6 fix: was incorrectly dispatching screening. Vacancy is awaiting manager
+      // approval — navigate user to /tasks where pending approvals are listed.
+      return { kind: "view-approval-status", label: t("vacancyCard.viewApprovalStatus") }
     case "publicada":
       return { kind: "open-publish-modal", label: t("vacancyCard.openPublish") }
     case "ao_vivo":
       return { kind: "open-status-modal", label: t("vacancyCard.openStatus"), mode: "pause" }
     case "encerrada":
-      return { kind: "noop", label: t("vacancyCard.openClosed"), disabled: true }
+      return { kind: "duplicate", label: t("vacancyCard.duplicateJob") }
     default:
       // Unknown stage — read-only fallback to surface the issue without crashing.
       return { kind: "noop", label: t("vacancyCard.openClosed"), disabled: true }
@@ -295,9 +307,12 @@ export function vacancyActionKindIsExhaustive(kind: VacancyActionKind): true {
     case "open-questions-config":
     case "request-approval":
     case "dispatch-screening":
+    case "view-approval-status":
     case "open-publish-modal":
     case "open-status-modal":
     case "noop":
+    case "duplicate":
+    case "reactivate":
       return true
     default:
       return assertNeverAction(kind)
@@ -359,6 +374,8 @@ function calculateGeneralScore(candidate: CandidateItem): number | null {
 type ModalType = "geral" | "triagem" | "cv" | "tecnico" | "ingles" | "b5" | "twin" | null
 
 export function PipelineOverviewPage() {
+  // P0-2 (2026-06-18): LIA screen awareness
+
   const tOverview = useTranslations("pipelineOverview")
   const mode = useUIPreferencesStore((s) => s.pipelineOverviewMode)
   const setMode = useUIPreferencesStore((s) => s.setPipelineOverviewMode)
@@ -374,6 +391,21 @@ export function PipelineOverviewPage() {
 
   const [stages, setStages] = useState<PipelineStageWithCount[]>([])
   const [selectedStage, setSelectedStage] = useState<string | null>(null)
+
+  // Fase 2 F2 — ponte in-page para LIA via apply_table_state surface=recrutar.
+  // Permite que a LIA selecione/expanda uma etapa do pipeline diretamente.
+  useEffect(() => {
+    function handleApplyTableState(e: Event) {
+      const { surface, patch } = (
+        e as CustomEvent<{ surface: string; patch: { stage?: string | null } }>
+      ).detail ?? {}
+      if (surface !== "recrutar" || !patch) return
+      if ("stage" in patch) setSelectedStage(patch.stage ?? null)
+    }
+    window.addEventListener("lia:apply_table_state", handleApplyTableState)
+    return () => window.removeEventListener("lia:apply_table_state", handleApplyTableState)
+  }, [])
+
   // Onda 3 F6 — modal trigger agente por evento de stage (apenas candidatos mode).
   const [stageAgentModalStageId, setStageAgentModalStageId] = useState<string | null>(null)
   const [totalCandidates, setTotalCandidates] = useState(0)
@@ -469,6 +501,8 @@ export function PipelineOverviewPage() {
   // vacancy.imported_from_ats (ATS-imported vagas already have candidates,
   // so 'imported_untriaged' is the right default; greenfield uses 'new_only').
   const [showDispatchDialog, setShowDispatchDialog] = useState(false)
+  useLiaModalTracking('stage-agent-trigger', !!stageAgentModalStageId)
+  useLiaModalTracking('dispatch-dialog', showDispatchDialog)
   const [dispatchVacancyId, setDispatchVacancyId] = useState<string | null>(null)
   const [dispatchAudience, setDispatchAudience] = useState<"new_only" | "imported_untriaged" | "manual_selection">("new_only")
   const [isDispatching, setIsDispatching] = useState(false)
@@ -485,7 +519,10 @@ export function PipelineOverviewPage() {
       const pipeline: PipelineStageWithCount[] = (data.pipeline || []).sort(
         (a: PipelineStageWithCount, b: PipelineStageWithCount) =>
           a.stage_order - b.stage_order
-      )
+      ).map((s: PipelineStageWithCount) => ({
+        ...s,
+        candidates: s.candidates.map(c => ({ ...c, stage: s.name })),
+      }))
       setStages(pipeline)
       setTotalCandidates(data.total_candidates || 0)
     } catch (err) {
@@ -576,11 +613,27 @@ export function PipelineOverviewPage() {
   const handleOpenVacancyPreview = useCallback((vacancy: JobLifecycleVacancy) => {
     setPreviewVacancy(vacancy)
     setShowVacancyPreview(true)
+    // C5 (2026-06-18): notify chat of the active vacancy so LIA can answer
+    // questions about this specific job ("resumir candidatos desta vaga").
+    // sendChatMessage injects job_id automatically via entityContextRef (B3b).
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(
+        new CustomEvent("lia:set-vacancy-context", {
+          detail: { vacancyId: vacancy.id, vacancyTitle: vacancy.title },
+        }),
+      )
+    }
   }, [])
 
   const handleCloseVacancyPreview = useCallback(() => {
     setShowVacancyPreview(false)
     setPreviewVacancy(null)
+    // C5 (2026-06-18): clear vacancy entity context on close.
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(
+        new CustomEvent("lia:set-vacancy-context", { detail: { vacancyId: null } }),
+      )
+    }
   }, [])
 
   const handleNavigateVacancyPreview = useCallback((index: number) => {
@@ -602,11 +655,11 @@ export function PipelineOverviewPage() {
       setPreviewVacancyDetail(null)
       return
     }
-    let cancelled = false
-    fetch(`/api/backend-proxy/job-vacancies/${previewVacancy.id}`)
+    const controller = new AbortController()
+    fetch(`/api/backend-proxy/job-vacancies/${previewVacancy.id}`, { signal: controller.signal })
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
-        if (cancelled || !data) return
+        if (controller.signal.aborted || !data) return
         setPreviewVacancyDetail({
           screening_questions: data.screening_questions ?? [],
           screening_status: data.screening_status ?? "not_configured",
@@ -617,12 +670,11 @@ export function PipelineOverviewPage() {
           is_published: !!(data.published_linkedin || data.published_indeed || data.published_website),
         })
       })
-      .catch(() => {
-        if (!cancelled) setPreviewVacancyDetail(null)
+      .catch((err: unknown) => {
+        if (err instanceof DOMException && err.name === "AbortError") return
+        if (!controller.signal.aborted) setPreviewVacancyDetail(null)
       })
-    return () => {
-      cancelled = true
-    }
+    return () => { controller.abort() }
   }, [previewVacancy?.id, previewVacancy?.status, previewVacancy?.approval_status])
 
   // Phase A: stage-aware action dispatcher. Branches the discriminated
@@ -671,6 +723,15 @@ export function PipelineOverviewPage() {
         setShowDispatchDialog(true)
         return
       }
+      case "view-approval-status": {
+        // C6 fix: Vacancy is awaiting manager approval. Navigate to /tasks
+        // where the pending approval task is listed. Toast gives context.
+        toast.info("Vaga aguardando aprovação", {
+          description: "Acesse Tarefas para ver e aprovar a solicitação.",
+        })
+        router.push("/tasks")
+        return
+      }
       case "open-publish-modal":
         setShowPublishModal(true)
         return
@@ -678,6 +739,41 @@ export function PipelineOverviewPage() {
         setStatusModalMode(action.mode)
         setShowStatusModal(true)
         return
+      case "duplicate": {
+        try {
+          const res = await fetch(
+            `/api/backend-proxy/job-vacancies/${vacancy.id}/duplicate`,
+            { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) }
+          )
+          if (!res.ok) throw new Error(`HTTP ${res.status}`)
+          const data = await res.json()
+          const newId = data?.jobs_created?.[0]?.id
+          if (newId) {
+            toast.success("Vaga duplicada — editando cópia", { description: `Cópia de "${vacancy.title}" criada` })
+            router.push(`/pt/jobs/${newId}?tab=edit`)
+          } else {
+            toast.success("Vaga duplicada", { description: `Cópia de "${vacancy.title}" criada` })
+            fetchLifecycleOverview()
+          }
+        } catch (err) {
+          toast.error("Falha ao duplicar vaga", { description: err instanceof Error ? err.message : "Erro desconhecido" })
+        }
+        return
+      }
+      case "reactivate": {
+        try {
+          const res = await fetch(
+            `/api/backend-proxy/job-readiness/job/${vacancy.id}/reactivate`,
+            { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) }
+          )
+          if (!res.ok) throw new Error(`HTTP ${res.status}`)
+          toast.success("Vaga reativada", { description: `"${vacancy.title}" está ativa novamente` })
+          fetchLifecycleOverview()
+        } catch (err) {
+          toast.error("Falha ao reativar vaga", { description: err instanceof Error ? err.message : "Erro desconhecido" })
+        }
+        return
+      }
       case "noop":
         return
       default: {
@@ -815,7 +911,10 @@ export function PipelineOverviewPage() {
                 } satisfies PageTab,
               ]}
               activeTab={mode}
-              onTabChange={(id) => setMode(id as "candidatos" | "vagas")}
+              onTabChange={(id) => {
+                setMode(id as "candidatos" | "vagas")
+                if (id === "candidatos") handleCloseVacancyPreview()
+              }}
             />
 
             <div className="flex items-center gap-2 mt-2 mb-1">
@@ -921,7 +1020,7 @@ export function PipelineOverviewPage() {
                     <span className="text-sm font-semibold text-lia-text-primary">
                       {selectedStageData?.display_name}
                     </span>
-                    <span className="text-xs text-lia-text-disabled">
+                    <span className="text-xs text-lia-text-muted">
                       {selectedStageData?.count ?? 0} candidato
                       {(selectedStageData?.count ?? 0) !== 1 ? "s" : ""}
                     </span>
@@ -941,7 +1040,7 @@ export function PipelineOverviewPage() {
                     ) : null}
                     <button
                       onClick={() => setSelectedStage(null)}
-                      className="text-xs text-lia-text-disabled hover:text-lia-text-secondary transition-colors"
+                      className="text-xs text-lia-text-muted hover:text-lia-text-secondary transition-colors"
                     >
                       Fechar
                     </button>
@@ -950,7 +1049,7 @@ export function PipelineOverviewPage() {
 
                 <div className="flex-1 overflow-y-auto px-6 py-3">
                   {allCandidates.length === 0 && (selectedStageData?.count ?? 0) === 0 ? (
-                    <div className="flex flex-col items-center justify-center h-32 gap-2 text-lia-text-disabled">
+                    <div className="flex flex-col items-center justify-center h-32 gap-2 text-lia-text-muted">
                       <Users className="w-8 h-8 opacity-30" />
                       <p className="text-sm">Nenhum candidato nesta etapa</p>
                     </div>
@@ -987,7 +1086,7 @@ export function PipelineOverviewPage() {
                       )}
 
                       {(selectedStageData?.count ?? 0) > allCandidates.length && allCandidates.length > 0 && (
-                        <p className="mt-3 text-center text-xs text-lia-text-disabled">
+                        <p className="mt-3 text-center text-xs text-lia-text-muted">
                           Exibindo {allCandidates.length} de {selectedStageData?.count} candidatos nesta etapa
                         </p>
                       )}
@@ -1057,7 +1156,7 @@ export function PipelineOverviewPage() {
                             )
                           : ""}
                       </span>
-                      <span className="text-xs text-lia-text-disabled">
+                      <span className="text-xs text-lia-text-muted">
                         {tOverview("vacancyCard.candidatesCount", {
                           count: selectedLifecycleStageData?.count ?? 0,
                         })}
@@ -1065,7 +1164,7 @@ export function PipelineOverviewPage() {
                     </div>
                     <button
                       onClick={() => setSelectedLifecycleStage(null)}
-                      className="text-xs text-lia-text-disabled hover:text-lia-text-secondary transition-colors"
+                      className="text-xs text-lia-text-muted hover:text-lia-text-secondary transition-colors"
                     >
                       {tOverview("close")}
                     </button>
@@ -1078,7 +1177,7 @@ export function PipelineOverviewPage() {
                           onImport={() => setShowBulkImportModal(true)}
                         />
                       ) : (
-                        <div className="flex flex-col items-center justify-center h-32 gap-2 text-lia-text-disabled">
+                        <div className="flex flex-col items-center justify-center h-32 gap-2 text-lia-text-muted">
                           <Briefcase className="w-8 h-8 opacity-30" />
                           <p className="text-sm">{tOverview("empty.noVacancies")}</p>
                         </div>
@@ -1092,6 +1191,7 @@ export function PipelineOverviewPage() {
                             stageKey={selectedLifecycleStageData!.stage}
                             stageColor={selectedLifecycleStageData!.color || "#2D2D2D"}
                             onOpenPreview={handleOpenVacancyPreview}
+                            onAction={handleVacancyAction}
                           />
                         ))}
                       </div>
@@ -1123,7 +1223,7 @@ export function PipelineOverviewPage() {
         {/* Phase A — vacancy side panel (mode='vagas'). Mirrors candidate
             preview layout. Conditional mount keeps modal hooks dormant
             while closed (defense-in-depth Rules of Hooks). */}
-        {showVacancyPreview && previewVacancy && (
+        {mode === "vagas" && showVacancyPreview && previewVacancy && (
           <div className="flex-shrink-0 w-[420px] relative pl-2">
             <div className="bg-lia-bg-primary h-full overflow-hidden rounded-xl border border-lia-border-subtle shadow-sm">
               <VacancyPreview
@@ -1400,7 +1500,9 @@ function candidateItemToRecord(c: CandidateItem): Record<string, unknown> {
     id: c.candidate_id || c.vc_id,
     candidateId: c.candidate_id || c.vc_id,
     vc_id: c.vc_id,
+    vacancy_candidate_id: c.vc_id,
     vacancy_id: c.vacancy_id,
+    stage: c.stage,
     name: c.name,
     fullName: c.name,
     email: "",
@@ -1482,7 +1584,7 @@ function PipelineCandidateCard({
 
   const scores = [
     { id: "geral" as const, icon: Gauge, value: generalScore, label: "Nota Geral" },
-    { id: "triagem" as const, icon: Brain, value: triagemScore, label: "Triagem LIA/WSI" },
+    { id: "triagem" as const, icon: Brain, value: triagemScore, label: "Triagem Automática" },
     { id: "cv" as const, icon: Target, value: cvScore, label: "Match CV vs Vaga" },
     { id: "tecnico" as const, icon: Code, value: techScore, label: "Teste Técnico" },
     { id: "ingles" as const, icon: Globe, value: engScore, label: "Teste de Inglês" },
@@ -1519,7 +1621,11 @@ function PipelineCandidateCard({
   return (
     <div
       className="flex items-center gap-3 px-4 py-3 rounded-lg bg-lia-bg-secondary hover:bg-lia-bg-tertiary transition-colors border border-transparent hover:border-lia-border-subtle group cursor-pointer"
-      onClick={() => onOpenPreview(candidate)}
+      onClick={() => {
+        const sel = window.getSelection();
+        if (sel && !sel.isCollapsed) return;
+        onOpenPreview(candidate);
+      }}
       role="button"
       aria-label={`Ver detalhes de ${candidate.name}`}
     >
@@ -1558,7 +1664,7 @@ function PipelineCandidateCard({
         </div>
 
         {(shortVacancyId || candidate.vacancy_manager || openDateLabel) && (
-          <div className="flex items-center gap-2 text-[10px] text-lia-text-disabled mt-0.5">
+          <div className="flex items-center gap-2 text-[10px] text-lia-text-muted mt-0.5">
             {shortVacancyId && (
               <span className="font-mono font-medium text-lia-text-secondary">{shortVacancyId}</span>
             )}
@@ -1702,9 +1808,11 @@ interface PipelineVacancyCardProps {
   /** Phase A: optional preview opener. When provided, card click opens the
    * side panel instead of navigating to /jobs/{id}. */
   onOpenPreview?: (vacancy: JobLifecycleVacancy) => void
+  /** C8: inline CTAs for encerrada (Duplicar/Reativar). */
+  onAction?: (action: VacancyAction, vacancy: JobLifecycleVacancy) => void
 }
 
-function PipelineVacancyCard({ vacancy, stageKey, stageColor, onOpenPreview }: PipelineVacancyCardProps) {
+function PipelineVacancyCard({ vacancy, stageKey, stageColor, onOpenPreview, onAction }: PipelineVacancyCardProps) {
   const tCard = useTranslations("pipelineOverview")
   const timeInStage = getTimeInStage(vacancy.stage_entered_at)
   // Phase A: derive label from VacancyAction instead of legacy CTA href.
@@ -1825,7 +1933,7 @@ function PipelineVacancyCard({ vacancy, stageKey, stageColor, onOpenPreview }: P
         </div>
 
         {(shortVacancyId || vacancy.manager || updatedLabel) && (
-          <div className="flex items-center gap-2 text-[10px] text-lia-text-disabled mt-0.5">
+          <div className="flex items-center gap-2 text-[10px] text-lia-text-muted mt-0.5">
             {shortVacancyId && (
               <span className="font-mono font-medium text-lia-text-secondary">
                 {shortVacancyId}
@@ -1862,6 +1970,30 @@ function PipelineVacancyCard({ vacancy, stageKey, stageColor, onOpenPreview }: P
                 {b.label}
               </Chip>
             ))}
+          </div>
+        )}
+
+        {/* C8: inline CTAs for encerrada stage */}
+        {action.kind === "duplicate" && onAction && (
+          <div className="flex gap-1 mt-2">
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-6 text-xs px-2"
+              onClick={(e) => { e.stopPropagation(); onAction(action, vacancy) }}
+            >
+              <Copy className="w-3 h-3 mr-1" />
+              {tCard("vacancyCard.duplicateJob")}
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-6 text-xs px-2"
+              onClick={(e) => { e.stopPropagation(); onAction({ kind: "reactivate", label: tCard("vacancyCard.reactivateJob") }, vacancy) }}
+            >
+              <RotateCcw className="w-3 h-3 mr-1" />
+              {tCard("vacancyCard.reactivateJob")}
+            </Button>
           </div>
         )}
       </div>

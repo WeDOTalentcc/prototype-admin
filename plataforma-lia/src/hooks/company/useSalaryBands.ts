@@ -82,3 +82,42 @@ export function useSalaryBandMap() {
     retry: 1,
   })
 }
+
+/** Benchmark de mercado (estimativa). Resultado do GET /api/v1/salary-benchmark. */
+export interface SalaryBenchmarkResult {
+  min?: number | null
+  max?: number | null
+  currency?: string | null
+  confidence?: string | null
+  is_estimate?: boolean | null
+  source?: string | null
+}
+
+/**
+ * useSalaryBenchmark — estimativa de mercado p/ o FALLBACK da faixa salarial
+ * quando NAO ha banda cadastrada da empresa. NUNCA e ancorada como fato: o UI
+ * rotula como "estimativa de mercado" e exige confirmacao do recrutador
+ * (proveniencia honesta, CLAUDE.md REGRA 4). Habilitar via opts.enabled p/
+ * nao buscar mercado quando a banda da empresa ja resolveu.
+ */
+export function useSalaryBenchmark(
+  jobTitle?: string,
+  seniority?: string,
+  opts?: { location?: string; enabled?: boolean },
+) {
+  return useQuery<SalaryBenchmarkResult | null>({
+    queryKey: ["salary-benchmark", jobTitle || "", seniority || "", opts?.location || ""],
+    enabled: !!jobTitle && (opts?.enabled ?? true),
+    queryFn: async () => {
+      const qs = new URLSearchParams({ job_title: jobTitle as string })
+      if (seniority) qs.set("seniority", seniority)
+      if (opts?.location) qs.set("location", opts.location)
+      const res = await fetch(`/api/backend-proxy/salary-benchmark?${qs.toString()}`, { signal: AbortSignal.timeout(12000) })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const json = await res.json()
+      return json || null
+    },
+    staleTime: 60_000,
+    retry: 1,
+  })
+}

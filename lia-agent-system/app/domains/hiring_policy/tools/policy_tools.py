@@ -255,23 +255,13 @@ def get_compliance_report(job_id: str) -> dict:
         dict with job_id, lgpd_compliant, eu_ai_act_compliant, disparate_impact_ok,
         audit_trail_complete, and issues list.
     """
-    logger.info("get_compliance_report: job_id=%s", job_id)
-    # NOTE: This is a simulation stub. In production, each flag should be
-    # computed by querying the actual audit trail and compliance service.
-    # Returning stub=True here allows the agent to operate in demo mode;
-    # replace with real checks before production deployment.
-    logger.warning(
-        "get_compliance_report: returning simulation stub — real compliance checks not yet wired for job_id=%s",
-        job_id,
+    # S02 defuse (census 2026-06-20): stub was returning lgpd_compliant=True unconditionally,
+    # which would constitute a compliance-lie if this tool were ever registered with an LLM agent.
+    # Until real compliance checks are implemented, this function MUST fail loudly
+    # so that accidental registration produces an observable failure (not silent False-True).
+    raise NotImplementedError(
+        "get_compliance_report: compliance checks not implemented. "
+        "This tool must NOT be registered in any tool registry until real audit trail "
+        "and compliance service checks replace this stub. "
+        "See app/domains/compliance/services/compliance_reporter.py for the real service."
     )
-    return {
-        "job_id": job_id,
-        "lgpd_compliant": True,
-        "eu_ai_act_compliant": True,
-        "disparate_impact_ok": True,
-        "audit_trail_complete": True,
-        "issues": [],
-        "simulation_stub": True,
-        "note": "Production implementation must query real audit and compliance services.",
-        "generated_at": datetime.now(UTC).isoformat(),
-    }

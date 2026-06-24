@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 /**
  * OfferReviewModal — 2-column modal for reviewing and sending offer letters.
  *
@@ -12,7 +13,8 @@
  *   B) Kanban drag to "Oferta" column
  *   C) Unified Chat "preparar proposta para X"
  *
- * PR-B.
+ * P1-2 fix: OfferHITLBanner wired (was ghost component).
+ * P1-9 fix: offer_link copiável após envio bem-sucedido.
  */
 import { useCallback, useEffect, useRef, useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
@@ -21,24 +23,29 @@ import { useOfferDraftStore } from "@/stores/offer-draft-store"
 import { offersApi } from "@/services/lia-api/offers-api"
 import { JobDataPanel } from "./JobDataPanel"
 import { OfferDataForm } from "./OfferDataForm"
+import { OfferHITLBanner, type ConfirmState } from "./OfferHITLBanner"
 import type { OfferDraftUpdate } from "@/types/offer"
+import { OfferStatusTracker } from "@/components/offer/OfferStatusTracker"
 
 const DEBOUNCE_MS = 600
 
 export function OfferReviewModal() {
-  const { draft, isSaving, salaryWarnings, updateField, sendAuto, prepareManual, cancel, clearDraft } =
+  const { draft, isSaving, salaryWarnings, updateField, prepareManual, cancel, clearDraft } =
     useOfferDraftStore()
 
-  const [sendMode, setSendMode] = useState<"auto" | "manual" | null>(null)
+  // isOpen must be derived before useLiaModalTracking to avoid TDZ (hooks-rules: no early ref)
+  const isOpen = draft !== null && draft.status === "draft"
+
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('offer-review', isOpen)
+
+  const [confirmState, setConfirmState] = useState<ConfirmState>("idle")
   const [isSending, setIsSending] = useState(false)
-  // HITL two-step confirm guard: idle → confirming → send
-  const [confirmState, setConfirmState] = useState<"idle" | "confirming">("idle")
-  const [sendResult, setSendResult] = useState<{ success: boolean; message: string } | null>(null)
+  const [errorMessage, setErrorMessage] = useState("")
+  const [offerLink, setOfferLink] = useState<string | null>(null)
 
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pendingUpdates = useRef<OfferDraftUpdate>({})
-
-  const isOpen = draft !== null && draft.status === "draft"
 
   // Debounced save: accumulate updates, flush after DEBOUNCE_MS of inactivity
   const handleChange = useCallback(
@@ -54,63 +61,78 @@ export function OfferReviewModal() {
     [updateField],
   )
 
-  const handleSendAuto = useCallback(async () => {
-    // HITL two-step: require explicit confirmation before sending
-    if (confirmState !== "confirming") {
-      setConfirmState("confirming")
-      return
-    }
+  // Flush pending debounced updates before any network action
+  const flushPendingUpdates = useCallback(async () => {
     if (debounceTimer.current) clearTimeout(debounceTimer.current)
     if (Object.keys(pendingUpdates.current).length > 0) {
-      await updateField({ ...pendingUpdates.current })
+      const toSave = { ...pendingUpdates.current }
       pendingUpdates.current = {}
+      await updateField(toSave)
     }
-    setIsSending(true)
+  }, [updateField])
+
+  // Step 1: user clicks "Enviar Proposta" → banner shows confirmation
+  const handleRequestConfirm = useCallback(() => {
+    setConfirmState("confirming")
+  }, [])
+
+  // Step 2: user clicks "Cancelar" in banner → back to idle
+  const handleCancelConfirm = useCallback(() => {
     setConfirmState("idle")
-    // Send with explicit user confirmation flag (HITL audit requirement)
+  }, [])
+
+  // Step 3: user clicks "Confirmar envio" in banner → fire send
+  const handleConfirmSend = useCallback(async () => {
+    await flushPendingUpdates()
+    setIsSending(true)
     try {
-      const draft = useOfferDraftStore.getState().draft
-      if (draft) {
-        const result = await offersApi.sendAuto(draft.id)
-        setSendResult({ success: true, message: result.message ?? "Proposta enviada!" })
+      const currentDraft = useOfferDraftStore.getState().draft
+      if (currentDraft) {
+        const result = await offersApi.sendAuto(currentDraft.id)
+        setOfferLink(result.offer_link ?? null)
+        setConfirmState("success")
       }
     } catch (err) {
-      setSendResult({ success: false, message: String(err) })
+      setConfirmState("error")
+      setErrorMessage(err instanceof Error ? err.message : "Erro ao enviar proposta.")
     }
     setIsSending(false)
-  }, [confirmState, updateField])
+  }, [flushPendingUpdates])
+
+  // Clear error → back to idle
+  const handleClearError = useCallback(() => {
+    setConfirmState("idle")
+    setErrorMessage("")
+  }, [])
 
   const handlePrepareManual = useCallback(async () => {
-    if (debounceTimer.current) clearTimeout(debounceTimer.current)
-    if (Object.keys(pendingUpdates.current).length > 0) {
-      await updateField({ ...pendingUpdates.current })
-      pendingUpdates.current = {}
-    }
+    await flushPendingUpdates()
     const prepared = await prepareManual()
     if (prepared) {
-      // Emit event for SendEmailModal to pick up (existing flow, untouched)
-      window.dispatchEvent(new CustomEvent("lia:open_send_email_modal", { detail: prepared }))
+      // Canonical: use lia:open_modal so LIAGlobalModals handles it globally
+      window.dispatchEvent(new CustomEvent("lia:open_modal", { detail: { modal_id: "send_email_offer", ...prepared } }))
       clearDraft()
     }
-  }, [updateField, prepareManual, clearDraft])
+  }, [flushPendingUpdates, prepareManual, clearDraft])
 
   const handleCancel = useCallback(() => {
     if (debounceTimer.current) clearTimeout(debounceTimer.current)
     cancel()
   }, [cancel])
 
-  // Auto-close after successful send (2s delay to show result)
+  // Auto-close 4s after successful send (extra time allows copying the link)
   useEffect(() => {
-    if (sendResult?.success) {
-      const t = setTimeout(clearDraft, 2000)
+    if (confirmState === "success") {
+      const t = setTimeout(clearDraft, 4000)
       return () => clearTimeout(t)
     }
-  }, [sendResult, clearDraft])
+  }, [confirmState, clearDraft])
 
   if (!draft) return null
 
   const candidateName = draft.candidate_data_snapshot?.name ?? "Candidato"
   const jobTitle = draft.job_data_snapshot?.title ?? "Vaga"
+  const canSend = !isSaving && !isSending && !!draft.offered_salary
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open) handleCancel() }}>
@@ -142,10 +164,23 @@ export function OfferReviewModal() {
           </div>
         </div>
 
-        {/* Send result toast */}
-        {sendResult && (
-          <div className={`mx-6 mb-2 text-xs px-3 py-2 rounded-md ${sendResult.success ? "bg-green-50 text-green-800 border border-green-200" : "bg-red-50 text-red-800 border border-red-200"}`}>
-            {sendResult.message}
+        {/* HITL confirmation / success / error banner (P1-2 fix — was ghost) */}
+        <div className="px-6">
+          <OfferHITLBanner
+            confirmState={confirmState}
+            errorMessage={errorMessage}
+            isSending={isSending}
+            candidateName={candidateName}
+            onCancelConfirm={handleCancelConfirm}
+            onConfirmSend={handleConfirmSend}
+            onClearError={handleClearError}
+          />
+        </div>
+
+        {/* OfferStatusTracker: polling timeline after send (P1-9 upgrade) */}
+        {confirmState === "success" && draft?.id && (
+          <div className="mx-6 mb-1">
+            <OfferStatusTracker offerId={draft.id} />
           </div>
         )}
 
@@ -158,19 +193,22 @@ export function OfferReviewModal() {
               variant="outline"
               size="sm"
               onClick={handlePrepareManual}
-              disabled={isSaving || isSending || !draft.offered_salary}
+              disabled={!canSend || confirmState !== "idle"}
             >
               Envio Manual
             </Button>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={handleSendAuto}
-              disabled={isSaving || isSending || !draft.offered_salary}
-              className="bg-gray-900 text-white hover:bg-gray-800"
-            >
-              {isSending ? "Enviando..." : confirmState === "confirming" ? "Confirmar Envio" : "Enviar Proposta"}
-            </Button>
+            {/* "Enviar Proposta" only visible in idle state; confirmation moves into banner */}
+            {confirmState === "idle" && (
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={handleRequestConfirm}
+                disabled={!canSend}
+                className="bg-gray-900 text-white hover:bg-gray-800"
+              >
+                Enviar Proposta
+              </Button>
+            )}
           </div>
         </DialogFooter>
       </DialogContent>

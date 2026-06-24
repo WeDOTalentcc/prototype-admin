@@ -114,7 +114,7 @@ export function SalaryBandsSection() {
         </div>
       ) : bands.length === 0 ? (
         <div className="rounded-md border border-dashed border-lia-border-default p-6 text-center">
-          <Layers className="w-5 h-5 mx-auto text-lia-text-disabled mb-2" />
+          <Layers className="w-5 h-5 mx-auto text-lia-text-muted mb-2" />
           <p className="text-sm text-lia-text-secondary mb-3">Nenhuma faixa salarial definida.</p>
           <Button size="sm" variant="outline" onClick={() => openCreate()} className="gap-1.5 text-xs">
             <Plus className="w-3.5 h-3.5" />Adicionar faixa

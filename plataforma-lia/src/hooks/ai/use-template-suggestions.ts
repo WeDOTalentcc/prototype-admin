@@ -53,7 +53,8 @@ export const useTemplateSuggestions = () => {
           timestamp: new Date(item.timestamp)
         }))
         setCommandHistory(parsed)
-      } catch {
+      } catch (error) {
+        console.error("[use-template-suggestions] Error:", error)
       }
     }
 

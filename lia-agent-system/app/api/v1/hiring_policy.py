@@ -28,6 +28,7 @@ from app.models.company_hiring_policy import (
     PIPELINE_RULES_DEFAULTS,
     SCHEDULING_RULES_DEFAULTS,
     SCREENING_RULES_DEFAULTS,
+    SCREENING_CONFIG_DEFAULTS,
 )
 from app.schemas.company_hiring_policy import (
     PolicyBlockValidationError,
@@ -45,6 +46,7 @@ from app.shared.security.require_company_id import require_company_id, require_c
 from typing import Annotated
 from fastapi import Path
 from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
+from app.domains.ai.services.context_aggregator_service import context_aggregator
 
 logger = logging.getLogger(__name__)
 
@@ -80,7 +82,7 @@ def _blocks_completed(policy) -> dict[str, bool]:
     block_questions = {
         "pipeline_rules": {"min_interviews_before_offer", "manager_approval_for_offer", "max_days_in_stage", "pipeline_template"},
         "scheduling_rules": {"allowed_days", "allowed_hours", "default_duration_minutes", "self_scheduling_enabled"},
-        "communication_rules": {"auto_rejection_feedback", "rejection_feedback_deadline_hours", "preferred_channel", "lia_tone"},
+        "communication_rules": {"auto_rejection_feedback", "rejection_feedback_deadline_hours", "preferred_channel", "lia_tone", "briefing_frequency", "digest_enabled", "preferred_data_channel"},
         "screening_rules": {"salary_expectation_filter", "experience_policy", "default_screening_questions"},
         "automation_rules": {"auto_screening", "auto_scheduling", "auto_stage_advance", "autonomy_level"},
     }
@@ -149,6 +151,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
         policy.setup_completed_at = datetime.utcnow()
     await repo.flush()
     invalidate_policy_cache(company_id)
+    context_aggregator.clear_cache(str(company_id))
 
     # T-1169: capturar dict ANTES do sync_policy_to_models — esse helper executa
     # db.execute(update())+flush() que expira attributes do `policy`. Acessar
@@ -195,6 +198,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
         policy.setup_completed_at = datetime.utcnow()
     await repo.flush()
     invalidate_policy_cache(company_id)
+    context_aggregator.clear_cache(str(company_id))
 
     # T-1169: ver comentário em upsert_policy.
     response_dict = policy.to_dict()
@@ -240,6 +244,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
         policy.setup_completed_at = datetime.utcnow()
     await repo.flush()
     invalidate_policy_cache(company_id)
+    context_aggregator.clear_cache(str(company_id))
 
     # T-1169: ver comentário em upsert_policy.
     response_dict = policy.to_dict()
@@ -289,6 +294,37 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
     conversation_history = payload.conversation_history or []
     if not conversation_history:
         conversation_history = await repo.fetch_conversation_history(company_id, session_id)
+
+    # FairnessGuard: bloquear inputs discriminatórios antes de chamar o agente
+    try:
+        from app.shared.compliance.fairness_guard import FairnessGuard
+        _fg_hp = FairnessGuard()
+        _fr_hp = _fg_hp.check(payload.message or "")
+        if _fr_hp and _fr_hp.is_blocked:
+            import asyncio as _asyncio
+            try:
+                _asyncio.get_event_loop().create_task(
+                    _fg_hp.log_check(
+                        result=_fr_hp,
+                        context="hiring_policy_chat",
+                        company_id=company_id or None,
+                    )
+                )
+            except Exception:
+                pass
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error": "fairness_blocked",
+                    "fairness_blocked": True,
+                    "educational_message": _fr_hp.educational_message,
+                    "category": _fr_hp.category,
+                },
+            )
+    except HTTPException:
+        raise
+    except Exception as _fg_exc:
+        logger.debug("[hiring_policy] fairness check skipped (fail-open): %s", _fg_exc)
 
     try:
         react_agent = PolicyReActAgent()
@@ -351,5 +387,48 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
         all_completed=result.get("all_completed", False),
         session_id=session_id,
     )
+
+
+# ─── Screening Config Defaults (company-level) ───────────────────────────────
+
+@router.get("/{company_id}/screening-config-defaults")
+async def get_screening_config_defaults(
+    company_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
+    db: AsyncSession = Depends(get_db),
+    _company_gate: str = Depends(require_company_id_strict_match("path.company_id")),
+):
+    """GET company-level screening config defaults (base for new jobs and wizard)."""
+    repo = HiringPolicyRepository(db)
+    policy = await repo.get_by_company(company_id)
+    defaults = (policy.screening_config_defaults if policy else None) or SCREENING_CONFIG_DEFAULTS
+    return {"screening_config_defaults": defaults}
+
+
+@router.put("/{company_id}/screening-config-defaults")
+async def put_screening_config_defaults(
+    payload: dict,
+    company_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
+    user_id: str | None = Query(None),
+    db: AsyncSession = Depends(get_tenant_db),
+    _company_gate: str = Depends(require_company_id_strict_match("path.company_id")),
+):
+    """PUT company-level screening config defaults. Merges with existing."""
+    repo = HiringPolicyRepository(db)
+    policy = await repo.get_by_company(company_id)
+    if not policy:
+        raise HTTPException(status_code=404, detail="Company policy not found")
+    current = dict(policy.screening_config_defaults or SCREENING_CONFIG_DEFAULTS)
+    for key, val in payload.items():
+        if isinstance(val, dict) and isinstance(current.get(key), dict):
+            current[key] = {**current[key], **val}
+        else:
+            current[key] = val
+    policy.screening_config_defaults = current
+    policy.updated_at = datetime.utcnow()
+    policy.updated_by = user_id or "ui"
+    await db.flush()
+    logger.info("[HiringPolicy] screening_config_defaults updated for company=%s", company_id)
+    return {"screening_config_defaults": current}
+
 
 reorder_collection_before_item(router)

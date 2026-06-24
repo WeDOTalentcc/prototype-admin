@@ -19,6 +19,7 @@ from app.shared.types import WeDoBaseModel
 from typing import Annotated
 from fastapi import Path
 from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
+from app.shared.errors import LIAError
 
 router = APIRouter(prefix="/wizard-analytics", tags=["Wizard Analytics"])
 logger = logging.getLogger(__name__)
@@ -79,7 +80,7 @@ async def start_session(request: StartSessionRequest, company_id: str = Depends(
         raise
     except Exception as e:
         logger.error(f"Error starting session: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/session/stage", response_model=None)
@@ -98,7 +99,7 @@ async def track_stage_change(request: StageChangeRequest, company_id: str = Depe
         raise
     except Exception as e:
         logger.error(f"Error tracking stage change: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/session/field", response_model=None)
@@ -120,7 +121,7 @@ async def track_field_update(request: FieldUpdateRequest, company_id: str = Depe
         raise
     except Exception as e:
         logger.error(f"Error tracking field update: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/session/suggestion", response_model=None)
@@ -140,7 +141,7 @@ async def track_suggestion(request: SuggestionTrackRequest, company_id: str = De
         raise
     except Exception as e:
         logger.error(f"Error tracking suggestion: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/session/complete", response_model=None)
@@ -165,7 +166,7 @@ async def complete_session(request: CompleteSessionRequest, company_id: str = De
         raise
     except Exception as e:
         logger.error(f"Error completing session: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/metrics/{company_id}", response_model=None)
@@ -187,7 +188,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
         raise
     except Exception as e:
         logger.error(f"Error getting company metrics: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/metrics/{company_id}/recruiter/{recruiter_id}", response_model=None)
@@ -211,7 +212,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
         raise
     except Exception as e:
         logger.error(f"Error getting recruiter metrics: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/stages/{company_id}", response_model=None)
@@ -233,7 +234,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
         raise
     except Exception as e:
         logger.error(f"Error getting stage breakdown: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/suggestions/{company_id}", response_model=None)
@@ -255,7 +256,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
         raise
     except Exception as e:
         logger.error(f"Error getting suggestion effectiveness: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/kpis", response_model=None)
@@ -302,6 +303,6 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
         raise
     except Exception as e:
         logger.error(f"Error getting dashboard data: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 reorder_collection_before_item(router)

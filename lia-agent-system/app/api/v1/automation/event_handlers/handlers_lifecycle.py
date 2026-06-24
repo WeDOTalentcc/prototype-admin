@@ -9,6 +9,7 @@ Routes:
 - POST /handle-trigger/candidate-rejected
 """
 import logging
+from app.shared.errors import LIAInternalError
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -33,7 +34,7 @@ from .._shared import (
     ensure_company_access,
     get_activity_service,
     get_ats_sync_service,
-    get_email_service,
+    get_mailgun_email_service,
     get_whatsapp_service,
     log_automation_execution,
     validate_multi_tenancy,
@@ -125,7 +126,7 @@ company_id: str = Depends(require_company_id)):
         if candidate_email:
             try:
                 from app.templates.communication_templates import EmailTemplates
-                email_service = get_email_service()
+                email_service = get_mailgun_email_service()
 
                 email_content = EmailTemplates.follow_up(
                     candidate_name=candidate_name,
@@ -343,10 +344,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"❌ [CANDIDATE_INACTIVE] Error: {e}", exc_info=True)
-        raise HTTPException(
-            status_code=500,
-            detail=f"Erro ao processar candidato inativo: {str(e)}"
-        )
+        raise LIAInternalError("Internal server error")
 
 
 # ---------------------------------------------------------------------------
@@ -429,7 +427,7 @@ company_id: str = Depends(require_company_id)):
             # First no-show: Send polite reschedule offer
             if candidate_email:
                 try:
-                    email_service = get_email_service()
+                    email_service = get_mailgun_email_service()
                     email_content = EmailTemplates.no_show_first(
                         candidate_name=candidate_name,
                         job_title=job_title,
@@ -484,7 +482,7 @@ company_id: str = Depends(require_company_id)):
             # Multiple no-shows: Send final notice
             if candidate_email:
                 try:
-                    email_service = get_email_service()
+                    email_service = get_mailgun_email_service()
                     email_content = EmailTemplates.no_show_final(
                         candidate_name=candidate_name,
                         job_title=job_title,
@@ -702,10 +700,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"❌ [CANDIDATE_NO_SHOW] Error: {e}", exc_info=True)
-        raise HTTPException(
-            status_code=500,
-            detail=f"Erro ao processar no-show do candidato: {str(e)}"
-        )
+        raise LIAInternalError("Internal server error")
 
 
 # ---------------------------------------------------------------------------
@@ -748,7 +743,7 @@ company_id: str = Depends(require_company_id)):
         ats_synced = False
 
         try:
-            email_service = get_email_service()
+            email_service = get_mailgun_email_service()
             from app.templates.communication_templates import EmailTemplates
 
             template = EmailTemplates.offer_sent(
@@ -868,10 +863,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"❌ [OFFER_SENT] Error: {e}", exc_info=True)
-        raise HTTPException(
-            status_code=500,
-            detail=f"Erro ao processar envio de proposta: {str(e)}"
-        )
+        raise LIAInternalError("Internal server error")
 
 
 # ---------------------------------------------------------------------------
@@ -916,7 +908,7 @@ company_id: str = Depends(require_company_id)):
         ats_synced = False
 
         try:
-            email_service = get_email_service()
+            email_service = get_mailgun_email_service()
             from app.templates.communication_templates import EmailTemplates
 
             template = EmailTemplates.candidate_hired_welcome(
@@ -956,7 +948,7 @@ company_id: str = Depends(require_company_id)):
                 await pipeline_service.transition_candidate(
                     vacancy_candidate_id=str(vacancy_candidate.id),
                     to_stage="Contratado",
-                    to_sub_status="contratado",
+                    to_sub_status="hired",  # fix: "contratado" não está em VALID_STATUSES — usar "hired"
                     triggered_by="automation",
                     source_agent="offer_management",
                     reason="Candidate hired",
@@ -965,6 +957,26 @@ company_id: str = Depends(require_company_id)):
                 stage_updated = True
                 actions_taken.append("stage_updated")
                 logger.info("✅ [CANDIDATE_HIRED] Stage updated to Contratado")
+
+                # B2: setar Candidate.is_hired=True (LGPD guard + UI chip)
+                try:
+                    from app.domains.candidates.repositories.candidate_repository import CandidateRepository
+                    cand_repo = CandidateRepository(db)
+                    cand = await cand_repo.get_by_id_str(
+                        str(request.candidate_id),
+                        company_id=str(request.company_id),
+                    )
+                    if cand:
+                        cand.is_hired = True
+                        cand.hired_at = datetime.utcnow()
+                        if request.job_title:
+                            cand.hired_job_title = request.job_title
+                        await db.commit()
+                        actions_taken.append("candidate_is_hired_set")
+                        logger.info("✅ [CANDIDATE_HIRED] Candidate.is_hired=True persisted")
+                except Exception as _cand_exc:
+                    logger.error(f"❌ [CANDIDATE_HIRED] Failed to set is_hired: {_cand_exc}")
+
         except Exception as e:
             logger.error(f"❌ [CANDIDATE_HIRED] Failed to update stage: {e}")
 
@@ -1065,10 +1077,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"❌ [CANDIDATE_HIRED] Error: {e}", exc_info=True)
-        raise HTTPException(
-            status_code=500,
-            detail=f"Erro ao processar contratação: {str(e)}"
-        )
+        raise LIAInternalError("Internal server error")
 
 
 # ---------------------------------------------------------------------------
@@ -1130,7 +1139,7 @@ company_id: str = Depends(require_company_id)):
 
         if request.send_feedback:
             try:
-                email_service = get_email_service()
+                email_service = get_mailgun_email_service()
                 from app.templates.communication_templates import EmailTemplates
 
                 template = EmailTemplates.candidate_rejected(
@@ -1200,7 +1209,7 @@ company_id: str = Depends(require_company_id)):
                 await pipeline_service.transition_candidate(
                     vacancy_candidate_id=str(vacancy_candidate.id),
                     to_stage="Reprovado",
-                    to_sub_status="reprovado",
+                    to_sub_status="rejected",  # fix: "reprovado" não está em VALID_STATUSES — usar "rejected"
                     triggered_by="automation",
                     source_agent="rejection_management",
                     reason=request.rejection_reason or "Candidate rejected",
@@ -1217,7 +1226,6 @@ company_id: str = Depends(require_company_id)):
             from app.domains.ats_integration.services.ats_sync_service import ATSSyncTrigger
 
 # RAILS-DEPRECATED: This endpoint manages Rails-owned entities (candidates/jobs/applies/users).
-# Direct DB calls will be replaced by RailsAdapter after ats-api-rails handoff.
 # See: app/domains/integrations_hub/services/rails_adapter.py
 
             sync_result = await ats_sync_service.trigger_sync(
@@ -1286,7 +1294,4 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"❌ [CANDIDATE_REJECTED] Error: {e}", exc_info=True)
-        raise HTTPException(
-            status_code=500,
-            detail=f"Erro ao processar rejeição: {str(e)}"
-        )
+        raise LIAInternalError("Internal server error")

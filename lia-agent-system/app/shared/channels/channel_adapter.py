@@ -60,7 +60,11 @@ class ChannelAdapter(ABC):
         ...
 
     @abstractmethod
-    async def is_available(self) -> bool:
+    async def is_available(
+        self,
+        company_id: str | None = None,
+        db: "Any | None" = None,
+    ) -> bool:
         ...
 
     @abstractmethod

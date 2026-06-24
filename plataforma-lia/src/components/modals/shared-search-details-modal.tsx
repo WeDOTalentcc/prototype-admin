@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import { useState, useEffect, useMemo, useCallback } from"react"
 import { Button } from"@/components/ui/button"
 import { Chip } from"@/components/ui/chip"
@@ -52,6 +53,9 @@ export function SharedSearchDetailsModal({
   onAddToJob,
   onCreateJob
 }: SharedSearchDetailsModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('shared-search-details', open)
+
 const [sharedSearch, setSharedSearch] = useState<SharedSearchDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [activeFilter, setActiveFilter] = useState<FilterType>('all')
@@ -254,9 +258,9 @@ const [sharedSearch, setSharedSearch] = useState<SharedSearchDetail | null>(null
             <div className="flex items-center gap-3">
               <DialogTitle className="text-base font-semibold text-white flex items-center gap-2">
                 {sharedSearch?.share_type === 'search' ? (
-                  <Search className="w-5 h-5 text-lia-text-disabled" />
+                  <Search className="w-5 h-5 text-lia-text-muted" />
                 ) : (
-                  <List className="w-5 h-5 text-lia-text-disabled" />
+                  <List className="w-5 h-5 text-lia-text-muted" />
                 )}
                 {sharedSearch?.title || 'Carregando...'}
               </DialogTitle>
@@ -322,7 +326,7 @@ const [sharedSearch, setSharedSearch] = useState<SharedSearchDetail | null>(null
                       <p className="text-lia-text-tertiary text-xs mb-1">Progresso</p>
                       <div className="flex items-center gap-2">
                         <Progress value={progressPercent} className="h-2 flex-1 bg-lia-bg-tertiary" />
-                        <span className="text-xs text-lia-text-disabled whitespace-nowrap">
+                        <span className="text-xs text-lia-text-muted whitespace-nowrap">
                           {totalEvaluated}/{totalCandidates}
                         </span>
                       </div>
@@ -415,7 +419,7 @@ const [sharedSearch, setSharedSearch] = useState<SharedSearchDetail | null>(null
                       />
                       <label 
                         htmlFor="select-all-approved" 
-                        className="text-xs text-lia-text-disabled cursor-pointer"
+                        className="text-xs text-lia-text-muted cursor-pointer"
                       >
                         Selecionar todos aprovados ({approvedIds.length})
                       </label>
@@ -489,7 +493,7 @@ const [sharedSearch, setSharedSearch] = useState<SharedSearchDetail | null>(null
 
             <div className="flex-shrink-0 px-5 py-4 border-t border-lia-border-default bg-lia-bg-tertiary dark:bg-lia-btn-primary-bg/50">
               <div className="flex items-center justify-between">
-                <p className="text-xs text-lia-text-disabled">
+                <p className="text-xs text-lia-text-muted">
                   <span className="font-semibold text-white">
                     {selectedIds.size}
                   </span>

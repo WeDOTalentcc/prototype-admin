@@ -48,9 +48,14 @@ export default defineConfig({
             '@': path.resolve(dirname, 'src'),
           },
         },
-        esbuild: {
-          jsx: 'automatic',
-          jsxImportSource: 'react',
+        // Vite 8 + Vitest 4: Storybook addon-vitest (extends:true) sets global
+        // oxc options — esbuild is silently ignored (oxc wins). Configure oxc
+        // directly so JSX is preserved for .tsx test files (2026-06-18 fix).
+        oxc: {
+          jsx: {
+            runtime: 'automatic',
+            importSource: 'react',
+          },
         },
       },
       // ── Hook tests (jsdom — precisam de DOM/React context) ────────────────
@@ -65,9 +70,14 @@ export default defineConfig({
             '@': path.resolve(dirname, 'src'),
           },
         },
-        esbuild: {
-          jsx: 'automatic',
-          jsxImportSource: 'react',
+        // Vite 8 + Vitest 4: Storybook addon-vitest (extends:true) sets global
+        // oxc options — esbuild is silently ignored (oxc wins). Configure oxc
+        // directly so JSX is preserved for .tsx test files (2026-06-18 fix).
+        oxc: {
+          jsx: {
+            runtime: 'automatic',
+            importSource: 'react',
+          },
         },
       },
       // ── Component tests (jsdom — React components com JSX) ───────────────
@@ -78,16 +88,24 @@ export default defineConfig({
           include: [
             'src/components/**/__tests__/**/*.test.tsx',
             'src/app/**/__tests__/**/*.test.tsx',
+            'src/contexts/**/__tests__/**/*.test.tsx',
           ],
           globals: true,
           setupFiles: ['src/hooks/__tests__/setup.ts'],
           alias: {
             '@': path.resolve(dirname, 'src'),
+            // framer-motion nao instalado no ambiente de teste — mock manual preserva DOM.
+            'framer-motion': path.resolve(dirname, '__mocks__/framer-motion.tsx'),
           },
         },
-        esbuild: {
-          jsx: 'automatic',
-          jsxImportSource: 'react',
+        // Vite 8 + Vitest 4: Storybook addon-vitest (extends:true) sets global
+        // oxc options — esbuild is silently ignored (oxc wins). Configure oxc
+        // directly so JSX is preserved for .tsx test files (2026-06-18 fix).
+        oxc: {
+          jsx: {
+            runtime: 'automatic',
+            importSource: 'react',
+          },
         },
       },
       // ── Storybook visual tests ─────────────────────────────────────────────

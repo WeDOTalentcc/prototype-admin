@@ -39,6 +39,9 @@ compact:
   diretor:
     technical: 3
     behavioral: 4
+  executive:
+    technical: 2
+    behavioral: 5
 
 full:
   estagiario:
@@ -63,5 +66,8 @@ full:
     technical: 7
     behavioral: 5
   diretor:
+    technical: 7
+    behavioral: 5
+  executive:
     technical: 7
     behavioral: 5

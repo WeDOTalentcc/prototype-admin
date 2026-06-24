@@ -141,6 +141,20 @@ class OfferProposal(EncryptedFieldMixin, Base):
     cancelled_at = Column(DateTime, nullable=True)
     cancelled_by_user_id = Column(String(255), nullable=True)
 
+
+    # === Migration 266 ADDITIONS — offer portal + negotiation (Phase 1) ===
+    # Portal access (N1 candidate-facing)
+    candidate_token = Column(UUID(as_uuid=True), nullable=True, unique=True, index=True)
+    acceptance_url = Column(Text, nullable=True)
+    offer_link_sent_at = Column(DateTime, nullable=True)
+
+    # Portal engagement tracking
+    candidate_viewed_at = Column(DateTime, nullable=True)
+    candidate_response_notes = Column(Text, nullable=True)
+
+    # Internal negotiation context (N2/N3 concierge — never exposed to candidate)
+    negotiation_context_notes = Column(Text, nullable=True)
+
     def __repr__(self) -> str:
         return (
             f"<OfferProposal {self.id} candidate={self.candidate_id} "

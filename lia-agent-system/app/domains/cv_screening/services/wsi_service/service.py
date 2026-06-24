@@ -3,6 +3,7 @@ WSI Service - Main orchestrator combining all WSI components.
 """
 import json
 import logging
+import unicodedata
 from typing import Any, Literal
 
 from .models import (
@@ -42,6 +43,56 @@ def _wsi_fairness_check(text: str):
     except Exception as exc:  # noqa: BLE001 — fail-open
         logger.warning("[WSIService] FairnessGuard indisponivel (fail-open): %s", exc)
         return None
+
+
+_SENIORITY_KERNEL_ALIASES: dict[str, str] = {
+    "estagiario": "estagiario",
+    "estagio": "estagiario",
+    "junior": "junior",
+    "jr": "junior",
+    "pleno": "pleno",
+    "pl": "pleno",
+    "senior": "senior",
+    "sr": "senior",
+    "lead": "lead",
+    "tech lead": "lead",
+    "gerente": "lead",
+    "manager": "lead",
+    "principal": "principal",
+    "staff": "senior",
+    "diretor": "diretor",
+    "director": "diretor",
+    "vp": "executive",
+    "vp_clevel": "executive",
+    "vp clevel": "executive",
+    "executive": "executive",
+}
+
+
+def _normalize_seniority_for_kernel(raw: str | None) -> str:
+    """Normaliza senioridade para chave canonica de SENIORITY_DISTRIBUTIONS.
+
+    Remove acentos via NFD, converte para minusculas, mapeia aliases
+    (senior->senior, estagiario fix, staff->senior, gerente->lead, etc).
+    Fallback: pleno.
+    """
+    if not raw:
+        return "pleno"
+    normalized = unicodedata.normalize("NFD", str(raw).lower().strip())
+    normalized = "".join(c for c in normalized if unicodedata.category(c) != "Mn")
+    # Tentar lookup com underscores (ex: vp_clevel)
+    normalized_us = normalized.replace("-", "_").replace(" ", "_")
+    if normalized_us in _SENIORITY_KERNEL_ALIASES:
+        return _SENIORITY_KERNEL_ALIASES[normalized_us]
+    # Tentar lookup com espacos (ex: tech lead)
+    normalized_sp = normalized.replace("_", " ").replace("-", " ")
+    if normalized_sp in _SENIORITY_KERNEL_ALIASES:
+        return _SENIORITY_KERNEL_ALIASES[normalized_sp]
+    # Prefix match como fallback
+    for alias, target in _SENIORITY_KERNEL_ALIASES.items():
+        if normalized_us.startswith(alias) or normalized_sp.startswith(alias):
+            return target
+    return "pleno"
 
 
 class WSIService:
@@ -263,11 +314,7 @@ Responda em JSON:
         endpoints, wizard) to use the canonical F6 pipeline without manually
         building ``Competency`` objects.
         """
-        _seniority = (seniority or "pleno").lower().strip()
-        _seniority_level = _seniority.replace(" ", "_").replace("-", "_")
-        _valid_levels = ("junior", "pleno", "senior", "lead", "executive", "estagiario", "principal", "diretor", "vp_clevel")
-        if _seniority_level not in _valid_levels:
-            _seniority_level = "pleno"
+        _seniority_level = _normalize_seniority_for_kernel(seniority)
 
         competencies: list[Competency] = []
 
@@ -278,7 +325,7 @@ Responda em JSON:
                 name=skill.strip(),
                 type="technical",
                 weight=round(max(0.1, 1.0 - idx * 0.05), 2),
-                seniority_level=_seniority_level if _seniority_level in ("junior", "pleno", "senior", "lead", "executive") else "pleno",
+                seniority_level=_seniority_level,
                 is_critical=idx < 3,
             ))
 
@@ -289,7 +336,7 @@ Responda em JSON:
                 name=comp.strip(),
                 type="behavioral",
                 weight=round(max(0.1, 0.9 - idx * 0.05), 2),
-                seniority_level=_seniority_level if _seniority_level in ("junior", "pleno", "senior", "lead", "executive") else "pleno",
+                seniority_level=_seniority_level,
                 is_critical=False,
             ))
 
@@ -306,7 +353,7 @@ Responda em JSON:
             competencies=competencies,
             mode=mode,
             job_description=job_description,
-            seniority=_seniority_level if _seniority_level in ("junior", "pleno", "senior", "lead", "executive") else "pleno",
+            seniority=_seniority_level,
             collect_dropped=collect_dropped,
             precomputed_selected_traits=precomputed_selected_traits,
         )
@@ -341,7 +388,7 @@ Responda em JSON:
         """
         from .bigfive import rank_traits as _rank_traits, TRAITS as _TRAITS
 
-        _sen = (seniority or "pleno").lower().strip().replace(" ", "_").replace("-", "_")
+        _sen = _normalize_seniority_for_kernel(seniority)
 
         behav_list = [b for b in (behavioral or []) if b and b.strip()]
 
@@ -520,37 +567,66 @@ Retorne APENAS JSON válido:
     ) -> tuple:
         """F1.C → WSI bridge: converte EnrichedJobDescription em competências WSI.
 
-        Extrai de enriched_jd:
-        - skills_obrigatorias → Competency(type="technical") com is_critical nos top 3
-        - competencias_comportamentais → Competency(type="behavioral") com big_five_mapping preenchido
-        - about_role + responsabilidades → texto de contexto para F2.5
-
-        Args:
-            enriched_jd: dict output de JdEnrichmentService (EnrichedJobDescription serializado)
-            seniority: nível para seniority_level das competências geradas
+        Suporta múltiplos formatos do blob enriched_jd:
+        - Formato novo flat (frontend/wizard): technical_skills / behavioral_competencies
+        - Formato SectionSuggestions (wizard EnrichedJobDescription): dict com
+          detected_items + suggestions[{value, ...}]
+        - Formato legado: skills_obrigatorias / competencias_comportamentais
 
         Returns:
             Tuple[List[Competency], str] — (competências com big_five_mapping, jd_context para F2.5)
         """
-        _SENIORITY_MAP = {
-            "estagiario": "junior", "estagiário": "junior",
-            "junior": "junior", "júnior": "junior",
-            "pleno": "pleno",
-            "senior": "senior", "sênior": "senior",
-            "lead": "lead", "principal": "lead",
-            "diretor": "executive", "vp": "executive", "clevel": "executive", "c-level": "executive",
-        }
-        seniority_level = _SENIORITY_MAP.get(seniority.lower().strip(), "pleno")
+        seniority_level = _normalize_seniority_for_kernel(seniority)
         competencies: list = []
 
-        # --- Técnicas: de skills_obrigatorias ---
-        skills_raw = enriched_jd.get("skills_obrigatorias", [])
+        def _extract_str_list(blob: dict, *keys: str) -> list:
+            """Tenta as chaves em ordem; normaliza para list[str | dict].
+
+            Aceita:
+            - list → retorna diretamente (items podem ser str ou dict)
+            - dict com detected_items + suggestions (formato SectionSuggestions):
+              preserva dicts das suggestions para manter big_five_mapping e metadados
+            """
+            for key in keys:
+                val = blob.get(key)
+                if val is None:
+                    continue
+                if isinstance(val, list) and val:
+                    return val
+                if isinstance(val, dict):
+                    items: list = []
+                    seen_values: set = set()
+                    for item in val.get("detected_items") or []:
+                        if isinstance(item, str) and item not in seen_values:
+                            items.append(item)
+                            seen_values.add(item)
+                    for sug in val.get("suggestions") or []:
+                        if isinstance(sug, dict):
+                            v = sug.get("value")
+                            if v and v not in seen_values:
+                                # Preserva dict completo para manter big_five_mapping
+                                items.append(sug)
+                                seen_values.add(v)
+                        elif isinstance(sug, str) and sug not in seen_values:
+                            items.append(sug)
+                            seen_values.add(sug)
+                    if items:
+                        return items
+            return []
+
+        # --- Técnicas: tenta technical_skills (novo) → skills_obrigatorias (legado) ---
+        skills_raw = _extract_str_list(enriched_jd, "technical_skills", "skills_obrigatorias")
         n_skills = max(len(skills_raw), 1)
         for i, skill_entry in enumerate(skills_raw):
             if isinstance(skill_entry, str):
                 skill_name = skill_entry
             elif isinstance(skill_entry, dict):
-                skill_name = skill_entry.get("skill") or skill_entry.get("value") or str(skill_entry)
+                skill_name = (
+                    skill_entry.get("skill")
+                    or skill_entry.get("value")
+                    or skill_entry.get("name")
+                    or str(skill_entry)
+                )
             else:
                 continue
             competencies.append(Competency(
@@ -561,8 +637,8 @@ Retorne APENAS JSON válido:
                 is_critical=(i < 2),  # F6-5: máximo 2 skills críticas por triagem (spec §6.5)
             ))
 
-        # --- Comportamentais: de competencias_comportamentais com trait pré-mapeado ---
-        behavioral_raw = enriched_jd.get("competencias_comportamentais", [])
+        # --- Comportamentais: tenta behavioral_competencies (novo) → competencias_comportamentais (legado) ---
+        behavioral_raw = _extract_str_list(enriched_jd, "behavioral_competencies", "competencias_comportamentais")
         n_behavioral = max(len(behavioral_raw), 1)
         for comp_entry in behavioral_raw:
             if isinstance(comp_entry, str):
@@ -587,12 +663,10 @@ Retorne APENAS JSON válido:
             ))
 
         # --- Texto de contexto para F2.5 ---
-        about = enriched_jd.get("about_role", "")
-        resps = enriched_jd.get("responsabilidades", [])
-        if isinstance(resps, list):
-            resps_text = " ".join(resps)
-        else:
-            resps_text = str(resps)
+        # tenta description (novo) → about_role (legado)
+        about = enriched_jd.get("description") or enriched_jd.get("about_role") or ""
+        resps_raw = _extract_str_list(enriched_jd, "responsibilities", "responsabilidades")
+        resps_text = " ".join(r if isinstance(r, str) else str(r) for r in resps_raw)
         jd_context = f"{about}\n\n{resps_text}".strip()
 
         return competencies, jd_context

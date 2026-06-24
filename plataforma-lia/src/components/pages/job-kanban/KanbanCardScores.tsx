@@ -3,7 +3,6 @@
 import React from "react"
 import { useTranslations } from "next-intl"
 import { ScoreIconButton } from "@/components/ui/score-icon-button"
-import { ScoreBreakdownBadgeLazy } from "@/components/score/ScoreBreakdownBadge"
 import { formatScorePercent } from "@/lib/design-tokens"
 import { Gauge, BrainCircuit, Target, Code, Globe, Fingerprint, AlertTriangle } from "lucide-react"
 import {
@@ -113,15 +112,6 @@ export function KanbanCardScores({
           </div>
         )
       })}
-      {/* E1 — Score clicável: badge lazy com detalhamento da rubrica */}
-      {geralScore != null && _jobIdForSL && candidate.id && (
-        <ScoreBreakdownBadgeLazy
-          score={geralScore}
-          jobId={_jobIdForSL}
-          candidateId={String(candidate.id)}
-          size="sm"
-        />
-      )}
     </div>
   )
 })()}

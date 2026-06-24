@@ -83,7 +83,7 @@ export const KanbanTableFiltersPanel = React.memo(function KanbanTableFiltersPan
             </div>
           </div>
 
-          {/* Filtro por Score LIA */}
+          {/* Filtro por Score */}
           <div className="space-y-2">
             <label className="text-xs font-medium text-lia-text-primary">
               {t('minLIAScore')}

@@ -7,7 +7,8 @@ múltiplos PII, evento None, before_send preserva estrutura.
 import pytest
 from unittest.mock import patch, MagicMock
 
-from app.core.sentry import _scrub_pii, _before_send, init_sentry
+from lia_config.sentry import _scrub_pii, _before_send
+from app.core.sentry import init_sentry
 
 
 # ---------------------------------------------------------------------------

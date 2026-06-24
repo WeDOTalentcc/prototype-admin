@@ -3,7 +3,7 @@ Seed de guardrails padrão — Fase 3
 
 Popula a tabela `guardrails` com regras primárias (todos os agentes) e
 secundárias (por domínio) que implementam as políticas de compliance
-da plataforma LIA / WeDOTalent.
+do WeDOTalent.
 
 Uso:
     python -m app.core.seeds.guardrails_seed
@@ -40,7 +40,7 @@ PRIMARY_GUARDRAILS = [
     GuardrailCreate(
         level="primary",
         rule="Sempre identificar que a comunicação é gerada por IA quando solicitado explicitamente pelo usuário ou candidato.",
-        blocking_message="Sou um assistente de IA da plataforma LIA (WeDOTalent).",
+        blocking_message="Sou um assistente de IA da WeDOTalent.",
         tool=None,
         domain=None,
         updated_by="system_seed",

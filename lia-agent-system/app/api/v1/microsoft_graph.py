@@ -19,6 +19,7 @@ from app.shared.types import WeDoBaseModel
 from typing import Annotated
 from fastapi import Path
 from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
+from app.shared.errors import LIAError, LIAInternalError
 
 logger = logging.getLogger(__name__)
 
@@ -152,10 +153,7 @@ async def create_teams_meeting(request: CreateTeamsMeetingRequest, company_id: s
         raise
     except Exception as e:
         logger.error(f"Failed to create Teams meeting: {e}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to create Teams meeting: {str(e)}"
-        )
+        raise LIAInternalError("Internal server error")
 
 
 @router.post("/meetings/standalone", response_model=None)
@@ -199,10 +197,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Failed to create standalone meeting: {e}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to create meeting: {str(e)}"
-        )
+        raise LIAInternalError("Internal server error")
 
 
 @router.get("/calendar/events/{event_id}", response_model=None)
@@ -238,7 +233,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Failed to get calendar event: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.delete("/calendar/events/{event_id}", response_model=None)
@@ -267,7 +262,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Failed to cancel event: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/bookings/businesses", response_model=list[dict])
@@ -295,7 +290,7 @@ async def list_bookings_businesses(company_id: str = Depends(require_company_id)
         raise
     except Exception as e:
         logger.error(f"Failed to list Bookings businesses: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/bookings/businesses/{business_id}/services", response_model=None)
@@ -323,7 +318,7 @@ async def list_bookings_services(business_id: Annotated[str, Path(pattern=DUAL_I
         raise
     except Exception as e:
         logger.error(f"Failed to list Bookings services: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/bookings/businesses/{business_id}/booking-page-url", response_model=None)
@@ -343,7 +338,7 @@ async def get_booking_page_url(business_id: Annotated[str, Path(pattern=DUAL_ID_
         raise
     except Exception as e:
         logger.error(f"Failed to get booking page URL: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/bookings/appointments", response_model=None)
@@ -381,6 +376,6 @@ async def create_bookings_appointment(request: CreateBookingsAppointmentRequest,
         raise
     except Exception as e:
         logger.error(f"Failed to create Bookings appointment: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 reorder_collection_before_item(router)

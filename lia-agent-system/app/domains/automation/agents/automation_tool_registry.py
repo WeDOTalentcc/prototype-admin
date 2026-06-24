@@ -33,8 +33,21 @@ Decomponha esta tarefa em subtarefas menores e executáveis. Para cada subtarefa
 1. **Identificar subtarefas**: Liste todas as ações necessárias
 2. **Estimar duração**: Em minutos (5min a 120min)
 3. **Definir dependências**: Quais subtarefas dependem de outras?
-4. **Atribuir agente**: job_planner | sourcing | cv_screening | interviewer | wsi_evaluator | scheduling | analyst_feedback
+4. **Atribuir domain_id + action_id**: Use APENAS combinações da lista abaixo
 5. **Prioridade**: critical, high, medium, low
+
+## Ações Disponíveis (domain_id + action_id):
+- sourcing / search_candidates — buscar candidatos por critérios
+- cv_screening / score_candidates — avaliar/pontuar candidatos
+- cv_screening / evaluate_against_jd — avaliar candidato vs descrição da vaga
+- cv_screening / parse_and_create_candidate — criar candidato a partir de CV
+- cv_screening / add_to_vacancy — adicionar candidato a uma vaga
+- cv_screening / add_approved_to_vacancy — adicionar candidato aprovado a uma vaga
+- automation / move_candidate_stage — mover candidato de etapa no pipeline
+- communication / send_notification — enviar notificação (email/whatsapp)
+- job_management / generate_jd — gerar descrição de vaga
+
+Se a subtarefa não se encaixa em nenhuma ação acima, use domain_id="automation" e action_id="generic_step".
 
 ## Formato de Resposta (JSON):
 {{
@@ -42,13 +55,16 @@ Decomponha esta tarefa em subtarefas menores e executáveis. Para cada subtarefa
     "subtasks": [
         {{
             "id": "temp_1",
-            "title": "Título",
-            "description": "Descrição",
-            "agent_type": "job_planner",
+            "title": "Título curto",
+            "description": "Descrição detalhada do que fazer",
+            "domain_id": "sourcing",
+            "action_id": "search_candidates",
+            "agent_type": "sourcing",
             "priority": "high",
             "estimated_duration": 30,
             "dependencies": [],
-            "goal_criticality": 0.8
+            "goal_criticality": 0.8,
+            "context_mappings": {{"query": "critérios de busca"}}
         }}
     ],
     "execution_notes": "Observações",
@@ -56,6 +72,7 @@ Decomponha esta tarefa em subtarefas menores e executáveis. Para cada subtarefa
     "parallel_opportunities": ["temp_3 e temp_4 podem executar em paralelo"]
 }}
 
+IMPORTANTE: Cada subtarefa DEVE ter domain_id e action_id da lista acima.
 Responda APENAS com o JSON válido."""
 
 PRIORITY_ANALYSIS_PROMPT = """Você é um especialista em priorização de tarefas de recrutamento.

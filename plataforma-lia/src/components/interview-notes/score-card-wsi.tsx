@@ -344,7 +344,7 @@ export function ScoreCardWSI({
             <div className="flex items-center gap-2 mb-3">
               <Bot className="h-4 w-4 text-wedo-cyan" />
               <h3 className="text-sm font-semibold text-lia-text-primary">
-                Parecer LIA
+                Parecer
               </h3>
             </div>
             <p className="text-sm text-lia-text-primary whitespace-pre-wrap leading-relaxed">

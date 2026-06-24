@@ -14,16 +14,17 @@ Multi-tenant: Uses X-Company-ID header for authenticated endpoints.
 SLA: 15 business days legal deadline per LGPD.
 """
 import logging
+from app.shared.errors import LIAInternalError
 from datetime import datetime, timedelta
 from uuid import UUID
 
 from fastapi import Request, APIRouter, Depends, HTTPException, Query, status
 
-from app.domains.data_subject.dependencies import get_data_subject_repo
-from app.domains.data_subject.repositories.data_subject_repository import (
+from app.repositories.dependencies import get_data_subject_repo
+from app.repositories.data_subject_repository import (
     DsrExecutorFailedError,
 )
-from app.domains.data_subject.repositories.data_subject_repository import DataSubjectRepository
+from app.repositories.data_subject_repository import DataSubjectRepository
 from app.schemas.data_subject_requests import (
     DataSubjectRequestAssign,
     DataSubjectRequestComplete,
@@ -271,7 +272,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error("Error creating data subject request: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/track/{request_id}", response_model=DataSubjectRequestPublicTrack, summary="Track request status (public)")
@@ -312,7 +313,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error("Error tracking data subject request: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/stats", response_model=DataSubjectRequestStats, summary="Get request statistics")
@@ -350,7 +351,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error("Error getting data subject request stats: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/", response_model=DataSubjectRequestListResponse, summary="List data subject requests")
@@ -393,7 +394,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error("Error listing data subject requests: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/{request_id}", response_model=DataSubjectRequestResponse, summary="Get request details")
@@ -420,7 +421,7 @@ _company_gate: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error("Error getting data subject request: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.put("/{request_id}/assign", response_model=DataSubjectRequestResponse, summary="Assign request to user")
@@ -466,7 +467,7 @@ _company_gate: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error("Error assigning data subject request: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.put("/{request_id}/verify-identity", response_model=DataSubjectRequestResponse, summary="Verify subject identity")
@@ -523,7 +524,7 @@ _company_gate: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error("Error verifying identity for data subject request: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.put("/{request_id}/process", response_model=DataSubjectRequestResponse, summary="Start processing request")
@@ -571,7 +572,7 @@ _company_gate: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error("Error starting processing for data subject request: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.put("/{request_id}/complete", response_model=DataSubjectRequestResponse, summary="Complete request")
@@ -623,14 +624,11 @@ _company_gate: str = Depends(require_company_id)):
                 "DSR completion blocked by executor for %s: %s",
                 request_id, exc,
             )
-            raise HTTPException(
-                status_code=500,
-                detail=(
-                    f"DSR side-effect execution failed: {exc}. "
+            raise LIAInternalError(
+        f"DSR side-effect execution failed: {exc}. "
                     f"Status NOT updated to 'completed' - LGPD compliance gap prevented. "
                     f"Manual investigation required (see audit_trail)."
-                ),
-            )
+    )
 
         logger.info("LGPD: Request %s completed. SLA met: %s.", request_id, request.sla_met)
 
@@ -661,7 +659,7 @@ _company_gate: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error("Error completing data subject request: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.put("/{request_id}/reject", response_model=DataSubjectRequestResponse, summary="Reject request")
@@ -735,6 +733,6 @@ _company_gate: str = Depends(require_company_id)):
     except Exception as e:
         await repo.rollback()
         logger.error("Error rejecting data subject request: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 reorder_collection_before_item(router)

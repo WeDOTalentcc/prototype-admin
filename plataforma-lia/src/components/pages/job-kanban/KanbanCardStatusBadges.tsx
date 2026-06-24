@@ -6,6 +6,7 @@ import { useLocale } from "next-intl"
 import { KanbanChip, type KanbanChipVariant } from "./KanbanChip"
 import { AISuggestionBadge } from "@/components/ai"
 import { OverrideApproveButton } from "@/components/kanban/components/OverrideApproveButton"
+import { OfferStatusBadgeConnected } from "@/components/offer/OfferStatusBadgeConnected"
 import {
   User,
   BrainCircuit,
@@ -112,6 +113,7 @@ const sourceIcons: Record<string, React.ElementType> = {
   internal: Building,
   lia_database: BrainCircuit,
   recruiter: User,
+  pearch: Globe,
 }
 
 const sourceLabels: Record<string, string> = {
@@ -122,8 +124,9 @@ const sourceLabels: Record<string, string> = {
   referral: "Indicação",
   headhunting: "Hunting",
   internal: "Interno",
-  lia_database: "Banco LIA",
+  lia_database: "Base Interna",
   recruiter: "Manual",
+  pearch: "Banco Global",
 }
 
 const originIcons: Record<string, React.ElementType> = {
@@ -388,6 +391,7 @@ export function KanbanCardStatusBadges({
                 label={t('inNegotiation')}
               />
             )}
+            <OfferStatusBadgeConnected candidateId={candidate.id} />
           </>
         )}
 

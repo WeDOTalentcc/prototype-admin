@@ -53,7 +53,7 @@ const getStatusIcon = (status: string) => {
     case"Aprovado":
       return <CheckCircle className="w-4 h-4 text-status-success" />
     case"Em análise":
-      return <AlertCircle className="w-4 h-4 text-wedo-orange" />
+      return <AlertCircle className="w-4 h-4 text-wedo-orange-text" />
     case"Rejeitado":
       return <XCircle className="w-4 h-4 text-status-error" />
     default:

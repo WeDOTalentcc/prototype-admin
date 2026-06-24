@@ -137,7 +137,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await db.rollback()
         logger.error("Error creating custom agent: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail="Failed to create custom agent")
+        raise
 
 
 @router.get("", response_model=CustomAgentListResponse)
@@ -157,6 +157,11 @@ async def list_custom_agents(
         None,
         description="Sprint 7B-3b Part 2 v2: filtra agents com config.job_id match (JSONB)",
     ),
+    agent_type: Optional[str] = Query(
+        None,
+        pattern="^(first_party|custom)$",
+        description="first_party = agentes WeDo globais (company_id=None); custom/None = tenant-scoped",
+    ),
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
     current_user=Depends(get_current_user),
@@ -171,6 +176,7 @@ company_id: str = Depends(require_company_id)):
         category=category,
         talent_pool_id=talent_pool_id,
         job_id=job_id,
+        agent_type=agent_type,
         limit=limit,
         offset=offset,
     )
@@ -252,6 +258,31 @@ company_id: str = Depends(require_company_id)):
         except Exception as _fg_exc:
             logger.warning("[CustomAgent.update] FairnessGuard check failed: %s", _fg_exc)
 
+    # ── GAP-2 fix: ghost channel flags bloqueados ate router ser registrado ──
+    # voice_enabled, voip_enabled, whatsapp_enabled, triagem_invite_enabled
+    # existem no modelo mas os sub-routers NAO estao em routes.py -> 404.
+    # Bloquear settar True ate os canais estarem wired de verdade.
+    _GHOST_CHANNEL_FLAGS = frozenset({
+        "voice_enabled", "voip_enabled", "whatsapp_enabled", "triagem_invite_enabled",
+    })
+    _update_peek = body.model_dump(exclude_unset=True)
+    _ghost_activated = [
+        f for f in _GHOST_CHANNEL_FLAGS
+        if _update_peek.get(f) is True
+    ]
+    if _ghost_activated:
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "error": "channel_not_available",
+                "message": (
+                    f"Channels {_ghost_activated} are not yet available. "
+                    "These features are in beta and their endpoints are not registered."
+                ),
+                "fields": _ghost_activated,
+            },
+        )
+
     try:
         update_data = body.model_dump(exclude_unset=True)
         agent = await agent_marketplace_service.update_agent(
@@ -263,6 +294,38 @@ company_id: str = Depends(require_company_id)):
         if not agent:
             raise HTTPException(status_code=404, detail="Agent not found")
         await db.commit()
+        # ── GAP-3 fix: invalidar cache do runtime quando campos que afetam o grafo sao alterados
+        # ADR-004: cache chaveado por agent_id:company_id nao invalida automaticamente.
+        # Sem force_new, admin atualiza system_prompt/allowed_tools mas agente continua
+        # usando o grafo compilado antigo ate o proximo restart do processo.
+        _CACHE_INVALIDATING_FIELDS = frozenset({
+            "system_prompt", "allowed_tools", "temperature",
+            "max_steps", "model_override", "context_level", "enable_memory",
+        })
+        if _CACHE_INVALIDATING_FIELDS & set(update_data.keys()):
+            try:
+                from app.domains.agent_studio.custom_agent_runtime import get_or_create_runtime
+                get_or_create_runtime(
+                    agent_id=str(agent.id),
+                    agent_name=agent.name,
+                    system_prompt=agent.system_prompt or "",
+                    allowed_tools=agent.allowed_tools or [],
+                    domain=getattr(agent, "domain", "custom"),
+                    max_steps=agent.max_steps or 8,
+                    temperature=agent.temperature or 0.7,
+                    model_override=agent.model_override,
+                    company_id=current_user.company_id,
+                    enable_memory=getattr(agent, "enable_memory", True),
+                    excluded_tools=getattr(agent, "excluded_tools", None),
+                    context_level=getattr(agent, "context_level", "full"),
+                    force_new=True,
+                )
+                logger.info(
+                    "[CustomAgent][cache-invalidate] agent=%s invalidated fields=%s",
+                    agent_id, sorted(_CACHE_INVALIDATING_FIELDS & set(update_data.keys())),
+                )
+            except Exception as _cache_exc:
+                logger.warning("[CustomAgent][cache-invalidate] failed (non-blocking): %s", _cache_exc)
         # P0-3 audit 2026-05-21: canonical lifecycle audit
         from app.domains.agent_studio._audit_helper import studio_audit
         await studio_audit(
@@ -280,7 +343,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await db.rollback()
         logger.error("Error updating custom agent: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail="Failed to update custom agent")
+        raise
 
 
 @router.delete("/{agent_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -312,7 +375,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await db.rollback()
         logger.error("Error deleting custom agent: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail="Failed to delete custom agent")
+        raise
 
 
 @router.post("/{agent_id}/test", response_model=TestCustomAgentResponse)
@@ -384,7 +447,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error("Error testing custom agent: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Test execution failed: {e}")
+        raise
 
 
 # ── Q4.1 Sandbox dry-run (2026-05-29) ─────────────────────────────────────────
@@ -496,7 +559,7 @@ async def dry_run_custom_agent(
         raise
     except Exception as e:
         logger.error("Error in dry-run for custom agent: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Dry-run failed: {e}")
+        raise
 
 
 @router.post("/{agent_id}/execute", response_model=ExecuteCustomAgentResponse)
@@ -513,8 +576,74 @@ company_id: str = Depends(require_company_id)):
     if not agent:
         raise HTTPException(status_code=404, detail="Agent not found")
 
-    if agent.status not in ("active", "draft"):
+    # ── GAP-1 fix: EU AI Act Art. 12 — draft nao executa sem aprovacao humana ─
+    # Opcao B (Paulo 2026-06-14): /execute requer status=="active" apenas.
+    # Draft usa /dry-run (write tools interceptadas) ou /test (sandbox auditado).
+    if agent.status == "draft":
+        raise HTTPException(
+            status_code=403,
+            detail={
+                "error": "agent_requires_approval",
+                "message": (
+                    "Agent must be approved before executing with real tools. "
+                    "Use /dry-run to test without side effects, then submit for approval."
+                ),
+            },
+        )
+    if agent.status != "active":
         raise HTTPException(status_code=400, detail="Agent is not active")
+
+    # ── P0-2 Onda 0 (2026-06-12): review gate ────────────────────────────────
+    # Agentes do marketplace ficam em pending_review ate aprovacao de admin WeDOTalent.
+    # Espelha o gate em _handle_execute_custom_agent (domain.py).
+    _exec_listing = getattr(agent, "marketplace_listing", None)
+    if _exec_listing is not None:
+        _exec_listing_status = getattr(_exec_listing, "status", None) or "pending_review"
+        if _exec_listing_status == "pending_review":
+            logger.warning(
+                "[CustomAgent][P0-2] Execute bloqueado: agent=%s listing_status=%s",
+                agent_id, _exec_listing_status,
+            )
+            raise HTTPException(
+                status_code=403,
+                detail={
+                    "error": "agent_pending_review",
+                    "message": (
+                        f"Agent '{agent.name}' is pending review by WeDOTalent admin. "
+                        "Execution is blocked until approved."
+                    ),
+                },
+            )
+
+    # ── Gap G (2026-06-08): token budget gate ────────────────────────────
+    # O endpoint /execute era um caminho de invocação paralelo que nunca
+    # passava pelo fence diário de tokens do chat SSE (agent_chat_sse.py:424).
+    # Sem isto, agentes do Agent Studio permitiam gasto ilimitado de LLM em
+    # qualquer plano. Espelha o padrão do SSE: HTTP 429 quando exhausted.
+    try:
+        from app.domains.credits.services.token_budget_service import (
+            check_budget,
+            get_plan_for_company,
+        )
+        _plan = await get_plan_for_company(current_user.company_id)
+        _allowed, _used, _limit = await check_budget(current_user.company_id, _plan)
+        if not _allowed:
+            raise HTTPException(
+                status_code=429,
+                detail={
+                    "error": "budget_exhausted",
+                    "message": "Limite diário de tokens atingido. Tente novamente amanhã.",
+                    "used_today": _used,
+                    "daily_limit": _limit,
+                },
+            )
+    except HTTPException:
+        raise
+    except Exception as _budget_exc:
+        logger.warning(
+            "[CustomAgent] Budget check falhou — continuando (fail-open): %s",
+            _budget_exc,
+        )
 
     try:
         from app.domains.agent_studio.custom_agent_runtime import get_or_create_runtime
@@ -542,8 +671,15 @@ company_id: str = Depends(require_company_id)):
             _tcs = TenantContextService()
             _tenant_ctx = await _tcs.get_context(company_id=current_user.company_id, db=db)
             enriched_context["tenant_context_snippet"] = _tenant_ctx.to_prompt_snippet()
-        except Exception:
-            pass
+        except Exception as _tc_exc:
+            # Gap G: nao silenciar. O TenantAwareAgentMixin re-resolve o snippet
+            # no _process_langgraph (com strict-mode gate); este pré-fetch é
+            # otimização/defense-in-depth, mas a falha precisa ser observável.
+            logger.warning(
+                "[CustomAgent] TenantContextService falhou ao pré-injetar "
+                "snippet (mixin re-resolve no _process_langgraph): %s",
+                _tc_exc,
+            )
         enriched_context["user_name"] = getattr(current_user, "name", "") or getattr(current_user, "full_name", "") or ""
         enriched_context["user_role"] = getattr(current_user, "role", "") or ""
 
@@ -719,7 +855,7 @@ company_id: str = Depends(require_company_id)):
                 )
         except Exception as _wh_err:
             logger.warning("[Webhook] execution.failed dispatch error: %s", _wh_err)
-        raise HTTPException(status_code=500, detail=f"Execution failed: {e}")
+        raise
 
 
 @router.post("/{agent_id}/publish", response_model=MarketplaceListingResponse)
@@ -759,7 +895,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await db.rollback()
         logger.error("Error publishing to marketplace: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail="Failed to publish to marketplace")
+        raise
 
 
 marketplace_router = APIRouter(prefix="/agent-marketplace", tags=["Agent Marketplace"])
@@ -824,7 +960,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await db.rollback()
         logger.error("Error installing agent: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail="Failed to install agent")
+        raise
 
 
 @marketplace_router.get("/installations", response_model=AgentInstallationListResponse)
@@ -877,7 +1013,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await db.rollback()
         logger.error("Error uninstalling agent: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail="Failed to uninstall agent")
+        raise
 
 
 @marketplace_router.get("/billing", response_model=list[MarketplaceBillingResponse])
@@ -928,6 +1064,7 @@ company_id: str = Depends(require_company_id)):
             reviewer_id=str(getattr(_user, "id", "admin")),
             action=body.action,
             review_notes=body.review_notes,
+            reviewer_company_id=company_id,  # P0-4: anti self-review
         )
         if not listing:
             raise HTTPException(status_code=404, detail="Listing not found")
@@ -938,7 +1075,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await db.rollback()
         logger.error("Error reviewing listing: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail="Failed to review listing")
+        raise
 
 
 @router.get("/{agent_id}/executions", summary="Get execution history for an agent")
@@ -1001,7 +1138,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error("Error fetching studio consumption: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail="Failed to fetch studio consumption")
+        raise
 
 
 @router.get("/studio/quota", summary="Get Studio agent quota status")
@@ -1037,7 +1174,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error("Error fetching studio quota: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail="Failed to fetch studio quota")
+        raise
 
 
 @router.get(
@@ -1087,9 +1224,7 @@ async def get_studio_quota_agents_total(
         raise
     except Exception as e:
         logger.error("Error fetching agents-total quota: %s", e, exc_info=True)
-        raise HTTPException(
-            status_code=500, detail="Failed to fetch agents-total quota"
-        )
+        raise
 
 
 @router.get("/{agent_id}/versions", summary="List agent version history")
@@ -1178,7 +1313,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await db.rollback()
         logger.error("[AgentVersion] revert failed: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail="Failed to revert agent")
+        raise
 
 
 @router.get("/search", summary="Search agents by name (fuzzy)")
@@ -1624,7 +1759,7 @@ Responda APENAS com o JSON, sem texto adicional."""
         raise
     except Exception as e:
         logger.error("Error generating agent config: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Erro ao gerar configuracao: {e}")
+        raise
 
 
 @router.post("/{agent_id}/clone", summary="Clone an existing agent")
@@ -1680,7 +1815,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         await db.rollback()
         logger.error("Error cloning agent: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail="Failed to clone agent")
+        raise
 
 
 @router.get("/{agent_id}/preview-prompt")

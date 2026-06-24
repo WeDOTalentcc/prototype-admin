@@ -79,3 +79,78 @@ Já entregue: test_plan_progress_contract.py (Fase 0).
 ## Débito técnico de harness
 - context["streaming_callback"] (agent_chat_ws.py:~143) é código morto → remover na Fase 1.
 - StreamingCallback acoplado à flag LIA_WS_TOKEN_STREAMING impede tool events → desacoplar (Fase 1).
+
+---
+
+## ADENDO CRÍTICO — caminho REAL do chat é o ORQUESTRADOR (REST), não o WS (descoberto 2026-06-03)
+
+**Descoberta:** o display construído (Fase 0-3) foi instrumentado no caminho **WS/`LangGraphReActBase`** (`StreamingCallback`). Mas o chat de produção (3 estados: flutuante/lateral/full, todos via `LiaChatMessageList`) roda por **REST → `MainOrchestrator`** (`channel=rest` nos logs, `ACT-DBG`=0). Logo o `StreamingCallback` instrumentado NUNCA dispara nesse caminho. O FE (timeline + sumário nos 3 estados) está correto, mas o backend não emitia eventos pelo caminho certo.
+
+**Arquitetura do caminho real:**
+- `chat.py POST /chat` (linha 249) → JSON não-streaming (o que o chat usa hoje).
+- `chat.py POST /chat/stream` (linha 977) → SSE (`StreamingResponse text/event-stream`, linha 1093) — EXISTE, FE não usa.
+- `MainOrchestrator.process(streaming_callback=...)` → Fase 1 ActionExecutor / Fase 1.5 `AgenticLoop` / Fase 2 ReAct.
+- Tools executadas no **`app/orchestrator/execution/agentic_loop.py`** (`AgenticLoop.run`, exec na linha ~255 `self._tool_executor.execute`).
+- LLM com tools em `app/domains/ai/services/llm.py:_generate_with_tools_claude` (linha 611); streaming opt-in via ContextVar **`_llm_streaming_callback`** (linha 44) — quando setado, faz `client.messages.stream()` e empurra `{"type":"token",...}`.
+
+**Bug pré-existente corrigido (não era nosso):** `ChatResponse.intent_detected` (str) recebia `OrchestratorIntentResult` em `from_action_result` → `ValidationError string_type` → "dificuldade para processar" (caminho pending-action pós-clarificação). Fix: `field_validator(mode="before")` coage via `str()` em `main_orchestrator.py`. Commit auto-checkpoint.
+
+### Phase 1 ✅ FEITA (commit 88c6bce27)
+`AgenticLoop` emite `tool_started`/`tool_finished` por tool (helper `_emit_activity` lê o ContextVar `_llm_streaming_callback` e empurra; fail-safe no-op em REST). 3 contract tests (`tests/contract/test_agentic_loop_activity.py`). ACT-DBG temp removido.
+
+### Phase 2 ⏳ PENDENTE (transporte — gating pra Paulo VER ao vivo)
+Hoje o chat usa `POST /chat` (JSON) → `_llm_streaming_callback` não é setado → emits da Phase 1 viram no-op → nada aparece ao vivo. Necessário:
+1. **FE usar `/chat/stream` (SSE)** em vez de `/chat` (JSON) pra esse chat (`useChatTransport`/`useChatSocket` ou a chamada REST do float). Decisão: WS (`agent_chat_ws`, que JÁ usa StreamingCallback) OU SSE (`/chat/stream`, orquestrador). Como o chat real é orquestrador, **SSE `/chat/stream` é o caminho coerente**.
+2. **Setar `_llm_streaming_callback` ContextVar** nesse caminho (modelo: `agent_chat_sse.py:534` já faz). Garantir que o `_streaming_callback` do `/chat/stream` (chat.py:~920) é setado no ContextVar antes do `main_orch.process`.
+3. **FE consumir os eventos** — `useChatSocket` já trata `tool_started/finished/reasoning_step` (Fase 1 FE) e dispara `lia:agent-activity` → `AgentActivityTimeline` (já montado nos 3 estados). Confirmar que o transporte SSE do float passa pelo `useChatSocket` (que faz o dispatch).
+4. **reasoning_step**: o texto já streama como tokens via `_generate_with_tools_claude`; opcional emitir `reasoning_step` explícito antes de cada batch de tools.
+
+**Risco/esforço Phase 2:** médio-alto (toca transporte FE + wiring ContextVar). Não fazer no fim de sessão longa — merece execução focada + verificação no preview.
+
+---
+
+# PLANO SSE PONTA-A-PONTA (enterprise) — display de atividade da IA ao vivo (2026-06-04)
+
+> Resultado da auditoria de 3 agentes (FE transport, backend SSE, compliance) sob harness-engineering + canonical-fix + compliance-risk. Abordagem B (push WS lateral) foi DESCARTADA empiricamente (ws_keys=[], sem WS aberta). SSE-e2e é o único caminho viável.
+
+## DESCOBERTA-CHAVE
+O FE (`useChatTransport.sendMessageViaSSE`) já mira **`POST /api/v1/chat/{session_id}/stream` = `agent_chat_sse.py:233`** — NÃO o `chat.py:/chat/stream`. Esse endpoint JÁ seta o ContextVar `_llm_streaming_callback` (liga tokens + emits do AgenticLoop) e JÁ aplica `mask_pii` em token. Trabalho é menor do que parecia.
+
+## Cenário (file:line)
+- FE consumo SSE pronto: `hooks/chat/useChatTransport.ts:397-542` (`sendMessageViaSSE`, fetch+ReadableStream, endpoint `/api/v1/chat/{id}/stream`). Switch de eventos `useChatSocket.ts:175-489` trata token/message/tool_started/finished/reasoning_step + dispara `lia:agent-activity` (`:395-399`) — roda idêntico em SSE e WS.
+- FE gap: `useChatMessages.ts:372-409` — branch SSE é dead code (`transportMode` nunca = "sse"; só "ws"/"disconnected"). `sendMessageViaSSE` nunca é chamado.
+- Backend pronto: `agent_chat_sse.py:233` (`/chat/{session_id}/stream`), seta ContextVar (~534-538), mask_pii em token (~523).
+- Backend gap: `agent_chat_sse.py:518-531` `_streaming_callback` achata tudo ≠ token em `serialize_thinking` → perde shape de tool_started/finished.
+- Produtor de eventos: `agentic_loop.py:_emit_activity` (~30) emite tool_started/finished (só metadata: name/status/duration — sem PII hoje). Tokens: `llm.py:_generate_with_tools_claude:643` (delta CRU, sem mask_pii no produtor).
+- AgentActivityTimeline montado: `LiaChatMessageList.tsx:224` (3 estados).
+
+## FASES (compliance-first, cada uma verificável no preview + reversível)
+
+### Fase A — PII no produtor (P0, canonical-fix) [BACKEND]
+- Mover `mask_pii` para o PRODUTOR: token em `llm.py:643` (antes do `_stream_cb`) + qualquer conteúdo em `_emit_activity` (`agentic_loop.py`). Garante que TODOS os transportes (chat.py SSE, agent_chat_sse, futuro) saem mascarados — não repetir fix-no-consumidor.
+- `_emit_activity`: NUNCA emitir `tc.parameters`/`tool_result_content` crus. Só name/status/duration (já é assim — pinar com teste).
+- Red test: `tests/contract/test_stream_pii_masking.py` — stream com CPF/telefone no texto → assert nenhum dígito cru sai. + paridade: texto concatenado dos `token` == saída mascarada do JSON.
+
+### Fase B — repassar activity events no SSE [BACKEND]
+- `agent_chat_sse.py:_streaming_callback`: adicionar branch que repassa `tool_started/finished/reasoning_step` preservando shape (via `serialize_*` do `chat_event_serializer`), em vez de achatar em `thinking`.
+- Red test: `tests/contract/test_sse_passthrough.py` — callback recebe `{type:tool_started,name:X}` → assert sai no SSE com type+name (não vira thinking).
+
+### Fase C — FE rotear pra SSE (atrás de flag) [FRONTEND]
+- `useChatMessages.ts:sendMessage`: chamar `sendMessageViaSSE(...)` quando `NEXT_PUBLIC_CHAT_TRANSPORT=sse` (env), SEM depender de `transportMode==="sse"`. REST permanece fallback default (flag off = comportamento atual intocado).
+- Adicionar fallback SSE→REST em `useChatTransport.ts:522` (hoje só emite error ao esgotar retry).
+- Validar no preview: auth (ws-token presente), buffering em dev, frame `message` terminal idêntico ao WS, domain default.
+
+### Fase D — verificação + sensores (harness) [AMBOS]
+- Preview nos 3 estados: tokens incrementais + chips de tool (🔧→✓ + duração) + message final.
+- Sensores: (1) contract stream↔JSON parity pós-mask; (2) sensor estático: todo emit de token/tool em `*sse*.py` + `_emit_activity` passa por mask_pii; (3) red test PII.
+
+### Fase E (opcional) — reasoning_step ao vivo
+- AgenticLoop emitir `_emit_activity({type:reasoning_step,...})` antes de cada batch de tools (não existe hoje). Texto via mask_pii.
+
+## Riscos (mitigação)
+- Formato terminal: SSE precisa emitir frame `message` idêntico ao WS senão `onMessageComplete` não dispara (bolha final some). → Fase B/C garantir `serialize_message` final.
+- Auth: SSE bate direto no backend (não via proxy) — depende do ws-token. → validar; fallback REST.
+- post_compliance pós-stream: hoje no-op de redação (ok). Se virar redator → streaming o contorna → exigirá hold-back. DÉBITO documentado.
+- Flag default OFF → zero impacto no chat atual até validarmos.
+
+## Ordem: A → B → C → D (→ E opcional). Flag mantém o chat atual intocado até a validação.

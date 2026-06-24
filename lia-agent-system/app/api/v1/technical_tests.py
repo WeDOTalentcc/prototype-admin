@@ -11,8 +11,8 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 
-from app.domains.technical_tests.dependencies import get_technical_tests_repo
-from app.domains.technical_tests.repositories.technical_tests_repository import (
+from app.repositories.dependencies import get_technical_tests_repo
+from app.repositories.technical_tests_repository import (
     TechnicalTestsRepository,
 )
 from app.models.technical_tests import (

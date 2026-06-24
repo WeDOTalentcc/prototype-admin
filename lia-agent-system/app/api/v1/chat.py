@@ -10,7 +10,7 @@ from collections.abc import AsyncGenerator
 from pathlib import Path
 from typing import Any
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel
 
@@ -19,7 +19,7 @@ from app.orchestrator.routing.domain_mappings import resolve_domain
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
 from app.shared.compliance.c3b_layer import pre_compliance, post_compliance, ComplianceContext
-from app.domains.chat.dependencies import get_chat_repo
+from app.repositories.dependencies import get_chat_repo
 from app.orchestrator.context.chat_adapter import ChatAdapter
 from app.api.orchestrator_routes import get_main_orchestrator
 
@@ -41,11 +41,11 @@ def _get_chat_adapter():
 # envolvia o orquestrador em asyncio.wait_for (_AGENT_TIMEOUT); o REST nao, e
 # uma chamada pendurada (resume re-rodando classifier/regeneracao) virava 502
 # OPACO do gateway da plataforma ("Erro do servidor HTTP 502"). Configuravel
-# via env; default 90s (abaixo do timeout tipico de gateway -> 504 estruturado
-# chega ao usuario antes do 502).
-_CHAT_ORCH_TIMEOUT_S = float(os.getenv("LIA_CHAT_ORCH_TIMEOUT_SECONDS", "90"))
+# via env; default 110s. Hierarquia canonical: agentic_llm(90s) < rest_orch(110s)
+# < sse_outer(120s). 110s garante 504 estruturado antes do 502 opaco do gateway.
+_CHAT_ORCH_TIMEOUT_S = float(os.getenv("LIA_CHAT_ORCH_TIMEOUT_SECONDS", "110"))
 
-from app.domains.chat.repositories.chat_repository import ChatRepository
+from app.repositories.chat_repository import ChatRepository
 from app.orchestrator.action_executor import (
     ACTIONABLE_INTENTS,
     ActionResult,
@@ -155,7 +155,7 @@ async def resolve_candidate_by_name(
     """Module-level wrapper around ChatRepository.resolve_candidate_by_name for testability."""
     if db is None:
         return None
-    from app.domains.chat.repositories.chat_repository import ChatRepository
+    from app.repositories.chat_repository import ChatRepository
     repo = ChatRepository(db)
     return await repo.resolve_candidate_by_name(candidate_name, company_id=company_id, job_id=job_id)
 
@@ -304,6 +304,31 @@ company_id: str = Depends(require_company_id)):
     if _c3b_pre.fairness_blocked:
         raise HTTPException(status_code=422, detail=_c3b_pre.block_reason or "Solicitação bloqueada por critérios de equidade.")
 
+    # GAP-00-001: daily token budget check — paridade com agent_chat_sse.py
+    if _c3b_company:
+        try:
+            from app.domains.credits.services.token_budget_service import (
+                check_budget as _chk_bgt_rest,
+                get_plan_for_company as _get_plan_rest,
+            )
+            _bgt_plan_rest = await _get_plan_rest(_c3b_company)
+            _bgt_ok_rest, _bgt_used_rest, _bgt_lim_rest = await _chk_bgt_rest(_c3b_company, _bgt_plan_rest)
+            if not _bgt_ok_rest:
+                raise HTTPException(
+                    status_code=429,
+                    detail={
+                        "error_code": "budget_exhausted",
+                        "message": (
+                            f"Limite diario de uso de IA atingido ({_bgt_used_rest:,}/{_bgt_lim_rest:,} tokens). "
+                            "O budget sera renovado a meia-noite UTC."
+                        ),
+                    },
+                )
+        except HTTPException:
+            raise
+        except Exception as _bgt_exc_rest:
+            logger.debug("[LIA-BUDGET-REST] Budget check skipped (fail-open): %s", _bgt_exc_rest)
+
     # Paridade de transporte (WS/SSE): passa o texto CRU (pré-masking) ao
     # wizard p/ captura determinística do email do gestor no servidor. NUNCA
     # vai ao LLM (que vê clean_message); o wizard extrai via regex no state.
@@ -390,6 +415,10 @@ company_id: str = Depends(require_company_id)):
             if _ui_action_params:
                 msg_metadata["ui_action_params"] = _ui_action_params
 
+        _response_blocks = orch_result.get("response_blocks")
+        if _response_blocks:
+            msg_metadata["response_blocks"] = _response_blocks
+
         # Item 2: action_metadata removed — MainOrchestrator handles actions
 
         # M2: MainOrchestrator._persist_response already committed via same db session
@@ -475,7 +504,7 @@ company_id: str = Depends(require_company_id)):
             ),
         )
 
-    raise HTTPException(status_code=500, detail="Failed to generate response")
+    raise
 
 
 @router.post("/with-attachments", response_model=ChatResponse)
@@ -651,7 +680,7 @@ company_id: str = Depends(require_company_id)):
             ),
         )
 
-    raise HTTPException(status_code=500, detail="Failed to generate response")
+    raise
 
 
 @router.get("/conversations", response_model=ConversationListResponse)
@@ -675,132 +704,6 @@ company_id: str = Depends(require_company_id)):
     )
 
 
-# =============================================
-# WEBSOCKET ENDPOINT
-# =============================================
-
-class ConnectionManager:
-    """Manage WebSocket connections."""
-
-    def __init__(self):
-        self.active_connections: dict[str, WebSocket] = {}
-
-    async def connect(self, user_id: str, websocket: WebSocket):
-        await websocket.accept()
-        self.active_connections[user_id] = websocket
-
-    def disconnect(self, user_id: str):
-        if user_id in self.active_connections:
-            del self.active_connections[user_id]
-
-    async def send_message(self, user_id: str, message: dict):
-        if user_id in self.active_connections:
-            await self.active_connections[user_id].send_json(message)
-
-
-manager = ConnectionManager()
-
-
-@router.websocket("/ws/{user_id}")
-async def websocket_endpoint(
-    websocket: WebSocket,
-    user_id: str,
-    repo: ChatRepository = Depends(get_chat_repo),
-company_id: str = Depends(require_company_id)):
-    """
-    WebSocket endpoint for real-time chat with LIA.
-
-    Message format:
-    {
-        "type": "message",
-        "content": "text",
-        "conversation_id": "uuid" (optional)
-    }
-
-    Response format:
-    {
-        "type": "message",
-        "content": "text",
-        "conversation_id": "uuid",
-        "metadata": {...}
-    }
-    """
-    await manager.connect(user_id, websocket)
-
-    try:
-        while True:
-            data = await websocket.receive_json()
-
-            if data["type"] == "message":
-                conversation_id = data.get("conversation_id")
-                user_content = data["content"]
-
-                # LIA-P02: Compliance enforcement for legacy WebSocket
-                try:
-                    from app.shared.compliance.fairness_guard import FairnessGuard
-                    from app.shared.robustness.security_patterns import check_input_security
-
-                    _security_result = check_input_security(user_content)
-                    if _security_result and _security_result.get("blocked"):
-                        await websocket.send_json({"type": "error", "message": "Mensagem bloqueada por seguranca."})
-                        continue
-
-                    _fg = FairnessGuard()
-                    _fr = _fg.check(user_content)
-                    if _fr and _fr.is_blocked:
-                        await websocket.send_json({"type": "error", "message": _fr.educational_message or "Solicitacao com possivel vies."})
-                        continue
-                except Exception as e:
-                    logger.debug("[LIA-P02] WS compliance check skipped: %s", e)
-
-                # Create or get conversation
-                if not conversation_id:
-                    conversation = await repo.create_conversation(user_id, company_id)
-                    conversation_id = str(conversation.id)
-                else:
-                    conversation = await repo.get_conversation_by_id(conversation_id)
-
-                # Save user message
-                await repo.add_user_message(conversation.id, user_content)
-
-                # Run LIA via Orchestrator + ReAct agents
-                ws_orch = await _invoke_orchestrator_legacy(
-
-                    user_message=user_content,
-                    user_id=user_id,
-                    conversation_id=conversation_id,
-                    company_id=company_id,
-                )
-                lia_response = ws_orch["response"]
-
-                if lia_response:
-                    # Item 2: handle_action_flow deleted — Phase 0+1 handles actions
-                    ws_final_response = lia_response
-
-                    ws_msg_metadata: dict[str, Any] = {
-                        "intent": ws_orch["intent"],
-                        "entities": ws_orch["entities"],
-                    }
-
-                    await repo.add_ai_message(
-                        conversation.id,
-                        ws_final_response,
-                        ws_msg_metadata,
-                    )
-                    conversation.intent = ws_orch["intent"]
-
-                    await repo.commit()
-
-                    await manager.send_message(user_id, {
-                        "type": "message",
-                        "content": ws_final_response,
-                        "conversation_id": conversation_id,
-                        "metadata": ws_msg_metadata,
-                    })
-
-    except WebSocketDisconnect:
-        manager.disconnect(user_id)
-
 
 # =============================================
 # SSE STREAMING ENDPOINT
@@ -818,6 +721,7 @@ async def _sse_event_generator(
     conversation_obj,
     *,
     user_name: str = "",
+    user_email: str = "",
     user_role: str = "",
     company_id: str = "",
     tenant_context_snippet: str = "",
@@ -884,6 +788,108 @@ async def _sse_event_generator(
 
 
 
+def _orchestrator_result_to_frames(result, conversation_id):
+    """Fase 2 (consolidacao bolha->supervisor): serializa os campos ricos do
+    ChatResponse do MainOrchestrator em frames de evento, para paridade com a
+    bolha (agent_chat_sse/ws). Helper puro -- sem I/O.
+
+    Mapeia: actions/fairness_warnings/ui_action -> frame `message` rico;
+    needs_params -> `clarification`; needs_confirmation -> `approval_required`.
+    """
+    from app.shared.chat_event_serializer import serialize_message
+
+    def _get(name, default=None):
+        if isinstance(result, dict):
+            return result.get(name, default)
+        return getattr(result, name, default)
+
+    content = _get("content", "") or _get("message", "") or ""
+    actions = _get("actions") or []
+    fairness = _get("fairness_warnings") or []
+    # FIX-NAVIGATE-SUP (§4.1, 2026-06-07): a LLM do supervisor emite
+    # [NAVIGATE:<page>] como TEXTO; sem strip o marker vazava e nao navegava.
+    # Espelha o ramo agente (agent_chat_sse FIX-NAVIGATE-LEAK): strip do texto +
+    # injeta ui_action/ui_action_params (contrato FE, nao so navigation aninhado).
+    _nav_ui_action = _get("ui_action")
+    _nav_ui_params = _get("ui_action_params") or {}
+    if not _nav_ui_action:
+        try:
+            from app.orchestrator.context.chat_adapter import (
+                _extract_navigate_marker,
+            )
+            _nav = _extract_navigate_marker(content)
+            if _nav is not None:
+                content, _np, _npar = _nav
+                if _np != "general":
+                    _nav_ui_action = "navigate_to"
+                    _nav_ui_params = {"page": _np, **_npar}
+        except Exception:
+            pass
+    navigation = None
+    if _nav_ui_action:
+        navigation = {
+            "ui_action": _nav_ui_action,
+            "ui_action_params": _nav_ui_params or {},
+        }
+
+    # Task #1090 — extrai ws_stage_payload de structured_data (espelha o REST,
+    # chat.py:450 message_metadata.ws_stage_payload) para que o frame `message`
+    # estruturado carregue o sinal que abre o painel do wizard. Sem isto o painel
+    # nao abre na bolha. canonical-fix: serializado no produtor unico.
+    _structured = _get("structured_data") or {}
+    ws_stage_payload = _structured.get("ws_stage_payload") if isinstance(_structured, dict) else None
+
+    frames: list[dict] = [
+        serialize_message(
+            content=content,
+            confidence=float(_get("confidence", 0.0) or 0.0),
+            domain=_get("agent_used", "") or "",
+            source="orchestrator",
+            response_blocks=_get("response_blocks"),
+            actions=actions or None,
+            navigation=navigation,
+            ui_action=_nav_ui_action,
+            ui_action_params=(_nav_ui_params or None),
+            fairness_warnings=fairness or None,
+            conversation_id=conversation_id,
+            ws_stage_payload=ws_stage_payload,
+        )
+    ]
+    if _get("needs_params"):
+        frames.append(
+            {
+                "type": "clarification",
+                "question": content,
+                "options": _get("suggested_prompts") or [],
+            }
+        )
+    if _get("needs_confirmation"):
+        frames.append(
+            {
+                "type": "approval_required",
+                "pending_id": _get("pending_action_id") or "",
+                "description": content,
+                "action": _get("action_type") or "",
+            }
+        )
+    return frames
+
+
+def _build_supervisor_context(*, content, context, company_id, user_id, conversation_id):
+    """Fase 2 item 6 (consolidacao bolha->supervisor): monta o UniversalContext
+    para rotear a bolha pelo MainOrchestrator. view_context recebe o context da
+    bolha (getPageContext do FE) -> P0.1 passa a valer na bolha tambem. Puro."""
+    _ctx = context or {}
+    return UniversalContext(
+        message=content,
+        user_id=user_id or "",
+        company_id=company_id,
+        conversation_id=conversation_id,
+        tenant_context_snippet=_ctx.get("tenant_context_snippet", "") or "",
+        view_context=_ctx,
+    )
+
+
 async def _sse_via_orchestrator(
     conversation_id: str,
     user_message: str,
@@ -893,12 +899,25 @@ async def _sse_via_orchestrator(
     *,
     user_id: str = "",
     user_name: str = "",
+    user_email: str = "",
     user_role: str = "",
     company_id: str = "",
     tenant_context_snippet: str = "",
+    view_context: "dict[str, Any] | None" = None,
+    emit_structured: bool = False,
+    keepalive_after_s: float = 15.0,
+    hard_timeout_s: float = 180.0,
 ) -> AsyncGenerator[str, None]:
-    """Fase 3: SSE via MainOrchestrator (unified pipeline) — LIA-P05."""
+    """Fase 3: SSE via MainOrchestrator (unified pipeline) — LIA-P05.
+
+    emit_structured=True (caminho bolha, Fase 2 consolidacao): serializa os
+    campos ricos do ChatResponse (message/clarification/approval_required) e
+    repassa tool_started/finished/reasoning_step/panel_update. Default False
+    mantem o chat-page intocado (so token/[DONE]/error).
+    """
     import asyncio as _asyncio
+
+    from app.shared.chat_event_serializer import serialize_token
 
     main_orch = get_main_orchestrator()
     sse_queue: _asyncio.Queue = _asyncio.Queue()
@@ -909,9 +928,23 @@ async def _sse_via_orchestrator(
         if ev_type == "token" and event.get("content"):
             token = event["content"]
             full_response_parts.append(token)
-            await sse_queue.put({"token": token})
+            await sse_queue.put(
+                serialize_token(token) if emit_structured else {"token": token}
+            )
         elif ev_type == "token_done":
             await sse_queue.put({"_token_done": True})
+        elif emit_structured and ev_type in (
+            "tool_started",
+            "tool_finished",
+            "reasoning_step",
+            "panel_update",
+        ):
+            # Pass-through P0.3 activity stream + paineis emitidos pelo orchestrator.
+            await sse_queue.put(event)
+
+    # P1-5 (2026-06-18): expose view_context to read_table_state tool via ContextVar
+    from app.middleware.auth_enforcement import _lia_view_context as _lia_vc_ctx
+    _lia_vc_token = _lia_vc_ctx.set(view_context)
 
     ctx = UniversalContext(
         message=user_message,
@@ -919,8 +952,10 @@ async def _sse_via_orchestrator(
         company_id=company_id,
         conversation_id=conversation_id,
         user_name=user_name,
+        user_email=user_email,
         user_role=user_role,
         tenant_context_snippet=tenant_context_snippet,
+        view_context=view_context,
     )
 
     async def _run_orchestrator():
@@ -932,29 +967,65 @@ async def _sse_via_orchestrator(
 
     task = _asyncio.create_task(_run_orchestrator())
 
+    _silent_s = 0.0
     try:
         while True:
             try:
-                item = await _asyncio.wait_for(sse_queue.get(), timeout=60.0)
+                item = await _asyncio.wait_for(sse_queue.get(), timeout=keepalive_after_s)
             except _asyncio.TimeoutError:
-                yield f"data: {json.dumps({'error': 'stream timeout'})}\n\n"
-                task.cancel()
-                return
+                _silent_s += keepalive_after_s
+                if _silent_s >= hard_timeout_s:
+                    yield f"data: {json.dumps({'error': 'stream timeout'})}\n\n"
+                    task.cancel()
+                    return
+                # 502 fix: heartbeat em silencio prolongado (ops longas tipo WSI ~100s)
+                # mantem a conexao viva; o caminho antigo (timeout 60s -> abort) derrubava.
+                yield ": keepalive\n\n"
+                continue
+            _silent_s = 0.0
 
             if "_error" in item:
                 yield f"data: {json.dumps({'error': item['_error']})}\n\n"
                 return
             if "_done" in item:
+                result_obj = item.get("_result")
                 if not full_response_parts:
-                    result_obj = item.get("_result")
+                    # Bug fix: ChatResponse expoe `.content` (main_orchestrator.py),
+                    # nao `.message` — o fallback antigo emitia vazio sem streaming.
                     text = ""
-                    if result_obj and hasattr(result_obj, "message"):
-                        text = result_obj.message or ""
-                    elif isinstance(result_obj, dict):
-                        text = result_obj.get("message", "")
+                    if isinstance(result_obj, dict):
+                        text = result_obj.get("content") or result_obj.get("message") or ""
+                    elif result_obj is not None:
+                        text = (
+                            getattr(result_obj, "content", "")
+                            or getattr(result_obj, "message", "")
+                            or ""
+                        )
                     if text:
-                        yield f"data: {json.dumps({'token': text})}\n\n"
+                        _tok = serialize_token(text) if emit_structured else {"token": text}
+                        yield f"data: {json.dumps(_tok, ensure_ascii=False)}\n\n"
                         full_response_parts.append(text)
+                # Task #1090 — sinal do painel do wizard (canonical-fix).
+                # O orchestrator empacota ws_stage_payload (type=wizard_stage,
+                # thread_id, stage, **payload) em structured_data. No caminho
+                # chat-page (emit_structured=False) so emitimos token+[DONE], entao
+                # o painel nunca abria. Emite-se aqui um frame dedicado espelhando
+                # o evento WS (agent_chat_ws.py:1228) para o consumidor SSE abrir o
+                # painel. No caminho bolha (emit_structured=True) o payload ja vai
+                # dentro do frame `message` estruturado (serialize_message), entao
+                # nao duplicamos. ADITIVO: nunca remove/altera o streaming de token.
+                if not emit_structured and result_obj is not None:
+                    _sd = (
+                        result_obj.get("structured_data")
+                        if isinstance(result_obj, dict)
+                        else getattr(result_obj, "structured_data", None)
+                    ) or {}
+                    _wsp = _sd.get("ws_stage_payload") if isinstance(_sd, dict) else None
+                    if _wsp:
+                        yield f"data: {json.dumps(_wsp, ensure_ascii=False)}\n\n"
+                if emit_structured and result_obj is not None:
+                    for _frame in _orchestrator_result_to_frames(result_obj, conversation_id):
+                        yield f"data: {json.dumps(_frame, ensure_ascii=False)}\n\n"
                 break
             if "_token_done" in item:
                 continue
@@ -993,6 +1064,8 @@ company_id: str = Depends(require_company_id)):
     body = await request.json()
     user_content: str = body.get("content", "").strip()
     conversation_id: str | None = body.get("conversation_id")
+    # Fase B P0.1: estado-da-tela enviado pelo FE no corpo do SSE.
+    view_context = body.get("view_context") or body.get("page_context")
 
     if not user_content:
         raise HTTPException(status_code=422, detail="content is required")
@@ -1058,18 +1131,86 @@ company_id: str = Depends(require_company_id)):
         if _security_result and _security_result.get("blocked"):
             return JSONResponse(
                 status_code=400,
-                content={"error": True, "message": "Mensagem bloqueada por verificacao de seguranca."}
+                content={"error": True, "message": "Mensagem bloqueada por verificacao de seguranca.", "request_id": getattr(request.state, "request_id", "unknown")}
             )
 
         _fairness_guard = FairnessGuard()
         _fairness_result = _fairness_guard.check(user_content)
         if _fairness_result and _fairness_result.is_blocked:
+            try:
+                import asyncio as _fg_loop
+                _fg_loop.get_event_loop().create_task(
+                    _fairness_guard.log_check(
+                        result=_fairness_result,
+                        context="chat_legacy_stream",
+                        company_id=_company_id or None,
+                        recruiter_id=str(current_user.id) if current_user else None,
+                    )
+                )
+            except Exception:
+                pass
             return JSONResponse(
                 status_code=400,
-                content={"error": True, "message": _fairness_result.educational_message or "Sua solicitacao contem termos que podem gerar vies."}
+                content={"error": True, "message": _fairness_result.educational_message or "Sua solicitacao contem termos que podem gerar vies.", "request_id": getattr(request.state, "request_id", "unknown")}
             )
     except Exception as e:
         logger.debug("[LIA-P01] SSE compliance check skipped (fail-open): %s", e)
+
+    # GAP-00-001: daily token budget check — paridade com agent_chat_sse.py
+    if _company_id:
+        try:
+            from app.domains.credits.services.token_budget_service import (
+                check_budget as _chk_bgt_leg,
+                get_plan_for_company as _get_plan_leg,
+            )
+            _bgt_plan_leg = await _get_plan_leg(_company_id)
+            _bgt_ok_leg, _bgt_used_leg, _bgt_lim_leg = await _chk_bgt_leg(_company_id, _bgt_plan_leg)
+            if not _bgt_ok_leg:
+                return JSONResponse(
+                    status_code=429,
+                    content={
+                        "error": True,
+                        "error_code": "budget_exhausted",
+                        "message": (
+                            f"Limite diario de uso de IA atingido ({_bgt_used_leg:,}/{_bgt_lim_leg:,} tokens). "
+                            "O budget sera renovado a meia-noite UTC."
+                        ),
+                        "request_id": getattr(request.state, "request_id", "unknown"),
+                    },
+                )
+        except Exception as _bgt_exc_leg:
+            logger.debug("[LIA-BUDGET] Budget check skipped (fail-open): %s", _bgt_exc_leg)
+
+    # GAP-00-001: LGPD consent gate (simplified) — paridade com agent_chat_sse.py
+    # Checks candidate_id from view_context when recruiter is viewing a candidate.
+    try:
+        _vctx_cid = (view_context or {}).get("candidate_id") or (view_context or {}).get("candidateId")
+        if _vctx_cid and _company_id:
+            from app.core.database import AsyncSessionLocal as _ConsentASL_leg
+            from app.domains.lgpd.services.consent_checker_service import ConsentCheckerService as _CSvc_leg
+            async with _ConsentASL_leg() as _cons_db_leg:
+                _cons_result_leg = await _CSvc_leg(_cons_db_leg).check_candidate_consent(
+                    candidate_id=str(_vctx_cid),
+                    company_id=_company_id,
+                    purpose="ai_screening",
+                )
+            if not _cons_result_leg.allowed and not _cons_result_leg.soft_warning:
+                logger.warning(
+                    "[LIA-CONSENT] Consent revogado — path legacy stream: company=%s candidate=%s",
+                    _company_id, _vctx_cid,
+                )
+                return JSONResponse(
+                    status_code=451,
+                    content={
+                        "error": True,
+                        "error_code": "consent_revoked",
+                        "message": "Processamento bloqueado: consentimento LGPD revogado para este candidato.",
+                        "candidate_id": str(_vctx_cid),
+                        "request_id": getattr(request.state, "request_id", "unknown"),
+                    },
+                )
+    except Exception as _cons_exc_leg:
+        logger.debug("[LIA-CONSENT] Consent gate (fail-open): %s", _cons_exc_leg)
 
     _disable_unified = os.getenv("LIA_DISABLE_SSE_UNIFIED", "").lower() in ("1", "true", "yes")
     _generator = (
@@ -1085,9 +1226,11 @@ company_id: str = Depends(require_company_id)):
             conversation_id, user_content, history, repo, conversation,
             user_id=str(current_user.id),
             user_name=getattr(current_user, "name", "") or "",
+            user_email=getattr(current_user, "email", "") or "",
             user_role=str(getattr(current_user, "role", "")) or "",
             company_id=_company_id,
             tenant_context_snippet=_tenant_snippet,
+            view_context=view_context,
         )
     )
     return StreamingResponse(
@@ -1140,7 +1283,7 @@ company_id: str = Depends(require_company_id)):
     intent_key = "atualizar_campo_candidato"
     action_config = ACTIONABLE_INTENTS.get(intent_key)
     if not action_config:
-        raise HTTPException(status_code=500, detail="Action config not found for atualizar_campo_candidato")
+        raise
 
     company_id = getattr(current_user, "company_id", None)
 

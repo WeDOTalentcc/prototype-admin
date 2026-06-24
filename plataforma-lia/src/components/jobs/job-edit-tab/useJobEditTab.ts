@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useRef } from "react"
+import { useUnsavedChanges } from "@/hooks/shared/useUnsavedChanges"
 import { useSearchParams } from "next/navigation"
 import { toast } from "sonner"
 import { getCompanyPipelineStages, LIA_ASSISTED_STAGES, LIA_ASSISTED_STAGE_NAMES } from "@/lib/recruitment-stages"
@@ -61,6 +62,10 @@ export function useJobEditTab({
   // ── derived ────────────────────────────────────────────────────────────────
   const currentSection = SECTIONS.find((s) => s.id === activeSection) || SECTIONS[0]
   const isEditing = isCreationMode || editingSection === activeSection
+
+  // GAP-06-003: warn user before navigating away from unsaved job edits
+  useUnsavedChanges(isEditing)
+
   const filled = countFilledFields(jobEditForm, currentSection.fields)
   const total = currentSection.fields.length
 
@@ -107,6 +112,34 @@ export function useJobEditTab({
       ? rawStages
       : (companyPipelineFallback as StageItem[] | null) ?? localFallback
 
+  // #5 Fase 1: herança de sub-status + campos de coleta da empresa, por NOME da etapa.
+  // O editor da vaga exibe (read-only) o que cada etapa carrega da Jornada da empresa.
+  // Etapa com override próprio (subStatuses/dataFields já no interviewStages) tem precedência.
+  const inheritedByName = new Map<string, Pick<StageItem, "subStatuses" | "dataFields">>()
+  const companyStagesForInherit = (((companyPipelineFallback as StageItem[] | null) ?? localFallback) as StageItem[])
+  for (const cs of companyStagesForInherit) {
+    const key = cs.name || cs.stageName
+    if (key) inheritedByName.set(key, { subStatuses: cs.subStatuses, dataFields: cs.dataFields })
+  }
+  // override por vaga só conta quando vem do interviewStages persistido (rawStages),
+  // não do fallback da empresa (que carrega subStatuses da própria empresa = herança).
+  const hasRaw = rawStages.length > 0
+  const enrichedStages: StageItem[] = stages.map((s) => {
+    const inh = inheritedByName.get(s.name || s.stageName || "")
+    const inheritedSub = inh?.subStatuses
+    const inheritedData = inh?.dataFields
+    const subOverridden = hasRaw && Array.isArray(s.subStatuses)
+    return {
+      ...s,
+      // efetivo p/ display/consumo: override próprio senão herdado
+      subStatuses: subOverridden ? s.subStatuses : inheritedSub,
+      dataFields: (hasRaw && s.dataFields) ? s.dataFields : inheritedData,
+      // transientes do editor (não persistem)
+      _inheritedSubStatuses: inheritedSub,
+      _subStatusesOverridden: subOverridden,
+    }
+  })
+
   // ── helpers ────────────────────────────────────────────────────────────────
   const updateField = (field: string, value: unknown) => {
     setJobEditForm((prev) => ({ ...prev, [field]: value }))
@@ -123,7 +156,7 @@ export function useJobEditTab({
   ): "pause" | "complete" | "ask_reactivate" | "none" => {
     const currentScreening =
       job?.screeningStatus || jobEditForm.screeningStatus || "not_configured"
-    if (newStatus === "Paralisada" && currentScreening === "active") return "pause"
+    if (newStatus === "Pausada" && currentScreening === "active") return "pause"
     if (newStatus === "Concluída" || newStatus === "Cancelada") {
       if (
         currentScreening === "active" ||
@@ -134,7 +167,7 @@ export function useJobEditTab({
     }
     if (
       newStatus === "Ativa" &&
-      jobEditForm.status === "Paralisada" &&
+      (jobEditForm.status === "Pausada" || jobEditForm.status === "Paralisada") &&
       currentScreening === "paused"
     )
       return "ask_reactivate"
@@ -232,22 +265,18 @@ export function useJobEditTab({
     updateField("interviewStages", updated)
   }
 
-  const moveStage = (index: number, direction: "up" | "down") => {
-    if (direction === "up" && index === 0) return
-    if (direction === "down" && index === stages.length - 1) return
-    const stage = stages[index]
-    if (stage.stageCategory === "system" || stage.isReorderable === false) return
-    const newIndex = direction === "up" ? index - 1 : index + 1
-    const targetStage = stages[newIndex]
-    if (
-      targetStage.stageCategory === "system" ||
-      targetStage.isReorderable === false
-    )
-      return
+  // Reordenação por arrastar (dnd-kit). Substitui moveStage(up/down).
+  // Mantém os guards: não move etapa de sistema nem dropa numa posição de sistema.
+  const reorderStages = (fromIndex: number, toIndex: number) => {
+    if (fromIndex === toIndex) return
+    const from = stages[fromIndex]
+    const to = stages[toIndex]
+    if (!from || !to) return
+    if (from.stageCategory === "system" || from.isReorderable === false) return
+    if (to.stageCategory === "system" || to.isReorderable === false) return
     const updated = [...stages]
-    const temp = updated[index]
-    updated[index] = updated[newIndex]
-    updated[newIndex] = temp
+    const [moved] = updated.splice(fromIndex, 1)
+    updated.splice(toIndex, 0, moved)
     updateField(
       "interviewStages",
       updated.map((s, i) => ({ ...s, order: i + 1 }))
@@ -287,7 +316,7 @@ export function useJobEditTab({
       await createTemplate({ name: trimmed, stages: mappedStages })
       toast.success("Template salvo com sucesso!")
     } catch {
-      toast.error("Erro ao salvar template. Tente novamente.")
+      toast.error("Erro ao salvar template. Tente novamente.", { description: "Verifique sua conexão e tente novamente." })
     } finally {
       setIsSavingAsTemplate(false)
     }
@@ -306,7 +335,7 @@ export function useJobEditTab({
       toast.success("Template de pipeline aplicado com sucesso!")
       onJobUpdate?.({ is_pipeline_customized: false })
     } catch {
-      toast.error("Erro ao aplicar template. Tente novamente.")
+      toast.error("Erro ao aplicar template. Tente novamente.", { description: "Verifique sua conexão e tente novamente." })
     } finally {
       setIsApplyingTemplate(false)
     }
@@ -324,7 +353,7 @@ export function useJobEditTab({
     isEditing,
     filled,
     total,
-    stages,
+    stages: enrichedStages,
     rawStages,
     loadingCompanyPipeline,
     screeningCompletion,
@@ -339,7 +368,7 @@ export function useJobEditTab({
     addStage,
     removeStage,
     updateStage,
-    moveStage,
+    reorderStages,
     toggleStageActive,
     LIA_ASSISTED_STAGES,
     LIA_ASSISTED_STAGE_NAMES,

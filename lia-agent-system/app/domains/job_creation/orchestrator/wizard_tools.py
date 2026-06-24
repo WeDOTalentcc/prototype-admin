@@ -40,6 +40,11 @@ from typing import Any, Callable, Optional
 
 logger = logging.getLogger(__name__)
 
+from app.domains.job_creation.services.seniority_resolver import (
+    _infer_from_title,
+    SENIORITY_DISPLAY_NAMES,
+)
+
 
 # ── Contratos ────────────────────────────────────────────────────────────
 
@@ -140,9 +145,13 @@ _EMPLOYMENT_NORMALIZE: dict[str, str] = {
 
 # Campos de intake que set_job_fields aceita. Cada um mapeia para a chave
 # canonical do JobCreationState.
+# Campos de responsáveis (T9): manager_name, manager_email, recruiter,
+# recruiter_email são settáveis pelo LLM. PII masking em emails preservada
+# (placeholder ignorado silenciosamente quando mascarado).
 _SETTABLE_JOB_FIELDS: frozenset[str] = frozenset({
     "title", "department", "seniority", "location", "model",
     "employment_type", "manager_name", "manager_email",
+    "recruiter", "recruiter_email",
 })
 
 _EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
@@ -181,6 +190,11 @@ def _normalize_field(name: str, value: str) -> tuple[Optional[str], Optional[str
             return None, f"Email do gestor '{v}' é inválido."
         return v, None
 
+    if name == "recruiter_email":
+        if not _EMAIL_RE.match(v):
+            return None, f"Email do recrutador '{v}' é inválido."
+        return v, None
+
     return v, None
 
 
@@ -194,6 +208,8 @@ _FIELD_TO_STATE_KEY: dict[str, str] = {
     "employment_type": "parsed_employment_type",
     "manager_name": "parsed_manager_name",
     "manager_email": "parsed_manager_email",
+    "recruiter": "parsed_recruiter_name",
+    "recruiter_email": "parsed_recruiter_email",
 }
 
 
@@ -220,6 +236,10 @@ def _handle_set_job_fields(
     if tenant_err:
         return ToolResult(llm_message=tenant_err, error=True)
 
+    # Campos de responsáveis (T9): manager_name, manager_email, recruiter,
+    # recruiter_email são todos settáveis pelo LLM.
+    _server_managed_note = None
+
     unknown = [k for k in tool_input if k not in _SETTABLE_JOB_FIELDS]
     if unknown:
         return ToolResult(
@@ -230,15 +250,34 @@ def _handle_set_job_fields(
             error=True,
         )
 
+    # ── Guard computacional: manager ↔ recruiter confusion ────────────
+    # Se a mensagem corrente do usuário menciona "recrutador/a" SEM
+    # mencionar "gestor/a", e o LLM tenta setar manager_*, redireciona
+    # para recruiter_*. Guard NÃO depende do LLM acertar.
+    _cur_msg = (state.get("_current_user_message") or "").lower()
+    _RECRUITER_KW = ("recrutador", "recrutadora", "recruiter")
+    _MANAGER_KW = ("gestor", "gestora", "manager", "hiring manager", "chefe", "líder")
+    _has_recruiter_kw = any(kw in _cur_msg for kw in _RECRUITER_KW)
+    _has_manager_kw = any(kw in _cur_msg for kw in _MANAGER_KW)
+    if _has_recruiter_kw and not _has_manager_kw:
+        _REDIRECT_MAP = {"manager_name": "recruiter", "manager_email": "recruiter_email"}
+        _redirected = {_REDIRECT_MAP.get(k, k): v for k, v in tool_input.items()}
+        if _redirected != tool_input:
+            logger.warning(
+                "[WizardTools] Guard: LLM sent manager_* but user said recrutador — "
+                "redirected to recruiter field"
+            )
+            tool_input = _redirected
+
     updates: dict[str, Any] = {}
     applied: list[str] = []
     notes: list[str] = []
     for name, raw in tool_input.items():
-        # Email do gestor mascarado: ignorar (capturado deterministicamente
-        # no servidor). Não erra — apenas informa o LLM para não insistir.
-        if name == "manager_email" and _is_masked_pii(str(raw)):
+        # Email mascarado (LGPD strip no inbound): ignorar placeholder.
+        if name in ("manager_email", "recruiter_email") and _is_masked_pii(str(raw)):
+            _label = "gestor" if name == "manager_email" else "recrutador"
             notes.append(
-                "O email do gestor é capturado automaticamente do texto — "
+                f"O email do {_label} é capturado automaticamente do texto — "
                 "não precisa pedir nem validar formato; se o recrutador "
                 "mencionou um email, já está registrado."
             )
@@ -249,6 +288,24 @@ def _handle_set_job_fields(
         updates[_FIELD_TO_STATE_KEY[name]] = norm
         applied.append(f"{name}={norm!r}")
 
+    # T4: Seniority inference from title (deterministic, no DB)
+    if "parsed_title" in updates and "parsed_seniority" not in updates:
+        _title = updates["parsed_title"]
+        _inferred_level, _inferred_conf = _infer_from_title(_title)
+        if _inferred_level and _inferred_conf >= 0.8:
+            _display = SENIORITY_DISPLAY_NAMES.get(_inferred_level, _inferred_level)
+            updates["parsed_seniority"] = _inferred_level
+            applied.append(
+                f"seniority={_inferred_level!r} (inferido do titulo, "
+                f"confianca {_inferred_conf:.0%})"
+            )
+            notes.append(
+                f"Senioridade inferida do titulo: {_display}. "
+                f"Confirme ou ajuste se necessario."
+            )
+
+    if _server_managed_note:
+        notes.append(_server_managed_note)
     if not updates:
         if notes:
             return ToolResult(llm_message=" ".join(notes))
@@ -388,6 +445,40 @@ def _handle_set_screening_mode(
     return ToolResult(
         llm_message=f"Modo de triagem definido: {label}.",
         state_updates={"screening_mode": mode},
+    )
+
+
+
+def _handle_set_screening_deadline(
+    state: dict, tool_input: dict, ctx: ToolContext
+) -> ToolResult:
+    """Define o prazo de triagem em horas. Default da empresa: 48h."""
+    tenant_err = _reject_tenant_keys(tool_input)
+    if tenant_err:
+        return ToolResult(llm_message=tenant_err, error=True)
+
+    hours = tool_input.get("hours")
+    if not hours or not isinstance(hours, (int, float)):
+        return ToolResult(
+            llm_message="Erro: informe o prazo em horas (ex: 48).",
+            error=True,
+        )
+    hours = int(hours)
+    if hours < 12 or hours > 720:
+        return ToolResult(
+            llm_message="Erro: prazo deve ser entre 12h e 720h (30 dias).",
+            error=True,
+        )
+    if hours <= 24:
+        display = f"{hours}h"
+    elif hours % 24 == 0:
+        days = hours // 24
+        display = f"{days} dia{'s' if days > 1 else ''}"
+    else:
+        display = f"{hours}h (~{hours // 24} dias)"
+    return ToolResult(
+        llm_message=f"Prazo de triagem definido: {display} a partir da publicacao.",
+        state_updates={"screening_deadline_hours": hours},
     )
 
 
@@ -653,6 +744,27 @@ def _handle_set_salary(
     )
 
 
+
+def _handle_open_fullscreen_chat(
+    state: dict, tool_input: dict, ctx: ToolContext
+) -> ToolResult:
+    """Navega o recrutador para o chat em tela cheia (/pt/oi ou /pt/chat).
+
+    P0-E fix (2026-06-14): wizard nao tinha essa tool; LLM dizia 'vou expandir
+    o painel' quando usuario pedia 'me leve para chat full'.
+    """
+    tenant_err = _reject_tenant_keys(tool_input)
+    if tenant_err:
+        return ToolResult(llm_message=tenant_err, error=True)
+    return ToolResult(
+        llm_message=(
+            "Redirecionando para o chat em tela cheia. "
+            "Confirme ao recrutador que ele sera levado para la."
+        ),
+        state_updates={"_navigate_to_fullscreen_chat": True},
+    )
+
+
 def _handle_navigate_to_jobs(
     state: dict, tool_input: dict, ctx: ToolContext
 ) -> ToolResult:
@@ -674,6 +786,38 @@ def _handle_navigate_to_jobs(
     )
 
 
+
+def _handle_open_panel(
+    state: dict, tool_input: dict, ctx: ToolContext
+) -> ToolResult:
+    """Expande o painel lateral (ficha viva) no frontend."""
+    tenant_err = _reject_tenant_keys(tool_input)
+    if tenant_err:
+        return ToolResult(llm_message=tenant_err, error=True)
+    return ToolResult(
+        llm_message=(
+            "Painel lateral aberto -- confirme ao recrutador que a ficha viva "
+            "esta visivel ao lado."
+        ),
+        state_updates={"panel_pref": "expanded"},
+    )
+
+
+def _handle_close_panel(
+    state: dict, tool_input: dict, ctx: ToolContext
+) -> ToolResult:
+    """Minimiza o painel lateral para o dock acima do input."""
+    tenant_err = _reject_tenant_keys(tool_input)
+    if tenant_err:
+        return ToolResult(llm_message=tenant_err, error=True)
+    return ToolResult(
+        llm_message=(
+            "Painel minimizado para o card acima do campo de mensagem -- "
+            "confirme ao recrutador que ele pode reabrir clicando no card."
+        ),
+        state_updates={"panel_pref": "docked"},
+    )
+
 def _handle_get_wizard_status(
     state: dict, tool_input: dict, ctx: ToolContext
 ) -> ToolResult:
@@ -687,8 +831,8 @@ def _handle_get_wizard_status(
             _build_wizard_state_summary,
         )
         summary = _build_wizard_state_summary(state)
-    except Exception as exc:  # noqa: BLE001 — fail-soft, status é informativo
-        logger.warning("[WizardTools] status summary failed: %s", exc)
+    except Exception as exc:  # noqa: BLE001  # REGRA-4-EXEMPT: status summary é informativo, falha retorna mensagem neutra ao LLM
+        logger.warning("[WizardTools] status summary failed: %s", type(exc).__name__)
         summary = "(não foi possível montar o status agora)"
     return ToolResult(llm_message=summary)
 
@@ -715,8 +859,10 @@ SET_JOB_FIELDS = WizardTool(
             "location": {"type": "string", "description": "Localização (cidade/estado)."},
             "model": {"type": "string", "description": "Modelo: remoto, híbrido ou presencial."},
             "employment_type": {"type": "string", "description": "Contrato: CLT, PJ, estágio, temporário, freelancer."},
-            "manager_name": {"type": "string", "description": "Nome do gestor responsável."},
+            "manager_name": {"type": "string", "description": "Nome do GESTOR/hiring manager (quem aprova e acompanha). NÃO use para o recrutador — use o campo recruiter."},
             "manager_email": {"type": "string", "description": "Email do gestor responsável."},
+            "recruiter": {"type": "string", "description": "Nome do RECRUTADOR responsável pelo processo (quem conduz). Use quando o usuário se identifica como recrutador/a."},
+            "recruiter_email": {"type": "string", "description": "Email do recrutador responsável."},
         },
         "additionalProperties": False,
     },
@@ -739,6 +885,27 @@ SET_SCREENING_MODE = WizardTool(
         "additionalProperties": False,
     },
     handler=_handle_set_screening_mode,
+)
+
+SET_SCREENING_DEADLINE = WizardTool(
+    name="set_screening_deadline",
+    description=(
+        "Define o prazo de triagem (em horas) a partir da publicacao da vaga. "
+        "Default da empresa: 48h. Presets comuns: 24, 48, 72, 96, 120, 168 (7 dias). "
+        "O recrutador pode ajustar livremente entre 12h e 720h (30 dias)."
+    ),
+    input_schema={
+        "type": "object",
+        "properties": {
+            "hours": {
+                "type": "integer",
+                "description": "Prazo em horas (12-720). Ex: 48 = 2 dias, 168 = 7 dias.",
+            },
+        },
+        "required": ["hours"],
+        "additionalProperties": False,
+    },
+    handler=_handle_set_screening_deadline,
 )
 
 CONFIRM_COMPETENCIES = WizardTool(
@@ -889,6 +1056,42 @@ NAVIGATE_TO_JOBS = WizardTool(
     handler=_handle_navigate_to_jobs,
 )
 
+
+
+OPEN_FULLSCREEN_CHAT = WizardTool(
+    name="open_fullscreen_chat",
+    description=(
+        "Leva o recrutador para o chat em tela cheia (pagina dedicada de chat). "
+        "Use quando ele pedir 'me leve para o chat full', 'abrir chat em tela "
+        "cheia', 'quero ir pro chat completo', 'chat full', 'chat dedicado'."
+    ),
+    input_schema={"type": "object", "properties": {}, "additionalProperties": False},
+    handler=_handle_open_fullscreen_chat,
+)
+
+
+OPEN_PANEL = WizardTool(
+    name="open_panel",
+    description=(
+        "Expande o painel lateral (ficha viva da vaga) no frontend. Use quando "
+        "o recrutador pedir para 'abrir o painel', 'mostrar o painel', 'ver a "
+        "ficha ao lado'."
+    ),
+    input_schema={"type": "object", "properties": {}, "additionalProperties": False},
+    handler=_handle_open_panel,
+)
+
+CLOSE_PANEL = WizardTool(
+    name="close_panel",
+    description=(
+        "Minimiza o painel lateral para um card compacto acima do campo de "
+        "mensagem. Use quando o recrutador pedir para 'fechar o painel', "
+        "'esconder o painel', 'continuar so pelo chat'."
+    ),
+    input_schema={"type": "object", "properties": {}, "additionalProperties": False},
+    handler=_handle_close_panel,
+)
+
 GET_WIZARD_STATUS = WizardTool(
     name="get_wizard_status",
     description=(
@@ -908,6 +1111,7 @@ GET_WIZARD_STATUS = WizardTool(
 PURE_TOOLS: tuple[WizardTool, ...] = (
     SET_JOB_FIELDS,
     SET_SCREENING_MODE,
+    SET_SCREENING_DEADLINE,
     CONFIRM_COMPETENCIES,
     UPDATE_COMPETENCIES,
     CONFIRM_RESPONSIBILITIES,
@@ -915,6 +1119,9 @@ PURE_TOOLS: tuple[WizardTool, ...] = (
     APPROVE_JOB_DESCRIPTION,
     SET_SALARY,
     NAVIGATE_TO_JOBS,
+    OPEN_FULLSCREEN_CHAT,
+    OPEN_PANEL,
+    CLOSE_PANEL,
     GET_WIZARD_STATUS,
 )
 

@@ -14,6 +14,7 @@ Prefix canonical: /api/v1/integration-catalog
 from __future__ import annotations
 
 import logging
+from app.shared.errors import LIAInternalError
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -54,7 +55,7 @@ async def list_entries(
     include_master: bool = Query(True, description="Inclui master canonical"),
     include_deleted: bool = Query(False, description="Inclui soft-deleted (admin only)"),
     category: str | None = Query(None, description="Filtra por category (ats, ai_models, ...)"),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(require_admin_or_recruiter),
     company_id: str = Depends(require_company_id),
 ):
@@ -130,7 +131,7 @@ async def create_entry(
     except Exception as e:
         await db.rollback()
         logger.exception("Failed to create integration catalog entry")
-        raise HTTPException(500, detail=f"Falha ao criar entry: {e}")
+        raise LIAInternalError(f"Falha ao criar entry: {e}")
 
 
 @router.put(
@@ -171,7 +172,7 @@ async def update_entry(
     except Exception as e:
         await db.rollback()
         logger.exception("Failed to update integration catalog entry")
-        raise HTTPException(500, detail=f"Falha ao atualizar entry: {e}")
+        raise LIAInternalError(f"Falha ao atualizar entry: {e}")
 
 
 @router.delete(
@@ -242,4 +243,4 @@ async def customize_master(
     except Exception as e:
         await db.rollback()
         logger.exception("Failed to customize integration master")
-        raise HTTPException(500, detail=f"Falha ao customizar master: {e}")
+        raise LIAInternalError(f"Falha ao customizar master: {e}")

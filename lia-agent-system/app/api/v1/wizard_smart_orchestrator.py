@@ -100,8 +100,8 @@ class SmartOrchestrateRequest(WeDoBaseModel):
        ``WizardSessionService.process_message(...)`` → drives the
        JobCreationGraph forward.
 
-    2. **HITL gate resume** (when ``approval_decision`` is set): user clicked
-       Approve/Reject on a pending wizard gate (e.g. jd_enrichment,
+    2. **HITL gate resume** — REMOVED (Fase 8 A2). Fields kept for
+       backward compat; handler ignores them.
        wsi_questions). Handler calls
        ``wizard_gate_service.resume_gate(...)`` → unblocks the graph at the
        ``langgraph.types.interrupt()`` checkpoint. The ``message`` field is
@@ -244,63 +244,6 @@ async def smart_orchestrate(
     user_id = str(current_user.id) if getattr(current_user, "id", None) else "anonymous"
     session_id = request.conversation_id or create_session_id(company_id)
     thread_id = derive_thread_id(company_id, session_id)
-
-    # ── HITL gate resume branch ─────────────────────────────────────────
-    # Mirrors the canonical WS path in agent_chat_ws.py:683-687. When the
-    # frontend sets approval_decision + pending_id, this request is a gate
-    # resume, not a new message — the user already saw the awaiting payload
-    # and is now deciding.
-    if request.approval_decision is not None and request.pending_id is not None:
-        logger.info(
-            "smart_orchestrate HITL resume: decision=%s pending_id=%s session=%s thread=%s",
-            request.approval_decision, request.pending_id, session_id, thread_id,
-        )
-        try:
-            from app.domains.job_creation.services.wizard_gate_service import (
-                wizard_gate_service,
-            )
-            gate_result = await wizard_gate_service.resume_gate(
-                thread_id=thread_id,
-                pending_id=request.pending_id,
-                decision=request.approval_decision,
-                ws_session_id=session_id,
-                company_id=company_id,
-                user_id=user_id,
-                comment=request.approval_comment,
-                resume_domain="wizard",
-            )
-            gate_message = gate_result.get("message") or ""
-            return SmartOrchestrateResponse(
-                success=True,
-                lia_message=gate_message,
-                detected_criteria={},
-                next_stage=None,
-                auto_transition=False,
-                tool_results=[],
-                confidence=0.95,
-                reasoning_steps=[],
-                intent=f"hitl_{request.approval_decision}",
-                awaiting_confirmation=False,
-                job_vacancy_id=None,
-                job_published=False,
-                conversation_id=session_id,
-            )
-        except ValueError as gate_val_exc:
-            logger.error("smart_orchestrate HITL invalid: %s", gate_val_exc)
-            return SmartOrchestrateResponse(
-                success=False,
-                lia_message="Pedido de aprovação inválido.",
-                error=str(gate_val_exc),
-                conversation_id=session_id,
-            )
-        except Exception as gate_exc:
-            logger.exception("smart_orchestrate HITL failed: %s", gate_exc)
-            return SmartOrchestrateResponse(
-                success=False,
-                lia_message="Erro ao processar a aprovação do wizard.",
-                error=f"{type(gate_exc).__name__}: {gate_exc}",
-                conversation_id=session_id,
-            )
 
     logger.info(
         "smart_orchestrate request: stage=%s msg_len=%d session=%s thread=%s",

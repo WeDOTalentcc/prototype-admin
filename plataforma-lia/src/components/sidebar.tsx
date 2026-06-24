@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import React, { useState, useCallback, useEffect, useMemo, useRef } from "react"
 import type { MenuItemType, JobFilterItemType, SidebarProps } from "@/lib/sidebar/sidebar.types"
 import { useSidebarState } from "@/lib/sidebar/useSidebarState"
@@ -38,9 +39,15 @@ import {
   EyeOff,
   Check,
   Loader2,
-  Layers,
+  FolderKanban,
+  Package,
+  BarChart2,
+  LineChart,
+  FileText,
 } from "lucide-react"
 import type { RecentItem } from "@/hooks/shared/use-recent-items"
+import { useFocusedJobStore } from "@/stores/focused-job-store"
+import { useTargetDeployments } from "@/hooks/agents/use-target-deployments"
 import { hasModuleAccess } from "@/utils/license-manager"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/theme-toggle"
@@ -67,12 +74,18 @@ import { NotificationSystem } from "@/components/notification-system"
 import { BetaBadge } from "@/components/ui/beta-badge"
 import { AgentsQuotaBadge } from "@/components/pages-agent-studio/AgentsQuotaBadge"
 import { HitlPendingBadge } from "@/components/hitl-pending-badge"
+import { SetupProgressIcon } from "@/components/onboarding/SetupProgressIcon"
+import { IASidebar } from "@/components/ia-sidebar/IASidebar"
+import { useIASessionStore } from "@/stores/ia-session-store"
+import { useIASessions } from "@/hooks/ia-sessions/useIASessions"
 import { ProfileModal } from "@/components/modals/profile-modal"
 import { useAuth } from "@/contexts/auth-context"
 import { useAuthenticatedUserId } from "@/hooks/shared/use-authenticated-user-id"
 import type { Notification as AppNotification } from "@/hooks/shared/use-notifications"
 import Image from "next/image"
 import { useTranslations } from 'next-intl'
+import { useRouter } from "next/navigation"
+import { useLocale } from "next-intl"
 import { LanguageSwitcher } from "@/components/language-switcher"
 
 const sectionLabelKeys: Record<string, string> = {
@@ -82,12 +95,15 @@ const sectionLabelKeys: Record<string, string> = {
 
 const itemLabelKeys: Record<string, string> = {
   "Conversar": "items.conversar",
-  "Decidir": "items.decidir",
   "Recrutar": "items.recrutar",
   "Vagas": "items.jobs",
+  "Projetos": "items.projects",
   "Funil de Talentos": "items.talentPipeline",
-  "Estúdio de Agentes": "items.agentStudio",
-  "Módulos": "items.modules",
+  "Agentes": "items.agentes",
+  "Marketplace": "items.marketplace",
+  "Decidir": "items.decidir",
+  "Indicadores": "items.indicadores",
+  "Relatórios": "items.relatorios",
 }
 
 const filterLabelKeys: Record<string, string> = {
@@ -115,10 +131,26 @@ interface MenuSection {
 
 const BASE_MENU_SECTIONS: MenuSection[] = [
   {
-    label: "Operacional",
+    label: "",
     items: [
       { icon: MessageCircle, label: "Conversar", isCore: true },
-      { icon: Target, label: "Decidir", isCore: true },
+      { icon: Brain, label: "Conversas", isCore: true, navKey: "__ia-sidebar__" },
+    ],
+  },
+  {
+    label: "",
+    items: [
+      {
+        icon: BarChart2,
+        label: "Decidir",
+        isCore: true,
+        navigateOnClick: true,
+        alwaysExpanded: true,
+        subItems: [
+          { icon: LineChart, label: "Indicadores", isCore: true, isDraft: true },
+          { icon: FileText, label: "Relatórios", isCore: true, isDraft: true },
+        ],
+      },
       {
         icon: GitBranch,
         label: "Recrutar",
@@ -138,22 +170,25 @@ const BASE_MENU_SECTIONS: MenuSection[] = [
           },
         ],
       },
-    ],
-  },
-  {
-    label: "Configuração",
-    items: [
       {
         icon: Bot,
-        label: "Estúdio de Agentes",
+        label: "Agentes",
         isCore: true,
         navigateOnClick: true,
         maxVisibleSubItems: 3,
         seeAllLabel: "Ver todos os agentes",
-        seeAllTarget: "Estúdio de Agentes",
+        seeAllTarget: "Agentes",
         isBeta: true,
+        subItems: [
+          { icon: Package, label: "Marketplace", isCore: true },
+        ],
       },
-      { icon: Layers, label: "Módulos", isCore: true, isBeta: true },
+      {
+        icon: FolderKanban,
+        label: "Projetos",
+        isCore: true,
+        isDraft: true,
+      },
     ],
   },
 ]
@@ -165,27 +200,11 @@ interface DynamicSubItem {
 }
 
 function useSidebarDynamicItems() {
-  const [talentPools, setTalentPools] = useState<DynamicSubItem[]>([])
   const [agents, setAgents] = useState<DynamicSubItem[]>([])
+  const [pools, setPools] = useState<DynamicSubItem[]>([])
 
   useEffect(() => {
     let cancelled = false
-
-    async function loadPools() {
-      try {
-        const res = await fetch("/api/backend-proxy/talent-pools")
-        if (!res.ok) return
-        const data = await res.json()
-        const mapped = (data?.data || [])
-          .map((d: { id: string; attributes: { name: string; status: string } }) => ({
-            id: d.id,
-            name: d.attributes.name,
-            status: d.attributes.status,
-          }))
-          .filter((p: DynamicSubItem) => p.status === "active")
-        if (!cancelled) setTalentPools(mapped)
-      } catch { /* silent */ }
-    }
 
     async function loadAgents() {
       try {
@@ -203,12 +222,27 @@ function useSidebarDynamicItems() {
       } catch { /* silent */ }
     }
 
-    loadPools()
+    async function loadPools() {
+      try {
+        const res = await fetch("/api/backend-proxy/talent-pools?per_page=5")
+        if (!res.ok) return
+        const data = await res.json()
+        const items = Array.isArray(data) ? data : (data?.talent_pools || data?.data || [])
+        const mapped = items.slice(0, 5).map((p: { id: string; name?: string; attributes?: { name?: string } }) => ({
+          id: p.id,
+          name: (p as any).attributes?.name ?? p.name ?? "",
+          status: "active",
+        }))
+        if (!cancelled) setPools(mapped)
+      } catch { /* silent */ }
+    }
+
     loadAgents()
+    loadPools()
     return () => { cancelled = true }
   }, [])
 
-  return { talentPools, agents }
+  return { agents, pools }
 }
 
 
@@ -263,21 +297,22 @@ const MenuItem = React.memo(({
     }
 
     if (hasSubItems && item.navigateOnClick) {
-      if (canAccess) onNavigate(item.label)
+      if (canAccess) onNavigate(item.navKey || item.label)
       setIsExpanded(true)
     } else if (hasSubItems) {
       setIsExpanded(prev => !prev)
     } else if (canAccess) {
-      onNavigate(item.label)
+      onNavigate(item.navKey || item.label)
     } else {
       onNavigate(`upgrade-${item.moduleId}`)
     }
-  }, [hasSubItems, canAccess, onNavigate, item.label, item.moduleId, item.navigateOnClick])
+  }, [hasSubItems, canAccess, onNavigate, item.label, item.navKey, item.moduleId, item.navigateOnClick])
 
   // When alwaysExpanded is set, sub-items stay visible regardless of the
   // collapse state — the chevron is hidden since there is nothing to toggle.
   const expanded = item.alwaysExpanded || isExpanded
 
+  const isIASidebarTrigger = item.navKey === "__ia-sidebar__"
   const isActive = currentPage === item.label || (hasSubItems && item.subItems?.some(sub => sub.label === currentPage))
 
   return (
@@ -287,21 +322,26 @@ const MenuItem = React.memo(({
         aria-current={isActive && canAccess ? "page" : undefined}
         className={cn(
  "w-full flex items-center gap-2 px-2 py-2 rounded-md text-left transition-colors duration-200 text-base-ui leading-tight min-h-10",
-          isLocked
+          isIASidebarTrigger
+            ? "bg-zinc-900 text-white hover:bg-zinc-800 font-medium"
+            : isLocked
             ? "text-lia-text-primary cursor-default opacity-60"
             : "hover:bg-lia-interactive-hover",
-          isActive && canAccess
-            ? "bg-lia-bg-tertiary text-lia-text-primary font-semibold"
-            : canAccess
+          !isIASidebarTrigger && isActive && canAccess
+            ? "bg-lia-interactive-active text-lia-text-primary font-semibold"
+            : !isIASidebarTrigger && canAccess
             ? "text-lia-text-primary font-normal"
-            : "text-lia-text-primary font-normal",
-          isCollapsed && !shouldShowContent ? "justify-center px-1.5" : ""
+            : !isIASidebarTrigger
+            ? "text-lia-text-primary font-normal"
+            : "",
+          isCollapsed && !shouldShowContent ? "justify-center px-1.5" : "",
+          item.isFuturo ? "opacity-40 pointer-events-none" : ""
         )}
-        title={isCollapsed && !shouldShowContent ? `${itemLabelKeys[item.label] ? t(itemLabelKeys[item.label]) : item.label}${item.isBeta ? ` (${t('labels.beta')})` : ""}` : undefined}
+        title={isCollapsed && !shouldShowContent ? `${itemLabelKeys[item.label] ? t(itemLabelKeys[item.label]) : item.label}${item.isBeta ? ` (${t('labels.beta')})` : ""}${item.isDraft ? " (DRAFT)" : ""}` : undefined}
         disabled={isLocked || false}
       >
         <div className="flex items-center gap-1">
-          <item.icon className="w-4 h-4 flex-shrink-0" />
+          <item.icon className={cn("w-4 h-4 flex-shrink-0", isIASidebarTrigger && "text-wedo-cyan")} />
           {isLocked && <Lock className="w-2 h-2" />}
         </div>
         {shouldShowContent && (
@@ -311,7 +351,10 @@ const MenuItem = React.memo(({
               {item.isBeta && (
                 <BetaBadge size="sm" label={t('labels.beta')} />
               )}
-              {item.label === "Estúdio de Agentes" && (
+              {item.isDraft && (
+                <BetaBadge size="sm" label="DRAFT" />
+              )}
+              {item.label === "Agentes" && (
                 <AgentsQuotaBadge />
               )}
             </div>
@@ -383,8 +426,9 @@ const MenuItem = React.memo(({
                   subIsLocked
                     ? "text-lia-text-secondary cursor-default opacity-60"
                     : "hover:bg-lia-interactive-hover",
+                  subItem.isFuturo ? "opacity-40 pointer-events-none" : "",
                   currentPage === subItem.label && subCanAccess
-                    ? "bg-lia-bg-tertiary text-lia-text-primary font-semibold"
+                    ? "bg-lia-interactive-active text-lia-text-primary font-semibold"
                     : subCanAccess
                     ? "text-lia-text-secondary font-normal"
                     : "text-lia-text-secondary font-normal"
@@ -397,6 +441,9 @@ const MenuItem = React.memo(({
                 </div>
                 <div className="flex items-center justify-between flex-1 min-w-0">
                   <span className="text-sm-ui truncate">{itemLabelKeys[subItem.label] ? t(itemLabelKeys[subItem.label]) : subItem.label}</span>
+                  {subItem.isDraft && (
+                    <BetaBadge size="sm" label="DRAFT" />
+                  )}
                   {subItem.isPremium && !subIsLocked && (
                     <Crown className="w-2 h-2 text-lia-text-primary" />
                   )}
@@ -414,8 +461,8 @@ const MenuItem = React.memo(({
               onClick={() => onNavigate(item.seeAllTarget!)}
               className="w-full flex items-center gap-2 px-2 py-1 rounded-md text-left transition-colors duration-200 hover:bg-lia-interactive-hover min-h-7"
             >
-              <MoreHorizontal className="w-3 h-3 flex-shrink-0 text-lia-text-disabled" />
-              <span className="text-xs text-lia-text-disabled hover:text-lia-text-secondary">
+              <MoreHorizontal className="w-3 h-3 flex-shrink-0 text-lia-text-muted" />
+              <span className="text-xs text-lia-text-muted hover:text-lia-text-secondary">
                 {item.seeAllLabel ? (miscLabelKeys[item.seeAllLabel] ? t(miscLabelKeys[item.seeAllLabel]) : item.seeAllLabel) : t("labels.seeAll")} ({item.subItems!.length})
               </span>
             </button>
@@ -453,7 +500,7 @@ const JobFilterItem = React.memo(({
  "w-full flex items-center gap-2 px-2 py-1.5 rounded-full text-left transition-colors duration-200 text-xs leading-tight min-h-[36px]",
         "hover:bg-lia-interactive-hover",
         isActive
-          ? "bg-lia-bg-tertiary text-lia-text-primary font-semibold"
+          ? "bg-lia-interactive-active text-lia-text-primary font-semibold"
           : "text-lia-text-primary font-normal",
         isCollapsed && !shouldShowContent ? "justify-center px-1.5" : ""
       )}
@@ -480,8 +527,9 @@ JobFilterItem.displayName = 'JobFilterItem'
 
 const RECENT_TYPE_CONFIG = {
   vaga: { icon: Briefcase, color: 'text-lia-text-secondary' },
-  chat: { icon: Brain, color: 'text-wedo-cyan' },
+  chat: { icon: Brain, color: 'text-lia-text-secondary' },
   candidato: { icon: User, color: 'text-lia-text-secondary' },
+  banco: { icon: Database, color: 'text-lia-text-secondary' },
 } as const
 
 const RecentItemRow = React.memo(({
@@ -515,7 +563,7 @@ const RecentItemRow = React.memo(({
         className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none duration-150 p-0.5 rounded-md hover:bg-lia-interactive-active"
         title={t("labels.removeFromRecent")}
       >
-        <X className="w-3 h-3 text-lia-text-disabled" />
+        <X className="w-3 h-3 text-lia-text-muted" />
       </button>
     </div>
   )
@@ -523,9 +571,110 @@ const RecentItemRow = React.memo(({
 
 RecentItemRow.displayName = 'RecentItemRow'
 
-export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClick, onRecentItemRemove, onRecentItemsClear, onShowSearch }: SidebarProps) {
+const FocusedJobSection = React.memo(({
+  job,
+  onClear,
+  shouldShowContent,
+}: {
+  job: { id: string; title: string; candidateCount: number; todayInterviewCount: number }
+  onClear: () => void
+  shouldShowContent: boolean
+}) => {
   const t = useTranslations('sidebar')
-  const { talentPools, agents } = useSidebarDynamicItems()
+  const router = useRouter()
+  const locale = useLocale()
+  const { data: deploymentsData } = useTargetDeployments({
+    targetType: "job",
+    targetId: job.id,
+  })
+  const activeAgentCount = (deploymentsData?.deployments ?? []).filter(
+    (d: { is_active?: boolean }) => d.is_active !== false
+  ).length
+
+  if (!shouldShowContent) return null
+
+  const jobUrl = `/${locale}/jobs/${job.id}`
+
+  return (
+    <div className="mb-1 px-1">
+      <div className="rounded-lg bg-wedo-cyan/10 border border-wedo-cyan/20 p-2">
+        <div className="flex items-center justify-between mb-1.5">
+          <span className="text-[10px] font-semibold text-lia-text-tertiary tracking-[0.18em] uppercase opacity-70">
+            {t('focusedJob.label')}
+          </span>
+          <button
+            onClick={onClear}
+            className="p-0.5 rounded hover:bg-wedo-cyan/15 text-lia-text-muted hover:text-lia-text-secondary"
+            title={t('focusedJob.dismiss')}
+            aria-label={t('focusedJob.dismiss')}
+          >
+            <X className="w-3 h-3" />
+          </button>
+        </div>
+        <div className="flex items-center gap-1.5 px-1 mb-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-wedo-cyan flex-shrink-0" aria-hidden="true" />
+          <span className="text-xs font-medium text-lia-text-primary line-clamp-1">{job.title}</span>
+        </div>
+        <div className="space-y-0.5">
+          <button
+            onClick={() => router.push(jobUrl)}
+            className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left transition-colors duration-200 hover:bg-wedo-cyan/15 text-lia-text-secondary min-h-8"
+          >
+            <Users className="w-3.5 h-3.5 flex-shrink-0" />
+            <span className="text-sm-ui flex-1">{t('focusedJob.candidates')}</span>
+            {job.candidateCount > 0 && (
+              <span className="text-micro bg-wedo-cyan/20 text-wedo-cyan px-1.5 py-0.5 rounded-full">
+                {job.candidateCount}
+              </span>
+            )}
+          </button>
+          {job.todayInterviewCount > 0 && (
+            <button
+              onClick={() => router.push(jobUrl)}
+              className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left transition-colors duration-200 hover:bg-wedo-cyan/15 text-lia-text-secondary min-h-8"
+            >
+              <Eye className="w-3.5 h-3.5 flex-shrink-0" />
+              <span className="text-sm-ui flex-1">{t('focusedJob.interviews')}</span>
+              <span className="text-micro bg-wedo-cyan/20 text-wedo-cyan px-1.5 py-0.5 rounded-full">
+                {job.todayInterviewCount} {t('focusedJob.today')}
+              </span>
+            </button>
+          )}
+          <button
+            onClick={() => router.push(`${jobUrl}?tab=agents`)}
+            className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left transition-colors duration-200 hover:bg-wedo-cyan/15 text-lia-text-secondary min-h-8"
+          >
+            <Bot className="w-3.5 h-3.5 flex-shrink-0" />
+            <span className="text-sm-ui flex-1">{t('focusedJob.agents')}</span>
+            {activeAgentCount > 0 && (
+              <span className="text-micro bg-wedo-cyan/20 text-wedo-cyan px-1.5 py-0.5 rounded-full">
+                {activeAgentCount}
+              </span>
+            )}
+          </button>
+          <button
+            onClick={() => router.push(`${jobUrl}?tab=edit&section=configuracoes`)}
+            className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left transition-colors duration-200 hover:bg-wedo-cyan/15 text-lia-text-secondary min-h-8"
+          >
+            <Settings className="w-3.5 h-3.5 flex-shrink-0" />
+            <span className="text-sm-ui">{t('focusedJob.configure')}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+})
+
+FocusedJobSection.displayName = 'FocusedJobSection'
+
+export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClick, onRecentItemRemove, onRecentItemsClear, onShowSearch, notificationOpen, onNotificationToggle }: SidebarProps) {
+
+  const t = useTranslations('sidebar')
+  const { agents, pools } = useSidebarDynamicItems()
+  const { focusedJob, clearFocusedJob } = useFocusedJobStore()
+  const { isIASidebarOpen, toggleIASidebar } = useIASessionStore()
+  const { data: iaSessions = [] } = useIASessions()
+  const totalUnread = iaSessions.reduce((sum, s) => sum + (s.unread_count ?? 0), 0)
   const { user: authUser, refreshUser } = useAuth()
   const { userId: authenticatedUserId, isReady: isAuthReady } = useAuthenticatedUserId()
 
@@ -541,9 +690,17 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
   const [passwordSuccess, setPasswordSuccess] = useState(false)
   const [isChangingPassword, setIsChangingPassword] = useState(false)
 
-  const handleNotificationClick = useCallback((_notification: AppNotification) => {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking("sidebar-password", showPasswordModal)
+
+  const handleNotificationClick = useCallback((notification: AppNotification) => {
+    // talent_pool_insight: navigate to Indicadores for pool-level metrics
+    if ((notification as { type?: string }).type === "talent_pool_insight") {
+      onNavigate("Decidir")
+      return
+    }
     // digest notifications are now handled by WeeklyDigestChatProvider
-  }, [])
+  }, [onNavigate])
 
   const roleLabels: Record<string, string> = {
     admin: t("user.admin"),
@@ -625,26 +782,32 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
 
   const menuSections = useMemo(() => {
     const injectDynamic = (item: MenuItemType): MenuItemType => {
-      if (item.label === "Funil de Talentos" && talentPools.length > 0) {
+      if (item.label === "Agentes" && agents.length > 0) {
         return {
           ...item,
-          subItems: talentPools.map(p => ({
-            icon: Database,
-            label: p.name,
-            isCore: true,
-            navKey: `pool:${p.id}`,
-          })),
+          subItems: [
+            ...(item.subItems || []),
+            ...agents.map(a => ({
+              icon: Bot,
+              label: a.name,
+              isCore: true,
+              navKey: `agent:${a.id}`,
+            })),
+          ],
         }
       }
-      if (item.label === "Estúdio de Agentes" && agents.length > 0) {
+      if (item.label === "Funil de Talentos" && pools.length > 0) {
         return {
           ...item,
-          subItems: agents.map(a => ({
-            icon: Bot,
-            label: a.name,
-            isCore: true,
-            navKey: `agent:${a.id}`,
-          })),
+          subItems: [
+            ...(item.subItems || []),
+            ...pools.map(p => ({
+              icon: Database,
+              label: p.name,
+              isCore: true,
+              navKey: `pool:${p.id}`,
+            })),
+          ],
         }
       }
       if (item.subItems && item.subItems.length > 0) {
@@ -659,19 +822,23 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
       ...section,
       items: section.items.map(item => injectDynamic(item)),
     }))
-  }, [talentPools, agents])
+  }, [agents, pools])
 
   const handleDynamicNavigate = useCallback((page: string) => {
+    if (page === "__ia-sidebar__") {
+      toggleIASidebar()
+      return
+    }
+    if (page.startsWith("agent:")) {
+      onNavigate("Agentes")
+      return
+    }
     if (page.startsWith("pool:")) {
       onNavigate("Funil de Talentos")
       return
     }
-    if (page.startsWith("agent:")) {
-      onNavigate("Estúdio de Agentes")
-      return
-    }
     onNavigate(page)
-  }, [onNavigate])
+  }, [onNavigate, toggleIASidebar])
 
   const {
     isMounted,
@@ -695,6 +862,10 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
     onNavigate(page)
     handleCloseTipsModal()
   }, [onNavigate, handleCloseTipsModal])
+
+  useEffect(() => {
+    useFocusedJobStore.persist.rehydrate()
+  }, [])
 
   return (
     <nav
@@ -750,33 +921,81 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
         </Button>
       </div>
 
+      {/* Search + Bell — topo do sidebar (expanded) */}
+      {shouldShowContent && (
+        <div className="flex items-center gap-1.5 px-4 pb-3">
+          <button
+            type="button"
+            onClick={() => onShowSearch?.()}
+            className="flex-1 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-lia-bg-secondary dark:bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors text-xs"
+          >
+            <Search className="w-3 h-3 flex-shrink-0" />
+            <span className="flex-1 text-left">Pesquisar...</span>
+            <kbd className="text-[10px] text-lia-text-muted font-mono bg-lia-bg-primary dark:bg-lia-bg-secondary px-1.5 py-0.5 rounded border border-lia-border-subtle">⌘K</kbd>
+          </button>
+          {onNotificationToggle && isAuthReady && authenticatedUserId ? (
+            <NotificationSystem
+              userId={authenticatedUserId}
+              onNotificationClick={handleNotificationClick}
+              panelPosition="sidebar"
+              externalIsOpen={notificationOpen}
+              onExternalToggle={onNotificationToggle}
+            />
+          ) : null}
+
+        </div>
+      )}
+      {/* Bell only — collapsed sidebar */}
+      {!shouldShowContent && onNotificationToggle && isAuthReady && authenticatedUserId && (
+        <div className="flex justify-center pb-2">
+          <NotificationSystem
+            userId={authenticatedUserId}
+            onNotificationClick={handleNotificationClick}
+            panelPosition="sidebar"
+            externalIsOpen={notificationOpen}
+            onExternalToggle={onNotificationToggle}
+          />
+        </div>
+      )}
+
+
+
       {/* Menu and Workspace - Scrollable */}
       <div className={`py-4 flex-1 overflow-y-auto ${shouldShowContent ? 'px-4' : 'px-2'}`}>
-        <nav className="space-y-4">
+        <nav className="space-y-1">
           {menuSections.map((section, sectionIdx) => (
-            <div key={section.label}>
-              {shouldShowContent && (
-                <h3 className="text-[10px] font-semibold text-lia-text-disabled mb-1.5 tracking-[0.18em] uppercase px-2 opacity-70">
-                  {sectionLabelKeys[section.label] ? t(sectionLabelKeys[section.label]) : section.label}
-                </h3>
-              )}
-              {!shouldShowContent && sectionIdx > 0 && (
-                <div className="border-t border-lia-border-subtle my-1.5" />
-              )}
-              <div className="space-y-1">
-                {section.items.map((item) => (
-                  <MenuItem
-                    key={item.label}
-                    item={item}
-                    currentPage={currentPage}
-                    onNavigate={handleDynamicNavigate}
-                    isCollapsed={isCollapsed}
-                    shouldShowContent={shouldShowContent}
-                    t={t}
-                  />
-                ))}
+            <React.Fragment key={section.label || String(sectionIdx)}>
+              <div>
+                {shouldShowContent && section.label && (
+                  <h3 className="text-[10px] font-semibold text-lia-text-tertiary mb-1.5 tracking-[0.18em] uppercase px-2 opacity-70">
+                    {sectionLabelKeys[section.label] ? t(sectionLabelKeys[section.label]) : section.label}
+                  </h3>
+                )}
+                {!shouldShowContent && sectionIdx > 0 && section.label && (
+                  <div className="border-t border-lia-border-subtle my-1.5" />
+                )}
+                <div className="space-y-1">
+                  {section.items.map((item) => (
+                    <MenuItem
+                      key={item.label}
+                      item={item}
+                      currentPage={currentPage}
+                      onNavigate={handleDynamicNavigate}
+                      isCollapsed={isCollapsed}
+                      shouldShowContent={shouldShowContent}
+                      t={t}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
+              {sectionIdx === 0 && isMounted && focusedJob && (
+                <FocusedJobSection
+                  job={focusedJob}
+                  onClear={clearFocusedJob}
+                  shouldShowContent={shouldShowContent}
+                />
+              )}
+            </React.Fragment>
           ))}
         </nav>
 
@@ -798,7 +1017,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
             {recentItems.length >= 2 && onRecentItemsClear && (
               <button
                 onClick={onRecentItemsClear}
-                className="flex items-center gap-1.5 mt-2 px-2 py-1 text-xs text-lia-text-disabled hover:text-lia-text-secondary transition-colors motion-reduce:transition-none duration-200"
+                className="flex items-center gap-1.5 mt-2 px-2 py-1 text-xs text-lia-text-muted hover:text-lia-text-secondary transition-colors motion-reduce:transition-none duration-200"
               >
                 <Trash2 className="w-3 h-3" />
                 {t("labels.clearRecentItems")}
@@ -809,68 +1028,14 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
 
       </div>
 
-      {/* Tools & User Section - Fixed at Bottom */}
-      <div className="px-3 py-2 border-t border-lia-border-subtle bg-lia-bg-primary space-y-2">
+      {/* Tools & User Section - Fixed at Bottom — linha única unificada */}
+      <div className="px-3 py-2 border-t border-lia-border-subtle bg-lia-bg-primary">
         <div className={cn(
           "flex items-center gap-1",
           isCollapsed && !isTemporaryExpanded ? "flex-col gap-0.5" : "justify-center"
         )}>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onShowSearch?.()}
-            className="h-6 w-6 p-0 text-lia-text-primary hover:bg-lia-interactive-hover"
-            title={t("labels.globalSearch")}
-          >
-            <Search className="w-3 h-3" />
-          </Button>
 
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onNavigate("Configurações")}
-            className="h-6 w-6 p-0 text-lia-text-primary hover:bg-lia-interactive-hover"
-            title={t("labels.settings")}
-          >
-            <Settings className="w-3 h-3" />
-          </Button>
-
-          {/* Dark mode toggle ocultado — produto está padronizado em light mode (DS v4.2.2).
-              Para reativar: descomentar o bloco abaixo e remover `forcedTheme="light"` do ThemeProvider em src/app/[locale]/layout.tsx. */}
-          {/* <div className="flex items-center">
-            <ThemeToggle />
-          </div> */}
-
-          <LanguageSwitcher collapsed={isCollapsed && !isTemporaryExpanded} />
-
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleShowTipsModal}
-            className="h-6 w-6 p-0 text-lia-text-primary hover:bg-lia-interactive-hover"
-            title={t("labels.helpTips")}
-          >
-            <HelpCircle className="w-3 h-3" />
-          </Button>
-        </div>
-
-        <div className={cn(
-          "flex items-center gap-1 pt-1 border-t border-lia-border-subtle",
-          isCollapsed && !isTemporaryExpanded ? "flex-col gap-0.5" : "justify-center"
-        )}>
-          <HitlPendingBadge />
-
-          {/* BUG-08: só renderiza após auth hidratar — evita request com
-              userId="default_user" seguido por re-request com email real
-              (dobrava tráfego e contaminava contadores). */}
-          {isAuthReady && authenticatedUserId && (
-            <NotificationSystem
-              userId={authenticatedUserId}
-              onNotificationClick={handleNotificationClick}
-              panelPosition="sidebar"
-            />
-          )}
-
+          {/* 1. Avatar — acesso mais frequente */}
           {isMounted ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -963,8 +1128,38 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
               </Avatar>
             </span>
           )}
+
+          {/* 4. Config, Idioma, Ajuda, HITL — inline ao lado do avatar */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onNavigate("Configurações")}
+            className="h-6 w-6 p-0 text-lia-text-muted hover:text-lia-text-secondary hover:bg-lia-interactive-hover"
+            title={t("labels.settings")}
+          >
+            <Settings className="w-3 h-3" />
+          </Button>
+
+          <LanguageSwitcher collapsed={true} />
+
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleShowTipsModal}
+            className="h-6 w-6 p-0 text-lia-text-muted hover:text-lia-text-secondary hover:bg-lia-interactive-hover"
+            title={t("labels.helpTips")}
+          >
+            <HelpCircle className="w-3 h-3" />
+          </Button>
+
+          {isMounted && <SetupProgressIcon />}
+          {isMounted && <HitlPendingBadge />}
+
         </div>
       </div>
+
+      {/* IASidebar — Apollo-style: opens adjacent to sidebar */}
+      <IASidebar sidebarOffset={isCollapsed && !isTemporaryExpanded ? 64 : sidebarWidth} />
 
       {/* Resize Handle */}
       {shouldShowContent && !isTemporaryExpanded && (

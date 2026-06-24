@@ -74,7 +74,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
   if (!isOpen) return null
 
   // Dados reais do backend mesclados com fallback para campos sem cobertura de DB
-  const funnelMetrics = reportApiData
+  const funnelMetrics = reportApiData?.funnel_metrics
     ? {
         totalCandidates: reportApiData.funnel_metrics.total_candidates,
         screening: reportApiData.funnel_metrics.screening,
@@ -90,7 +90,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
         hired: 0, conversionRate: 0, averageTimeToHire: 0, costPerHire: 0,
       }
 
-  const channelPerformance = reportApiData?.channel_performance.map(c => ({
+  const channelPerformance = reportApiData?.channel_performance?.map(c => ({
     channel: c.channel,
     candidates: c.candidates,
     quality: 0,
@@ -98,7 +98,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
     cost: 0,
   })) ?? []
 
-  const topCandidates = reportApiData?.top_candidates.map(c => ({
+  const topCandidates = reportApiData?.top_candidates?.map(c => ({
     name: c.name,
     score: Math.round(c.score),
     status: c.status,
@@ -128,7 +128,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
 
       const events = [
         { date: fmt(openDate), event:"Vaga publicada", status:"completed" as const },
-        { date: fmt(addDays(openDate, Math.min(3, daysOpen))), event:"Primeira triagem LIA", status: daysOpen >= 3 ?"completed" as const :"pending" as const },
+        { date: fmt(addDays(openDate, Math.min(3, daysOpen))), event:"Primeira triagem", status: daysOpen >= 3 ?"completed" as const :"pending" as const },
         { date: fmt(addDays(openDate, Math.min(7, daysOpen))), event:"Início das entrevistas", status: daysOpen >= 7 ?"completed" as const : daysOpen >= 3 ?"in-progress" as const :"pending" as const },
         { date: fmt(addDays(openDate, Math.round(predictedDays * 0.6))), event:"Testes técnicos", status: daysOpen >= predictedDays * 0.6 ?"completed" as const : daysOpen >= 7 ?"in-progress" as const :"pending" as const },
         { date: fmt(addDays(openDate, Math.round(predictedDays * 0.85))), event:"Decisão final", status: daysOpen >= predictedDays * 0.85 ?"completed" as const :"pending" as const },
@@ -146,7 +146,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
         { category:"Plataformas", amount: 3800 },
         { category:"Testes", amount: 2400 },
         { category:"Equipe", amount: 4600 },
-        { category:"LIA/Automação", amount: 2500 }
+        { category:"IA/Automação", amount: 2500 }
       ]
     },
     predictions: {
@@ -350,12 +350,12 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                   </div>
                   <div className="text-center p-2 bg-wedo-purple/10 rounded-xl border border-wedo-purple/30">
                     <Clock className="w-4 h-4 text-wedo-purple mx-auto mb-0.5" />
-                    <p className="text-lg font-semibold text-wedo-purple">{reportData.funnelMetrics.averageTimeToHire}</p>
+                    <p className="text-lg font-semibold text-lia-text-secondary">{reportData.funnelMetrics.averageTimeToHire}</p>
                     <p className="text-micro text-lia-text-secondary">Dias p/ Contratar</p>
                   </div>
                   <div className="text-center p-2 bg-wedo-orange/10 rounded-xl border border-wedo-orange/30">
                     <DollarSign className="w-4 h-4 text-wedo-orange mx-auto mb-0.5" />
-                    <p className="text-lg font-semibold text-wedo-orange">{formatBRL(reportData.funnelMetrics.costPerHire)}</p>
+                    <p className="text-lg font-semibold text-wedo-orange-text">{formatBRL(reportData.funnelMetrics.costPerHire)}</p>
                     <p className="text-micro text-lia-text-secondary">Custo/Contratação</p>
                   </div>
                 </div>
@@ -440,8 +440,8 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                               <div className="flex items-center gap-1">
                                 {channel.channel ==="LinkedIn" && <Briefcase className="w-2.5 h-2.5 text-lia-text-secondary" />}
                                 {channel.channel ==="Website" && <Globe className="w-2.5 h-2.5 text-status-success" />}
-                                {channel.channel ==="LIA Database" && <Brain className="w-2.5 h-2.5 text-wedo-cyan" />}
-                                {channel.channel ==="Referral" && <Users className="w-2.5 h-2.5 text-wedo-orange" />}
+                                {channel.channel ==="LIA Database" && <Brain className="w-2.5 h-2.5 text-wedo-cyan-text" />}
+                                {channel.channel ==="Referral" && <Users className="w-2.5 h-2.5 text-wedo-orange-text" />}
                                 <span>{channel.channel}</span>
                               </div>
                             </td>
@@ -492,7 +492,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                         </div>
                         <span className={`text-micro px-1.5 py-0.5 rounded-full font-medium
  ${candidate.status ==="Final" ?"" :
-                          candidate.status ==="Entrevista" ?"bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-wedo-cyan-dark" :""}`}>
+                          candidate.status ==="Entrevista" ?"bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-wedo-cyan-text" :""}`}>
                           {candidate.status}
                         </span>
                       </div>
@@ -543,12 +543,12 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                   {reportData.predictions.timeToFill && (
                     <div className="p-2 bg-wedo-purple/10 rounded-xl border border-wedo-purple/30">
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-micro font-medium text-wedo-purple">Previsão Time-to-Fill</span>
-                        <Chip variant="neutral" muted className="bg-wedo-purple/20 text-wedo-purple text-micro px-1 py-0">
+                        <span className="text-micro font-medium text-lia-text-secondary">Previsão Time-to-Fill</span>
+                        <Chip variant="neutral" muted className="bg-wedo-purple/20 text-wedo-purple-text text-micro px-1 py-0">
                           {Math.round(reportData.predictions.timeToFill.confidence * 100)}% confiança
                         </Chip>
                       </div>
-                      <p className="text-sm font-bold text-wedo-purple">
+                      <p className="text-sm font-bold text-lia-text-secondary">
                         {reportData.predictions.timeToFill.predictedDays} dias
                         <span className="text-micro font-normal ml-1">
                           ({reportData.predictions.timeToFill.rangeMin}-{reportData.predictions.timeToFill.rangeMax})
@@ -621,7 +621,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                   </div>
                   <div className="p-2 bg-wedo-purple/10 rounded-xl border border-wedo-purple/30 text-center">
                     <p className="text-micro text-lia-text-secondary">Benchmark TTF</p>
-                    <p className="text-micro font-medium text-wedo-purple">{reportData.qualityMetrics.timeToFillBenchmark}</p>
+                    <p className="text-micro font-medium text-lia-text-secondary">{reportData.qualityMetrics.timeToFillBenchmark}</p>
                   </div>
                   <div className="p-2 bg-status-success/10 rounded-xl border border-status-success/30 text-center">
                     <p className="text-micro text-lia-text-secondary">Salário vs Mercado</p>
@@ -646,7 +646,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                   </div>
                   <div className="col-span-2 p-2 bg-wedo-orange/10 rounded-xl border border-wedo-orange/30">
                     <p className="text-micro text-lia-text-secondary">Gasto ({Math.round((reportData.budget.spent / reportData.budget.total) * 100)}%)</p>
-                    <p className="text-sm font-bold text-wedo-orange">{formatBRL(reportData.budget.spent)}</p>
+                    <p className="text-sm font-bold text-wedo-orange-text">{formatBRL(reportData.budget.spent)}</p>
                   </div>
                   <div className="col-span-2 p-2 bg-status-success/10 rounded-xl border border-status-success/30">
                     <p className="text-micro text-lia-text-secondary">Disponível ({Math.round((reportData.budget.remaining / reportData.budget.total) * 100)}%)</p>
@@ -676,8 +676,8 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                   {[
                     { icon: CheckCircle, color:"text-status-success", bgColor:"bg-status-success/10", title:"Acelerar Processo de Entrevista", desc:"Com 34 candidatos em fase de entrevista, recomenda-se agendar entrevistas em bloco para reduzir o tempo de processo em 30%." },
                     { icon: Brain, color:"text-lia-text-secondary", bgColor:"bg-lia-bg-tertiary dark:bg-lia-bg-secondary", title:"Otimizar Triagem com LIA", desc: `Aumentar o uso da LIA para triagem inicial pode reduzir custos em ${CURRENCY_SYMBOL} 3.000 e melhorar a qualidade dos candidatos em 15%.` },
-                    { icon: Target, color:"text-wedo-purple", bgColor:"bg-wedo-purple/10", title:"Focar em Canais de Alta Performance", desc:"LinkedIn e LIA Database apresentam melhor qualidade de candidatos. Considere realocar 40% do orçamento para estes canais." },
-                    { icon: Clock, color:"text-wedo-orange", bgColor:"bg-wedo-orange/10", title:"Definir Prazo para Decisão Final", desc:"Estabelecer deadline de 10 dias para decisões finais pode evitar perda de candidatos qualificados para concorrentes." }
+                    { icon: Target, color:"text-wedo-purple-text", bgColor:"bg-wedo-purple/10", title:"Focar em Canais de Alta Performance", desc:"LinkedIn e LIA Database apresentam melhor qualidade de candidatos. Considere realocar 40% do orçamento para estes canais." },
+                    { icon: Clock, color:"text-wedo-orange-text", bgColor:"bg-wedo-orange/10", title:"Definir Prazo para Decisão Final", desc:"Estabelecer deadline de 10 dias para decisões finais pode evitar perda de candidatos qualificados para concorrentes." }
                   ].map((rec, idx) => (
                     <div key={idx} className="flex items-start gap-2">
                       <div className={`w-5 h-5 rounded-full ${rec.bgColor} flex items-center justify-center flex-shrink-0`}>

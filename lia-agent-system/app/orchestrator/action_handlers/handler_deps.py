@@ -39,6 +39,7 @@ class HandlerDeps:
     db: Any = None
     company_id: str = ""
     user_id: str = ""
+    user_email: str = ""
 
     # Private lazy-loaded service slots — accessed via properties below
     _pipeline_service: Any = field(default=None, repr=False)
@@ -87,4 +88,5 @@ class HandlerDeps:
             db=self.db,
             company_id=company_id,
             user_id=user_id,
+            user_email=self.user_email,
         )

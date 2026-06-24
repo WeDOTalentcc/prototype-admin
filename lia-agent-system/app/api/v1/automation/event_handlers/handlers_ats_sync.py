@@ -23,6 +23,7 @@ from .._shared import (
     validate_multi_tenancy,
 )
 from app.shared.security.require_company_id import require_company_id
+from app.shared.errors import LIAError
 
 logger = logging.getLogger(__name__)
 
@@ -229,4 +230,4 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"❌ [ATS_SYNC] Error: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Erro ao sincronizar com ATS: {str(e)}")
+        raise LIAError(message="Erro interno do servidor")

@@ -138,6 +138,20 @@ pages:
       - ["taxa de conversão", 0.7]
       - ["tempo de contratação", 0.7]
 
+  recrutar:
+    display_name: "Recrutar / Visão Global"
+    path: "/recrutar"
+    description: "Visão Global do pipeline de recrutamento. Tabs: Vagas (ciclo de vida) e Candidatos (funil por etapa)."
+    navigation_hint: "Quer que eu abra a Visão Global?"
+    keywords:
+      - ["visão global", 1.0]
+      - ["visao global", 1.0]
+      - ["pipeline overview", 1.0]
+      - ["recrutar", 1.0]
+      - ["recrutamento", 0.5]
+      - ["processo seletivo", 0.7]
+      - ["etapas", 0.4]
+
 # Methodology knowledge injected in every system prompt
 methodology:
   wsi:

@@ -763,11 +763,11 @@ class ReportService:
 
                 result = await db.execute(text(f"""
                     SELECT
-                        COUNT(*) FILTER (WHERE vc.stage = 'Contratado' AND vc.updated_at >= :week_start) as hires,
+                        COUNT(*) FILTER (WHERE vc.stage IN ('Contratado', 'hired') AND vc.updated_at >= :week_start) as hires,
                         COUNT(*) FILTER (WHERE vc.created_at >= :week_start) as candidates,
                         COALESCE(AVG(EXTRACT(EPOCH FROM (vc.updated_at - vc.created_at)) / 86400)
-                            FILTER (WHERE vc.stage = 'Contratado'), 0) as avg_days,
-                        COUNT(*) FILTER (WHERE vc.stage = 'Contratado' AND vc.updated_at >= :prev_week_start AND vc.updated_at < :week_start) as prev_hires,
+                            FILTER (WHERE vc.stage IN ('Contratado', 'hired')), 0) as avg_days,
+                        COUNT(*) FILTER (WHERE vc.stage IN ('Contratado', 'hired') AND vc.updated_at >= :prev_week_start AND vc.updated_at < :week_start) as prev_hires,
                         COUNT(*) FILTER (WHERE vc.created_at >= :prev_week_start AND vc.created_at < :week_start) as prev_candidates
                     FROM vacancy_candidates vc
                     WHERE 1=1 {company_filter}
@@ -863,7 +863,7 @@ class ReportService:
                     SELECT
                         jv.recruiter as recruiter_name,
                         COUNT(DISTINCT jv.id) as total_jobs,
-                        COUNT(DISTINCT vc.id) FILTER (WHERE vc.stage = 'Contratado') as positions_filled,
+                        COUNT(DISTINCT vc.id) FILTER (WHERE vc.stage IN ('Contratado', 'hired')) as positions_filled,
                         COUNT(DISTINCT vc.id) as total_candidates,
                         COALESCE(AVG(vc.match_percentage) FILTER (WHERE vc.match_percentage IS NOT NULL), 0) as avg_quality
                     FROM job_vacancies jv
@@ -906,7 +906,7 @@ class ReportService:
                     SELECT
                         COALESCE(NULLIF(vc.source, 'SEED_DATA'), 'Outros') as channel_name,
                         COUNT(*) as candidates_count,
-                        COUNT(*) FILTER (WHERE vc.stage = 'Contratado') as hired_count
+                        COUNT(*) FILTER (WHERE vc.stage IN ('Contratado', 'hired')) as hired_count
                     FROM vacancy_candidates vc
                     WHERE vc.source IS NOT NULL {company_filter}
                     GROUP BY COALESCE(NULLIF(vc.source, 'SEED_DATA'), 'Outros')
@@ -944,11 +944,11 @@ class ReportService:
 
                 result = await db.execute(text(f"""
                     SELECT
-                        COUNT(*) FILTER (WHERE vc.stage = 'Contratado' AND vc.updated_at >= :month_start) as hires,
+                        COUNT(*) FILTER (WHERE vc.stage IN ('Contratado', 'hired') AND vc.updated_at >= :month_start) as hires,
                         COUNT(*) FILTER (WHERE vc.created_at >= :month_start) as total_candidates,
                         COALESCE(AVG(EXTRACT(EPOCH FROM (vc.updated_at - vc.created_at)) / 86400)
-                            FILTER (WHERE vc.stage = 'Contratado'), 0) as avg_days,
-                        COUNT(*) FILTER (WHERE vc.stage = 'Contratado') as all_hires
+                            FILTER (WHERE vc.stage IN ('Contratado', 'hired')), 0) as avg_days,
+                        COUNT(*) FILTER (WHERE vc.stage IN ('Contratado', 'hired')) as all_hires
                     FROM vacancy_candidates vc
                     WHERE 1=1 {company_filter}
                 """), {**params, "month_start": month_start})
@@ -998,12 +998,12 @@ class ReportService:
                 result = await db.execute(text(f"""
                     SELECT
                         (SELECT COUNT(*) FROM vacancy_candidates vc
-                         WHERE vc.stage = 'Contratado' AND vc.updated_at >= :month_start {vc_filter}) as hires,
+                         WHERE vc.stage IN ('Contratado', 'hired') AND vc.updated_at >= :month_start {vc_filter}) as hires,
                         (SELECT COUNT(*) FROM job_vacancies jv
                          WHERE jv.status IN ('Ativa', 'active') {jv_filter}) as open_positions,
                         (SELECT COALESCE(AVG(EXTRACT(EPOCH FROM (vc.updated_at - vc.created_at)) / 86400), 0)
                          FROM vacancy_candidates vc
-                         WHERE vc.stage = 'Contratado' {vc_filter}) as avg_days
+                         WHERE vc.stage IN ('Contratado', 'hired') {vc_filter}) as avg_days
                 """), {**params, "month_start": month_start})
                 row = result.fetchone()
 
@@ -1035,7 +1035,7 @@ class ReportService:
                     SELECT
                         COALESCE(jv.department, 'Não definido') as department,
                         COUNT(DISTINCT jv.id) as open_positions,
-                        COUNT(DISTINCT vc.id) FILTER (WHERE vc.stage = 'Contratado') as hires
+                        COUNT(DISTINCT vc.id) FILTER (WHERE vc.stage IN ('Contratado', 'hired')) as hires
                     FROM job_vacancies jv
                     LEFT JOIN vacancy_candidates vc ON vc.vacancy_id = jv.id
                     WHERE jv.department IS NOT NULL {company_filter}
@@ -1075,12 +1075,12 @@ class ReportService:
 
                 result = await db.execute(text(f"""
                     SELECT
-                        COUNT(*) FILTER (WHERE vc.stage = 'Contratado' AND vc.updated_at >= :month_start) as hires_current,
-                        COUNT(*) FILTER (WHERE vc.stage = 'Contratado' AND vc.updated_at >= :prev_month_start AND vc.updated_at < :month_start) as hires_prev,
+                        COUNT(*) FILTER (WHERE vc.stage IN ('Contratado', 'hired') AND vc.updated_at >= :month_start) as hires_current,
+                        COUNT(*) FILTER (WHERE vc.stage IN ('Contratado', 'hired') AND vc.updated_at >= :prev_month_start AND vc.updated_at < :month_start) as hires_prev,
                         COALESCE(AVG(EXTRACT(EPOCH FROM (vc.updated_at - vc.created_at)) / 86400)
-                            FILTER (WHERE vc.stage = 'Contratado' AND vc.updated_at >= :month_start), 0) as avg_time_current,
+                            FILTER (WHERE vc.stage IN ('Contratado', 'hired') AND vc.updated_at >= :month_start), 0) as avg_time_current,
                         COALESCE(AVG(EXTRACT(EPOCH FROM (vc.updated_at - vc.created_at)) / 86400)
-                            FILTER (WHERE vc.stage = 'Contratado' AND vc.updated_at >= :prev_month_start AND vc.updated_at < :month_start), 0) as avg_time_prev
+                            FILTER (WHERE vc.stage IN ('Contratado', 'hired') AND vc.updated_at >= :prev_month_start AND vc.updated_at < :month_start), 0) as avg_time_prev
                     FROM vacancy_candidates vc
                     WHERE 1=1 {company_filter}
                 """), {**params, "month_start": month_start, "prev_month_start": prev_month_start})
@@ -1197,7 +1197,7 @@ class ReportService:
                         (SELECT COUNT(*) FROM vacancy_candidates vc WHERE vc.stage = 'Triagem' {company_filter_vc}) as screening_count,
                         (SELECT COUNT(*) FROM vacancy_candidates vc WHERE vc.stage IN ('Entrevista Técnica', 'Entrevista RH', 'Entrevista Final') {company_filter_vc}) as interview_count,
                         (SELECT COUNT(*) FROM vacancy_candidates vc WHERE vc.stage = 'Proposta' {company_filter_vc}) as offer_count,
-                        (SELECT COUNT(*) FROM vacancy_candidates vc WHERE vc.stage = 'Contratado' {company_filter_vc}) as hired_count
+                        (SELECT COUNT(*) FROM vacancy_candidates vc WHERE vc.stage IN ('Contratado', 'hired') {company_filter_vc}) as hired_count
                 """), params)
                 row = result.fetchone()
 

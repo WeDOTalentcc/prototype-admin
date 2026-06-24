@@ -47,7 +47,7 @@ export function StatusChangeConfirmModal({
                 : "bg-status-success/15 dark:bg-status-success/30"
             }`}>
               {screeningImpact === "pause" && <Pause className="w-3 h-3 text-status-warning" />}
-              {screeningImpact === "complete" && <CheckCircle2 className="w-3 h-3 text-wedo-cyan-dark" />}
+              {screeningImpact === "complete" && <CheckCircle2 className="w-3 h-3 text-wedo-cyan-text" />}
               {screeningImpact === "ask_reactivate" && <Play className="w-3 h-3 text-status-success" />}
             </div>
             <div>

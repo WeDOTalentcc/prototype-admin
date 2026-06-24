@@ -814,4 +814,27 @@ class AutomationTriggerService:
         return False
 
 
+    async def fire_offer_trigger(
+        self,
+        trigger_type: "Any",
+        offer_id: str,
+        company_id: str,
+        candidate_name: str,
+        metadata: "dict | None" = None,
+    ) -> None:
+        """Dispatch an offer-lifecycle automation trigger to configured rules."""
+        try:
+            from app.shared.automation.trigger_types_canonical import TriggerType as _TT
+            if not isinstance(trigger_type, _TT):
+                return
+            logger.info(
+                "[automation_trigger] fire_offer_trigger type=%s offer=%s company=%s",
+                trigger_type.value, offer_id, company_id,
+            )
+            # Placeholder: future Sprint will execute bound automation rules
+            # for this trigger type (email sequences, notifications, stage moves).
+        except Exception as _e:
+            logger.warning("[automation_trigger] fire_offer_trigger failed: %s", _e)
+
+
 automation_trigger_service = AutomationTriggerService()

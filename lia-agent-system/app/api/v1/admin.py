@@ -2,12 +2,13 @@
 Admin API endpoints - Administrative operations including seed data.
 """
 import logging
+from app.shared.errors import LIAInternalError
 
 from fastapi import APIRouter, Depends, HTTPException
 
 from app.auth.dependencies import require_admin
-from app.domains.admin.dependencies import get_admin_repo
-from app.domains.admin.repositories.admin_repository import AdminRepository
+from app.repositories.dependencies import get_admin_repo
+from app.repositories.admin_repository import AdminRepository
 from app.models.alert import AlertSeverity, AlertType
 from app.models.task import TaskPriority, TaskType
 from app.shared.security.require_company_id import require_company_id
@@ -256,10 +257,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error("Seeding failed: %s", str(e))
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to seed database: {str(e)}",
-        )
+        raise LIAInternalError("Internal server error")
 
 
 @router.post("/seed-data/task-templates", response_model=None)
@@ -287,10 +285,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error("Task template seeding failed: %s", str(e))
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to seed task templates: {str(e)}",
-        )
+        raise LIAInternalError("Internal server error")
 
 
 @router.post("/seed-data/alert-rules", response_model=None)
@@ -318,10 +313,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error("Alert rule seeding failed: %s", str(e))
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to seed alert rules: {str(e)}",
-        )
+        raise LIAInternalError("Internal server error")
 
 
 @router.post("/seed-data/demo", response_model=None)
@@ -358,18 +350,12 @@ company_id: str = Depends(require_company_id)):
                 },
             }
         else:
-            raise HTTPException(
-                status_code=500,
-                detail=f"Failed to seed demo data: {results.get('error', 'Unknown error')}",
-            )
+            raise LIAInternalError(f"Failed to seed demo data: {results.get('error', 'Unknown error')}")
     except HTTPException:
         raise
     except Exception as e:
         logger.error("Demo data seeding failed: %s", str(e))
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to seed demo data: {str(e)}",
-        )
+        raise LIAInternalError("Internal server error")
 
 
 @router.delete("/seed-data/demo", response_model=None)
@@ -404,15 +390,9 @@ company_id: str = Depends(require_company_id)):
                 },
             }
         else:
-            raise HTTPException(
-                status_code=500,
-                detail=f"Failed to clear demo data: {results.get('error', 'Unknown error')}",
-            )
+            raise LIAInternalError(f"Failed to clear demo data: {results.get('error', 'Unknown error')}")
     except HTTPException:
         raise
     except Exception as e:
         logger.error("Demo data clearing failed: %s", str(e))
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to clear demo data: {str(e)}",
-        )
+        raise LIAInternalError("Internal server error")

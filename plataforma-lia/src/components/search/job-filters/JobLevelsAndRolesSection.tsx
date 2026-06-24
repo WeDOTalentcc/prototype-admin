@@ -178,7 +178,7 @@ export const JobLevelsAndRolesSection = ({
               <Chip
                 key={role}
                 variant="neutral" muted
-                className="bg-wedo-purple/10 border border-wedo-purple/30 text-wedo-purple pl-2 pr-1 py-0.5 flex items-center gap-1"
+                className="bg-wedo-purple/10 border border-wedo-purple/30 text-wedo-purple-text pl-2 pr-1 py-0.5 flex items-center gap-1"
               >
                 <span className="text-xs">{role}</span>
                 <button

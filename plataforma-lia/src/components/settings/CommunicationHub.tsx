@@ -12,7 +12,7 @@
  * reintroduzida, criar tab novo aqui + endpoint /api/communication/sent-log.
  */
 
-import React, { useEffect } from "react"
+import React from "react"
 import { Mail, PenTool, Bell } from "lucide-react"
 import { useTranslations } from "next-intl"
 import { tabStyles } from '@/lib/design-tokens'
@@ -21,15 +21,12 @@ import { useCommunicationHub } from './communication-hub/useCommunicationHub'
 import { TemplatesTab } from './communication-hub/TemplatesTab'
 import { SignatureTab } from './communication-hub/SignatureTab'
 import { AlertPreferencesPanel } from './AlertPreferencesPanel'
+import { DataChannelSettings } from './DataChannelSettings'
 
 export function CommunicationHub({ activeSubsection, visibleTabs, stacked }: CommunicationHubProps) {
   const t = useTranslations("settings")
   const hub = useCommunicationHub(activeSubsection)
 
-  useEffect(() => {
-    hub.fetchData()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
 
   const allTabs = [
     { id: 'templates', label: t("communication.tabTemplates"), icon: Mail },
@@ -71,6 +68,7 @@ export function CommunicationHub({ activeSubsection, visibleTabs, stacked }: Com
             handleConfirmAIAdjustment={hub.handleConfirmAIAdjustment}
             handleCancelAIAdjustment={hub.handleCancelAIAdjustment}
             handleSaveTemplate={hub.handleSaveTemplate}
+            onTemplateCreated={hub.fetchData}
           />
         )
       case 'signature':
@@ -88,7 +86,10 @@ export function CommunicationHub({ activeSubsection, visibleTabs, stacked }: Com
         )
       case 'alerts':
         return (
-          <AlertPreferencesPanel />
+          <div className="space-y-6">
+            <AlertPreferencesPanel />
+            <DataChannelSettings />
+          </div>
         )
       default:
         return null

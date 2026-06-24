@@ -40,6 +40,7 @@ from app.shared.security.require_company_id import require_company_id
 from typing import Annotated
 from fastapi import Path
 from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
+from app.shared.errors import LIAError
 
 logger = logging.getLogger(__name__)
 
@@ -108,7 +109,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error listing policies: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/categories", response_model=CategoryListResponse)
@@ -126,7 +127,7 @@ async def list_categories(db: AsyncSession = Depends(get_db), company_id: str = 
         raise
     except Exception as e:
         logger.error(f"Error listing categories: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/{policy_id}", response_model=PolicyWithHistoryResponse)
@@ -157,7 +158,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting policy: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.put("/{policy_id}", response_model=PolicyResponse)
@@ -206,7 +207,7 @@ async def update_policy(
     except Exception as e:
         await db.rollback()
         logger.error(f"Error updating policy: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/{policy_id}/history", response_model=PolicyAuditLogListResponse)
@@ -234,7 +235,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting policy history: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/seed", response_model=SeedPoliciesResponse)
@@ -259,6 +260,6 @@ async def seed_default_policies(
     except Exception as e:
         await db.rollback()
         logger.error(f"Error seeding policies: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 reorder_collection_before_item(router)

@@ -1,16 +1,16 @@
 "use client"
 
-import React, { useMemo } from "react"
+import React, { useMemo, useEffect } from "react"
 import dynamic from "next/dynamic"
 import { Button } from "@/components/ui/button"
-import { Plus, Users, Clock, AlertTriangle, CheckCircle2, Briefcase, Zap, Pause, CheckCircle, XCircle, WifiOff } from "lucide-react"
+import { Plus, Users, Clock, AlertTriangle, CheckCircle2, Briefcase, Zap, Pause, CheckCircle, XCircle, WifiOff, PenLine, Megaphone } from "lucide-react"
 import { PageTabNavigation } from "@/components/ui/page-tab-navigation"
 import type { PageTab } from "@/components/ui/page-tab-navigation"
 import { JobKanbanPage } from "./job-kanban-page"
-import { LoadingModal as JobsLoadingModal } from "@/components/ui/loading"
 import { toast } from "sonner"
 import { liaApi } from "@/services/lia-api"
 import { useJobsPageCore } from "./jobs/hooks/useJobsPageCore"
+import { useFocusedJobStore } from "@/stores/focused-job-store"
 import { ErrorBoundarySection } from "@/components/ui/error-boundary-section"
 import { JobsListContent } from "./JobsListContent"
 import type { Job } from "@/components/jobs"
@@ -20,6 +20,8 @@ import { sortJobsByColumn } from "./jobs/utils/jobsPageUtils"
 const JobsModalsSection = dynamic(() => import("@/components/pages/jobs/JobsModalsSection").then(m => ({ default: m.JobsModalsSection })), { ssr: false, loading: () => null })
 // Phase 4H — Bulk import from ATS
 const BulkImportModal = dynamic(() => import("@/components/jobs/BulkImportModal").then(m => ({ default: m.BulkImportModal })), { ssr: false })
+const JobDraftsSection = dynamic(() => import("@/components/pages/jobs/JobDraftsSection").then(m => ({ default: m.JobDraftsSection })), { ssr: false, loading: () => null })
+const ProjetosSection = dynamic(() => import("@/components/pages/jobs/ProjetosSection").then(m => ({ default: m.ProjetosSection })), { ssr: false, loading: () => null })
 
 interface JobsPageProps {
   onNavigate?: (page: string) => void
@@ -32,6 +34,23 @@ interface JobsPageProps {
 
 export function JobsPage(props: JobsPageProps) {
   const state = useJobsPageCore(props)
+  const { setFocusedJob } = useFocusedJobStore()
+
+  // Sync focused-job store when kanban opens via SPA inline path.
+  // JobDetailClient only fires setFocusedJob on the /jobs/[id] Next.js route;
+  // when the user clicks a vaga from the Vagas list the kanban renders here.
+  // NOTE: we intentionally do NOT clear on kanban close — the EM FOCO card
+  // persists in the sidebar until the user dismisses it or opens another job.
+  useEffect(() => {
+    if (state.showKanban && state.selectedJob) {
+      setFocusedJob({
+        id: state.selectedJob.backendId || String(state.selectedJob.id),
+        title: state.selectedJob.title,
+        candidateCount: state.selectedJob.funnel?.total ?? 0,
+        todayInterviewCount: 0,
+      })
+    }
+  }, [state.showKanban, state.selectedJob, setFocusedJob])
   // Phase 4H — Bulk import modal state
   const [showBulkImportModal, setShowBulkImportModal] = React.useState(false)
   const t = useTranslations('jobs')
@@ -140,7 +159,8 @@ export function JobsPage(props: JobsPageProps) {
               'paralisadas': Pause,
               'concluidas': CheckCircle,
               'canceladas': XCircle,
-            }
+              'rascunhos': PenLine,
+              'projetos': Megaphone,}
             return {
               id: filter.id,
               label: filter.label,
@@ -194,14 +214,20 @@ export function JobsPage(props: JobsPageProps) {
             <span className="text-xs">{t("externalSourceUnavailable")}</span>
           </div>
         )}
-        <JobsListContent
-          {...(state as unknown as React.ComponentProps<typeof JobsListContent>)}
-          setShowBulkImportModal={setShowBulkImportModal}
-          toggleJobFilter={state.toggleJobFilter as (category: string, key: string, value: unknown) => void}
-          activePreviewTab={state.activePreviewTab as "screening" | "pipeline"}
-          statusOrder={statusOrder}
-          groupedJobs={groupedJobs}
-        />
+        {activeFilter === 'rascunhos' ? (
+          <JobDraftsSection />
+        ) : activeFilter === 'projetos' ? (
+          <ProjetosSection />
+        ) : (
+          <JobsListContent
+            {...(state as unknown as React.ComponentProps<typeof JobsListContent>)}
+            setShowBulkImportModal={setShowBulkImportModal}
+            toggleJobFilter={state.toggleJobFilter as (category: string, key: string, value: unknown) => void}
+            activePreviewTab={state.activePreviewTab as "screening" | "pipeline"}
+            statusOrder={statusOrder}
+            groupedJobs={groupedJobs}
+          />
+        )}
 
         <JobsModalsSection
           allJobs={allJobs}
@@ -254,7 +280,7 @@ export function JobsPage(props: JobsPageProps) {
           onSetReactivateScreeningJobs={setReactivateScreeningJobs as unknown as (jobs: Job[]) => void}
           onSetReactivateEndDate={setReactivateEndDate}
           jobs={allJobs.filter(job => selectedJobsForBatch.has(job.id)).map(job => ({
-            id: String(job.id),
+            id: job.backendId,
             code: job.jobId,
             title: job.title,
             status: job.status,

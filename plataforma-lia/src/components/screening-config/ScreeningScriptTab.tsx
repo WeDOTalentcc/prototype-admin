@@ -332,7 +332,7 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
                             {block.description}
                           </p>
                           <p className="text-micro text-lia-text-secondary mt-1">
-                            Gerenciado automaticamente pela LIA
+                            Gerenciado automaticamente pela IA
                           </p>
                         </div>
                       )
@@ -358,7 +358,7 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
  item.category === 'behavioral' || item.category === 'Comportamental'
                                         ? ' border border-wedo-purple/30'
                                         : item.category === 'technical' || item.category === 'Técnica'
-                                        ? 'bg-lia-bg-tertiary text-wedo-cyan-dark border border-lia-border-default'
+                                        ? 'bg-lia-bg-tertiary text-wedo-cyan-text border border-lia-border-default'
                                         : ' border border-status-success/30'
                                     }`}>
                                       {item.category === 'behavioral' ? 'Comport.' 
@@ -434,7 +434,7 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
             <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 flex items-center bg-lia-bg-tertiary text-lia-text-primary">{previewJob.screeningConfig?.settings?.max_retries ?? 2}x</Chip>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-micro text-lia-text-secondary">Fallback</span>
+            <span className="text-micro text-lia-text-secondary">Secundário</span>
             <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 flex items-center">Revisão Manual</Chip>
           </div>
         </div>

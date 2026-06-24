@@ -1,5 +1,6 @@
 "use client"
 
+import { useLiaModalTracking } from '@/lib/use-lia-modal-tracking'
 import { useState, useEffect } from "react"
 import {
   Dialog,
@@ -22,6 +23,7 @@ import {
 } from "@/components/ui/select"
 import { CalendarCheck, Target, Calendar, Clock, Timer, Loader2 } from "lucide-react"
 import { toast } from "sonner"
+import { TOAST_MESSAGES } from "@/constants/toast-messages"
 import type { ScreeningConfig } from "@/hooks/recruitment/useScreeningConfig"
 
 interface ScreeningSchedulingModalProps {
@@ -37,6 +39,9 @@ export function ScreeningSchedulingModal({
   config,
   updateConfig,
 }: ScreeningSchedulingModalProps) {
+  // P0-2 (2026-06-18): LIA screen awareness
+  useLiaModalTracking('screening-scheduling', isOpen)
+
   const [autoEnabled, setAutoEnabled] = useState(config?.scheduling?.auto_enabled ?? true)
   const [minScoreForAuto, setMinScoreForAuto] = useState(config?.scheduling?.min_score_for_auto ?? 75)
   const [calendarProvider, setCalendarProvider] = useState(config?.scheduling?.calendar_provider || 'Microsoft')
@@ -71,10 +76,10 @@ export function ScreeningSchedulingModal({
         toast.success("Configurações de agendamento atualizadas com sucesso")
         onClose()
       } else {
-        toast.error("Erro ao atualizar agendamento")
+        toast.error(TOAST_MESSAGES.SCREENING_CONFIG.UPDATE_SCHEDULING_ERROR)
       }
     } catch (error) {
-      toast.error("Erro ao salvar configurações")
+      toast.error(TOAST_MESSAGES.SCREENING_CONFIG.SAVE_ERROR)
     } finally {
       setIsSaving(false)
     }

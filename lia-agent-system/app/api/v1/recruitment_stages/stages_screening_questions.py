@@ -6,6 +6,7 @@ is /screening-questions so the full path becomes /api/v1/screening-questions/...
 This matches the original `screening_questions_router` that routes.py registered
 with prefix="/api/v1".
 """
+from app.middleware.request_id import get_correlation_id
 import uuid
 import logging
 from datetime import datetime
@@ -28,6 +29,7 @@ from app.shared.compliance.audit_service import AuditService  # P1-W1-08
 from typing import Annotated
 from fastapi import Path
 from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from app.shared.errors import LIAError
 
 logger = logging.getLogger(__name__)
 
@@ -130,7 +132,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error listing screening questions: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("")
@@ -160,7 +162,7 @@ company_id: str = Depends(require_company_id)):
         logger.info(f"Created screening question: {question.question[:50]} for company {effective_company_id}")
         try:
             import uuid as _uuid
-            await AuditService().log_action(trace_id=str(_uuid.uuid4()), company_id=effective_company_id, action_type="screening_question_created", actor=str(getattr(current_user, "id", "system")), target_id=str(new_question.id), target_type="screening_question", metadata={"question_type": question.question_type})  # P1-W1-08
+            await AuditService().log_action(trace_id=get_correlation_id(), company_id=effective_company_id, action_type="screening_question_created", actor=str(getattr(current_user, "id", "system")), target_id=str(new_question.id), target_type="screening_question", metadata={"question_type": question.question_type})  # P1-W1-08
         except Exception as _ae:
             logger.warning(f"Audit log failed (non-blocking): {_ae}")
         return {
@@ -172,7 +174,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error creating screening question: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.put("")
@@ -245,7 +247,7 @@ company_id: str = Depends(require_company_id)):
         logger.info(f"Updated {len(questions)} screening questions for company {effective_company_id}")
         try:
             import uuid as _uuid
-            await AuditService().log_action(trace_id=str(_uuid.uuid4()), company_id=effective_company_id, action_type="screening_question_bulk_updated", actor=str(getattr(current_user, "id", "system")), target_type="screening_question", metadata={"count": len(questions)})  # P1-W1-08
+            await AuditService().log_action(trace_id=get_correlation_id(), company_id=effective_company_id, action_type="screening_question_bulk_updated", actor=str(getattr(current_user, "id", "system")), target_type="screening_question", metadata={"count": len(questions)})  # P1-W1-08
         except Exception as _ae:
             logger.warning(f"Audit log failed (non-blocking): {_ae}")
         return {
@@ -257,7 +259,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error updating screening questions: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.put("/{question_id}")
@@ -290,7 +292,7 @@ company_id: str = Depends(require_company_id)):
 
         try:
             import uuid as _uuid
-            await AuditService().log_action(trace_id=str(_uuid.uuid4()), company_id=effective_company_id, action_type="screening_question_updated", actor=str(getattr(current_user, "id", "system")), target_id=question_id, target_type="screening_question")  # P1-W1-08
+            await AuditService().log_action(trace_id=get_correlation_id(), company_id=effective_company_id, action_type="screening_question_updated", actor=str(getattr(current_user, "id", "system")), target_id=question_id, target_type="screening_question")  # P1-W1-08
         except Exception as _ae:
             logger.warning(f"Audit log failed (non-blocking): {_ae}")
         return {
@@ -302,7 +304,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error updating screening question: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.delete("/{question_id}")
@@ -334,7 +336,7 @@ company_id: str = Depends(require_company_id)):
         logger.info(f"Deleted screening question: {question_id}")
         try:
             import uuid as _uuid
-            await AuditService().log_action(trace_id=str(_uuid.uuid4()), company_id=effective_company_id, action_type="screening_question_deleted", actor=str(getattr(current_user, "id", "system")), target_id=question_id, target_type="screening_question")  # P1-W1-08
+            await AuditService().log_action(trace_id=get_correlation_id(), company_id=effective_company_id, action_type="screening_question_deleted", actor=str(getattr(current_user, "id", "system")), target_id=question_id, target_type="screening_question")  # P1-W1-08
         except Exception as _ae:
             logger.warning(f"Audit log failed (non-blocking): {_ae}")
         return {
@@ -346,4 +348,4 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error deleting screening question: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")

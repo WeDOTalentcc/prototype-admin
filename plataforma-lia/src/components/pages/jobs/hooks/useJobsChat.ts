@@ -12,6 +12,7 @@ import { useCompanyId } from "@/hooks/company/useCompanyId";
 import { callOrchestratedJobsManagement } from "@/lib/api/kanban-assistant";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
+import { useAiPersona } from "@/hooks/company/use-ai-persona"
 
 // ---------------------------------------------------------------------------
 // useJobsChat
@@ -50,6 +51,12 @@ interface UseJobsChatOptions {
   onChatOpened?: () => void;
   pendingChatOpen?: { mode: "general" | "job-creation" } | null;
   setActiveFilter?: (filter: string) => void;
+  /**
+   * Abre o JobCompareModal (ui_action `compare_jobs` do produtor BE
+   * jobs_management_assistant_service). Recebe job_ids opcionais; sem ids usa a
+   * selecao atual. Sem este callback a acao seria descartada em silencio (ghost).
+   */
+  openCompareModal?: (jobIds?: number[]) => void;
   loadBackendJobs: () => Promise<void>;
 }
 
@@ -92,8 +99,11 @@ export function useJobsChat({
   onChatOpened,
   pendingChatOpen,
   setActiveFilter,
+  openCompareModal,
   loadBackendJobs,
 }: UseJobsChatOptions): UseJobsChatReturn {
+  const { persona } = useAiPersona()
+  const personaName = persona?.name ?? "IA"
   const { companyId: resolvedCompanyId } = useCompanyId();
   const { open: openGlobalChat } = useLiaFloat();
 
@@ -149,7 +159,7 @@ export function useJobsChat({
         type: "chat",
         title: initialMessage
           ? `Chat: ${initialMessage.slice(0, 40)}${initialMessage.length > 40 ? "..." : ""}`
-          : "Chat com LIA",
+          : `Chat com ${personaName}`,
         meta: { conversationId: id },
       });
     },
@@ -340,13 +350,25 @@ export function useJobsChat({
         }
         if (response.suggested_prompts?.length)
           setOrchestratorSuggestions(response.suggested_prompts);
-        if (response.ui_action === "start_job_wizard") {
+        // C10-05 (2026-06-20): start_job_wizard, filter_jobs, compare_jobs are NOT in the
+        // backend canonical allowlist (app/shared/ui_action_canonical.py) and are dropped
+        // at gate 1 (agentic_loop.py) before reaching the frontend. This dead code branch
+        // will never execute. Do not add these strings to the backend without a canonical entry.
+        // eslint-disable-next-line no-constant-condition
+        if (false && response.ui_action === "start_job_wizard") {
           openJobCreationChat(response.ui_action_params?.initial_message || "");
         } else if (
-          response.ui_action === "filter_jobs" &&
+          // eslint-disable-next-line no-constant-condition
+          false && response.ui_action === "filter_jobs" &&
           response.ui_action_params?.filter
         ) {
-          setActiveFilter?.(response.ui_action_params.filter);
+          setActiveFilter?.(response.ui_action_params?.filter as string);
+        } else if (
+          // eslint-disable-next-line no-constant-condition
+          false && response.ui_action === "compare_jobs"
+        ) {
+          const ids = response.ui_action_params?.job_ids;
+          openCompareModal?.(Array.isArray(ids) ? ids : undefined);
         }
       } catch {
         const responseContent = processLocalJobCommand(command, jobs);
@@ -371,6 +393,7 @@ export function useJobsChat({
       loadBackendJobs,
       openJobCreationChat,
       setActiveFilter,
+      openCompareModal,
       resolvedCompanyId,
     ],
   );
@@ -388,9 +411,12 @@ export function useJobsChat({
         typeof params?.filter === "string"
       ) {
         setActiveFilter?.(params.filter);
+      } else if (action === "compare_jobs") {
+        const ids = params?.job_ids;
+        openCompareModal?.(Array.isArray(ids) ? (ids as number[]) : undefined);
       }
     },
-    [openJobCreationChat, setActiveFilter],
+    [openJobCreationChat, setActiveFilter, openCompareModal],
   );
 
   useUnhandledUIActionListener(handleJobsUIAction);

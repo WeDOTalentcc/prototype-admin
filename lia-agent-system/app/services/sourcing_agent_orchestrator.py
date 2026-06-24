@@ -26,7 +26,7 @@ from lia_models.sourcing_agent import SourcingAgentSignal  # noqa: E402 imported
 from app.domains.hiring_policy.repositories.hiring_policy_repository import (
     HiringPolicyRepository as JobHiringPolicyRepository,  # alias expected by contract tests
 )
-from app.domains.approvals.repositories.manager_alignment_repository import ManagerAlignmentRepository
+from app.repositories.manager_alignment_repository import ManagerAlignmentRepository
 
 logger = logging.getLogger(__name__)
 

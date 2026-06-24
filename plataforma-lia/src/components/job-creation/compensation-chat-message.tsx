@@ -19,6 +19,7 @@ import {
   Brain
 } from"lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
+import usePersonaName from "@/hooks/company/usePersonaName"
 import type { 
   CompensationAnalysisResult, 
   SalaryRange, 
@@ -62,7 +63,7 @@ const STATUS_CONFIG: Record<CompetitivenessStatus, {
     icon: TrendingUp,
     label: 'Acima do Mercado',
     description: 'Remuneração acima da média',
-    className: 'text-wedo-cyan-dark',
+    className: 'text-lia-text-secondary',
     bgClassName: 'bg-wedo-cyan/10',
     borderClassName: 'border-wedo-cyan/30 dark:border-wedo-cyan/30'
   }
@@ -144,6 +145,7 @@ export function CompensationChatMessage({
   onAdjust,
   onSuggestNewValue
 }: CompensationChatMessageProps) {
+  const personaName = usePersonaName()
   const [salaryInput, setSalaryInput] = useState("")
   const [showInput, setShowInput] = useState(false)
 
@@ -166,9 +168,9 @@ export function CompensationChatMessage({
     return (
       <div className="flex items-start gap-3 max-w-[85%]">
         <Avatar className="h-8 w-8 flex-shrink-0 border-2 border-lia-border-default">
-          <AvatarImage src="/images/lia-avatar.png" alt="LIA" />
+          <AvatarImage src="/images/lia-avatar.png" alt={personaName} />
           <AvatarFallback className="bg-gradient-to-br from-lia-bg-tertiary dark:from-lia-bg-tertiary to-wedo-cyan-dark text-white text-xs font-medium">
-            LIA
+            {personaName}
           </AvatarFallback>
         </Avatar>
         <div className="rounded-xl rounded-tl-sm bg-lia-bg-primary border border-lia-border-subtle p-4" role="status" aria-live="polite" aria-label="Carregando...">
@@ -189,9 +191,9 @@ export function CompensationChatMessage({
   return (
     <div className="flex items-start gap-3 max-w-[90%]">
       <Avatar className="h-8 w-8 flex-shrink-0 border-2 border-lia-border-default">
-        <AvatarImage src="/images/lia-avatar.png" alt="LIA" />
+        <AvatarImage src="/images/lia-avatar.png" alt={personaName} />
         <AvatarFallback className="bg-gradient-to-br from-lia-bg-tertiary dark:from-lia-bg-tertiary to-wedo-cyan-dark text-white text-xs font-medium">
-          LIA
+            {personaName}
         </AvatarFallback>
       </Avatar>
 
@@ -275,7 +277,7 @@ export function CompensationChatMessage({
                 onClick={onConfirm}
               >
                 <Brain className="h-3.5 w-3.5 mr-1.5 text-wedo-cyan" />
-                Aplicar Sugestões LIA
+                Aplicar Sugestões {personaName}
               </Button>
             ) : (
               <Button 

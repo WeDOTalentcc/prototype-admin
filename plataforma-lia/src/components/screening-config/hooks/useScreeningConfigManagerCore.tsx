@@ -13,6 +13,9 @@ import { useScreeningConfig, limitToApprovalPreset, approvalPresetToLimit, type 
 import { CompanyBankQuestions } from '../CompanyBankQuestions'
 import { CustomQuestions } from '../CustomQuestions'
 import type { CustomQuestion } from '../CustomQuestions'
+import type { ScreeningQuestionItem } from '../SCMScreeningTypes'
+import { useEligibilityTemplates, flattenTemplates } from '@/hooks/screening/use-eligibility-templates'
+import { buildScreeningExtrasPayload, screeningExtrasToRoteiroItems, type BankCatalogQuestion } from './buildScreeningExtrasPayload'
 import { WSI_BLOCKS, WSI_AUTOMATIC_MESSAGES, formatMessageWithVariables } from '@/constants/wsi-blocks'
 import { getBloomComplexity, getEstimatedTime, getBloomLabelPTBR, getDreyfusLabelPTBR } from '@/components/jobs/jobsPageConstants'
 import { normalizeTechnicalRequirement } from '@/lib/wsi/normalize-technical-requirement'
@@ -85,16 +88,16 @@ function CompanyDefaultQuestions({
           )}
         </div>
         {isExpanded ? (
-          <ChevronUp className="w-4 h-4 text-lia-text-disabled" />
+          <ChevronUp className="w-4 h-4 text-lia-text-muted" />
         ) : (
-          <ChevronDown className="w-4 h-4 text-lia-text-disabled" />
+          <ChevronDown className="w-4 h-4 text-lia-text-muted" />
         )}
       </button>
 
       {isExpanded && (
         <div className="px-4 pb-4 space-y-2">
           {questions.length === 0 ? (
-            <p className="text-xs text-lia-text-disabled text-center py-4 italic">
+            <p className="text-xs text-lia-text-muted text-center py-4 italic">
               Nenhuma pergunta padrão configurada. Acesse <strong>Configurações → Perguntas Padrão</strong>.
             </p>
           ) : (
@@ -145,7 +148,7 @@ export const SCREENING_SECTIONS = [
     id: "descricao",
     title: "Descrição do Cargo",
     icon: FileText,
-    description: "Informações da vaga para a LIA",
+    description: "Informações da vaga para a IA",
   },
   {
     id: "perguntas",
@@ -199,6 +202,7 @@ export function useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, 
   const [companyQuestionsLoading, setCompanyQuestionsLoading] = useState(false)
   const [companyQuestionsError, setCompanyQuestionsError] = useState<string | null>(null)
   const [companyQuestionsReloadKey, setCompanyQuestionsReloadKey] = useState(0)
+  const [companyScreeningDefaults, setCompanyScreeningDefaults] = useState<Record<string, any> | null>(null)
   const retryCompanyQuestions = React.useCallback(() => setCompanyQuestionsReloadKey((k) => k + 1), [])
   const [disabledCompanyQIds, setDisabledCompanyQIds] = useState<Set<string>>(new Set())
   const [selectedBankQuestions, setSelectedBankQuestions] = useState<string[]>([])
@@ -242,6 +246,49 @@ export function useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, 
       controller.abort()
     }
   }, [companyQuestionsReloadKey])
+
+  // Carrega defaults da empresa para usar como fallback de herança nas vagas
+  useEffect(() => {
+    fetchWithRetry("/api/backend-proxy/company/screening-config-defaults", {}, { attempts: 2, timeoutMs: 10000 })
+      .then((r) => r.ok ? r.json() : null)
+      .then((d) => {
+        if (!d) return
+        const raw = d?.screening_config_defaults ?? d ?? {}
+        setCompanyScreeningDefaults({
+          channels_master_enabled: raw.channels_master_enabled,
+          settings: raw.settings ?? {},
+          channels: raw.channels ?? {},
+          screening_channels: raw.screening_channels ?? {},
+          scheduling: raw.scheduling ?? {},
+        })
+      })
+      .catch(() => {}) // non-critical — fallback to hardcoded defaults se falhar
+  }, [])
+
+  // Propaga defaults da empresa para o estado de edição quando a vaga não tem valor próprio
+  useEffect(() => {
+    if (isEditingScreeningConfig || !companyScreeningDefaults) return
+    if (!screeningConfig?.settings?.response_timeout_hours) {
+      setEditTimeoutHours(companyScreeningDefaults.settings?.response_timeout_hours ?? 48)
+    }
+    if (!screeningConfig?.settings?.max_retries) {
+      setEditMaxRetries(companyScreeningDefaults.settings?.max_retries ?? 2)
+    }
+    if (!screeningConfig?.settings?.min_score_preset) {
+      setEditMinScorePreset(companyScreeningDefaults.settings?.min_score_preset ?? "recommended")
+    }
+    if (!screeningConfig?.settings?.auto_approval_preset) {
+      setEditAutoApprovalPreset(
+        companyScreeningDefaults.settings?.auto_approval_preset ??
+        limitToApprovalPreset(companyScreeningDefaults.settings?.auto_approval_limit) ??
+        "recommended"
+      )
+    }
+    if (companyScreeningDefaults.channels_master_enabled != null && screeningConfig?.channels_master_enabled == null) {
+      setEditChannelsMasterEnabled(Boolean(companyScreeningDefaults.channels_master_enabled))
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [companyScreeningDefaults, isEditingScreeningConfig])
 
   useEffect(() => {
     const ids: string[] = (job?.disabled_eligibility_question_ids as string[] | undefined) || []
@@ -603,6 +650,87 @@ export function useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, 
   }
 
 
+  // Catalogo do banco de perguntas (mesma fonte de CompanyBankQuestions) para
+  // resolver IDs selecionados ao persistir. canonical-fix 2026-06-05 (P0-1/P0-2).
+  const { templates: _eligibilityTemplates } = useEligibilityTemplates({ includeMaster: true })
+  const _bankCatalog: BankCatalogQuestion[] = React.useMemo(
+    () =>
+      flattenTemplates(_eligibilityTemplates)
+        .filter((q) => !q.isSystemDefault)
+        .map((q) => ({
+          id: q.id,
+          question: q.question,
+          is_eliminatory: !!q.eliminatory,
+          expected_answer: q.eliminatoryAnswer != null ? String(q.eliminatoryAnswer) : undefined,
+        })),
+    [_eligibilityTemplates],
+  )
+
+  // Save unico do roteiro de perguntas (dedup dos 2 botoes + wiring dos extras).
+  // P0-1: extras (custom + banco selecionado) deixavam de persistir (ghost feature).
+  // P0-2: split semantico character -> is_eliminatory (eliminatoria->eligibility_questions,
+  // classificatoria->screening_questions). Decisao Paulo 2026-06-05.
+  const handleSaveRoteiro = async (activate: boolean): Promise<void> => {
+    const screeningQs = (Array.isArray(job?.screeningQuestions) ? job?.screeningQuestions : []) as ScreeningQuestionItem[]
+
+    const extras = buildScreeningExtrasPayload({
+      customQuestions,
+      selectedBankQuestions,
+      bankQuestionOverrides,
+      bankCatalog: _bankCatalog,
+    })
+    const extraRoteiroItems = screeningExtrasToRoteiroItems(extras.screening_questions)
+
+    const acceptedGenerated: ScreeningQuestionItem[] = []
+    Object.values(generatedQuestions).forEach((blockQs: ScreeningQuestionItem[]) => {
+      blockQs.forEach((q: ScreeningQuestionItem) => {
+        if (acceptedQuestions.has(q.id)) {
+          acceptedGenerated.push({ id: q.id, text: q.question || q.text, category: q.category, type: q.type, weight: q.weight || 0.75, skill_targeted: q.skill_targeted, block_id: q.block_id })
+        }
+      })
+    })
+
+    const totalQuestions = screeningQs.length + acceptedGenerated.length + extraRoteiroItems.length + extras.eligibility_questions.length
+    if (totalQuestions === 0) { toast.error('Selecione pelo menos uma pergunta antes de salvar o roteiro.'); return }
+    if (totalQuestions < 3) { toast.error('O roteiro precisa ter no minimo 3 perguntas. Atualmente: ' + totalQuestions); return }
+
+    try {
+      const jobId = job?.backendId || job?.jobId || String(job?.id)
+      const existingQuestions = screeningQs.map((q) => ({ id: q.id, text: q.question || q.text, category: q.category, type: q.type, weight: q.weight, skill_targeted: q.skill_targeted, block_id: q.block_id }))
+      const allQuestions = [
+        ...existingQuestions,
+        ...acceptedGenerated.map((q) => ({ id: q.id, text: q.text, category: q.category, type: q.type, weight: q.weight, skill_targeted: q.skill_targeted, block_id: q.block_id })),
+        ...extraRoteiroItems,
+      ]
+      const response = await fetch('/api/backend-proxy/wsi/questions/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ job_id: jobId, questions: allQuestions, source: 'manual_save' }),
+      })
+      if (!response.ok) { toast.error('Erro ao salvar roteiro. Tente novamente.'); return }
+
+      // Persiste extras eliminatorios em eligibility_questions (merge com existentes).
+      if (extras.eligibility_questions.length > 0) {
+        const jobExisting = (job ?? {}) as { eligibility_questions?: unknown[] }
+        const existingElig = Array.isArray(jobExisting.eligibility_questions) ? jobExisting.eligibility_questions : []
+        await fetch(`/api/backend-proxy/job-vacancies/${jobId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ eligibility_questions: [...existingElig, ...extras.eligibility_questions] }),
+        })
+      }
+
+      const newScreeningQuestions = [...screeningQs, ...acceptedGenerated.map((q) => ({ ...q, question: q.question || q.text, generated: undefined }))]
+      onJobUpdate?.({ ...job, screeningQuestions: newScreeningQuestions, ...(activate ? { screeningStatus: 'active' } : {}) })
+      toast.success(activate ? `Roteiro salvo e triagem ativada! ${allQuestions.length} perguntas configuradas.` : `Roteiro salvo com sucesso! ${allQuestions.length} perguntas salvas.`)
+      // Limpa extras ja persistidos para evitar reenvio duplicado em novo save.
+      setCustomQuestions([])
+      setSelectedBankQuestions([])
+      setBankQuestionOverrides({})
+      resetScreeningEditing()
+    } catch { toast.error('Erro ao salvar roteiro. Tente novamente.') }
+  }
+
   return {
     job,
     onJobUpdate,
@@ -613,6 +741,7 @@ export function useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, 
     companyQuestions,
     companyQuestionsLoading,
     companyQuestionsError,
+    companyScreeningDefaults,
     retryCompanyQuestions,
     screeningConfig,
     updateScreeningConfig,
@@ -656,6 +785,7 @@ export function useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, 
     jdDone,
     questionsDone,
     resetScreeningEditing,
+    handleSaveRoteiro,
     selectedBankQuestions,
     setAcceptedQuestions,
     setActiveSection,

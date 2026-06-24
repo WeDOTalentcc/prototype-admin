@@ -45,7 +45,7 @@ export function MessageFeedback({
       // Audit #569 F2: feedback-api now throws on non-2xx. Revert optimistic
       // state and surface a toast so the user knows the click did not stick.
       setThumbsState(previous)
-      toast.error("Não foi possível registrar seu feedback")
+      toast.error("Não foi possível registrar seu feedback", "O feedback não foi registrado. Tente novamente.")
     }
   }
 
@@ -59,7 +59,7 @@ export function MessageFeedback({
       setTimeout(() => setRatingPopoverOpen(false), 500)
     } catch {
       setRating(previous)
-      toast.error("Não foi possível registrar seu feedback")
+      toast.error("Não foi possível registrar seu feedback", "O feedback não foi registrado. Tente novamente.")
     }
   }
 
@@ -73,7 +73,7 @@ export function MessageFeedback({
       setTimeout(() => setCorrectionPopoverOpen(false), 1000)
     } catch {
       // Keep popover open so the user can retry; surface error explicitly.
-      toast.error("Não foi possível enviar sua correção")
+      toast.error("Não foi possível enviar sua correção", "A correção não foi salva. Tente novamente.")
     } finally {
       setIsSubmitting(false)
     }
@@ -169,7 +169,7 @@ export function MessageFeedback({
             className={cn(
               "p-1.5 rounded-md transition-colors focus-visible:ring-2 focus-visible:ring-lia-border-default",
               correctionSubmitted
-                ? "bg-wedo-cyan/15 text-wedo-cyan-dark"
+                ? "bg-wedo-cyan/15 text-wedo-cyan-text"
                 : "text-lia-text-tertiary hover:text-lia-text-secondary hover:bg-lia-interactive-hover"
             )}
             title="Sugerir correção"

@@ -10,6 +10,7 @@ from uuid import UUID
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 
 class LiaFieldConfigRepository:
@@ -25,10 +26,51 @@ class LiaFieldConfigRepository:
 
     async def get_company_profile(self, company_uuid: UUID):
         from app.models.company import CompanyProfile
+        # Eager-load ORM relationships consumed as canonical LIA field_keys
+        # (departments, benefits) plus the other CompanyProfile relationships.
+        # A blind getattr on these in LiaFieldConfigService._get_company_value
+        # would otherwise trigger an async lazy-load outside the active
+        # greenlet -> sqlalchemy.exc.MissingGreenlet, which is swallowed by
+        # build_company_agent_context and silently empties the toggle-filtered
+        # company context delivered to every agent. selectinload fixes it at
+        # the producer (canonical-fix: load eagerly, do not lazy-load).
         result = await self.db.execute(
-            select(CompanyProfile).where(CompanyProfile.id == company_uuid)
+            select(CompanyProfile)
+            .where(CompanyProfile.id == company_uuid)
+            .options(
+                selectinload(CompanyProfile.departments),
+                selectinload(CompanyProfile.benefits),
+                selectinload(CompanyProfile.culture_values),
+                selectinload(CompanyProfile.compensation_policies),
+            )
         )
         return result.scalar_one_or_none()
+
+    async def get_culture_profile(self, company_uuid: UUID):
+        """Load the CompanyCultureProfile for a company (separate query — there
+        is NO ORM relationship from CompanyProfile to it). Home of the narrative
+        fields (mission/vision/values/tech_stack/...). Without this load those
+        toggles are inert: the recruiter flips them ON but the value never
+        reaches any agent prompt (FASE 0 ghost fix, audit 2026-06-06)."""
+        from lia_models.company_culture import CompanyCultureProfile  # type: ignore
+        result = await self.db.execute(
+            select(CompanyCultureProfile).where(
+                CompanyCultureProfile.company_id == company_uuid
+            )
+        )
+        return result.scalars().first()
+
+    async def get_department_by_name(self, company_uuid: UUID, name: str):
+        """Department por nome exato (cadeia de heranca departamento>empresa). FASE 1."""
+        from app.models.company import Department  # type: ignore
+        result = await self.db.execute(
+            select(Department).where(
+                Department.company_id == company_uuid,
+                Department.name == name,
+                Department.is_active.is_(True),
+            )
+        )
+        return result.scalars().first()
 
     async def list_recent_jobs_for_company(
         self,

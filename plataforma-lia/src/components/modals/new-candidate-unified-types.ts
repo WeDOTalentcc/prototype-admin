@@ -8,7 +8,7 @@ export const ACCEPTED_FILE_TYPES: Record<string, string[]> = {
   'text/plain': ['.txt'],
 }
 
-export const MAX_FILE_SIZE = 5 * 1024 * 1024
+export { MAX_FILE_SIZE } from '@/constants/upload'
 
 export interface ParsedCV {
   full_name: string
@@ -109,6 +109,8 @@ export interface UseNewCandidateModalReturn {
   uploadProgress: number
   error: string | null
   setError: (error: string | null) => void
+  fieldErrors: Record<string, string>
+  setFieldErrors: React.Dispatch<React.SetStateAction<Record<string, string>>>
   parsedCV: ParsedCV | null
   linkedinUrl: string
   setLinkedinUrl: (url: string) => void

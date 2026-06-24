@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { textStyles, previewChipVariants } from '@/lib/design-tokens'
+import { formatDate as formatDateUtil } from '@/lib/format-utils'
 import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -16,7 +17,6 @@ import { toast } from "sonner"
 import dynamic from"next/dynamic"
 import type { CandidateData } from"./ProfileTabTypes"
 
-const LiaAnalysisModal = dynamic(() => import("@/components/modals/lia-analysis-modal").then(m => ({ default: m.LiaAnalysisModal })), { ssr: false })
 
 type ContactFieldKind = "email" | "phone"
 
@@ -191,32 +191,21 @@ interface CandidatePreviewHeaderProps {
   c: CandidateData
   candidate: Record<string, unknown>
   generateShortId: (name: string, id?: string) => string
-  showLiaAnalysisModal: boolean
-  setShowLiaAnalysisModal: (v: boolean) => void
-  handleAnalysisTransport: (analysis: { type: string; content: string; candidate_id: string }) => void
   onOpenFullPage?: (candidate: Record<string, unknown>) => void
   onClose: () => void
+  hasAudioConsent?: boolean
 }
 
 export function CandidatePreviewHeader({
   c,
   candidate,
   generateShortId,
-  showLiaAnalysisModal,
-  setShowLiaAnalysisModal,
-  handleAnalysisTransport,
   onOpenFullPage,
   onClose,
+  hasAudioConsent,
 }: CandidatePreviewHeaderProps) {
-  const formatDate = (dateStr: string | Date | null | undefined): string => {
-    if (!dateStr) return ''
-    try {
-      const date = new Date(dateStr as string | number)
-      return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })
-    } catch {
-      return ''
-    }
-  }
+  const formatDate = (dateStr: string | Date | null | undefined): string =>
+    formatDateUtil(dateStr, { day: '2-digit', month: 'short', year: 'numeric' })
 
   const lastContactedAt = c.last_contacted_at || c.lastContactedAt
   const updatedAt = c.updated_at || c.updatedAt
@@ -269,7 +258,19 @@ export function CandidatePreviewHeader({
             {(c.communication_consent !== undefined || c.communicationConsent !== undefined) && (
               <Chip variant="neutral" muted className={`text-micro px-1.5 py-0 h-4 flex items-center gap-0.5 ${(c.communication_consent ?? c.communicationConsent) ? '' : ''}`}>
                 {(c.communication_consent ?? c.communicationConsent) ? <CheckCircle className="w-2.5 h-2.5" /> : <AlertCircle className="w-2.5 h-2.5" />}
-                LGPD
+                Consent. com.
+              </Chip>
+            )}
+            {hasAudioConsent === true && (
+              <Chip variant="success" muted className="text-micro px-1.5 py-0 h-4 flex items-center gap-0.5 bg-status-success/10 text-status-success">
+                <CheckCircle className="w-2.5 h-2.5" />
+                Consent. audio OK
+              </Chip>
+            )}
+            {hasAudioConsent === false && (
+              <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 flex items-center gap-0.5 bg-lia-bg-tertiary text-lia-text-secondary">
+                <AlertCircle className="w-2.5 h-2.5" />
+                Sem consent. audio
               </Chip>
             )}
             {c.is_enriching && (
@@ -280,9 +281,9 @@ export function CandidatePreviewHeader({
             {c.enrichment_source && !c.is_enriching && (() => {
               const src = String(c.enrichment_source).toLowerCase()
               const config = src === 'apify'
-                ? { label: 'Apify', cls: 'bg-wedo-orange/15 text-wedo-orange border-wedo-orange/30' }
+                ? { label: 'Apify', cls: 'bg-wedo-orange/15 text-wedo-orange-text border-wedo-orange/30' }
                 : src === 'pearch'
-                  ? { label: 'Pearch', cls: 'bg-wedo-cyan/15 text-wedo-cyan border-wedo-cyan/30' }
+                  ? { label: 'Pearch', cls: 'bg-wedo-cyan/15 text-wedo-cyan-text border-wedo-cyan/30' }
                   : src === 'local'
                     ? { label: 'Local', cls: 'bg-stone-400/15 text-stone-500 border-stone-400/30' }
                     : { label: String(c.enrichment_source), cls: 'bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-default' }
@@ -329,23 +330,6 @@ export function CandidatePreviewHeader({
         </div>
 
         <div className="flex items-center gap-1 flex-shrink-0">
-          <LiaAnalysisModal
-            isOpen={showLiaAnalysisModal}
-            onOpen={() => setShowLiaAnalysisModal(true)}
-            onClose={() => setShowLiaAnalysisModal(false)}
-            candidate={c}
-            onTransportToOpinions={handleAnalysisTransport}
-          >
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 w-8 p-0 hover:bg-lia-bg-tertiary border border-lia-border-default rounded-md flex-shrink-0"
-              title="Análises IA"
-            >
-              <Brain className="w-5 h-5 text-wedo-cyan" />
-            </Button>
-          </LiaAnalysisModal>
-
           <Tooltip>
             <TooltipTrigger asChild>
               <Button

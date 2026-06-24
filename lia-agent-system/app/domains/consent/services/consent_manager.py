@@ -41,7 +41,7 @@ class ConsentManager:
 
     def _build_repo(self, db: Any) -> Any:
         try:
-            from app.domains.consent.repositories.consent_repository import ConsentRepository
+            from app.repositories.consent_repository import ConsentRepository
             return ConsentRepository(db)
         except ImportError:
             logger.warning("[ConsentManager] ConsentRepository not available — using stub")

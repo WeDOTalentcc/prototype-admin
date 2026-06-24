@@ -67,7 +67,7 @@ async def _generate_kpi_report(params: dict[str, Any], context: dict[str, Any]):
                     COUNT(*) FILTER (WHERE stage = 'Triagem') as stage_screening,
                     COUNT(*) FILTER (WHERE stage = 'Entrevista') as stage_interview,
                     COUNT(*) FILTER (WHERE stage = 'Proposta') as stage_offer,
-                    COUNT(*) FILTER (WHERE stage = 'Contratado') as stage_hired,
+                    COUNT(*) FILTER (WHERE stage IN ('Contratado', 'hired')) as stage_hired,
                     COUNT(*) FILTER (WHERE stage IN ('Rejeitado', 'Reprovado')) as stage_rejected,
                     AVG(EXTRACT(EPOCH FROM (updated_at - created_at)) / 86400)::int as avg_days_in_pipeline
                 FROM vacancy_candidates

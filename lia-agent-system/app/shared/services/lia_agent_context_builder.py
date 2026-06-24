@@ -119,4 +119,127 @@ async def build_company_agent_context(
         return ""
 
 
-__all__ = ["build_company_agent_context"]
+async def build_focused_job_context(
+    focused_job_id: str | None,
+    company_id: str,
+    db: AsyncSession,
+) -> str:
+    """Build a context block for the focused job to inject into LIA system prompt.
+
+    Multi-tenancy: validates job belongs to company_id before injecting.
+    The company_id MUST come from the authenticated JWT context — never from
+    the request payload — so the caller is responsible for that contract.
+
+    Returns:
+        Markdown prompt fragment with a "## Vaga em foco" section, or empty
+        string if the job is not found, company mismatch, or on any error
+        (fail-open so a stale focused_job_id never breaks chat).
+    """
+    if not focused_job_id or not company_id:
+        return ""
+    try:
+        from uuid import UUID
+
+        from app.domains.job_management.repositories.job_vacancy_crud_repository import (
+            JobVacancyCrudRepository,
+        )
+
+        repo = JobVacancyCrudRepository(db)
+        job = await repo.get_vacancy_by_id_and_company(
+            UUID(focused_job_id), company_id
+        )
+        if not job:
+            return ""
+        return (
+            "\n\n## Vaga em foco\n"
+            f'O recrutador está trabalhando na vaga: "{job.title}" (ID: {job.id})\n'
+            "Priorize contexto, perguntas e ações relacionadas a essa vaga quando relevante."
+        )
+    except Exception as exc:
+        logger.debug(
+            "[lia_agent_context_builder] build_focused_job_context skipped "
+            "for focused_job_id=%s company_id=%s: %s",
+            focused_job_id,
+            company_id,
+            exc,
+        )
+        return ""
+
+
+
+
+async def build_operational_config_context(
+    company_id: str,
+    db: AsyncSession,
+) -> str:
+    """Return a prompt fragment with hiring operational config (offer_rules + screening_defaults).
+
+    These are the settings from Configuracoes → Minha Empresa → Contratacao & Triagem.
+    Agents use this to respect company-specific rules for offers, salary negotiation,
+    screening score thresholds, channels, and scheduling.
+
+    Returns empty string on any error (fail-open, same contract as build_company_agent_context).
+    """
+    if not company_id:
+        return ""
+    try:
+        from app.domains.hiring_policy.repositories.hiring_policy_repository import (
+            HiringPolicyRepository,
+        )
+
+        repo = HiringPolicyRepository(db)
+        policy = await repo.get_by_company(company_id)
+        if not policy:
+            return ""
+
+        sections: list[str] = []
+
+        offer_rules = getattr(policy, "offer_rules", None) or {}
+        if offer_rules:
+            lines = ["## Regras de Contratação da Empresa"]
+            if offer_rules.get("allowed_start_day_of_month"):
+                lines.append(f"- Dias de início permitidos: {offer_rules['allowed_start_day_of_month']}")
+            if offer_rules.get("min_notice_days") is not None:
+                lines.append(f"- Aviso prévio mínimo: {offer_rules['min_notice_days']} dias")
+            if offer_rules.get("negotiation_enabled") is not None:
+                lines.append(f"- Negociação salarial: {'habilitada' if offer_rules['negotiation_enabled'] else 'desabilitada'}")
+            if offer_rules.get("salary_flex_pct_max") is not None:
+                lines.append(f"- Flexibilidade salarial máxima: {offer_rules['salary_flex_pct_max']}%")
+            if offer_rules.get("counter_proposal_max_rounds") is not None:
+                lines.append(f"- Máximo de rodadas de contraproposta: {offer_rules['counter_proposal_max_rounds']}")
+            if offer_rules.get("negotiation_hitl_threshold_pct") is not None:
+                lines.append(f"- Threshold HITL negociação: {offer_rules['negotiation_hitl_threshold_pct']}%")
+            if len(lines) > 1:
+                sections.append("\n".join(lines))
+
+        screening = getattr(policy, "screening_config_defaults", None) or {}
+        if screening:
+            lines = ["## Configuração Padrão de Triagem"]
+            settings = screening.get("settings", {}) or {}
+            if settings.get("min_score") is not None:
+                lines.append(f"- Score mínimo WSI: {settings['min_score']}")
+            if settings.get("response_timeout_hours") is not None:
+                lines.append(f"- Timeout de resposta: {settings['response_timeout_hours']}h")
+            if settings.get("auto_approval_limit") is not None:
+                lines.append(f"- Limite aprovação automática: {settings['auto_approval_limit']} candidatos")
+            channels = screening.get("channels", {}) or {}
+            enabled_channels = [k for k, v in channels.items() if isinstance(v, dict) and v.get("enabled")]
+            if enabled_channels:
+                lines.append(f"- Canais habilitados: {', '.join(enabled_channels)}")
+            sched = screening.get("scheduling", {}) or {}
+            if sched.get("auto_enabled") is not None:
+                lines.append(f"- Agendamento automático: {'sim' if sched['auto_enabled'] else 'não'}")
+            if sched.get("min_score_for_auto") is not None:
+                lines.append(f"- Score mínimo para auto-agendamento: {sched['min_score_for_auto']}")
+            if len(lines) > 1:
+                sections.append("\n".join(lines))
+
+        return "\n\n".join(sections)
+    except Exception as exc:
+        logger.warning(
+            "[lia_agent_context_builder] Failed to build operational config for company_id=%s: %s",
+            company_id, exc, exc_info=True,
+        )
+        return ""
+
+__all__ = ["build_company_agent_context", "build_focused_job_context", "build_operational_config_context"]

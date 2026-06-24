@@ -1,5 +1,7 @@
 """Candidate search route: POST /candidates"""
+from app.middleware.request_id import get_correlation_id
 import asyncio
+import os
 import time as _time
 from typing import Any
 from uuid import UUID
@@ -8,10 +10,16 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.domains.cv_screening.services.lia_score_service import lia_score_service
+
+# P1-3: pontos de boost por feedback no Match score do funil (escala 0-100, env-tunavel).
+_FEEDBACK_BOOST_POINTS = float(os.getenv("SEARCH_FEEDBACK_BOOST_POINTS", "10"))
+
 from ._shared import (
     CVParserService,
     CandidateProfile,
     CandidateSearchResultDTO,
+    apply_feedback_boost,
     EducationDTO,
     EvaluateForJobRequest,
     EvaluateForJobResponse,
@@ -72,6 +80,10 @@ from ._persist import (
 )
 
 router = APIRouter()
+# FairnessGuard — bloqueio de queries discriminatórias (LGPD/CLT canonical)
+from app.shared.compliance.fairness_guard import FairnessGuard as _FairnessGuard
+_fairness_guard = _FairnessGuard()
+
 
 async def _evaluate_candidates_with_rubrics(
     candidates: list["CandidateSearchResultDTO"],
@@ -122,6 +134,20 @@ company_id: str = Depends(require_company_id)):
     4. Se job_id fornecido, avalia candidatos com rubricas
     """
     try:
+        # LGPD/CLT fairness guard: bloqueia queries discriminatórias antes de qualquer busca
+        if request.query:
+            _fg_result = _fairness_guard.check(request.query)
+            if _fg_result.is_blocked:
+                raise HTTPException(
+                    status_code=400,
+                    detail={
+                        "error": "fairness_blocked",
+                        "fairness_blocked": True,
+                        "educational_message": _fg_result.educational_message,
+                        "category": _fg_result.category,
+                        "blocked_terms": _fg_result.blocked_terms or [],
+                    },
+                )
         # Fase 2: fingerprint dos criterios (ancora feedback/aprendizado a esta busca)
         _search_fp = _generate_search_fingerprint(request.query, request.search_spec)
         # Fase 4: supressao de credito -- docids ja conhecidos -> docid_blacklist
@@ -212,7 +238,7 @@ company_id: str = Depends(require_company_id)):
                     import uuid as _uuid
                     from app.shared.compliance.audit_service import AuditService
                     await AuditService().log_action(
-                        trace_id=str(_uuid.uuid4()),
+                        trace_id=get_correlation_id(),
                         company_id=str(_company_id_audit) if _company_id_audit else "unattributed",
                         action_type="pearch.search.timeout",
                         actor="api:search_candidates",
@@ -353,6 +379,15 @@ company_id: str = Depends(require_company_id)):
         
         candidates = await enrich_and_filter_candidates(db, candidates, company_id=company_id)
 
+        # P1-3: aprendizado por feedback — ajusta o Match score dos resultados
+        # com base no like/dislike persistido (escopado por company_id, stateless).
+        if candidates:
+            _fb_ids = [c.id for c in candidates if getattr(c, "id", None)]
+            # C1: escopo EMPRESA + USUARIO (cada recrutador ve so o proprio feedback)
+            _fb_user_id = str(getattr(current_user, "id", None) or getattr(current_user, "user_id", None) or "") or None
+            _fb_map = await lia_score_service.load_search_feedback(_fb_ids, company_id=company_id, user_id=_fb_user_id)
+            apply_feedback_boost(candidates, _fb_map, _FEEDBACK_BOOST_POINTS)
+
         # Task #1219 — garantia final "só candidatos com email" no modo
         # "Híbrida com email". Rede de segurança que cobre TODOS os caminhos
         # (incl. fallback Apify), não só o pool local/Pearch já filtrado em
@@ -422,7 +457,10 @@ company_id: str = Depends(require_company_id)):
 
         _effective_pearch_count = result.pearch_count + _fb_pearch_count
         _effective_search_time = (result.local_search_time or 0) + (result.pearch_search_time or 0) + _fb_search_time
-        _effective_can_load_more = (result.pearch_count >= request.pearch_limit) or _fb_can_load_more
+        _pearch_was_requested = request.search_pearch and (request.pearch_limit > 0)
+        _effective_can_load_more = _pearch_was_requested and (
+            (result.pearch_count >= request.pearch_limit) or _fb_can_load_more
+        )
         # Task #1219 — diagnósticos honestos do modo "Híbrida com email".
         _filtered_no_contact = (getattr(result, "filtered_no_contact", 0) or 0) + _extra_no_contact
         _sources_exhausted = getattr(result, "sources_exhausted", False) or False
@@ -456,7 +494,7 @@ company_id: str = Depends(require_company_id)):
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Search failed: {str(e)}")
+        raise
 
 
 
@@ -490,7 +528,7 @@ async def get_search_snapshot(
         )
         rows = result.scalars().all()
     except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"Snapshot retrieval failed: {exc}")
+        raise
 
     candidates = []
     for row in rows:

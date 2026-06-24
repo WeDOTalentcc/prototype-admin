@@ -5,6 +5,7 @@ import { type TableColumn, getDefaultTableColumns } from "@/components/tables"
 import { type DynamicStage } from "@/components/pages/job-kanban/utils/kanbanStageUtils"
 import { calculateNotaLiaGeral } from "@/components/pages/job-kanban/utils/kanbanHelpers"
 import { useUIPreferencesStore } from "@/stores/ui-preferences-store"
+import { useKanbanStore } from "@/stores/kanban-store"
 
 export function useKanbanTableView({
   dynamicStages,
@@ -29,6 +30,30 @@ export function useKanbanTableView({
   const [kanbanStatusFilter, setKanbanStatusFilter] = useState<string[]>([])
   const [kanbanWorkModelFilter, setKanbanWorkModelFilter] = useState<string[]>([])
   const [kanbanOriginFilter, setKanbanOriginFilter] = useState<string[]>([])
+
+  // Fase 2 (ponte in-page): a LIA filtra/busca o board Kanban via chat.
+  // useUIAction despacha lia:apply_table_state {surface:'kanban', patch}; aqui
+  // (onde os filtros vivem) aplicamos aos setters. search vive no kanban-store.
+  useEffect(() => {
+    function handleApplyTableState(e: Event) {
+      const { surface, patch } =
+        (e as CustomEvent<{ surface: string; patch: Record<string, unknown> }>)
+          .detail ?? {}
+      if (surface !== "kanban" || !patch) return
+      if (typeof patch.search === "string")
+        useKanbanStore.getState().setSearchQuery(patch.search)
+      if (typeof patch.scoreMin === "number") setKanbanScoreMin(patch.scoreMin)
+      if (Array.isArray(patch.statusFilter))
+        setKanbanStatusFilter(patch.statusFilter as string[])
+      if (Array.isArray(patch.originFilter))
+        setKanbanOriginFilter(patch.originFilter as string[])
+      if (Array.isArray(patch.workModelFilter))
+        setKanbanWorkModelFilter(patch.workModelFilter as string[])
+    }
+    window.addEventListener("lia:apply_table_state", handleApplyTableState)
+    return () =>
+      window.removeEventListener("lia:apply_table_state", handleApplyTableState)
+  }, [])
 
   // Table sort
   const [tableSortColumn, setTableSortColumn] = useState<string>('notaLiaGeral')

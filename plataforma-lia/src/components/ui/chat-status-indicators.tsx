@@ -10,15 +10,6 @@ import { Chip } from "@/components/ui/chip"
 
 // Thinking Indicator Component
 export const ThinkingIndicator = ({ message }: { message?: string }) => {
-  const [dots, setDots] = useState("")
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setDots(prev => prev.length >= 3 ?"" : prev +".")
-    }, 500)
-    return () => clearInterval(interval)
-  }, [])
-
   return (
     <div
       className="flex items-center gap-3 p-3 bg-lia-bg-tertiary rounded-xl border border-lia-border-subtle mb-3 animate-fade-in-up"
@@ -28,8 +19,8 @@ export const ThinkingIndicator = ({ message }: { message?: string }) => {
       </div>
       <div className="flex-1">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-lia-text-primary">
-            Pensando{dots}
+          <span className="text-sm font-normal text-lia-text-secondary animate-pulse motion-reduce:animate-none">
+            Pensando…
           </span>
         </div>
         {message && (
@@ -277,11 +268,11 @@ export const CompletionMessage = ({
                   onClick={() => onFollowUp?.(action.id)}
                   className="w-full flex items-center gap-3 p-3 text-left hover:bg-lia-interactive-hover rounded-md transition-colors motion-reduce:transition-none group"
                 >
-                  <Icon className="w-4 h-4 text-lia-text-secondary group-hover:text-lia-text-secondary dark:group-hover:text-lia-text-disabled" />
+                  <Icon className="w-4 h-4 text-lia-text-secondary group-hover:text-lia-text-secondary dark:group-hover:text-lia-text-muted" />
                   <span className="text-sm text-lia-text-primary group-hover:text-lia-text-primary dark:group-hover:text-lia-text-inverse">
                     {action.label}
                   </span>
-                  <ArrowRight className="w-3 h-3 text-lia-text-secondary group-hover:text-lia-text-secondary dark:group-hover:text-lia-text-disabled ml-auto" />
+                  <ArrowRight className="w-3 h-3 text-lia-text-secondary group-hover:text-lia-text-secondary dark:group-hover:text-lia-text-muted ml-auto" />
                 </button>
               )
             })}

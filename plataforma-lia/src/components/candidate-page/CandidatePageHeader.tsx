@@ -3,7 +3,6 @@
 import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from"@/components/ui/tooltip"
-import { LiaAnalysisModal } from"@/components/modals/lia-analysis-modal"
 import {
   X, MapPin, Phone, Mail, Linkedin, Calendar as CalendarIcon,
   ClipboardCheck, Briefcase, Users, MessageSquare, Brain, Globe,
@@ -37,9 +36,6 @@ type CandidateRecord = {
 interface CandidatePageHeaderProps {
   _candidate: CandidateRecord
   liaScore: number
-  showLiaAnalysisModal: boolean
-  setShowLiaAnalysisModal: (value: boolean) => void
-  handleAnalysisTransport: () => void
   getScoreColor: (score: number) => string
   onClose: () => void
   onSendEmail?: (candidate: Record<string, unknown>) => void
@@ -55,9 +51,6 @@ interface CandidatePageHeaderProps {
 export function CandidatePageHeader({
   _candidate,
   liaScore,
-  showLiaAnalysisModal,
-  setShowLiaAnalysisModal,
-  handleAnalysisTransport,
   getScoreColor,
   onClose,
   onSendEmail,
@@ -353,28 +346,6 @@ export function CandidatePageHeader({
                 <TooltipContent side="bottom" className="text-xs">Enviar Feedback</TooltipContent>
               </Tooltip>
             </div>
-
-            {/* LIA Analysis Button */}
-            <LiaAnalysisModal
-              isOpen={showLiaAnalysisModal}
-              onOpen={() => setShowLiaAnalysisModal(true)}
-              onClose={() => setShowLiaAnalysisModal(false)}
-              candidate={_candidate}
-              onTransportToOpinions={handleAnalysisTransport}
-            >
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 w-8 p-0 hover:bg-lia-bg-tertiary border border-lia-border-default rounded-md"
-                  >
-                    <Brain className="w-5 h-5 text-wedo-cyan" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" className="text-xs">Análises IA</TooltipContent>
-              </Tooltip>
-            </LiaAnalysisModal>
 
             {/* Close Button */}
             <Tooltip>

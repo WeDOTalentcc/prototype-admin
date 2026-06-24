@@ -1,3 +1,4 @@
+import type { KanbanSortField, KanbanSortOrder } from '@/components/pages/job-kanban/utils/kanbanHelpers'
 import { create } from 'zustand'
 import { devtools } from 'zustand/middleware'
 import { registerStoreReset } from './auth-store'
@@ -11,6 +12,8 @@ interface KanbanState {
   showExpandedMetrics: boolean
   candidatesData: Record<string, Record<string, unknown>[]>
   isLoadingCandidates: boolean
+  kanbanSortBy: KanbanSortField
+  kanbanSortOrder: KanbanSortOrder
 }
 
 interface KanbanActions {
@@ -22,6 +25,8 @@ interface KanbanActions {
   setShowExpandedMetrics: (show: boolean) => void
   setCandidatesData: (data: Record<string, Record<string, unknown>[]> | ((prev: Record<string, Record<string, unknown>[]>) => Record<string, Record<string, unknown>[]>)) => void
   setIsLoadingCandidates: (loading: boolean) => void
+  setKanbanSortBy: (field: KanbanSortField) => void
+  setKanbanSortOrder: (order: KanbanSortOrder) => void
   toggleCandidateSelection: (candidateId: string) => void
   selectAllCandidates: (candidateIds: string[]) => void
   clearSelection: () => void
@@ -39,6 +44,8 @@ const initialState: KanbanState = {
   showExpandedMetrics: false,
   candidatesData: {},
   isLoadingCandidates: false,
+  kanbanSortBy: 'score' as KanbanSortField,
+  kanbanSortOrder: 'desc' as KanbanSortOrder,
 }
 
 export const useKanbanStore = create<KanbanStore>()(
@@ -73,6 +80,10 @@ export const useKanbanStore = create<KanbanStore>()(
       },
 
       setIsLoadingCandidates: (loading) => set({ isLoadingCandidates: loading }, false, 'kanban/setIsLoadingCandidates'),
+
+      setKanbanSortBy: (field) => set({ kanbanSortBy: field }, false, 'kanban/setKanbanSortBy'),
+
+      setKanbanSortOrder: (order) => set({ kanbanSortOrder: order }, false, 'kanban/setKanbanSortOrder'),
 
       toggleCandidateSelection: (candidateId) => {
         const current = get().selectedCandidates

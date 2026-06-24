@@ -9,8 +9,8 @@ from pydantic import BaseModel
 
 from app.auth.dependencies import get_current_user_or_demo, get_user_company_id
 from app.auth.models import User
-from app.domains.candidate_lists.dependencies import get_candidate_list_repo
-from app.domains.candidate_lists.repositories.candidate_list_repository import (
+from app.repositories.dependencies import get_candidate_list_repo
+from app.repositories.candidate_list_repository import (
     CandidateListRepository,
 )
 from app.shared.security.require_company_id import require_company_id
@@ -18,6 +18,7 @@ from app.shared.types import WeDoBaseModel
 from typing import Annotated
 from fastapi import Path
 from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
+from app.shared.errors import LIAError
 
 logger = logging.getLogger(__name__)
 
@@ -92,7 +93,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error listing candidate lists: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("", response_model=None)
@@ -130,7 +131,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error(f"Error creating candidate list: {e}", exc_info=True)
         await repo.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.get("/{list_id}", response_model=None)
@@ -204,7 +205,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error getting candidate list: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.patch("/{list_id}", response_model=None)
@@ -246,7 +247,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error(f"Error updating candidate list: {e}", exc_info=True)
         await repo.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.delete("/{list_id}", response_model=None)
@@ -274,7 +275,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error(f"Error deleting candidate list: {e}", exc_info=True)
         await repo.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/{list_id}/candidates", response_model=None)
@@ -348,7 +349,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error(f"Error adding candidates to list: {e}", exc_info=True)
         await repo.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.delete("/{list_id}/candidates", response_model=None)
@@ -393,7 +394,7 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error(f"Error removing candidates from list: {e}", exc_info=True)
         await repo.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 
 @router.post("/{list_id}/assign-jobs", response_model=None)
@@ -466,6 +467,6 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error(f"Error assigning list to jobs: {e}", exc_info=True)
         await repo.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise LIAError(message="Erro interno do servidor")
 
 reorder_collection_before_item(router)

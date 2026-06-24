@@ -31,6 +31,12 @@ export const CANONICAL_PAGES = {
   TASKS: "tasks",
   CHAT: "chat",
   TRUST: "trust",
+  AGENTS_MARKETPLACE: "agents_marketplace",
+  AI_CREDITS: "ai_credits",
+  INTEGRACOES_ATS: "integracoes_ats",
+  TEMPLATES: "templates",
+  MODULOS: "modulos",
+  PROJETOS: "projetos",
   GENERAL: "general",
 } as const
 
@@ -71,6 +77,12 @@ export function routeToCanonicalPage(pathname: string): CanonicalPageValue {
     return CANONICAL_PAGES.DASHBOARD
   }
   if (path.includes("/recrutar")) return CANONICAL_PAGES.RECRUTAR
+  // Fase A: ai-credits ANTES de configuracoes (a sub-rota contem o prefixo).
+  if (path.includes("/ai-credits")) return CANONICAL_PAGES.AI_CREDITS
+  if (path.includes("/integracoes-ats")) return CANONICAL_PAGES.INTEGRACOES_ATS
+  if (path.includes("/agents/marketplace") || path.includes("/marketplace")) {
+    return CANONICAL_PAGES.AGENTS_MARKETPLACE
+  }
   if (path.includes("/configuracoes") || path.includes("/minha-empresa") || path.includes("/company-settings") || path.includes("/settings")) {
     return CANONICAL_PAGES.CONFIGURACOES
   }
@@ -84,6 +96,7 @@ export function routeToCanonicalPage(pathname: string): CanonicalPageValue {
   if (path.includes("/tasks") || path.includes("/decidir")) return CANONICAL_PAGES.TASKS
   if (path.includes("/chat")) return CANONICAL_PAGES.CHAT
   if (path.includes("/trust")) return CANONICAL_PAGES.TRUST
+  if (path.includes("/projetos")) return CANONICAL_PAGES.PROJETOS
 
   // Root path of locale (e.g. /pt/) → home dashboard.
   if (path === "/" || path === "") return CANONICAL_PAGES.HOME
@@ -99,7 +112,7 @@ export function routeToCanonicalPage(pathname: string): CanonicalPageValue {
  * Returns null when the canonical page has no canonical URL (e.g. HOME
  * which is locale-root, or detail pages which require an id).
  */
-export function canonicalPageToUrl(page: CanonicalPageValue, locale: string = "pt"): string | null {
+export function canonicalPageToUrl(page: CanonicalPageValue, locale: string = "pt", id?: string): string | null {
   const base = `/${locale}`
   switch (page) {
     case CANONICAL_PAGES.HOME:                return `${base}/`
@@ -115,11 +128,26 @@ export function canonicalPageToUrl(page: CanonicalPageValue, locale: string = "p
     case CANONICAL_PAGES.TASKS:               return `${base}/tasks`
     case CANONICAL_PAGES.CHAT:                return `${base}/chat`
     case CANONICAL_PAGES.TRUST:               return `${base}/trust`
-    // Detail / kanban pages have no canonical "land here" URL.
+    case CANONICAL_PAGES.PROJETOS:            return `${base}/projetos`
+    // Fase A (2026-06-06): dashboard É a home (DashboardApp); pipeline_kanban
+    // → visão global do pipeline (/recrutar = PipelineOverviewPage).
+    // Fase A.2: abas SEM rota (in-shell) → deep-link ?view=<label> que o
+    // DashboardApp lê e converte em setCurrentPage. dashboard = métricas
+    // (aba Indicadores), NÃO a home (que abre em Decidir).
+    case CANONICAL_PAGES.DASHBOARD:           return `${base}/?view=Indicadores`
+    case CANONICAL_PAGES.TEMPLATES:           return `${base}/?view=Templates`
+    case CANONICAL_PAGES.MODULOS:             return `${base}/?view=${encodeURIComponent("Módulos")}`
+    case CANONICAL_PAGES.PIPELINE_KANBAN:     return `${base}/recrutar`
+    case CANONICAL_PAGES.AGENTS_MARKETPLACE:  return `${base}/agents/marketplace`
+    case CANONICAL_PAGES.AI_CREDITS:          return `${base}/configuracoes/ai-credits`
+    case CANONICAL_PAGES.INTEGRACOES_ATS:     return `${base}/integracoes-ats`
+    // Detail pages: navegáveis SE houver id (mirror do backend
+    // [NAVIGATE:page:id]). Sem id não há URL canônica de "land here".
     case CANONICAL_PAGES.VAGA_DETALHE:
+      return id ? `${base}/jobs/${id}` : null
     case CANONICAL_PAGES.CANDIDATO_DETALHE:
-    case CANONICAL_PAGES.PIPELINE_KANBAN:
-    case CANONICAL_PAGES.DASHBOARD:
+      return id ? `${base}/funil-de-talentos/candidato/${id}` : null
+    // general: sentinel sem URL canônica de navegação direta.
     case CANONICAL_PAGES.GENERAL:
     default:
       return null
@@ -144,12 +172,73 @@ export function canonicalPageLabel(page: CanonicalPageValue): string {
     case CANONICAL_PAGES.AGENT_STUDIO:        return "Agent Studio"
     case CANONICAL_PAGES.AJUDA:               return "Ajuda"
     case CANONICAL_PAGES.BANCOS_TALENTOS:     return "Bancos de Talentos"
-    case CANONICAL_PAGES.BIBLIOTECA:          return "Biblioteca LIA"
+    case CANONICAL_PAGES.BIBLIOTECA:          return "Biblioteca"
     case CANONICAL_PAGES.CENTRAL_COMUNICACAO: return "Central de Comunicação"
     case CANONICAL_PAGES.TASKS:               return "Tarefas"
     case CANONICAL_PAGES.CHAT:                return "Chat"
     case CANONICAL_PAGES.TRUST:               return "Trust Center"
+    case CANONICAL_PAGES.PROJETOS:            return "Projetos"
+    case CANONICAL_PAGES.AGENTS_MARKETPLACE:  return "Marketplace de Agentes"
+    case CANONICAL_PAGES.AI_CREDITS:          return "Créditos de IA"
+    case CANONICAL_PAGES.INTEGRACOES_ATS:     return "Integrações ATS"
+    case CANONICAL_PAGES.TEMPLATES:           return "Templates"
+    case CANONICAL_PAGES.MODULOS:             return "Módulos"
     case CANONICAL_PAGES.GENERAL:             return "Geral"
     default:                                  return "Geral"
   }
+}
+
+/**
+ * Resultado de navegação com indicador de fallback.
+ *
+ * `isFallback=true` quando a page era um detalhe sem id e foi feito
+ * graceful degradation para a lista pai (VAGAS ou FUNIL_TALENTOS).
+ */
+export interface CanonicalPageNavResult {
+  url: string
+  isFallback: boolean
+}
+
+/**
+ * Como `canonicalPageToUrl`, mas com graceful degradation para páginas de
+ * detalhe sem id. Em vez de retornar null, navega para a lista pai:
+ *   - vaga_detalhe sem id       -> VAGAS  (/jobs)
+ *   - candidato_detalhe sem id  -> FUNIL_TALENTOS (/funil-de-talentos)
+ *
+ * Retorna `{ url, isFallback }` para que o caller possa sinalizar o
+ * usuário quando a navegação não foi exatamente a pedida.
+ *
+ * Callers que precisam do comportamento ORIGINAL (null para detalhe sem id)
+ * devem continuar usando `canonicalPageToUrl`.
+ */
+export function canonicalPageToUrlWithFallback(
+  page: CanonicalPageValue,
+  locale: string = "pt",
+  id?: string,
+): CanonicalPageNavResult | null {
+  // Caso normal: id fornecido ou page nao e detalhe — delega ao canonico.
+  if (page !== CANONICAL_PAGES.VAGA_DETALHE && page !== CANONICAL_PAGES.CANDIDATO_DETALHE) {
+    const url = canonicalPageToUrl(page, locale, id)
+    if (!url) return null
+    return { url, isFallback: false }
+  }
+
+  // Pagina de detalhe com id — resolve normalmente.
+  if (id) {
+    const url = canonicalPageToUrl(page, locale, id)
+    if (!url) return null
+    return { url, isFallback: false }
+  }
+
+  // Detalhe sem id — graceful degradation para a lista pai.
+  if (page === CANONICAL_PAGES.VAGA_DETALHE) {
+    const fallbackUrl = canonicalPageToUrl(CANONICAL_PAGES.VAGAS, locale)
+    if (!fallbackUrl) return null
+    return { url: fallbackUrl, isFallback: true }
+  }
+
+  // CANDIDATO_DETALHE sem id -> funil de talentos
+  const fallbackUrl = canonicalPageToUrl(CANONICAL_PAGES.FUNIL_TALENTOS, locale)
+  if (!fallbackUrl) return null
+  return { url: fallbackUrl, isFallback: true }
 }

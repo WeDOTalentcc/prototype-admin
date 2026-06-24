@@ -14,6 +14,7 @@ import {
 } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { MAX_SIMILAR_URLS, MAX_CV_FILES } from "@/components/search/expandable-ai-prompt.types"
+import { useAiPersona } from "@/hooks/company/use-ai-persona"
 
 interface SimilarProfilesInputProps {
   similarUrls: string[]
@@ -48,6 +49,8 @@ export function SimilarProfilesInput({
   onAnalyzeProfiles,
   onSearch,
 }: SimilarProfilesInputProps) {
+  const { persona } = useAiPersona()
+  const personaName = persona?.name ?? "IA"
   const cvFileInputRef = useRef<HTMLInputElement>(null)
   const validUrls = similarUrls.filter(u => u.trim())
   const hasSource = validUrls.length > 0 || similarCvFiles.length > 0
@@ -92,7 +95,7 @@ export function SimilarProfilesInput({
                     </button>
                   </TooltipTrigger>
                   <TooltipContent side="top" className="text-xs max-w-sidebar-content">
-                    Adicione até 2 perfis para a LIA criar um perfil ideal combinado
+                    Adicione até 2 perfis para {personaName} criar um perfil ideal combinado
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -171,7 +174,7 @@ export function SimilarProfilesInput({
           ) : (
             <>
               <Wand2 className="w-3.5 h-3.5" />
-              Analisar e combinar perfis com LIA
+              {`Analisar e combinar perfis com ${personaName}`}
             </>
           )}
         </button>
@@ -183,7 +186,7 @@ export function SimilarProfilesInput({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
-              <span className="text-xs font-medium text-lia-text-primary">Perfil Ideal sugerido pela LIA</span>
+              <span className="text-xs font-medium text-lia-text-primary">{`Perfil Ideal sugerido por ${personaName}`}</span>
             </div>
             <TooltipProvider>
               <Tooltip>
@@ -191,7 +194,7 @@ export function SimilarProfilesInput({
                   <Info className="w-3.5 h-3.5 text-lia-text-secondary" />
                 </TooltipTrigger>
                 <TooltipContent side="top" className="text-xs max-w-[280px]">
-                  A LIA analisou os perfis e combinou skills, experiências e senioridade em comum. Edite ou remova tags antes de buscar.
+                  {`${personaName} analisou os perfis e combinou`} skills, experiências e senioridade em comum. Edite ou remova tags antes de buscar.
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -233,7 +236,7 @@ export function SimilarProfilesInput({
         <div className="flex items-start gap-2">
           <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-lia-text-secondary" />
           <p className="text-xs text-lia-text-secondary">
-            <strong>Dica:</strong> Cole 1 a 2 links do LinkedIn ou faça upload de até 2 CVs. Com 2+ perfis, a LIA combina as melhores características e sugere palavras-chave para encontrar candidatos similares.
+            <strong>Dica:</strong> Cole 1 a 2 links do LinkedIn ou faça upload de até 2 CVs. Com 2+ perfis, `${personaName} combina as melhores características` e sugere palavras-chave para encontrar candidatos similares.
           </p>
         </div>
       </div>

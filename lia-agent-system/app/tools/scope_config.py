@@ -32,6 +32,7 @@ class PromptScope(StrEnum):
     IN_JOB = "in_job"
     GLOBAL = "global"
     UNIVERSAL = "universal"
+    OFFER_CONCIERGE = "offer_concierge"
 
 
 # ---------------------------------------------------------------------------
@@ -55,6 +56,8 @@ IN_JOB_ACTION_TOOLS: set[str] = _load_global_set("in_job", "action")
 GLOBAL_TOOLS: set[str] = _load_global_set("global", "action")
 UNIVERSAL_QUERY_TOOLS: set[str] = _load_global_set("universal", "query")
 UNIVERSAL_ACTION_TOOLS: set[str] = _load_global_set("universal", "action")
+OFFER_CONCIERGE_QUERY_TOOLS: set[str] = _load_global_set("offer_concierge", "query")
+OFFER_CONCIERGE_ACTION_TOOLS: set[str] = _load_global_set("offer_concierge", "action")
 
 
 SCOPE_TOOL_MAPPING: dict[PromptScope, dict[str, set[str]]] = {
@@ -82,6 +85,11 @@ SCOPE_TOOL_MAPPING: dict[PromptScope, dict[str, set[str]]] = {
         "query": UNIVERSAL_QUERY_TOOLS,
         "action": UNIVERSAL_ACTION_TOOLS,
         "all": UNIVERSAL_QUERY_TOOLS | UNIVERSAL_ACTION_TOOLS,
+    },
+    PromptScope.OFFER_CONCIERGE: {
+        "query": OFFER_CONCIERGE_QUERY_TOOLS,
+        "action": OFFER_CONCIERGE_ACTION_TOOLS,
+        "all": OFFER_CONCIERGE_QUERY_TOOLS | OFFER_CONCIERGE_ACTION_TOOLS,
     },
 }
 
@@ -302,3 +310,112 @@ def get_suggested_scope_for_intent(intent: str) -> PromptScope:
         Suggested PromptScope.
     """
     return SCOPE_INTENT_MAPPING.get(intent, PromptScope.GLOBAL)
+
+
+# ── Fase 1 (2026-06-06): page/domain -> PromptScope p/ o agente federado unico ──
+# O federado carrega o toolset ESCOPADO (bounded) via get_tools_for_scope DESTE
+# modulo (NAO o de app/shared/tool_catalog.py, que retorna ~166 por causa do
+# scope_inferred=GLOBAL default + case mismatch). Determinismo computacional.
+_PAGE_SCOPE: dict[str, "PromptScope"] = {
+    "vagas": PromptScope.JOB_TABLE,
+    "jobs": PromptScope.JOB_TABLE,
+    "job_table": PromptScope.JOB_TABLE,
+    "vaga_detalhe": PromptScope.IN_JOB,
+    "job_detail": PromptScope.IN_JOB,
+    "kanban": PromptScope.IN_JOB,
+    "pipeline_kanban": PromptScope.IN_JOB,
+    "funil": PromptScope.TALENT_FUNNEL,
+    "candidatos": PromptScope.TALENT_FUNNEL,
+    "talent": PromptScope.TALENT_FUNNEL,
+    "candidato_detalhe": PromptScope.TALENT_FUNNEL,
+    "offer": PromptScope.OFFER_CONCIERGE,
+    "proposta": PromptScope.OFFER_CONCIERGE,
+}
+_DOMAIN_SCOPE: dict[str, "PromptScope"] = {
+    "jobs_management": PromptScope.JOB_TABLE,
+    "job_management": PromptScope.JOB_TABLE,
+    "jobs_mgmt": PromptScope.JOB_TABLE,
+    "talent": PromptScope.TALENT_FUNNEL,
+    "talent_funnel": PromptScope.TALENT_FUNNEL,
+    "talent_pool": PromptScope.TALENT_FUNNEL,
+    "kanban": PromptScope.IN_JOB,
+    "pipeline_transition": PromptScope.IN_JOB,
+    "offer": PromptScope.OFFER_CONCIERGE,
+    "offer_concierge": PromptScope.OFFER_CONCIERGE,
+    "offer_drafting": PromptScope.OFFER_CONCIERGE,
+    "offer_negotiation": PromptScope.OFFER_CONCIERGE,
+}
+
+
+def scope_for_context(
+    page_type: str | None = None, resolved_domain: str | None = None
+) -> PromptScope:
+    """Infere o PromptScope do turno: page_type (sinal do FE, prioridade) -> senao
+    resolved_domain (fallback do router) -> senao GLOBAL. Deterministico (computacional
+    > inferencial). Funcao PURA. Fase 1 do plano de consolidacao (agente federado unico)."""
+    if page_type:
+        sc = _PAGE_SCOPE.get(str(page_type).strip().lower())
+        if sc is not None:
+            return sc
+    if resolved_domain:
+        sc = _DOMAIN_SCOPE.get(str(resolved_domain).strip().lower())
+        if sc is not None:
+            return sc
+    return PromptScope.GLOBAL
+
+
+# -- Fase 2 (2026-06-06): escopo ATIVO do turno via contextvar (async-task-local,
+# evita race no agente federado singleton; padrao tipo _current_company_id). O SSE
+# seta via scope_for_context; o federado le no _get_tools/_get_compiled_graph. --
+import contextvars as _contextvars
+
+_active_scope: "_contextvars.ContextVar" = _contextvars.ContextVar(
+    "lia_active_scope", default=None
+)
+
+
+def set_active_scope(scope) -> None:
+    """Seta o escopo ativo do turno (chamado pelo transporte, ex: SSE)."""
+    _active_scope.set(scope)
+
+
+def get_active_scope():
+    """Le o escopo ativo do turno (None se nao setado)."""
+    return _active_scope.get()
+
+
+def reset_active_scope() -> None:
+    """Limpa o escopo ativo (fim do turno)."""
+    _active_scope.set(None)
+
+
+import os as _os_flags
+
+
+def _flag(name: str) -> bool:
+    return (_os_flags.getenv(name, "") or "").strip().lower() in ("1", "true", "yes", "on")
+
+
+def federated_primary_enabled() -> bool:
+    """Fase 4: LIA_FEDERATED_PRIMARY on -> a bolha roteia pro agente federado unico
+    (em vez dos agentes de dominio isolados)."""
+    return _flag("LIA_FEDERATED_PRIMARY")
+
+
+def federated_scoping_enabled() -> bool:
+    """Escopo dinamico de tools ativo se LIA_FEDERATED_SCOPED_TOOLS OU
+    LIA_FEDERATED_PRIMARY (primario IMPLICA escopo — senao seriam 179 tools)."""
+    return _flag("LIA_FEDERATED_SCOPED_TOOLS") or _flag("LIA_FEDERATED_PRIMARY")
+
+
+# ---------------------------------------------------------------------------
+# Fase C.1 (2026-06-09): Studio scope extension — first-party agent manifests
+# feed the federated scope resolver.  The async integration (db-aware) lives in
+# studio_scope_extension.py.  This import makes scope_config the bridge point.
+# HOT FILE RULE: this is the ONLY line added to this file in Fase C.1.
+# ---------------------------------------------------------------------------
+from app.orchestrator.studio_scope_extension import (  # noqa: E402, F401
+    get_studio_tools_for_scope,
+    get_studio_covered_scopes,
+    invalidate_studio_scope_cache,
+)

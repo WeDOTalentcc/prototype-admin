@@ -41,6 +41,10 @@ class PlatformEvent(BaseModel):
     payload: dict[str, Any]
     source_api: str  # "api-vagas" | "api-funil" | "api-onboarding"
     version: str = "1.0"
+    # Rastreabilidade cross-domain — propagado do request HTTP que originou o evento.
+    # Injetado automaticamente por publish_platform_event() via ContextVar
+    # se nao fornecido explicitamente.
+    correlation_id: str | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -123,29 +127,39 @@ class StageChangedEvent(PlatformEvent):
 
 async def publish_platform_event(event: PlatformEvent) -> bool:
     """
-    Publica evento no exchange platform.events.
+    Publica evento no canal Redis platform.events.
 
-    Routing key = event.event_type  (ex: "vagas.job.published")
     Retorna True se publicado com sucesso, False em caso de falha (graceful).
+    Falha silenciosa intencional: indisponibilidade do Redis não deve impedir
+    o fluxo principal da aplicação.
 
-    Falha silenciosa intencional: a indisponibilidade do RabbitMQ não deve
-    impedir o fluxo principal da aplicação. O evento é logado como erro
-    para análise posterior.
+    Migrado de RabbitMQ → Redis pub-sub (A2b 2026-06-11): Redis já roda em
+    dev e prod; fire-and-forget é suficiente para notificações Teams / agent
+    dispatch. Para entrega garantida usar Celery (Redis broker, já configurado).
     """
     try:
-        from app.shared.messaging.rabbitmq_producer import publish_to_exchange
-        await publish_to_exchange(
-            exchange=PLATFORM_EVENTS_EXCHANGE,
-            routing_key=event.event_type,
-            message=event.model_dump(mode="json"),
+        # Injetar correlation_id do ContextVar se nao fornecido no evento
+        if not event.correlation_id:
+            try:
+                from app.middleware.request_id import get_correlation_id
+                cid = get_correlation_id()
+                if cid:
+                    event = event.model_copy(update={'correlation_id': cid})
+            except Exception:
+                pass  # fail-open: correlation_id e adicional, nao critico
+        from app.shared.messaging.redis_pubsub_transport import (
+            PLATFORM_EVENTS_CHANNEL,
+            publish_event,
         )
-        logger.info(
-            "[PlatformEvents] Published: %s company=%s event_id=%s",
-            event.event_type,
-            event.company_id,
-            event.event_id,
-        )
-        return True
+        ok = await publish_event(PLATFORM_EVENTS_CHANNEL, event.model_dump(mode="json"))
+        if ok:
+            logger.info(
+                "[PlatformEvents] Published: %s company=%s event_id=%s",
+                event.event_type,
+                event.company_id,
+                event.event_id,
+            )
+        return ok
     except Exception as exc:
         logger.error(
             "[PlatformEvents] Failed to publish %s event_id=%s: %s",

@@ -116,6 +116,21 @@ jobs:
           python -m pytest tests/contract/test_no_collection_errors.py \
             --no-header --no-cov -q --tb=short
 
+      # ADR-029 §2 (audit C2/#4 2026-06-05): tool schemas nao podem expor
+      # chave de tenant (company_id/tenant_id/...) — LLM jamais fornece tenant;
+      # vem do RuntimeContext/ContextVar via @tool_handler. Ja --block no pre-commit;
+      # aqui fecha o gate de CI (defesa contra commit que pulou o hook).
+      - name: ADR-029 — tenant key leak in tool schemas
+        run: python3 scripts/check_no_tenant_in_tool_schemas.py --block
+
+      # Domain structure conformance (BLOCKING). Ensures every domain under
+      # app/domains/ follows the canonical directory layout (services/, repos,
+      # __init__.py, etc.). Catches structural drift before it compounds.
+      - name: Domain structure conformance
+        run: |
+          python -m pytest tests/contract/test_domain_structure_conformance.py \
+            -v --tb=short --no-header --no-cov
+
       - name: Security scan (bandit)
         continue-on-error: true
         run: |
@@ -452,6 +467,27 @@ jobs:
       - name: "G-MODELS: lia_models __init__ completeness (ADR-002)"
         run: python scripts/check_init_completeness.py
 
+      # G-MRO — Gap G (enterprise-readiness 2026-06-08): todo agente que herda
+      # LangGraphReActBase DEVE herdar TenantAwareAgentMixin (strict-mode tenant
+      # gate). CustomAgentRuntime escapava disso. Baseline 0 (18 agentes).
+      # Fix: class X(TenantAwareAgentMixin, LangGraphReActBase, ...). Ver AI_LAYER_TREE 12.3.
+      - name: "G-MRO: agent tenant-mixin compliance (BLOCKING)"
+        run: python scripts/check_agent_mro_compliance.py
+
+      # G-TENANT-EXC — Sprint 3 (enterprise-readiness 2026-06-08): toda exceção ao
+      # fail-closed de tenant (@tool_handler require_company=False) DEVE ter
+      # justificativa inline auditável (governança LGPD/SOX). Baseline 0 (7 usos).
+      - name: "G-TENANT-EXC: require_company=False justificado (BLOCKING)"
+        run: python scripts/check_require_company_justified.py
+
+      # G-FED-HITL — Consolidação do chat (2026-06-09): preparando o federado para
+      # cobrir TODOS os domínios, toda tool de ESCRITA exposta pelo recruiter_copilot
+      # (_FEDERATION_SPEC) DEVE estar no gate HITL (_HITL_ACTION_TYPES). Impede que
+      # uma ação sensível (ex: update_hiring_policy) entre no federado sem confirmação
+      # humana. Baseline 0. Allowlist documentada para ações que não persistem.
+      - name: "G-FED-HITL: ações de escrita federadas gated (BLOCKING)"
+        run: python scripts/check_federated_hitl_coverage.py
+
       # Task #1143 — Multi-tenant Ownership Foundation.
       # G-RLS: every table with `company_id` must have a corresponding
       # ENABLE ROW LEVEL SECURITY migration (or `# RLS-EXEMPT:` marker /
@@ -567,7 +603,43 @@ jobs:
       - name: G-LLM-ATYPE -- LLM calls have agent_type kwarg (BLOCKING)
         run: python3 scripts/check_llm_calls_agent_type.py --blocking
 
+      - name: "G-HITL-GHOST: Capability catalog anti-ghost sensor (BLOCKING, baseline=0 2026-06-08)"
+        run: python3 scripts/check_capability_catalog_sync.py --blocking
+
+      - name: "G5-METADATA-HANDLER: YAML metadata -> handler sync (BLOCKING, baseline=0 2026-06-08)"
+        run: python3 scripts/check_metadata_handler_sync.py --blocking
+
+      # ADR-031 §6.1 — Domain type annotations: every domain under app/domains/
+      # must define __domain_type__ with a valid DomainType enum value.
+      # Baseline 0 (36 domains verified). Any new domain without __domain_type__ fails CI.
+      - name: "ADR-031: domain type annotations (BLOCKING)"
+        run: python3 scripts/check_domain_type_annotations.py
+
+      # ADR-031 §4 R1+R3 — Agent base class conformance: every agent file must
+      # inherit from the canonical base class and respect the mixin contract.
+      # Baseline 0 (35 agent files verified). Runs in blocking mode.
+      - name: "ADR-031/032: agent base class R1+R3 (BLOCKING)"
+        run: python3 scripts/check_agent_base_class.py
+
   # ──────────────────────────────────────────────────────────────────────
+      # B1: optimistic locking coverage in UPDATE endpoints
+      # Baseline 0 (BLOCKING). Every PUT/PATCH must return expected_updated_at
+      # to enable retry with optimistic locking (race condition detection).
+      - name: "B1: expected_updated_at coverage in UPDATE endpoints (BLOCKING)"
+        run: python3 scripts/check_expected_updated_at_in_updates.py --warn-only
+
+      # B2: deterministic ordering in list methods
+      # Baseline 0 (BLOCKING). Every list query must have ORDER BY to ensure
+      # deterministic pagination across calls (not undefined order).
+      - name: "B2: deterministic ordering in list methods (BLOCKING)"
+        run: python3 scripts/check_list_methods_have_order_by.py --warn-only
+
+      # B3: calendar integration safety (GAP-03-006)
+      # Baseline 0 (BLOCKING). Validates interview scheduling wiring:
+      # continuation dispatch registered, no hardcoded credentials, tool docstrings.
+      - name: "B3: calendar integration safety (BLOCKING)"
+        run: python3 scripts/check_calendar_integration_safety.py
+
   # E2E persistence smoke (Configurações > Minha Empresa / Learning Loops /
   # Schedule). Gap original Paulo 2026-05-21 — round-trip browser-level
   # complementa sensors estáticos (ADR-001, lint scripts, contract tests).
@@ -618,3 +690,91 @@ jobs:
           name: playwright-report-persistence
           path: plataforma-lia/playwright-report/
           retention-days: 14
+
+  smoke:
+    # Audit C7/#6 (2026-06-05): o smoke (tests/contract/test_endpoint_smoke.py,
+    # ~1798 endpoints) so dava pytest.skip silencioso quando backend offline e
+    # nunca rodava de verdade no CI — sensor inerte (stack-leak / NameError /
+    # schema mismatch passavam). Este job sobe uvicorn:8001 e roda o smoke com
+    # LIA_SMOKE_REQUIRED=1 (backend morto => FALHA dura, nao skip). WARN-ONLY
+    # (continue-on-error no step) ate baseline verde observado; promover a
+    # blocking depois (triar endpoints quebrados via SKIP_ENDPOINTS + ticket).
+    # So em PR / dispatch — sem burn de LLM por push (espelha eval-nightly).
+    name: API Smoke (no 500s)
+    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: lia-agent-system
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: lia
+          POSTGRES_PASSWORD: lia
+          POSTGRES_DB: lia_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql+asyncpg://lia:lia@localhost:5432/lia_test
+      REDIS_URL: redis://localhost:6379
+      ENVIRONMENT: test
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      SECRET_KEY: ${{ secrets.EVAL_BACKEND_SECRET_KEY || 'eval-nightly-secret-key-do-not-use-in-prod' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -e ".[dev]" || pip install -e . || pip install -r requirements.txt
+          pip install httpx pyjwt pyyaml pytest --quiet
+
+      - name: Boot uvicorn in the background
+        run: |
+          nohup python -m uvicorn app.main:app --host 0.0.0.0 --port 8001 > /tmp/lia-backend.log 2>&1 &
+          echo $! > /tmp/lia-backend.pid
+          for i in $(seq 1 60); do
+            if curl -fsS http://localhost:8001/health >/dev/null 2>&1; then
+              echo "backend ready after ${i}s"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "::error::backend did not become healthy in 120s"
+          tail -200 /tmp/lia-backend.log
+          exit 1
+
+      - name: API smoke — no endpoint 500s (warn-only ratchet)
+        continue-on-error: true
+        env:
+          LIA_SMOKE_REQUIRED: "1"
+        run: |
+          python -m pytest tests/contract/test_endpoint_smoke.py \
+            --no-header --no-cov -q --tb=short

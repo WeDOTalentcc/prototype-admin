@@ -220,13 +220,6 @@ class TestServiceImports:
 class TestToolRegistryImports:
     """Import tool registries to cover their definitions."""
 
-    def test_autonomous_tool_registry(self):
-        try:
-            from app.domains.autonomous.agents import autonomous_tool_registry
-            assert autonomous_tool_registry is not None
-        except ImportError:
-            pytest.skip("Module not importable")
-
     def test_nurture_sequence_tool_registry(self):
         try:
             from app.domains.sourcing.agents import nurture_sequence_tool_registry
@@ -245,13 +238,6 @@ class TestToolRegistryImports:
         try:
             from app.domains.sourcing.agents import diversity_tool_registry
             assert diversity_tool_registry is not None
-        except ImportError:
-            pytest.skip("Module not importable")
-
-    def test_autonomous_react_agent(self):
-        try:
-            from app.domains.autonomous.agents import autonomous_react_agent
-            assert autonomous_react_agent is not None
         except ImportError:
             pytest.skip("Module not importable")
 
@@ -380,7 +366,7 @@ class TestAPIRouteImports:
 
     def test_agent_chat_ws_routes(self):
         try:
-            from app.api.v1 import agent_chat_ws
+            from app.api.v1 import chat_shared as agent_chat_ws  # migrado de agent_chat_ws
             assert agent_chat_ws is not None
         except ImportError:
             pytest.skip("Module not importable")

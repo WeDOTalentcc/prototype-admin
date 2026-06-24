@@ -2,6 +2,7 @@
 
 import { X, Code, Brain, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useAiPersona } from "@/hooks/company/use-ai-persona"
 
 interface SemanticSuggestion {
   term: string
@@ -38,6 +39,8 @@ export function EditArchetypeSkillsSection({
   semanticSkillSuggestions, isLoadingSemanticSkills,
   searchSemanticSkills, clearSemanticSkillSuggestions,
 }: EditArchetypeSkillsSectionProps) {
+  const { persona } = useAiPersona()
+  const personaName = persona?.name ?? "IA"
   return (
     <div>
       <label className="text-xs font-medium mb-1 flex items-center gap-1.5 text-lia-text-secondary">
@@ -124,7 +127,7 @@ export function EditArchetypeSkillsSection({
             }}
             disabled={editArchetypeSkills.length === 0 || isFindingSimilarSkills}
             className={`px-2 py-1 rounded-full flex items-center gap-1 text-micro transition-colors motion-reduce:transition-none disabled:opacity-50 ${editArchetypeSkills.length > 0 ? "bg-wedo-cyan/15 text-lia-text-primary" : "bg-lia-bg-tertiary text-lia-text-tertiary"}`}
-            title="Buscar skills similares com IA"
+            title={`Buscar skills similares com ${personaName}`}
           >
             {isFindingSimilarSkills ? (
               <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none" />
@@ -173,7 +176,7 @@ export function EditArchetypeSkillsSection({
         <div className="mt-2 p-2 rounded-xl bg-wedo-cyan/8 border border-wedo-cyan/30">
           <div className="flex items-center gap-1.5 mb-1.5">
             <Brain className="w-3 h-3 text-wedo-cyan" />
-            <span className="text-micro font-medium text-lia-text-primary">Sugestões de IA</span>
+            <span className="text-micro font-medium text-lia-text-primary">{`Sugestões de ${personaName}`}</span>
             <button type="button" onClick={() => { onAiSuggestedSkillsChange([]); onSelectedAiSkillsChange([]) }} className="ml-auto p-0.5 hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover rounded-xl">
               <X className="w-3 h-3 text-lia-text-primary" />
             </button>
@@ -193,7 +196,7 @@ export function EditArchetypeSkillsSection({
                     }
                   }}
                   className={cn(
-                    "px-1.5 py-0.5 rounded-full text-micro transition-[width,height] cursor-pointer text-wedo-cyan-dark",
+                    "px-1.5 py-0.5 rounded-full text-micro transition-[width,height] cursor-pointer text-lia-text-muted",
                     isSelected ? "ring-2 ring-lia-btn-primary-bg/20 bg-wedo-cyan/25" : "bg-wedo-cyan/15"
                   )}
                 >

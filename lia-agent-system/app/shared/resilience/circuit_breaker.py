@@ -66,7 +66,7 @@ async def _notify_circuit_open(service_name: str) -> None:
         try:
             import redis.asyncio as _aioredis
             from lia_config.config import settings as _settings
-            _redis = _aioredis.from_url(_settings.REDIS_URL, decode_responses=True)  # síncrono
+            _redis = _aioredis.from_url(_settings.REDIS_URL, decode_responses=True, socket_connect_timeout=5, socket_timeout=5)  # síncrono
             dedup_key = f"cb_alert:{service_name}"
             if await _redis.get(dedup_key):
                 await _redis.aclose()
@@ -76,20 +76,29 @@ async def _notify_circuit_open(service_name: str) -> None:
         except Exception:
             pass  # Segue sem dedup se Redis indisponível
 
-        # Enviar notificação
-        async with AsyncSessionLocal() as db:
-            from app.services.notification_service import notification_service
-            await notification_service.send_system_alert(
-                db=db,
-                title=f"⚡ Circuit Breaker ABERTO: {service_name}",
-                message=(
-                    f"O circuit breaker para '{service_name}' foi aberto após múltiplas falhas. "
-                    f"Chamadas estão sendo rejeitadas automaticamente. "
-                    f"O circuit tentará recuperação em {30}s."
-                ),
-                severity="warning",
-                channels=["bell", "teams"],
-                metadata={"circuit_name": service_name, "event": "circuit_open"},
+        # Enviar notificação com timeout (evita hang se DB indisponível)
+        async def _do_notify() -> None:
+            async with AsyncSessionLocal() as db:
+                from app.services.notification_service import notification_service
+                await notification_service.send_system_alert(
+                    db=db,
+                    title=f"⚡ Circuit Breaker ABERTO: {service_name}",
+                    message=(
+                        f"O circuit breaker para '{service_name}' foi aberto após múltiplas falhas. "
+                        f"Chamadas estão sendo rejeitadas automaticamente. "
+                        f"O circuit tentará recuperação em {30}s."
+                    ),
+                    severity="warning",
+                    channels=["bell", "teams"],
+                    metadata={"circuit_name": service_name, "event": "circuit_open"},
+                )
+
+        try:
+            await asyncio.wait_for(_do_notify(), timeout=5.0)
+        except asyncio.TimeoutError:
+            logger.warning(
+                "[CircuitBreaker] Notification DB call timed out for %s (non-blocking)",
+                service_name,
             )
     except Exception as _e:
         logger.debug("[CircuitBreaker] Notification failed (non-blocking): %s", _e)
@@ -164,7 +173,12 @@ class CircuitBreaker:
                 # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.info(f"Circuit breaker '{self.name}' transitioning to HALF_OPEN")
         return self._state
-    
+
+    @property
+    def is_open(self) -> bool:
+        """True quando o circuit esta OPEN (rejeita chamadas)."""
+        return self.state == CircuitState.OPEN
+
     @property
     def failure_count(self) -> int:
         return self._failure_count
@@ -1102,3 +1116,72 @@ def validate_llm_circuit_configs() -> dict[str, Any]:
         }
     results["_all_ok"] = all_ok
     return results
+
+
+# ---------------------------------------------------------------------------
+# Versao SINCRONA do circuit breaker (audit 2026-06-05 P1).
+# CircuitBreaker.call e async-only; caminhos sincronos (ex: JdEnrichmentService.
+# enrich -> self.llm.invoke) precisavam de circuit_breaker_call + CircuitBreakerOpenError.
+# Esses simbolos eram importados de app.shared.services.circuit_breaker (shim ->
+# este modulo) mas NUNCA existiram => ImportError => os consumidores caiam em
+# `except ImportError: <chamada direta sem circuito>` (dead code). Aqui o produtor
+# canonico passa a expor a API que os consumidores esperam.
+# ---------------------------------------------------------------------------
+
+
+class CircuitBreakerOpenError(CircuitBreakerError):
+    """Circuito aberto — rejeita request. Subclasse de CircuitBreakerError (compat
+    com `except CircuitBreakerError` existente)."""
+
+
+class _SyncCircuitState:
+    __slots__ = ("failures", "opened_at", "config")
+
+    def __init__(self, config: "CircuitBreakerConfig"):
+        self.failures = 0
+        self.opened_at: float | None = None
+        self.config = config
+
+
+_sync_circuit_registry: dict[str, _SyncCircuitState] = {}
+
+
+def circuit_breaker_call(
+    func,
+    *args,
+    circuit_key: str = "default",
+    config: "CircuitBreakerConfig | None" = None,
+    **kwargs,
+):
+    """Executa ``func`` de forma SINCRONA com protecao de circuit breaker por ``circuit_key``.
+
+    Abre apos ``failure_threshold`` falhas consecutivas; meia-abertura (uma
+    tentativa) apos ``recovery_timeout``. Levanta ``CircuitBreakerOpenError``
+    quando o circuito esta aberto (sem invocar ``func``). Best-effort (sem lock):
+    adequado para resiliencia, nao para invariante de correcao.
+    """
+    st = _sync_circuit_registry.get(circuit_key)
+    if st is None:
+        st = _SyncCircuitState(config or CircuitBreakerConfig())
+        _sync_circuit_registry[circuit_key] = st
+
+    if st.opened_at is not None:
+        elapsed = time.time() - st.opened_at
+        if elapsed < st.config.recovery_timeout:
+            raise CircuitBreakerOpenError(
+                circuit_key, st.config.recovery_timeout - elapsed
+            )
+        # janela de recovery expirou -> meia-abertura: permite uma tentativa
+        st.opened_at = None
+        st.failures = 0
+
+    try:
+        result = func(*args, **kwargs)
+    except Exception:
+        st.failures += 1
+        if st.failures >= st.config.failure_threshold:
+            st.opened_at = time.time()
+        raise
+    st.failures = 0
+    st.opened_at = None
+    return result

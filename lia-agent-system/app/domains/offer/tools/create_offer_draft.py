@@ -47,11 +47,13 @@ async def run(params: dict[str, Any], context: DomainContext) -> dict[str, Any]:
             "offer_id": str(draft.id),
             "status": draft.status,
             "message": "Rascunho criado com sucesso",
-            "ui_action": "open_offer_review",
-            "ui_action_params": {
-                "candidate_id": candidate_id,
-                "job_id": str(job_id),
-                "draft_id": str(draft.id),
+            "data": {
+                "ui_action": "open_offer_review",
+                "ui_action_params": {
+                    "candidate_id": candidate_id,
+                    "job_id": str(job_id),
+                    "draft_id": str(draft.id),
+                },
             },
         }
     except Exception as exc:

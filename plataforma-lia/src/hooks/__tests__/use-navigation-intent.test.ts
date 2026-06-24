@@ -6,7 +6,7 @@
  */
 
 import { renderHook, act, waitFor } from "@testing-library/react"
-import { useNavigationIntent } from "../shared/use-navigation-intent"
+import { useNavigationIntent, resolveNavigationIntentMode } from "../shared/use-navigation-intent"
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -163,5 +163,55 @@ describe("useNavigationIntent", () => {
       ret = await result.current.detect("abrir tarefas")
     })
     expect((ret as { page: string }).page).toBe("Tarefas")
+  })
+})
+
+describe("resolveNavigationIntentMode - imperativo vs interrogativo", () => {
+  const BASE = {
+    page: "Vagas",
+    confidence: 0.8,
+    hint: "Ver vagas",
+  }
+
+  it("me leve para vagas - navigate", () => {
+    const result = resolveNavigationIntentMode(BASE, "/pt/dashboard", "me leve para vagas")
+    expect(result.mode).toBe("navigate")
+    expect(result.page).toBe("Vagas")
+  })
+
+  it("me leva pro pipeline - navigate", () => {
+    const result = resolveNavigationIntentMode(BASE, "/pt/dashboard", "me leva pro pipeline")
+    expect(result.mode).toBe("navigate")
+  })
+
+  it("vai para vagas - navigate", () => {
+    const result = resolveNavigationIntentMode(BASE, "/pt/dashboard", "vai para vagas")
+    expect(result.mode).toBe("navigate")
+  })
+
+  it("abre o kanban - navigate", () => {
+    const result = resolveNavigationIntentMode(BASE, "/pt/dashboard", "abre o kanban")
+    expect(result.mode).toBe("navigate")
+  })
+
+  it("quais vagas estao ativas - ask", () => {
+    const result = resolveNavigationIntentMode(BASE, "/pt/dashboard", "quais vagas estao ativas?")
+    expect(result.mode).toBe("ask")
+  })
+
+  it("ver candidatos - ask", () => {
+    const result = resolveNavigationIntentMode(BASE, "/pt/dashboard", "ver candidatos")
+    expect(result.mode).toBe("ask")
+  })
+
+  it("sem originalMessage - ask", () => {
+    const result = resolveNavigationIntentMode(BASE, "/pt/dashboard")
+    expect(result.mode).toBe("ask")
+  })
+
+  it("imperativo com confidence baixa - page null (threshold vence)", () => {
+    const lowConf = { ...BASE, confidence: 0.5 }
+    const result = resolveNavigationIntentMode(lowConf, "/pt/dashboard", "me leve para vagas")
+    expect(result.page).toBeNull()
   })
 })

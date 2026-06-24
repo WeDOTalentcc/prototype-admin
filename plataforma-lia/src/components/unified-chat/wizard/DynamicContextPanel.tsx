@@ -1,10 +1,11 @@
 "use client"
 
-import React, { Suspense, lazy } from "react"
-import { X } from "lucide-react"
+import React, { Suspense, lazy, useEffect } from "react"
+import { Minimize2 } from "lucide-react"
 import type { WizardStage } from "./wizard-types"
 import { STAGE_LABELS } from "./wizard-types"
 import { WizardErrorBoundary } from "./WizardErrorBoundary"
+import { ToolSurfaceContext } from "@/contexts/ToolSurfaceContext"
 
 // Lazy-load all panels for code splitting
 const IntakePanel = lazy(() =>
@@ -28,24 +29,30 @@ const WsiQuestionsPanel = lazy(() =>
 const EligibilityPanel = lazy(() =>
   import("./panels/EligibilityPanel").then((m) => ({ default: m.EligibilityPanel }))
 )
-const ReviewPanel = lazy(() =>
-  import("./panels/ReviewPanel").then((m) => ({ default: m.ReviewPanel }))
+const AffirmativePanel = lazy(() =>
+  import("./panels/AffirmativePanel").then((m) => ({ default: m.AffirmativePanel }))
 )
-const PublishPanel = lazy(() =>
-  import("./panels/PublishPanel").then((m) => ({ default: m.PublishPanel }))
-)
-const CalibrationPanel = lazy(() =>
-  import("./panels/CalibrationPanel").then((m) => ({ default: m.CalibrationPanel }))
-)
-const HandoffPanel = lazy(() =>
-  import("./panels/HandoffPanel").then((m) => ({ default: m.HandoffPanel }))
-)
-const DonePanel = lazy(() =>
-  import("./panels/DonePanel").then((m) => ({ default: m.DonePanel }))
-)
-const SchedulingPanel = lazy(() =>
-  import("./panels/SchedulingPanel").then((m) => ({ default: m.SchedulingPanel }))
-)
+
+/**
+ * Declarative map stage → lazy panel component.
+ * Harness sensor: __tests__/DynamicContextPanel.panel-registry.test.ts
+ * verifies every SPLIT_STAGE has an entry here.
+ * Phase 1 will use this registry to inject ToolSurfaceContext into panels.
+ *
+ * NOTE: renderPanel() switch below remains as the rendering path.
+ * This registry exists for declarative coverage checks + Phase 1 migration.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const PANEL_REGISTRY: Partial<Record<WizardStage, React.LazyExoticComponent<any>>> = {
+  intake:        IntakePanel,
+  jd_enrichment: JdEnrichmentPanel,
+  bigfive:       BigFivePanel,
+  salary:        SalaryPanel,
+  competency:    CompetencyPanel,
+  wsi_questions: WsiQuestionsPanel,
+  eligibility:   EligibilityPanel,
+  affirmative:   AffirmativePanel,
+}
 
 function PanelLoader() {
   return (
@@ -70,24 +77,10 @@ interface Props {
  * Stages not listed (intake → eligibility) are conversational — full-width only.
  */
 export const SPLIT_STAGES: WizardStage[] = [
-  // HITL canonical stages -- todos com case correspondente em renderPanel switch
-  // abaixo. Fix C 2026-05-27: expandido de 7 -> 13 stages cobrindo todo o fluxo
-  // wizard. pipeline_template e deliberadamente excluido pq tem rendering
-  // proprio em UnifiedChat.tsx (via WizardPipelineTemplateStagePanel inline).
-  // Sensor canonical em __tests__/DynamicContextPanel.split-stages-canonical.test.ts.
-  "intake",
-  "jd_enrichment",
-  "bigfive",
-  "salary",
-  "competency",
-  "wsi_questions",
-  "eligibility",
-  "review",
-  "publish",
-  "calibration",
-  "handoff",
-  "done",
-  "scheduling",
+  // 2026-06-17: Esvaziado — todos os estágios agora renderizam como rich cards
+  // inline no chat (WizardReviewCard, WizardPublishCard, WizardDoneCard, etc).
+  // O painel lateral não monta mais. Pendente: deletar DynamicContextPanel
+  // inteiro após validação.
 ]
 
 /**
@@ -105,6 +98,15 @@ export function DynamicContextPanel({
   onClose,
   onUpdate,
 }: Props) {
+  // Escuta CustomEvent disparado pelo DonePanel para fechar o painel
+  // via botao interno — sem tool nova no backend (puro FE CustomEvent).
+  // NOTA: useEffect DEVE ficar antes de qualquer early return (rules-of-hooks).
+  useEffect(() => {
+    const handler = () => onClose?.()
+    window.addEventListener("lia:wizard-close-panel", handler)
+    return () => window.removeEventListener("lia:wizard-close-panel", handler)
+  }, [onClose])
+
   if (!stage) return null
 
   return (
@@ -117,11 +119,11 @@ export function DynamicContextPanel({
         {onClose && (
           <button
             onClick={onClose}
-            className="flex items-center gap-1 px-2 py-1 rounded-md text-xs text-lia-text-disabled hover:text-status-error hover:bg-status-error/5 transition-colors motion-reduce:transition-none"
-            title="Cancelar criacao"
+            className="flex items-center gap-1 px-2 py-1 rounded-md text-xs text-lia-text-muted hover:text-lia-text-primary hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none"
+            title="Minimizar painel"
           >
-            <X className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Cancelar</span>
+            <Minimize2 className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Minimizar</span>
           </button>
         )}
       </div>
@@ -137,9 +139,11 @@ export function DynamicContextPanel({
           className="h-full animate-in fade-in slide-in-from-right-2 duration-200 ease-out motion-reduce:animate-none"
         >
           <WizardErrorBoundary>
-            <Suspense fallback={<PanelLoader />}>
-              {renderPanel(stage, data, requiresApproval, onApprove, onReject, onUpdate)}
-            </Suspense>
+            <ToolSurfaceContext.Provider value="panel">
+              <Suspense fallback={<PanelLoader />}>
+                {renderPanel(stage, data, requiresApproval, onApprove, onReject, onUpdate)}
+              </Suspense>
+            </ToolSurfaceContext.Provider>
           </WizardErrorBoundary>
         </div>
       </div>
@@ -184,24 +188,20 @@ function renderPanel(
       )
     case "eligibility":
       return <EligibilityPanel data={data} onUpdate={onUpdate} />
+    case "affirmative":
+      return <AffirmativePanel data={data} onUpdate={onUpdate} />
     case "review":
-      return <ReviewPanel data={data} onUpdate={onUpdate} />
+      return null
     case "publish":
-      return <PublishPanel data={data} onUpdate={onUpdate} />
+      return null
     case "calibration":
-      return (
-        <CalibrationPanel
-          data={data}
-          onApprove={onApprove}
-          onReject={onReject}
-        />
-      )
+      return null
     case "handoff":
-      return <HandoffPanel data={data} />
+      return null
     case "done":
-      return <DonePanel data={data} />
+      return null
     case "scheduling":
-      return <SchedulingPanel data={data} onApprove={onApprove} />
+      return <div className="p-4 text-sm text-lia-text-secondary">Agendamento de entrevistas...</div>
     default:
       return (
         <div className="p-4 text-sm text-lia-text-secondary">

@@ -24,13 +24,29 @@ from typing import Any, Callable, Coroutine
 logger = logging.getLogger(__name__)
 
 
+_wizard_audit_failure_total: int = 0
+_wizard_audit_success_total: int = 0
+
+
+def get_audit_counters() -> dict[str, int]:
+    """Counters for observability dashboards / health checks."""
+    return {
+        "wizard_audit_success_total": _wizard_audit_success_total,
+        "wizard_audit_failure_total": _wizard_audit_failure_total,
+    }
+
+
 async def _safe_audit_coro(coro: Coroutine[Any, Any, Any]) -> None:
     """Wraps audit coro em try/except sem propagar exception (fire-and-forget)."""
+    global _wizard_audit_success_total, _wizard_audit_failure_total
     try:
         await coro
+        _wizard_audit_success_total += 1
     except Exception as exc:  # noqa: BLE001
+        _wizard_audit_failure_total += 1
         logger.warning(
-            "Audit log fire-and-forget failed silently: %s",
+            "wizard_audit_failure_total=%d | Audit fire-and-forget FAILED: %s",
+            _wizard_audit_failure_total,
             exc,
             exc_info=True,
         )
@@ -62,21 +78,27 @@ def emit_audit_fire_and_forget(
     - Running loop: agenda como task -> nao bloqueia, excecoes logadas
     - No loop: skip silenciosamente + log warning (audit perdido mas node funciona)
     """
+    global _wizard_audit_failure_total
     try:
         loop = asyncio.get_running_loop()
     except RuntimeError:
         # Nao ha event loop ativo. Audit log perdido — mas raro em producao
         # (sync nodes do LangGraph SEMPRE rodam num event loop).
+        _wizard_audit_failure_total += 1
         logger.warning(
-            "emit_audit_fire_and_forget: no running loop, audit skipped",
+            "wizard_audit_failure_total=%d | emit_audit_fire_and_forget: "
+            "no running loop, audit SKIPPED (compliance artifact lost)",
+            _wizard_audit_failure_total,
         )
         return
 
     try:
         coro = coro_factory()
     except Exception as exc:  # noqa: BLE001
+        _wizard_audit_failure_total += 1
         logger.warning(
-            "Audit coro factory raised: %s — skipping audit",
+            "wizard_audit_failure_total=%d | Audit coro factory raised: %s",
+            _wizard_audit_failure_total,
             exc,
             exc_info=True,
         )

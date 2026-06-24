@@ -17,6 +17,7 @@ from app.domains.recruitment.repositories.triagem_session_repository import (
 )
 
 from ._shared import _get_event_dispatcher, _get_screening_config
+from .wsi_blocks import _resolve_screening_mode
 
 logger = logging.getLogger(__name__)
 
@@ -265,6 +266,26 @@ async def _trigger_post_completion(db: AsyncSession, session: TriagemSession, re
     except Exception as e:
         logger.warning(f"[Triagem] Failed to send Teams recruiter notification: {e}")
 
+    # TeamsProactivityEngine fire-and-forget hook (triagem concluida via DM)
+    try:
+        import asyncio as _at
+        from app.domains.communication.services.teams_proactivity_engine import _safe_teams_hook as _sth, teams_proactivity_engine as _te
+        _lp = _at.get_event_loop()
+        if _lp.is_running():
+            _lp.create_task(_sth(
+                _te.on_screening_complete,
+                candidate_id=session.candidate_id or "",
+                candidate_name=session.candidate_name or "Candidato",
+                vacancy_id=session.job_id or "",
+                job_title=session.job_title or "Vaga",
+                match_score=float(session.wsi_final_score or 0.0),
+                recommendation=session.recommendation or "pendente",
+                company_id=str(session.company_id or ""),
+            ))
+    except Exception:
+        pass  # Teams hook nao e obrigatorio, nunca bloqueia fluxo principal
+
+
     try:
         from app.services.notification_service import (
             NotificationType,
@@ -315,11 +336,228 @@ async def _trigger_post_completion(db: AsyncSession, session: TriagemSession, re
             meta["wsi_channel"] = "web_chat"
             session.metadata_json = meta
             await db.flush()
+            # P0-1: retroalimentar vacancy_candidates.lia_score com score WSI.
+            # Conversão de escala: wsi_final_score (0-10) × 10 = lia_score (0-100).
+            # Fail-soft: erro de DB não aborta o fluxo principal de triagem.
+            if session.candidate_id and session.job_id and session.company_id:
+                try:
+                    from app.domains.candidates.repositories.vacancy_candidate_repository import (
+                        VacancyCandidateRepository,
+                    )
+                    from app.domains.cv_screening.constants.wsi_scale import (
+                        wsi_score_to_lia_scale,
+                    )
+                    _vc_repo = VacancyCandidateRepository(db)
+                    _wsi_lia_score = wsi_score_to_lia_scale(session.wsi_final_score or 0.0)
+                    _rowcount = await _vc_repo.update_wsi_lia_score(
+                        candidate_id=session.candidate_id,
+                        vacancy_id=session.job_id,
+                        company_id=session.company_id,
+                        lia_score=_wsi_lia_score,
+                    )
+                    if _rowcount:
+                        actions["lia_score_update"] = f"ok:{_wsi_lia_score}"
+                        logger.info(
+                            "[P0-1] lia_score atualizado: candidate=%s vacancy=%s score=%.1f",
+                            session.candidate_id, session.job_id, _wsi_lia_score,
+                        )
+                    else:
+                        actions["lia_score_update"] = "skipped_no_vc_row"
+                        logger.warning(
+                            "[P0-1] VacancyCandidate nao encontrado: candidate=%s vacancy=%s — lia_score nao atualizado",
+                            session.candidate_id, session.job_id,
+                        )
+                except Exception as _p01_exc:
+                    logger.error("[P0-1] lia_score update falhou (fail-soft): %s", _p01_exc)
+                    actions["lia_score_update"] = "failed"
+            # 2.2: criar LiaOpinion tipo "wsi" — parecer estruturado no parecer de candidato.
+            # Fail-soft: falha no insert nao aborta o fluxo de triagem.
+            if session.candidate_id and session.job_id and session.company_id:
+                try:
+                    from app.domains.pipeline.repositories.lia_opinion_repository import (
+                        LiaOpinionRepository,
+                    )
+                    from app.domains.cv_screening.constants.wsi_scale import (
+                        wsi_score_to_lia_scale as _wsi_scale_fn,
+                    )
+                    _lio_repo = LiaOpinionRepository(db)
+                    _wsi_lia_score_22 = _wsi_scale_fn(session.wsi_final_score or 0.0)
+                    await _lio_repo.create_wsi_opinion(
+                        candidate_id=session.candidate_id,
+                        company_id=session.company_id,
+                        wsi_score=_wsi_lia_score_22,
+                        job_vacancy_id=session.job_id,
+                        wsi_screening_id=wsi_session_id,
+                        recommendation=getattr(session, "recommendation", None),
+                    )
+                    actions["lia_opinion_created"] = f"ok:{_wsi_lia_score_22}"
+                    logger.info(
+                        "[2.2] LiaOpinion WSI criado: candidate=%s score=%.1f",
+                        session.candidate_id, _wsi_lia_score_22,
+                    )
+                except Exception as _22_exc:
+                    logger.error("[2.2] LiaOpinion criação falhou (fail-soft): %s", _22_exc)
+                    actions["lia_opinion_created"] = "failed"
+            # 2.3: score_breakdown canônico — combina cv_score + wsi_score via fórmula ranking.
+            # Lê cv_score existente da VC row e chama calculate_ranking_score para gerar
+            # score mais preciso quando ambos os dados estão disponíveis.
+            if session.candidate_id and session.job_id and session.company_id:
+                try:
+                    from app.domains.cv_screening.services.lia_score_service import get_lia_score_service
+                    from app.domains.cv_screening.constants.wsi_scale import (
+                        wsi_score_to_lia_scale as _wsi_scale_23,
+                    )
+                    from datetime import datetime as _dt
+                    _vc_repo_23 = VacancyCandidateRepository(db)
+                    _cv_score = await _vc_repo_23.get_cv_score(
+                        vacancy_id=session.job_id,
+                        candidate_id=session.candidate_id,
+                        company_id=session.company_id,
+                    )
+                    _wsi_s_23 = _wsi_scale_23(session.wsi_final_score or 0.0)
+                    _ranking_svc = get_lia_score_service()
+                    _ranking_result = _ranking_svc.calculate_ranking_score(
+                        candidate={"id": session.candidate_id},
+                        rubricas_score=_cv_score,
+                        wsi_score=_wsi_s_23,
+                    )
+                    _breakdown = _ranking_result.breakdown.to_dict() if _ranking_result.breakdown else {}
+                    _breakdown.setdefault("wsi_score_raw", session.wsi_final_score)
+                    _breakdown.setdefault("formula", "ranking_v1")
+                    _rowcount_23 = await _vc_repo_23.update_score_breakdown(
+                        vacancy_id=session.job_id,
+                        candidate_id=session.candidate_id,
+                        company_id=session.company_id,
+                        lia_score=round(_ranking_result.ranking_score, 1),
+                        ai_analysis=_breakdown,
+                        screening_completed_at=_dt.utcnow().isoformat(),
+                    )
+                    actions["ranking_score_updated"] = f"ok:{_ranking_result.ranking_score:.1f}"
+                    logger.info(
+                        "[2.3] ranking_score atualizado: candidate=%s score=%.1f (wsi=%.1f cv=%s)",
+                        session.candidate_id, _ranking_result.ranking_score, _wsi_s_23, _cv_score,
+                    )
+                except Exception as _23_exc:
+                    logger.error("[2.3] score_breakdown update falhou (fail-soft): %s", _23_exc)
+                    actions["ranking_score_updated"] = "failed"
+            # 2.4: behavioral_analysis (OCEAN traits + scores comportamentais) → LiaOpinion
+            if session.candidate_id and session.job_id and session.company_id:
+                try:
+                    from app.domains.pipeline.repositories.lia_opinion_repository import (
+                        LiaOpinionRepository as _LioRepo24,
+                    )
+                    # Agrega OCEAN traits dos response_scores que têm trait_ocean
+                    _ocean_acc: dict[str, list[float]] = {}
+                    _behav_scores = []
+                    for _rs in (response_scores or []):
+                        if not isinstance(_rs, dict):
+                            continue
+                        if _rs.get("block_type") == "behavioral":
+                            _behav_scores.append({
+                                "competency": _rs.get("competency"),
+                                "score": _rs.get("score"),
+                            })
+                        _trait = _rs.get("trait_ocean")
+                        if _trait and isinstance(_rs.get("score"), (int, float)):
+                            _ocean_acc.setdefault(_trait, []).append(float(_rs["score"]))
+
+                    # Média por trait normalizada para 0-1 (escala WSI 0-5)
+                    _ocean_traits: dict[str, float] = {
+                        _t: round(sum(_vs) / (len(_vs) * 5.0), 3)
+                        for _t, _vs in _ocean_acc.items()
+                        if _vs
+                    }
+
+                    _ba_24 = {
+                        "wsi_classification": getattr(session, "classification", None),
+                        "wsi_behavioral": len(_behav_scores),
+                        "behavioral_scores": _behav_scores[:20],  # trunca para não explodir jsonb
+                        "ocean_traits": _ocean_traits,
+                        "wsi_source": "web_triagem",
+                    }
+
+                    # Buscar o opinion_id criado no bloco 2.2 (se disponível em actions)
+                    _opinion_id_24 = None
+                    _ok_22 = actions.get("lia_opinion_created", "")
+                    if isinstance(_ok_22, str) and _ok_22.startswith("ok:"):
+                        pass  # Não temos o opinion_id direto; re-busca não é necessária
+                    # Re-instanciar repo e atualizar pelo candidato+vaga mais recente
+                    _lio_repo_24 = _LioRepo24(db)
+                    # update_behavioral_analysis por opinion_id — se não temos o ID,
+                    # usamos um UPDATE pelo candidato_id+job_vacancy_id+company_id
+                    _rows_24 = await _lio_repo_24.update_behavioral_analysis_by_candidate(
+                        candidate_id=session.candidate_id,
+                        job_vacancy_id=session.job_id,
+                        company_id=session.company_id,
+                        behavioral_analysis=_ba_24,
+                    )
+                    actions["behavioral_analysis_updated"] = f"ok:ocean={list(_ocean_traits.keys())}"
+                except Exception as _24_exc:
+                    logger.error("[2.4] behavioral_analysis update falhou (fail-soft): %s", _24_exc)
+                    actions["behavioral_analysis_updated"] = "failed"
+
         else:
             actions["wsi_persistence"] = "skipped"
     except Exception as e:
         logger.warning(f"[Triagem] Failed to persist WSI results: {e}")
         actions["wsi_persistence"] = "failed"
+
+    # 3.2: derivar + persistir QualificationMatrix on-the-fly
+    if session.candidate_id and session.job_id and session.company_id:
+        try:
+            from app.domains.job_management.repositories.job_vacancy_crud_repository import (
+                JobVacancyCRUDRepository as _JVRepo32,
+            )
+            from app.domains.candidates.repositories.vacancy_candidate_repository import (
+                VacancyCandidateRepository as _VCRepo32,
+            )
+            from app.domains.analytics.services.criteria_derivation import derive_from_job as _derive32
+            _job_repo_32 = _JVRepo32(db)
+            _job_obj = await _job_repo_32.get_vacancy_by_id_and_company(
+                vacancy_id=session.job_id, company_id=session.company_id,
+            )
+            if _job_obj:
+                _job_dict = _job_obj.__dict__ if hasattr(_job_obj, "__dict__") else dict(_job_obj)
+                _cand_dict = {"id": session.candidate_id, "name": getattr(session, "candidate_name", None)}
+                _matrix = _derive32(job=_job_dict, candidate=_cand_dict)
+                _vc_repo_32 = _VCRepo32(db)
+                _rows_32 = await _vc_repo_32.update_qualification_matrix(
+                    vacancy_id=session.job_id,
+                    candidate_id=session.candidate_id,
+                    company_id=session.company_id,
+                    qualification_matrix=_matrix.model_dump(),
+                )
+                actions["qualification_matrix_persist"] = f"ok:mh={_matrix.must_have_met}/{_matrix.must_have_total}"
+            else:
+                actions["qualification_matrix_persist"] = "skipped:job_not_found"
+        except Exception as _32_exc:
+            logger.error("[3.2] qualification_matrix persist falhou (fail-soft): %s", _32_exc)
+            actions["qualification_matrix_persist"] = "failed"
+
+    # 4.1: gerar embedding do candidato pos-triagem (fail-soft)
+    if session.candidate_id and session.company_id:
+        try:
+            from app.domains.ai.services.candidate_embedding_service import candidate_embedding_service as _ces41
+            from sqlalchemy import text as _t41
+            _cand_row = await db.execute(
+                _t41("SELECT name, current_title, current_company, summary, technical_skills FROM candidates WHERE id::text = :cid AND company_id = :comp LIMIT 1"),
+                {"cid": str(session.candidate_id), "comp": str(session.company_id)},
+            )
+            _cand = _cand_row.fetchone()
+            if _cand:
+                _cand_dict = {
+                    "id": str(session.candidate_id),
+                    "name": _cand[0],
+                    "summary": _cand[3] or f"{_cand[1] or ''} @ {_cand[2] or ''}".strip(" @"),
+                    "skills": _cand[4] if _cand[4] else [],
+                }
+                _ok_41 = await _ces41.embed_candidate(_cand_dict, session.company_id, db)
+                actions["candidate_embedding"] = "ok" if _ok_41 else "skipped"
+            else:
+                actions["candidate_embedding"] = "candidate_not_found"
+        except Exception as _41_exc:
+            logger.error("[4.1] candidate embedding falhou (fail-soft): %s", _41_exc)
+            actions["candidate_embedding"] = "failed"
 
     if not wsi_session_id:
         logger.warning(
@@ -373,6 +611,33 @@ async def _trigger_post_completion(db: AsyncSession, session: TriagemSession, re
                 f"[Triagem] screening-completed event dispatched for "
                 f"candidate={session.candidate_id}, score={score_val}, passed={passed}"
             )
+            # A2b: publica no barramento Redis para Teams DM + bell notification.
+            # Fail-soft: erro de Redis nao aborta o fluxo principal de triagem.
+            try:
+                from lia_events.schemas import ScreeningCompletedEvent
+                from app.shared.messaging.events_outbox_service import get_events_outbox_service
+                _evt = ScreeningCompletedEvent(
+                    company_id=session.company_id,
+                    payload={
+                        "candidate_id": session.candidate_id,
+                        "vacancy_id": session.job_id,
+                        "wsi_final_score": score_val,
+                        "wsi_scores": wsi_scores,
+                    },
+                    source_api="lia-agent-system",
+                )
+                await get_events_outbox_service().publish_via_outbox(_evt, db)
+                actions["redis_event"] = "screening.wsi.completed_outbox"
+                logger.info(
+                    "[Triagem] A2b: screening.wsi.completed queued via outbox"
+                    " for candidate=%s", session.candidate_id,
+                )
+            except Exception as _a2b_exc:
+                logger.warning(
+                    "[Triagem] A2b: screening event Redis publish failed (fail-soft): %s",
+                    _a2b_exc,
+                )
+                actions["redis_event"] = "publish_failed"
         except Exception as e:
             logger.warning(f"[Triagem] Failed to dispatch screening-completed event: {e}")
             actions["pipeline_update"] = "event_dispatch_failed"
@@ -411,7 +676,7 @@ async def _persist_wsi_results(
     score_val = session.wsi_final_score or 0.0
 
     screening_config = _get_screening_config(session)
-    raw_mode = screening_config.get("format") or "compact"
+    raw_mode = _resolve_screening_mode(screening_config)
     _mode_map = {"compact": "compact", "compact_plus": "compact_plus", "full": "compact_plus"}
     mode = _mode_map.get(raw_mode, "compact")
 
@@ -440,7 +705,7 @@ async def _persist_wsi_results(
         block_type = rs.get("block_type", "behavioral")
         competency = rs.get("competency", "general")
         raw_score = float(rs.get("score", 6.0))
-        score_1_5 = max(1.0, min(5.0, round(raw_score / 2.0, 2)))
+        score_0_10 = max(0.0, min(10.0, round(raw_score, 2)))
         question_text = rs.get("question_text") or f"Questão {seq} — {competency}"
         response_text = rs.get("response_text") or ""
 
@@ -466,9 +731,9 @@ async def _persist_wsi_results(
         except Exception as exc:
             logger.warning(f"[Triagem] wsi_questions insert failed (seq={seq}): {exc}")
             if block_type == "technical":
-                technical_scores.append(score_1_5)
+                technical_scores.append(score_0_10)
             else:
-                behavioral_scores.append(score_1_5)
+                behavioral_scores.append(score_0_10)
             continue
 
         analysis_id = str(uuid.uuid4())
@@ -477,38 +742,45 @@ async def _persist_wsi_results(
                 analysis_id=analysis_id,
                 session_id=wsi_session_id,
                 question_id=question_id,
+                candidate_id=session.candidate_id,
+                job_vacancy_id=session.job_id,
                 competency=competency,
                 response_text=response_text,
-                autodeclaration_score=score_1_5,
-                context_score=score_1_5,
+                autodeclaration_score=score_0_10,
+                context_score=score_0_10,
                 bloom_level=max(1, min(5, rs.get("bloom_level", 2))),
                 dreyfus_level=max(1, min(5, rs.get("dreyfus_level", 2))),
                 evidences_json=json.dumps(rs.get("evidences", [])),
                 red_flags_json=json.dumps(rs.get("red_flags", [])),
                 consistency_penalty=0.0,
-                final_score=score_1_5,
+                final_score=score_0_10,
                 justification=rs.get("justification", "Score calculado a partir da resposta no chat web"),
             )
         except Exception as exc:
             logger.warning(f"[Triagem] wsi_response_analyses insert failed (seq={seq}): {exc}")
 
         if block_type == "technical":
-            technical_scores.append(score_1_5)
+            technical_scores.append(score_0_10)
         else:
-            behavioral_scores.append(score_1_5)
+            behavioral_scores.append(score_0_10)
 
-    tech_wsi = max(1.0, min(5.0, round(sum(technical_scores) / len(technical_scores), 2))) if technical_scores else max(1.0, min(5.0, round(score_val / 2.0, 2)))
-    beh_wsi = max(1.0, min(5.0, round(sum(behavioral_scores) / len(behavioral_scores), 2))) if behavioral_scores else max(1.0, min(5.0, round(score_val / 2.0, 2)))
-    overall_wsi = max(1.0, min(5.0, round(score_val / 2.0, 2)))
+    tech_wsi = max(0.0, min(10.0, round(sum(technical_scores) / len(technical_scores), 2))) if technical_scores else max(0.0, min(10.0, round(score_val, 2)))
+    beh_wsi = max(0.0, min(10.0, round(sum(behavioral_scores) / len(behavioral_scores), 2))) if behavioral_scores else max(0.0, min(10.0, round(score_val, 2)))
+    overall_wsi = max(0.0, min(10.0, round(score_val, 2)))
 
-    if overall_wsi >= 4.5:
+    # P1-1 (audit 2026-06-05): bandas em escala 0-10 (CHECK aceita
+    # excepcional/excelente/alto/medio/abaixo_da_media/regular/baixo; FE colore
+    # excepcional..abaixo_da_media). 3-tier visual do FE: verde>=7.5, amarelo>=6.
+    if overall_wsi >= 9.0:
+        wsi_classification = "excepcional"
+    elif overall_wsi >= 7.5:
         wsi_classification = "excelente"
-    elif overall_wsi >= 3.75:
+    elif overall_wsi >= 6.0:
         wsi_classification = "alto"
-    elif overall_wsi >= 2.75:
+    elif overall_wsi >= 4.5:
         wsi_classification = "medio"
-    elif overall_wsi >= 2.0:
-        wsi_classification = "regular"
+    elif overall_wsi >= 3.0:
+        wsi_classification = "abaixo_da_media"
     else:
         wsi_classification = "baixo"
 

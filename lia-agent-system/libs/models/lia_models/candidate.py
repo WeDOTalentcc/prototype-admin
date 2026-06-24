@@ -7,6 +7,8 @@ from sqlalchemy import Column, String, Integer, DateTime, Date, Text, JSON, Bool
 from sqlalchemy.dialects.postgresql import UUID, ARRAY
 from sqlalchemy.orm import relationship, validates
 import uuid
+import hashlib
+import unicodedata
 
 from lia_config.database import Base
 from app.shared.encryption.encrypted_field_mixin import EncryptedFieldMixin
@@ -123,10 +125,10 @@ class Candidate(EncryptedFieldMixin, Base):
     #   "_email_raw" → hybrid_property "email"; "_cpf_raw" → hybrid_property "cpf"
     _pii_encrypt_fields = [
         ("_email_raw", "_email_encrypted", "email_hash"),
-        ("_cpf_raw",   "_cpf_encrypted",   None),
+        ("_cpf_raw",   "_cpf_encrypted",   "cpf_hash"),
         # UC-P1-15: name and phone encrypted at rest (migration 111)
         ("_name_raw",  "_name_encrypted",  None),
-        ("_phone_raw", "_phone_encrypted", None),
+        ("_phone_raw", "_phone_encrypted", "phone_hash"),
     ]
 
     # Primary key
@@ -142,6 +144,10 @@ class Candidate(EncryptedFieldMixin, Base):
     _name_raw = Column("name", String(255), nullable=True, index=True)
     # PII-encrypted name (added by migration 111)
     _name_encrypted = Column("name_encrypted", LargeBinary, nullable=True)
+    # Non-reversible search token for post-encryption name search (migration 284).
+    # Not PII — safe to store plaintext. Set by overridden name setter below.
+    # Format: lowercased+unaccented first 20 chars + "_" + 8-char sha256 hex suffix.
+    name_normalized = Column("name_normalized", String(64), nullable=True, index=True)
     # Raw DB columns for PII fields — always NULL for new writes (post-migration 060).
     # Pre-migration rows retain plaintext here until pii.backfill_encrypt_existing completes.
     # Access via hybrid_property "email" (registered by EncryptedFieldMixin) which decrypts
@@ -157,6 +163,8 @@ class Candidate(EncryptedFieldMixin, Base):
     _phone_raw = Column("phone", String(50), nullable=True)
     # PII-encrypted phone (added by migration 111)
     _phone_encrypted = Column("phone_encrypted", LargeBinary, nullable=True)
+    # phone_hash: SHA-256 (digits-only, BR-normalized) for indexed lookup (migration 259)
+    phone_hash = Column(String(64), nullable=True, index=True)
     mobile_phone = Column(String(50), nullable=True)
     secondary_phone = Column(String(50), nullable=True)
     linkedin_url = Column(String(500), nullable=True)
@@ -187,6 +195,8 @@ class Candidate(EncryptedFieldMixin, Base):
     _cpf_raw = Column("cpf", String(14), nullable=True)
     # PII-encrypted CPF (added by migration 060)
     _cpf_encrypted = Column("cpf_encrypted", LargeBinary, nullable=True)
+    # cpf_hash: SHA-256 (digits-only) for indexed lookup (migration 259, chat entity-resolution)
+    cpf_hash = Column(String(64), nullable=True, index=True)
     
     # Professional Profile
     current_title = Column(String(255), nullable=True)
@@ -308,6 +318,8 @@ class Candidate(EncryptedFieldMixin, Base):
     
     # Work History (JSON snapshot for fast access - denormalized from candidate_experiences)
     work_history = Column(JSON, default=[])
+    # Education snapshot (denormalized from candidate_education; populated by PUT /candidates/{id}/education)
+    education_snapshot = Column(JSON, nullable=True)
     
     # Additional Information
     tags = Column(ARRAY(String), default=list)
@@ -343,8 +355,42 @@ class Candidate(EncryptedFieldMixin, Base):
     # applications = relationship("Application", back_populates="candidate")
     # interviews = relationship("Interview", back_populates="candidate")
     
+    @staticmethod
+    def _compute_name_normalized(plaintext_name: str | None) -> str | None:
+        """Derive a non-reversible lowercase search token from a plaintext name.
+
+        Not PII: cannot recover original name from this token.
+        Used for ILIKE search post-encryption when _name_raw is NULL.
+        Format: <first 20 chars lowercased unaccented> + "_" + <8-char sha256 hex>.
+        """
+        if not plaintext_name:
+            return None
+        normalized = unicodedata.normalize("NFKD", plaintext_name).encode("ASCII", "ignore").decode("ASCII")
+        cleaned = normalized.strip().lower()
+        if not cleaned:
+            return None
+        suffix = hashlib.sha256(cleaned.encode("utf-8")).hexdigest()[:8]
+        return f"{cleaned[:20]}_{suffix}"
+
     def __repr__(self):
         return f"<Candidate {self.id} - {self.name} ({self.email})>"
+
+
+
+# Post-class setter override: wrap the name hybrid property to also populate name_normalized.
+# Must be done after the class body is fully defined so EncryptedFieldMixin's __init_subclass__
+# has already registered the name hybrid_property on Candidate.
+_original_name_hybrid = Candidate.__dict__["name"]
+
+@_original_name_hybrid.setter
+def _name_setter_with_normalized(self, value: str | None) -> None:
+    """Extended name setter: encrypts (via EncryptedFieldMixin) + sets name_normalized."""
+    # Call the original mixin setter logic (handles encryption + nulls _name_raw)
+    _original_name_hybrid.fset(self, value)
+    # Set the non-reversible search token
+    self.name_normalized = Candidate._compute_name_normalized(value)
+
+Candidate.name = _name_setter_with_normalized
 
 
 class CandidateSearch(Base):
@@ -459,6 +505,10 @@ class VacancyCandidate(Base):
     
     status = Column(String(50), default="sourced", index=True)
     stage = Column(String(50), default="initial", index=True)
+    # Structural link to RecruitmentStage (Task #1303). Nullable for legacy rows
+    # that only carry the textual `stage`. New transitions populate this so the
+    # SLA detector can join by id instead of fragile name matching.
+    recruitment_stage_id = Column(UUID(as_uuid=True), nullable=True, index=True)
     previous_status = Column(String(50), nullable=True)
     
     added_by = Column(String(255), nullable=True)
@@ -474,6 +524,13 @@ class VacancyCandidate(Base):
 
     created_at = Column(DateTime, default=datetime.utcnow, index=True)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # P0-2: campos de score e analise pos-triagem (migration 263)
+    cv_score = Column(Float, nullable=True)  # score do CV em relacao a vaga (0-100)
+    cv_fit_score = Column(Float, nullable=True)  # fit cultural + tecnico combinado (0-100)
+    sub_status = Column(String(100), nullable=True)  # sub-estado granular ex: waiting_interview
+    screening_completed_at = Column(DateTime, nullable=True)  # timestamp conclusao triagem
+    ai_analysis = Column(JSON, nullable=True)  # analise estruturada da IA pos-triagem
 
     VALID_STATUSES = [
         "sourced", "approved", "rejected", "pending",

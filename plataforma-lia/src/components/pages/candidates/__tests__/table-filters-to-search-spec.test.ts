@@ -56,4 +56,11 @@ describe("tableFiltersToSearchSpec", () => {
     expect(spec.has_email).toBeUndefined()
     expect(spec).toEqual({})
   })
+
+  it("work_model 'presencial' vai para work_model nao para location", () => {
+    const spec = tableFiltersToSearchSpec({ ...base, workModels: ["presencial"] }, {})
+    expect(spec.work_model).toBe("onsite")
+    // location nao deve receber valor de work_model
+    expect(spec.location).toBeUndefined()
+  })
 })
