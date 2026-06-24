@@ -208,7 +208,7 @@ _FIELD_TO_STATE_KEY: dict[str, str] = {
     "employment_type": "parsed_employment_type",
     "manager_name": "parsed_manager_name",
     "manager_email": "parsed_manager_email",
-    "recruiter": "parsed_recruiter",
+    "recruiter": "parsed_recruiter_name",
     "recruiter_email": "parsed_recruiter_email",
 }
 
