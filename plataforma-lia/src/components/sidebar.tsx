@@ -147,7 +147,7 @@ const BASE_MENU_SECTIONS: MenuSection[] = [
         navigateOnClick: true,
         alwaysExpanded: true,
         subItems: [
-          { icon: LineChart, label: "Indicadores", isCore: true },
+          { icon: LineChart, label: "Indicadores", isCore: true, isDraft: true },
           { icon: FileText, label: "Relatórios", isCore: true, isDraft: true },
         ],
       },
