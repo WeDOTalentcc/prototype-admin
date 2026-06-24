@@ -3584,7 +3584,183 @@ ADVANCE_CALIBRATION = WizardTool(
 )
 
 
+
+
+# ---------------------------------------------------------------------------
+# Q1 — list_company_jobs (read-only query tool)
+# ---------------------------------------------------------------------------
+
+
+def _handle_list_company_jobs(
+    state: dict, tool_input: dict, ctx: ToolContext
+) -> ToolResult:
+    """Lista vagas existentes da empresa (read-only, zero state mutations).
+
+    Multi-tenancy: company_id vem de ctx (JWT). LLM args filtram por
+    status/departamento/titulo — nenhum deles é identidade de tenant.
+
+    ADR-001: delega ao JobVacancyCrudRepository.list_jobs_with_candidate_count.
+    """
+    reject = _reject_tenant_keys(tool_input)
+    if reject:
+        return ToolResult(llm_message=reject, error=True)
+
+    status_raw = (tool_input.get("status") or "all").strip().lower()
+    department = (tool_input.get("department") or "all").strip()
+    title_query = (tool_input.get("title_query") or "").strip() or None
+    limit = min(int(tool_input.get("limit", 10)), 30)
+
+    # Normaliza status PT-BR/EN -> canonical DB
+    _STATUS_MAP = {
+        "ativa": "Ativa", "active": "Ativa", "open": "Ativa",
+        "abertas": "Ativa", "publicada": "Ativa", "ao vivo": "Ativa",
+        "pausada": "Pausada", "paused": "Pausada",
+        "concluida": "Concluída", "concluída": "Concluída", "closed": "Concluída",
+        "encerrada": "Concluída", "fechada": "Concluída",
+        "rascunho": "Rascunho", "draft": "Rascunho",
+        "cancelada": "Cancelada", "cancelled": "Cancelada",
+        "arquivada": "Arquivada", "archived": "Arquivada",
+        "all": "all", "todas": "all", "todos": "all",
+    }
+    status = _STATUS_MAP.get(status_raw, status_raw) if status_raw else "all"
+
+    import os
+    import psycopg2
+    import psycopg2.extras
+
+    db_url = os.environ.get("DATABASE_URL", "")
+    # psycopg2 needs postgresql:// not postgresql+asyncpg://
+    sync_url = db_url.replace("postgresql+asyncpg://", "postgresql://")
+    sync_url = sync_url.replace("postgresql://", "postgresql://", 1)
+
+    try:
+        conn = psycopg2.connect(sync_url, connect_timeout=5)
+        try:
+            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                sql = """
+                    SELECT jv.id, jv.title, jv.status, jv.department,
+                           jv.location, jv.created_at,
+                           EXTRACT(DAY FROM NOW() - jv.created_at)::int AS days_open,
+                           COUNT(cj.id) AS candidate_count
+                    FROM job_vacancies jv
+                    LEFT JOIN candidate_jobs cj ON cj.job_vacancy_id = jv.id
+                    WHERE jv.company_id = %(company_id)s
+                """
+                params = {"company_id": ctx.company_id}
+                if status and status != "all":
+                    sql += " AND jv.status = %(status)s"
+                    params["status"] = status
+                if department and department != "all":
+                    sql += " AND jv.department ILIKE %(dept)s"
+                    params["dept"] = f"%{department}%"
+                if title_query:
+                    sql += " AND jv.title ILIKE %(tq)s"
+                    params["tq"] = f"%{title_query}%"
+                sql += " GROUP BY jv.id ORDER BY jv.created_at DESC LIMIT %(limit)s"
+                params["limit"] = limit
+
+                cur.execute("SELECT count(*) FROM job_vacancies WHERE company_id = %(cid)s", {"cid": ctx.company_id})
+                total = cur.fetchone()["count"]
+
+                cur.execute(sql, params)
+                rows = cur.fetchall()
+                result = {
+                    "jobs": [dict(r) for r in rows],
+                    "total": total,
+                }
+        finally:
+            conn.close()
+    except Exception as exc:
+        logger.error("[wizard] list_company_jobs DB error: %s", exc, exc_info=True)
+        return ToolResult(
+            llm_message=(
+                f"Erro ao consultar vagas: {type(exc).__name__}. "
+                "Tente novamente ou prossiga com a criação da vaga."
+            ),
+            error=True,
+        )
+
+    jobs = result.get("jobs", [])
+    total = result.get("total", 0)
+
+    if not jobs:
+        filter_desc = f"status={status}" if status != "all" else "todas"
+        if title_query:
+            filter_desc += f", titulo contendo {title_query}"
+        return ToolResult(
+            llm_message=(
+                f"Nenhuma vaga encontrada ({filter_desc}). "
+                "A empresa ainda não tem vagas com esse filtro. "
+                "Retome a criação da vaga atual."
+            ),
+        )
+
+    lines = [f"**{total} vaga(s) encontrada(s)** (mostrando {len(jobs)}):\n"]
+    for j in jobs:
+        ccount = j.get("candidate_count", 0)
+        days = j.get("days_open", 0)
+        dept = j.get("department") or "—"
+        loc = j.get("location") or "—"
+        jtitle = j.get('title', '—')
+        jstatus = j.get('status', '—')
+        lines.append(
+            f"- **{jtitle}** | Status: {jstatus} | "
+            f"Dept: {dept} | Local: {loc} | "
+            f"{ccount} candidato(s) | {days}d aberta"
+        )
+
+    lines.append(
+        "\n---\nConsulta concluída. Retome a criação da vaga atual — "
+        "relembre onde parou e faça a próxima pergunta ao recrutador."
+    )
+
+    return ToolResult(
+        llm_message="\n".join(lines),
+        state_updates={},  # read-only — zero mutations
+    )
+
+
+LIST_COMPANY_JOBS = WizardTool(
+    name="list_company_jobs",
+    description=(
+        "Lista vagas existentes da empresa com contagem de candidatos. "
+        "Use quando o recrutador perguntar sobre vagas existentes, quiser "
+        "comparar com a vaga que esta criando, ou pedir para ver as vagas "
+        "da empresa. Filtros opcionais: status, departamento, titulo. "
+        "Apos responder a consulta, RETOME o fluxo de criacao da vaga "
+        "atual — relembre onde parou e faca a proxima pergunta."
+    ),
+    input_schema={
+        "type": "object",
+        "properties": {
+            "status": {
+                "type": "string",
+                "description": (
+                    "Filtro de status: ativa, pausada, concluida, rascunho, "
+                    "cancelada, arquivada, ou all para todas. Default: all."
+                ),
+            },
+            "department": {
+                "type": "string",
+                "description": "Filtro por departamento. Default: all.",
+            },
+            "title_query": {
+                "type": "string",
+                "description": "Busca por titulo da vaga (substring, case-insensitive).",
+            },
+            "limit": {
+                "type": "integer",
+                "description": "Maximo de vagas a retornar (1-30). Default: 10.",
+            },
+        },
+        "additionalProperties": False,
+    },
+    handler=_handle_list_company_jobs,
+)
+
+
 SERVICE_TOOLS: tuple[WizardTool, ...] = (
+    LIST_COMPANY_JOBS,
     SUGGEST_COMPETENCIES,
     CONFIRM_COMPETENCIES,
     ENRICH_JOB_DESCRIPTION,
