@@ -55,6 +55,11 @@ RS="$(command -v redis-server 2>/dev/null)"
 [ -n "$RS" ] && "$RS" --daemonize yes --save '' --appendonly no >/dev/null 2>&1 || true
 
 export PATH="$(dirname "$NODE_BIN"):$(dirname "$PY_BIN"):$PATH"
+
+# Apply pending DB migrations before starting services.
+echo "==LIA-DIAG== running alembic upgrade head"
+( cd "$WS/lia-agent-system" && APP_ENV=production "$PY_BIN" -m alembic upgrade head 2>&1 ) || echo "==LIA-WARN== alembic upgrade failed (continuing)"
+
 echo "==LIA-DIAG== starting backend(127.0.0.1:8001) + frontend(0.0.0.0:5000) + celery"
 
 ( cd "$WS/lia-agent-system" && APP_ENV=production "$PY_BIN" -m uvicorn app.main:app --host 127.0.0.1 --port 8001 --timeout-keep-alive 30 --no-access-log ) &

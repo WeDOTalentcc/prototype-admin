@@ -1306,6 +1306,12 @@ async def ensure_job_templates_indexes():
 async def ensure_lia_app_role():
     """Ensure the non-login RLS role ``lia_app`` exists with its grants (idempotent).
 
+    Retry loop: PostgreSQL ``GRANT`` statements on system catalog rows can raise
+    ``tuple concurrently updated`` when two startup processes race (e.g. uvicorn
+    --reload quickly restarting a crashed worker). Three attempts with backoff
+    handle this transiently; on persistent failure we log a warning and continue
+    because the role is likely already fully configured from a prior successful run.
+
     Every tenant-scoped request runs under ``SET ROLE lia_app`` (see
     ``get_tenant_db``). That role is a *cluster-level* object, not a schema
     object: it is created by migrations 068/237 but is NOT carried over by
@@ -1321,58 +1327,85 @@ async def ensure_lia_app_role():
     already exists (e.g. development). Requires the connecting user to have
     CREATEROLE (``neondb_owner`` in prod, ``postgres`` in dev both qualify).
     """
-    async with engine.begin() as conn:
-        # Race-safe across simultaneously-starting instances: if two replicas
-        # both pass the existence check, the loser would otherwise abort with
-        # duplicate_object — swallow it so every replica boots cleanly.
-        await conn.execute(text(
-            """
-            DO $$
-            BEGIN
-                CREATE ROLE lia_app NOLOGIN NOSUPERUSER;
-            EXCEPTION
-                WHEN duplicate_object THEN NULL;
-            END $$;
-            """
-        ))
-        await conn.execute(text("GRANT USAGE ON SCHEMA public TO lia_app"))
-        await conn.execute(text(
-            "GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO lia_app"
-        ))
-        await conn.execute(text(
-            "GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO lia_app"
-        ))
-        await conn.execute(text(
-            """
-            DO $$
-            BEGIN
-                IF EXISTS (SELECT 1 FROM pg_proc WHERE proname = 'app_current_company_id') THEN
-                    EXECUTE 'GRANT EXECUTE ON FUNCTION app_current_company_id() TO lia_app';
-                END IF;
-            END $$;
-            """
-        ))
-        await conn.execute(text(
-            "ALTER DEFAULT PRIVILEGES IN SCHEMA public "
-            "GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO lia_app"
-        ))
-        await conn.execute(text(
-            "ALTER DEFAULT PRIVILEGES IN SCHEMA public "
-            "GRANT USAGE, SELECT ON SEQUENCES TO lia_app"
-        ))
-        # The connecting application user must be a member of lia_app so it can
-        # ``SET ROLE lia_app`` at request time.
-        await conn.execute(text(
-            """
-            DO $$
-            DECLARE
-                app_user TEXT := current_user;
-            BEGIN
-                EXECUTE format('GRANT lia_app TO %I', app_user);
-            END $$;
-            """
-        ))
-    logger.info("RLS role lia_app verified/created successfully")
+    import asyncio
+
+    _MAX_ATTEMPTS = 3
+    for attempt in range(_MAX_ATTEMPTS):
+        try:
+            async with engine.begin() as conn:
+                # Race-safe: if two replicas both reach CREATE ROLE simultaneously,
+                # the loser aborts with duplicate_object — caught by the DO block.
+                await conn.execute(text(
+                    """
+                    DO $$
+                    BEGIN
+                        CREATE ROLE lia_app NOLOGIN NOSUPERUSER;
+                    EXCEPTION
+                        WHEN duplicate_object THEN NULL;
+                    END $$;
+                    """
+                ))
+                await conn.execute(text("GRANT USAGE ON SCHEMA public TO lia_app"))
+                await conn.execute(text(
+                    "GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO lia_app"
+                ))
+                await conn.execute(text(
+                    "GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO lia_app"
+                ))
+                await conn.execute(text(
+                    """
+                    DO $$
+                    BEGIN
+                        IF EXISTS (SELECT 1 FROM pg_proc WHERE proname = 'app_current_company_id') THEN
+                            EXECUTE 'GRANT EXECUTE ON FUNCTION app_current_company_id() TO lia_app';
+                        END IF;
+                    END $$;
+                    """
+                ))
+                await conn.execute(text(
+                    "ALTER DEFAULT PRIVILEGES IN SCHEMA public "
+                    "GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO lia_app"
+                ))
+                await conn.execute(text(
+                    "ALTER DEFAULT PRIVILEGES IN SCHEMA public "
+                    "GRANT USAGE, SELECT ON SEQUENCES TO lia_app"
+                ))
+                # The connecting application user must be a member of lia_app so it
+                # can ``SET ROLE lia_app`` at request time.
+                await conn.execute(text(
+                    """
+                    DO $$
+                    DECLARE
+                        app_user TEXT := current_user;
+                    BEGIN
+                        EXECUTE format('GRANT lia_app TO %I', app_user);
+                    END $$;
+                    """
+                ))
+            logger.info("RLS role lia_app verified/created successfully")
+            return  # success — exit retry loop
+        except Exception as exc:
+            err_str = str(exc)
+            is_concurrent = "tuple concurrently updated" in err_str
+            if is_concurrent and attempt < _MAX_ATTEMPTS - 1:
+                wait_s = 0.4 * (attempt + 1)
+                logger.warning(
+                    "ensure_lia_app_role: concurrent catalog update on attempt "
+                    "%d/%d — retrying in %.1fs",
+                    attempt + 1, _MAX_ATTEMPTS, wait_s,
+                )
+                await asyncio.sleep(wait_s)
+                continue
+            # Exhausted retries or non-transient error.  Log and proceed: if the
+            # role already exists with full grants (the common case on a live DB),
+            # continuing is correct.  If it genuinely doesn't exist, the first
+            # tenant-scoped request will raise and be caught there.
+            logger.warning(
+                "ensure_lia_app_role: could not assert lia_app grants "
+                "(attempt %d/%d, transient=%s): %s — startup continues.",
+                attempt + 1, _MAX_ATTEMPTS, is_concurrent, exc,
+            )
+            return
 
 
 async def init_db():

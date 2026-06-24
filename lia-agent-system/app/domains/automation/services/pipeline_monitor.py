@@ -67,7 +67,10 @@ class PipelineMonitor:
                           AND company_id IS NOT NULL
                     """)
                 )
-                company_ids = [row[0] for row in result.fetchall()]
+                # asyncpg returns UUID Python objects from UUID columns; convert to
+                # str so subsequent raw-text() params don't send UUID OID against
+                # character varying columns (raises "operator does not exist: varchar = uuid").
+                company_ids = [str(row[0]) for row in result.fetchall()]
 
                 logger.info(f"🔍 [PipelineMonitor] Scanning {len(company_ids)} active companies")
 
@@ -86,6 +89,7 @@ class PipelineMonitor:
 
     async def scan_company(self, company_id: str, db: AsyncSession) -> list[PipelineEvent]:
         events: list[PipelineEvent] = []
+        company_id = str(company_id)  # guard: asyncpg may return uuid.UUID from UUID columns
 
         try:
             policy = await get_policy_for_company(company_id, db)
