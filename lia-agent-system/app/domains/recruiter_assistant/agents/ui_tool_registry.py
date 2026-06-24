@@ -121,6 +121,7 @@ async def _wrap_open_ui(**kwargs: Any) -> dict[str, Any]:
                 },
             },
             "message": "Abrindo a seção de configurações...",
+            "requires_user_action": True,
         }
 
     if not cap.modal_id:
@@ -143,6 +144,7 @@ async def _wrap_open_ui(**kwargs: Any) -> dict[str, Any]:
                 "success": True,
                 "data": {"ui_action": "navigate_to", "ui_action_params": params},
                 "message": "Te levando pra lá — você conclui a ação na tela.",
+                "requires_user_action": True,
             }
         return {
             "success": False,
@@ -189,10 +191,11 @@ async def _wrap_open_ui(**kwargs: Any) -> dict[str, Any]:
                 "requires_confirmation": cap.requires_confirmation,
             },
         },
+        "requires_user_action": True,
         "message": (
-            "Abrindo para você."
+            "Abrindo para você — revise e confirme na tela."
             if not cap.requires_confirmation
-            else "Vou abrir — você confirma a ação na tela (é uma ação que precisa de confirmação)."
+            else "Vou abrir — você confirma a ação na tela."
         ),
     }
 
