@@ -540,15 +540,28 @@ class AgenticLoop:
                     "duration_ms": int((time.monotonic() - _tool_t0) * 1000),
                 })
 
-                # --- STL-GATE OBSERVE (Fase 1) ---
+                # --- STL-GATE ENFORCE (Fase 3) ---
                 if (
                     result is not None
                     and result.side_effect_executed is False
                     and result.success is True
                 ):
                     logger.warning(
-                        "[STL-GATE-OBSERVE] tool=%s afirma success sem side-effect",
+                        "[STL-GATE-ENFORCE] tool=%s bloqueada: afirma success sem side-effect",
                         tc.name,
+                    )
+                    tool_result_content = json.dumps(
+                        {
+                            "success": False,
+                            "error": "action_not_executed",
+                            "message": (
+                                "Esta acao NAO foi executada — a funcionalidade "
+                                "nao esta disponivel por este caminho. "
+                                "Informe o usuario que a acao nao pode ser "
+                                "concluida no momento."
+                            ),
+                        },
+                        ensure_ascii=False,
                     )
 
                 # Append assistant + tool-result messages for the next iteration.
