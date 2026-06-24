@@ -35,6 +35,8 @@ export interface MenuItemType {
   isPremium?: boolean
   /** Visual beta badge indicator — marks features in testing phase */
   isBeta?: boolean
+  /** Visual draft badge indicator — marks features in draft/WIP phase */
+  isDraft?: boolean
   /** Nested navigation items */
   subItems?: MenuItemType[]
   /** Custom navigation key (used instead of label when set) */

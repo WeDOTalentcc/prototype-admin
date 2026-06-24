@@ -148,7 +148,7 @@ const BASE_MENU_SECTIONS: MenuSection[] = [
         alwaysExpanded: true,
         subItems: [
           { icon: LineChart, label: "Indicadores", isCore: true },
-          { icon: FileText, label: "Relatórios", isCore: true },
+          { icon: FileText, label: "Relatórios", isCore: true, isDraft: true },
         ],
       },
       {
@@ -187,6 +187,7 @@ const BASE_MENU_SECTIONS: MenuSection[] = [
         icon: FolderKanban,
         label: "Projetos",
         isCore: true,
+        isDraft: true,
       },
     ],
   },
@@ -336,7 +337,7 @@ const MenuItem = React.memo(({
           isCollapsed && !shouldShowContent ? "justify-center px-1.5" : "",
           item.isFuturo ? "opacity-40 pointer-events-none" : ""
         )}
-        title={isCollapsed && !shouldShowContent ? `${itemLabelKeys[item.label] ? t(itemLabelKeys[item.label]) : item.label}${item.isBeta ? ` (${t('labels.beta')})` : ""}` : undefined}
+        title={isCollapsed && !shouldShowContent ? `${itemLabelKeys[item.label] ? t(itemLabelKeys[item.label]) : item.label}${item.isBeta ? ` (${t('labels.beta')})` : ""}${item.isDraft ? " (DRAFT)" : ""}` : undefined}
         disabled={isLocked || false}
       >
         <div className="flex items-center gap-1">
@@ -349,6 +350,9 @@ const MenuItem = React.memo(({
               <span className="text-base-ui">{itemLabelKeys[item.label] ? t(itemLabelKeys[item.label]) : item.label}</span>
               {item.isBeta && (
                 <BetaBadge size="sm" label={t('labels.beta')} />
+              )}
+              {item.isDraft && (
+                <BetaBadge size="sm" label="DRAFT" />
               )}
               {item.label === "Agentes" && (
                 <AgentsQuotaBadge />
@@ -437,6 +441,9 @@ const MenuItem = React.memo(({
                 </div>
                 <div className="flex items-center justify-between flex-1 min-w-0">
                   <span className="text-sm-ui truncate">{itemLabelKeys[subItem.label] ? t(itemLabelKeys[subItem.label]) : subItem.label}</span>
+                  {subItem.isDraft && (
+                    <BetaBadge size="sm" label="DRAFT" />
+                  )}
                   {subItem.isPremium && !subIsLocked && (
                     <Crown className="w-2 h-2 text-lia-text-primary" />
                   )}
