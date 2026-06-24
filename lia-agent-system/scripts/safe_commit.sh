@@ -194,6 +194,10 @@ if [ "$ALLOW_EMPTY" = "true" ]; then
     EXTRA_FLAGS="--allow-empty"
 fi
 
+# Fase 0 STOP-THE-LIE: sensores lentos (warn-only) travavam o commit em
+# repos grandes (6000+ arquivos). CI cobre os mesmos checks — pular aqui
+# nao perde protecao. Ref: marco 68ac0d063 (key-alignment absorvido).
+export SKIP_SLOW_SENSORS=1
 COMMIT_OUTPUT=$(git commit $EXTRA_FLAGS -m "$MESSAGE" 2>&1) || {
     echo "  ❌ git commit falhou:"
     printf '%s\n' "$COMMIT_OUTPUT" | head -10 | sed 's/^/    /'
