@@ -1078,19 +1078,6 @@ company_id: str = Depends(require_company_id)):
 
                 _wiz_clean = mask_pii_outbound(_strip_react_json(_wiz_msg or ""))
 
-                if _wiz_payload and isinstance(_wiz_payload, dict):
-                    yield format_sse_event(
-                        serialize_panel_update(
-                            panel_type="wizard_stage",
-                            panel_data=_wiz_payload.get("data", _wiz_payload),
-                            panel_title=_wiz_payload.get("stage", "wizard"),
-                            action="open",
-                            thread_id=_wiz_thread_id,
-                            completeness=_wiz_payload.get("completeness"),
-                        ),
-                        next_id(),
-                    )
-
                 # ── T12: Post-wizard continuation OFFER ──────────────────────
                 # When the wizard reaches a terminal stage and a composite
                 # continuation was parked at bootstrap, LIA proactively offers
@@ -1164,6 +1151,20 @@ company_id: str = Depends(require_company_id)):
                     ),
                     next_id(),
                 )
+
+                if _wiz_payload and isinstance(_wiz_payload, dict):
+                    yield format_sse_event(
+                        serialize_panel_update(
+                            panel_type="wizard_stage",
+                            panel_data=_wiz_payload.get("data", _wiz_payload),
+                            panel_title=_wiz_payload.get("stage", "wizard"),
+                            action="open",
+                            thread_id=_wiz_thread_id,
+                            completeness=_wiz_payload.get("completeness"),
+                        ),
+                        next_id(),
+                    )
+
                 _wizard_handled = True
             except Exception as _wiz_exc:
                 logger.error(
@@ -2190,18 +2191,6 @@ company_id: str = Depends(require_company_id)):
                                 _seed_clean = mask_pii_outbound(
                                     _strip_react_json(_seed_msg or clean_message)
                                 )
-                                if _seed_payload and isinstance(_seed_payload, dict):
-                                    yield format_sse_event(
-                                        serialize_panel_update(
-                                            panel_type="wizard_stage",
-                                            panel_data=_seed_payload.get("data", _seed_payload),
-                                            panel_title=_seed_payload.get("stage", "wizard"),
-                                            action="open",
-                                            thread_id=_seed_thread,
-                                            completeness=_seed_payload.get("completeness"),
-                                        ),
-                                        next_id(),
-                                    )
                                 yield format_sse_event(
                                     serialize_message(
                                         content=_seed_clean,
@@ -2215,6 +2204,20 @@ company_id: str = Depends(require_company_id)):
                                     ),
                                     next_id(),
                                 )
+
+                                if _seed_payload and isinstance(_seed_payload, dict):
+                                    yield format_sse_event(
+                                        serialize_panel_update(
+                                            panel_type="wizard_stage",
+                                            panel_data=_seed_payload.get("data", _seed_payload),
+                                            panel_title=_seed_payload.get("stage", "wizard"),
+                                            action="open",
+                                            thread_id=_seed_thread,
+                                            completeness=_seed_payload.get("completeness"),
+                                        ),
+                                        next_id(),
+                                    )
+
                                 _seeded_wizard_handled = True
                                 logger.info(
                                     "[SSEChat] start_wizard_seeded consumed "
