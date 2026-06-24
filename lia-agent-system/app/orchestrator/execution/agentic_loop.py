@@ -541,6 +541,11 @@ class AgenticLoop:
                 })
 
                 # --- STL-GATE ENFORCE (Fase 3) ---
+                # DEFENSE-IN-DEPTH: este gate cobre Path A (supervisor/
+                # MainOrchestrator, ativo quando LIA_BUBBLE_VIA_SUPERVISOR=true).
+                # O gate PRIMARIO para Path B (LangGraph/federado, ativo quando
+                # LIA_FEDERATED_PRIMARY=true) esta em stl_gate_sink.py, wired
+                # como tee no tool_adapter.py. Ambos os gates devem existir.
                 if (
                     result is not None
                     and result.side_effect_executed is False
