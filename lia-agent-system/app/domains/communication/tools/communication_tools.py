@@ -437,124 +437,27 @@ async def send_feedback(
     feedback_message: str | None = None,
     template_id: str | None = None
 ) -> dict[str, Any]:
-    """
-    Send feedback to a candidate about their application.
-    
-    Args:
-        candidate_id: UUID of the candidate
-        job_id: UUID of the job vacancy
-        feedback_type: Type of feedback ('positive', 'rejection', 'pending', 'next_steps')
-        feedback_message: Custom feedback message
-        template_id: Optional template ID for the feedback
-        
-    Returns:
-        Result with success status and message
-    """
-    logger.info(f"💬 Sending {feedback_type} feedback to candidate {candidate_id}")
-
-    err = validate_uuid_params(candidate_id=candidate_id, job_id=job_id)
-    if err:
-        return err
-
-    # ACH-026 — FairnessGuard Camada 3: verificar viés em feedback de rejeição antes do envio
-    if feedback_type == "rejection" and feedback_message:
-        try:
-            from app.shared.compliance.fairness_guard import FairnessGuard
-            _fg3 = FairnessGuard()
-            _fg3_result = await _fg3.check_with_layer3(feedback_message, action_type="rejection")
-            if _fg3_result.is_blocked:
-                logger.warning(
-                    "FairnessGuard Camada 3 bloqueou feedback de rejeição: candidate=%s category=%s",
-                    candidate_id, _fg3_result.category,
-                )
-                feedback_message = (
-                    "Agradecemos sua candidatura. Após análise cuidadosa, "
-                    "optamos por seguir com outros perfis neste momento."
-                )
-            elif _fg3_result.soft_warnings:
-                logger.info(
-                    "FairnessGuard Camada 3: %d avisos em feedback de rejeição candidate=%s",
-                    len(_fg3_result.soft_warnings), candidate_id,
-                )
-        except Exception as _fg3_exc:
-            logger.debug("FairnessGuard Camada 3 em send_feedback indisponível: %s", _fg3_exc)
-
-    feedback_emojis = {
-        "positive": "🎉",
-        "rejection": "📝",
-        "pending": "⏳",
-        "next_steps": "📋"
+    """Send feedback — fail-honest: chat tool cannot send, directs to UI."""
+    logger.info(
+        "send_feedback: HONEST REFUSAL candidate=%s type=%s (chat tool does not send)",
+        candidate_id, feedback_type,
+    )
+    return {
+        "success": False,
+        "action_taken": None,
+        "message": (
+            "Ainda nao consigo enviar feedback ao candidato pelo chat. "
+            "Use a interface de feedback no painel do candidato "
+            "(clique no candidato > Feedback). "
+            "Posso ajudar a preparar o texto, se quiser."
+        ),
+        "data": {
+            "candidate_id": candidate_id,
+            "job_id": job_id,
+            "feedback_type": feedback_type,
+            "reason": "chat_tool_not_wired_to_send_service",
+        },
     }
-    emoji = feedback_emojis.get(feedback_type, "💬")
-    
-    feedback_messages = {
-        "positive": "Feedback positivo enviado",
-        "rejection": "Feedback de rejeição enviado",
-        "pending": "Status de pendência comunicado",
-        "next_steps": "Próximas etapas comunicadas"
-    }
-    
-    try:
-        from sqlalchemy import select
-
-        from app.core.database import AsyncSessionLocal
-        
-        async with AsyncSessionLocal() as db:
-            try:
-                from app.models.candidate import Candidate
-                
-                # P1-3 (2026-06-18): defense-in-depth — filter by company_id from
-                # ContextVar if available (RLS remains primary boundary per TENANT-EXEMPT).
-                _cid = _cid_ctx.get(None)
-                _cand_filter = [Candidate.id == UUID(candidate_id)]
-                if _cid:
-                    _cand_filter.append(Candidate.company_id == _cid)
-                result = await db.execute(
-                    select(Candidate).where(*_cand_filter)
-                )
-                candidate = result.scalar_one_or_none()
-                
-                candidate_name = getattr(candidate, 'name', 'Candidato') if candidate else 'Candidato'
-                
-                return {
-                    "success": True,
-                    "message": f"{emoji} {feedback_messages.get(feedback_type, 'Feedback enviado')} para {candidate_name}.",
-                    "action_taken": "send_feedback",
-                    "affected_entities": [candidate_id],
-                    "data": {
-                        "candidate_id": candidate_id,
-                        "candidate_name": candidate_name,
-                        "job_id": job_id,
-                        "feedback_type": feedback_type,
-                        "template_id": template_id,
-                        "sent_at": datetime.utcnow().isoformat()
-                    }
-                }
-                
-            except Exception as e:
-                logger.warning(f"Database model access issue: {e}, using mock response")
-                
-                return {
-                    "success": True,
-                    "message": f"{emoji} {feedback_messages.get(feedback_type, 'Feedback enviado')} ao candidato.",
-                    "action_taken": "send_feedback",
-                    "affected_entities": [candidate_id],
-                    "data": {
-                        "candidate_id": candidate_id,
-                        "job_id": job_id,
-                        "feedback_type": feedback_type,
-                        "simulated": True
-                    }
-                }
-                
-    except Exception as e:
-        logger.error(f"❌ Error sending feedback: {e}", exc_info=True)
-        return {
-            "success": False,
-            "message": f"❌ Erro ao enviar feedback: {str(e)}",
-            "error": str(e)
-        }
-
 
 SEND_EMAIL_SCHEMA = {
     "type": "object",
