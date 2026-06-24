@@ -880,59 +880,59 @@ async def add_to_list(
 
     user_id = context.user_id
     
-    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
-    logger.info(f"📋 Adding candidate {candidate_id} to list {list_id} (company: {company_id})")
-    
+    logger.info(f"add_to_list: candidate={candidate_id} list={list_id} company={company_id}")
+
     try:
-        from sqlalchemy import select
+        import uuid as _uuid
 
         from app.core.database import AsyncSessionLocal
-        from app.models.candidate import Candidate
-        
+        from app.repositories.candidate_list_repository import CandidateListRepository
+
         async with AsyncSessionLocal() as db:
-            # TENANT-EXEMPT: tool invoked via tool_registry; tenant boundary
-            # enforced by Postgres RLS (Task #1143). TODO(harness): refactor
-            # to accept company_id via **kwargs from tool_handler.
-            cand_result = await db.execute(
-                select(Candidate).where(Candidate.id == UUID(candidate_id))
-            )
-            candidate = cand_result.scalar_one_or_none()
-            
-            if not candidate:
+            repo = CandidateListRepository(db)
+
+            lst = await repo.get_list(_uuid.UUID(list_id), company_id)
+            if not lst:
                 return {
                     "success": False,
-                    "message": f"Candidato não encontrado: {candidate_id}",
-                    "error": "candidate_not_found"
+                    "message": f"Lista {list_id} nao encontrada ou nao pertence a esta empresa.",
+                    "error": "list_not_found_or_forbidden",
                 }
-            
-            candidate_name = getattr(candidate, 'name', 'Candidato')
-            
-            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
-            logger.info(f"✅ Added {candidate_id} to list {list_id}")
-            
+
+            added = await repo.bulk_add_members(
+                list_id=_uuid.UUID(list_id),
+                candidate_uuids=[_uuid.UUID(candidate_id)],
+                added_by=user_id,
+                notes=notes,
+                source="chat_tool",
+            )
+            await repo.touch_list(lst)
+            await db.commit()
+
+            member_count = await repo.count_members(_uuid.UUID(list_id))
+
             return {
                 "success": True,
-                "message": f"📋 {candidate_name} foi adicionado à lista.",
+                "message": f"Candidato adicionado a lista \"{lst.name}\" ({member_count} membros).",
                 "action_taken": "add_to_list",
                 "affected_entities": [candidate_id, list_id],
                 "data": {
                     "candidate_id": candidate_id,
-                    "candidate_name": candidate_name,
                     "list_id": list_id,
-                    "notes": notes,
+                    "list_name": lst.name,
+                    "added_count": added,
+                    "total_members": member_count,
                     "added_by": user_id,
-                    "added_at": datetime.utcnow().isoformat()
-                }
+                },
             }
-                
+
     except Exception as e:
-        logger.error(f"❌ Error adding candidate to list: {e}", exc_info=True)
+        logger.exception("[add_to_list] FAILED — failing LOUD")
         return {
             "success": False,
-            "message": f"❌ Erro ao adicionar candidato à lista: {str(e)}",
-            "error": str(e)
+            "message": "Nao foi possivel adicionar a lista. Acao NAO executada.",
+            "error": str(e),
         }
-
 
 async def wsi_screening(
     candidate_id: str,
