@@ -205,55 +205,87 @@ def _build_dept_creation_message(
 
 
 def _execute_dept_creation_sync(dept_candidate, parsed, state):
-    """Executa criacao de departamento em threadpool (intake_gate e sync)."""
-    from app.domains.job_creation.helpers.async_audit import run_coro_in_threadpool
+    """Executa criacao de departamento via SyncSessionLocal (psycopg2 pool).
+
+    P0 fix event-loop (2026-06-24): run_coro_in_threadpool + AsyncSessionLocal
+    sempre falhava com "Future attached to a different loop". O except setava
+    department_creation_done=True sem criar — dado fantasma.
+    Fix (a): except NAO seta done=True (fail-loud, state reflete verdade).
+    Fix (b): SyncSessionLocal com pool psycopg2 (sem conflito de event loop).
+    """
+    from lia_config.database import SyncSessionLocal
+    from sqlalchemy import text as sa_text
+    import uuid as _uuid
 
     company_id = str(state.get("company_id") or state.get("workspace_id") or "")
     if not company_id:
         logger.warning("[DeptCreation] company_id not in state -- skip creation")
-        return {"department_creation_done": True}
-
+        return {"department_creation_done": False, "dept_creation_error": "company_id ausente"}
     manager_name = state.get("parsed_manager_name")
     manager_email = state.get("parsed_manager_email")
 
-    async def _do_create():
-        from app.core.database import AsyncSessionLocal
-        from app.domains.job_creation.services.department_wizard_service import (
-            create_department_for_wizard,
-        )
-        async with AsyncSessionLocal() as db:
-            return await create_department_for_wizard(
-                name=parsed.get("name", dept_candidate),
-                company_id=company_id,
-                db=db,
-                code=parsed.get("code"),
-                description=parsed.get("description"),
-                location=parsed.get("location"),
-                headcount=parsed.get("headcount"),
-                cost_center=parsed.get("cost_center"),
-                hiring_priority=parsed.get("hiring_priority", "normal"),
-                manager_name=manager_name,
-                manager_email=manager_email,
-            )
-
     try:
-        result = run_coro_in_threadpool(_do_create, timeout=15.0)
-        logger.info("[DeptCreation] created dept=%s id=%s company=%s", result["name"], result["id"], company_id)
+        with SyncSessionLocal() as db:
+            db.execute(
+                sa_text("SELECT set_config('app.company_id', :cid, true)"),
+                {"cid": company_id},
+            )
+            dept_id = str(_uuid.uuid4())
+            dept_name = (parsed.get("name") or dept_candidate).strip()
+
+            cols = {
+                "id": dept_id,
+                "company_id": company_id,
+                "name": dept_name,
+                "is_active": True,
+            }
+            if parsed.get("code"):
+                cols["code"] = parsed["code"].strip().upper()
+            if parsed.get("description"):
+                cols["description"] = parsed["description"].strip()
+            if parsed.get("location"):
+                cols["location"] = parsed["location"].strip()
+            if parsed.get("headcount"):
+                cols["headcount"] = int(parsed["headcount"])
+            if parsed.get("cost_center"):
+                cols["cost_center"] = parsed["cost_center"].strip()
+            hp = (parsed.get("hiring_priority") or "normal").lower().strip()
+            if hp not in ("normal", "alta", "critica", "urgente"):
+                hp = "normal"
+            if hp != "normal":
+                cols["hiring_priority"] = hp
+            if manager_name:
+                cols["manager_name"] = manager_name.strip()
+            if manager_email:
+                cols["manager_email"] = manager_email.strip()
+
+            col_names = ", ".join(cols.keys())
+            col_params = ", ".join(f":{k}" for k in cols.keys())
+            db.execute(
+                sa_text(f"INSERT INTO departments ({col_names}) VALUES ({col_params})"),
+                cols,
+            )
+            db.commit()
+
+        logger.info("[DeptCreation] created dept=%s id=%s company=%s", dept_name, dept_id, company_id)
         mgr_msg = ""
         if manager_name:
             mgr_msg = " Gestor **{}** vinculado.".format(manager_name)
         return {
-            "parsed_department": result["name"],
-            "department_created_id": result["id"],
+            "parsed_department": dept_name,
+            "department_created_id": dept_id,
             "department_creation_done": True,
             "dept_creation_confirmation_msg": (
                 "Departamento **{}** criado com sucesso!{} "
-                "Continuando a criacao da vaga...".format(result["name"], mgr_msg)
+                "Continuando a criacao da vaga...".format(dept_name, mgr_msg)
             ),
         }
     except Exception as exc:
-        logger.error("[DeptCreation] failed: %s -- recruiter must choose manually", exc)
-        return {"department_creation_done": True}
+        logger.error("[DeptCreation] DB write failed (fail-loud): %s", exc, exc_info=True)
+        return {
+            "department_creation_done": False,
+            "dept_creation_error": str(exc)[:200],
+        }
 
 
 def _handle_department_creation_subflow(state, dept_candidate, _uq, _is_fresh, _is_initial):

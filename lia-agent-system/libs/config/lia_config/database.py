@@ -145,6 +145,63 @@ if N_PLUS_ONE_ENABLED:
         _request_query_count.set(_request_query_count.get(0) + 1)
 
 
+
+# ---------------------------------------------------------------------------
+# Sync engine + session (psycopg2) for sync callers (LangGraph nodes, wizard
+# tool handlers). These run inside uvicorn event loop but cannot use asyncpg
+# (connection affinity). Separate pool, smaller (sync callers are fewer).
+# ADR: run_coro_in_threadpool + AsyncSessionLocal = RuntimeError "Future
+# attached to a different loop". This sync pool is the canonical fix.
+# ---------------------------------------------------------------------------
+_sync_database_url = os.environ.get("DATABASE_URL", settings.DATABASE_URL)
+if _sync_database_url and _sync_database_url.startswith("postgresql+asyncpg://"):
+    _sync_database_url = _sync_database_url.replace("postgresql+asyncpg://", "postgresql://", 1)
+elif _sync_database_url and _sync_database_url.startswith("postgresql://"):
+    pass  # already plain psycopg2
+
+if _sync_database_url and "sslmode=" in _sync_database_url:
+    from urllib.parse import urlparse as _sp, parse_qs as _pq, urlencode as _ue, urlunparse as _uu
+    _sp2 = _sp(_sync_database_url)
+    _q2 = _pq(_sp2.query)
+    _q2.pop("sslmode", None)
+    _sync_database_url = _uu((_sp2.scheme, _sp2.netloc, _sp2.path, _sp2.params, _ue(_q2, doseq=True), _sp2.fragment))
+
+from sqlalchemy import create_engine as _create_sync_engine
+from sqlalchemy.orm import sessionmaker as _sync_sessionmaker, Session as _SyncSessionCls
+
+sync_engine = _create_sync_engine(
+    _sync_database_url,
+    pool_size=5,
+    max_overflow=3,
+    pool_pre_ping=True,
+    pool_recycle=3600,
+    echo=settings.DATABASE_ECHO,
+)
+
+SyncSessionLocal = _sync_sessionmaker(
+    bind=sync_engine,
+    class_=_SyncSessionCls,
+    expire_on_commit=False,
+    autocommit=False,
+    autoflush=False,
+)
+
+
+@event.listens_for(sync_engine, "begin")
+def _inject_tenant_guc_on_begin_sync(conn):
+    """RLS tenant injection for sync sessions (mirrors async listener)."""
+    cid = _get_current_company_id()
+    if not cid:
+        return
+    try:
+        conn.execute(
+            _sa_text("SELECT set_config('app.company_id', :cid, true)"),
+            {"cid": str(cid)},
+        )
+    except Exception as exc:
+        logger.warning("[RLS-sync] auto-inject app.company_id failed: %s", exc)
+
+
 # Declarative base for all SQLAlchemy models
 Base = declarative_base()
 
