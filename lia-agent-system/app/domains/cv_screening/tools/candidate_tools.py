@@ -699,88 +699,75 @@ async def shortlist_candidate(
     notes: str | None = None,
     **kwargs
 ) -> dict[str, Any]:
-    """
-    Add a candidate to the shortlist for a job vacancy.
-    
-    Args:
-        candidate_id: UUID of the candidate
-        job_id: UUID of the job vacancy
-        priority: Priority level ('high', 'normal', 'low')
-        notes: Optional notes about why they're shortlisted
-        
-    Returns:
-        Result with success status and message
-    """
+    """Add a candidate to the shortlist for a job vacancy — REAL DB UPDATE."""
     err = validate_uuid_params(candidate_id=candidate_id, job_id=job_id)
     if err:
         return err
 
-    logger.info(f"⭐ Shortlisting candidate {candidate_id} for job {job_id}")
-    
+    context = context_or_raise(kwargs, "shortlist_candidate")
+    company_id = require_company_id_from_obj(context, "shortlist_candidate")
+
+    logger.info(f"shortlist_candidate: candidate={candidate_id} job={job_id} company={company_id}")
+
     try:
-        from sqlalchemy import select
+        from sqlalchemy import text as sa_text
 
         from app.core.database import AsyncSessionLocal
-        
+
         async with AsyncSessionLocal() as db:
-            try:
-                from app.models.candidate import Candidate
-                
-                # TENANT-EXEMPT: tool invoked via tool_registry; tenant boundary
-                # enforced by Postgres RLS (Task #1143). TODO(harness): refactor
-                # to accept company_id via **kwargs from tool_handler.
-                result = await db.execute(
-                    select(Candidate).where(Candidate.id == UUID(candidate_id))
-                )
-                candidate = result.scalar_one_or_none()
-                
-                candidate_name = getattr(candidate, 'name', 'Candidato') if candidate else 'Candidato'
-                
-                priority_emoji = {"high": "🔥", "normal": "⭐", "low": "📌"}.get(priority, "⭐")
-                
-                return {
-                    "success": True,
-                    "message": f"{priority_emoji} {candidate_name} foi adicionado à shortlist com prioridade {priority}.",
-                    "action_taken": "shortlist_candidate",
-                    "affected_entities": [candidate_id],
-                    "data": {
-                        "candidate_id": candidate_id,
-                        "candidate_name": candidate_name,
-                        "job_id": job_id,
-                        "priority": priority,
-                        "notes": notes,
-                        "shortlisted_at": datetime.utcnow().isoformat()
-                    }
-                }
-                
-            except Exception as e:
-                # P1 audit 2026-05-20: REGRA 4 CLAUDE.md — fail-loud quando shortlist
-                # NÃO foi persistida. Anteriormente retornava success=True com
-                # simulated=True, mascarando que a ação não ocorreu no DB.
-                logger.exception(
-                    "[candidate_tools] shortlist_candidate FAILED (DB issue) — failing LOUD"
-                )
+            check = await db.execute(
+                sa_text(
+                    "SELECT status, stage FROM vacancy_candidates "
+                    "WHERE candidate_id = :candidate_id "
+                    "AND vacancy_id = :job_id "
+                    "AND company_id = :company_id "
+                    "LIMIT 1"
+                ),
+                {"candidate_id": candidate_id, "job_id": job_id, "company_id": company_id},
+            )
+            row = check.mappings().first()
+            if not row:
                 return {
                     "success": False,
-                    "fallback_used": True,
-                    "needs_manual_review": True,
-                    "action_taken": None,
-                    "message": (
-                        "Não foi possível adicionar à shortlist no banco. "
-                        "A ação NÃO foi executada. Tente novamente ou peça suporte."
-                    ),
-                    "error": f"Database access failed: {str(e)}",
-                    "data": {"candidate_id": candidate_id, "job_id": job_id, "priority": priority},
+                    "message": f"Candidato {candidate_id} nao encontrado na vaga {job_id}.",
+                    "error": "candidate_not_in_vacancy",
                 }
-                
+
+            previous_status = row["status"]
+
+            result = await db.execute(
+                sa_text(
+                    "UPDATE vacancy_candidates "
+                    "SET status = 'shortlisted', updated_at = NOW() "
+                    "WHERE candidate_id = :candidate_id "
+                    "AND vacancy_id = :job_id "
+                    "AND company_id = :company_id"
+                ),
+                {"candidate_id": candidate_id, "job_id": job_id, "company_id": company_id},
+            )
+            await db.commit()
+
+            return {
+                "success": True,
+                "message": f"Candidato adicionado a shortlist (era {previous_status}).",
+                "action_taken": "shortlist_candidate",
+                "affected_entities": [candidate_id],
+                "data": {
+                    "candidate_id": candidate_id,
+                    "job_id": job_id,
+                    "previous_status": previous_status,
+                    "new_status": "shortlisted",
+                    "rows_updated": result.rowcount,
+                },
+            }
+
     except Exception as e:
-        logger.error(f"❌ Error shortlisting candidate: {e}", exc_info=True)
+        logger.exception("[shortlist_candidate] FAILED — failing LOUD")
         return {
             "success": False,
-            "message": f"❌ Erro ao adicionar candidato à shortlist: {str(e)}",
-            "error": str(e)
+            "message": "Nao foi possivel adicionar a shortlist. Acao NAO executada.",
+            "error": str(e),
         }
-
 
 async def _fetch_candidate_name_map_local(candidate_ids: list[str], company_id: str = "") -> dict[str, str]:
     """Fetch {id: name} map for bulk result labels. Fail-open: returns {} on error."""
