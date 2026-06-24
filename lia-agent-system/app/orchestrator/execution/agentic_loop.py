@@ -540,6 +540,17 @@ class AgenticLoop:
                     "duration_ms": int((time.monotonic() - _tool_t0) * 1000),
                 })
 
+                # --- STL-GATE OBSERVE (Fase 1) ---
+                if (
+                    result is not None
+                    and result.side_effect_executed is False
+                    and result.success is True
+                ):
+                    logger.warning(
+                        "[STL-GATE-OBSERVE] tool=%s afirma success sem side-effect",
+                        tc.name,
+                    )
+
                 # Append assistant + tool-result messages for the next iteration.
                 # The format depends on the provider:
                 if provider == "claude":

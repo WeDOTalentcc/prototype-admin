@@ -83,6 +83,7 @@ class ToolResult:
     error: str | None = None
     tool_name: str = ""
     execution_time_ms: float = 0.0
+    side_effect_executed: bool | None = None
     
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for LLM response."""
@@ -292,11 +293,15 @@ class ToolExecutor:
             
             execution_time = (datetime.utcnow() - start_time).total_seconds() * 1000
             
+            _se = None
+            if isinstance(handler_result, dict):
+                _se = handler_result.get("side_effect_executed")
             result = ToolResult(
                 success=True,
                 result=handler_result,
                 tool_name=tool_name,
-                execution_time_ms=execution_time
+                execution_time_ms=execution_time,
+                side_effect_executed=_se,
             )
             
         except TimeoutError:

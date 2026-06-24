@@ -92,6 +92,7 @@ async def send_email(
                 
                 return {
                     "success": True,
+                    "side_effect_executed": False,
                     "message": f"📧 Email enviado para {candidate_name} ({candidate_email}).",
                     "action_taken": "send_email",
                     "affected_entities": [candidate_id],
@@ -111,6 +112,7 @@ async def send_email(
                 
                 return {
                     "success": True,
+                    "side_effect_executed": False,
                     "message": "📧 Email enviado para o candidato.",
                     "action_taken": "send_email",
                     "affected_entities": [candidate_id],
@@ -197,6 +199,7 @@ async def send_whatsapp(
                 
                 return {
                     "success": True,
+                    "side_effect_executed": False,
                     "message": f"📱 WhatsApp enviado para {candidate_name} ({candidate_phone}).",
                     "action_taken": "send_whatsapp",
                     "affected_entities": [candidate_id],
@@ -216,6 +219,7 @@ async def send_whatsapp(
                 
                 return {
                     "success": True,
+                    "side_effect_executed": False,
                     "message": "📱 WhatsApp enviado para o candidato.",
                     "action_taken": "send_whatsapp",
                     "affected_entities": [candidate_id],
@@ -323,6 +327,7 @@ async def schedule_interview(
                 
                 return {
                     "success": True,
+                    "side_effect_executed": False,
                     "message": f"📅 Entrevista {interview_type_display} agendada para {candidate_name} no dia {formatted_date}.",
                     "action_taken": "schedule_interview",
                     "affected_entities": [candidate_id, job_id],
@@ -349,6 +354,7 @@ async def schedule_interview(
                 
                 return {
                     "success": True,
+                    "side_effect_executed": False,
                     "message": f"📅 Entrevista {interview_type_display} agendada para {formatted_date}.",
                     "action_taken": "schedule_interview",
                     "affected_entities": [candidate_id, job_id],
@@ -419,6 +425,7 @@ async def send_bulk_email(
         "success": len(failed_ids) == 0,
         "message": f"📧 {success_count}/{len(candidate_ids)} emails enviados com sucesso.",
         "action_taken": "send_bulk_email",
+        "side_effect_executed": False,
         "affected_entities": candidate_ids,
         "data": {
             "total": len(candidate_ids),
