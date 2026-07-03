@@ -56,6 +56,13 @@ function updateSidebarActive(screenId) {
     'screen-global-integrations':   'nav-global-integrations',
     'screen-lia-global':            'nav-lia-global',
     'screen-notifications':         'nav-notifications',
+    'screen-cat-geo':               'nav-cat-geo',
+    'screen-cat-talents':           'nav-cat-talents',
+    'screen-cat-job':               'nav-cat-job',
+    'screen-cat-comp':              'nav-cat-comp',
+    'screen-cat-pipeline':          'nav-cat-pipeline',
+    'screen-client-refdata-structure': 'nav-client-refdata-structure',
+    'screen-client-refdata-talents':   'nav-client-refdata-talents',
   };
   const activeId = map[screenId];
   if (activeId) {
@@ -91,6 +98,13 @@ function updateTopbarContext(screenId) {
     'screen-global-integrations':   'Integrações Globais',
     'screen-lia-global':            'LIA Global',
     'screen-notifications':         'Notificações',
+    'screen-cat-geo':               'Catálogo Geográfico',
+    'screen-cat-talents':           'Idiomas & Setores',
+    'screen-cat-job':               'Atributos de Vaga',
+    'screen-cat-comp':              'Remuneração & Qualificação',
+    'screen-cat-pipeline':          'Pipeline & Diversidade',
+    'screen-client-refdata-structure': 'Dados de Referência — Estrutura & Processo',
+    'screen-client-refdata-talents':   'Dados de Referência — Talentos',
   };
   ctx.textContent = labels[screenId] || '';
 }
@@ -410,7 +424,16 @@ document.addEventListener('click', e => {
    ---------------------------------------------------------- */
 document.addEventListener('DOMContentLoaded', () => {
   lucide.createIcons();
-  showScreen('screen-dashboard');
+  const hash = (location.hash || '').replace('#', '');
+  if (hash && document.getElementById(hash)) {
+    // Telas de contexto de cliente precisam da sidebar de cliente
+    if (hash.indexOf('screen-client-') === 0 && typeof setClientContext === 'function') {
+      setClientContext('ifood');
+    }
+    showScreen(hash);
+  } else {
+    showScreen('screen-dashboard');
+  }
 });
 
 /* ----------------------------------------------------------
@@ -469,4 +492,19 @@ function opgFilterPill(selected) {
       el.querySelectorAll('span,strong').forEach(s => { s.style.color = ''; });
     }
   });
+}
+
+
+/* ----------------------------------------------------------
+   Catálogos — troca de abas (Dados de Referência)
+   ---------------------------------------------------------- */
+function showCatTab(screenId, tabKey, btn) {
+  const screen = document.getElementById(screenId);
+  if (!screen) return;
+  screen.querySelectorAll('.cat-panel').forEach(p => p.style.display = 'none');
+  const panel = screen.querySelector('.cat-panel[data-tab="' + tabKey + '"]');
+  if (panel) panel.style.display = 'block';
+  screen.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  if (window.lucide && lucide.createIcons) lucide.createIcons();
 }

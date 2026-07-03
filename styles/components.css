@@ -1463,3 +1463,10 @@ select.input {
   margin-bottom: 4px;
 }
 
+
+
+/* Catálogos — abas de Dados de Referência */
+.cat-tabs { display:flex; gap:2px; border-bottom:1px solid #E5E7EB; margin-bottom:20px; overflow-x:auto; }
+.cat-tab { padding:9px 14px; font-size:13px; font-weight:600; color:#6B7280; background:none; border:none; border-bottom:2px solid transparent; cursor:pointer; font-family:inherit; white-space:nowrap; }
+.cat-tab:hover { color:#111827; }
+.cat-tab.active { color:#111827; border-bottom-color:#C74446; }
