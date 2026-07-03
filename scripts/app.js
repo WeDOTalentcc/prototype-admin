@@ -445,6 +445,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (b) b.click();
       }
     }
+    if (q.get('pipe') && typeof openPipelineEditor === 'function') {
+      openPipelineEditor(q.get('pipe'));
+    }
     if (q.get('cf') && typeof openCatForm === 'function') {
       openCatForm(q.get('cf'), q.get('mode') || 'novo');
     } else if (q.get('modal') && typeof openModal === 'function') {
@@ -570,3 +573,24 @@ function initDnd(){
   });
 }
 document.addEventListener('DOMContentLoaded', initDnd);
+
+
+/* Pipeline — navegação lista <-> editor + confirmação genérica */
+function openPipelineEditor(name){
+  var l=document.getElementById('pipe-list'), ed=document.getElementById('pipe-editor');
+  if(l) l.style.display='none';
+  if(ed) ed.style.display='block';
+  var n=document.getElementById('pipe-editor-name'); if(n) n.textContent=name;
+  if(window.lucide) lucide.createIcons();
+}
+function backToTemplates(){
+  var l=document.getElementById('pipe-list'), ed=document.getElementById('pipe-editor');
+  if(ed) ed.style.display='none';
+  if(l) l.style.display='block';
+}
+function openConfirmAction(title, msg, label){
+  var t=document.getElementById('confirm-action-title'); if(t) t.textContent=title||'Confirmar';
+  var m=document.getElementById('confirm-action-msg'); if(m) m.textContent=msg||'';
+  var b=document.getElementById('confirm-action-btn'); if(b) b.textContent=label||'Confirmar';
+  if(typeof openModal==='function') openModal('confirm-action');
+}
