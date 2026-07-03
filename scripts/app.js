@@ -437,6 +437,14 @@ document.addEventListener('DOMContentLoaded', () => {
   // Deep-link opcional para abrir um modal: ?cf=<key>&mode=novo|editar  ou  ?modal=<id>
   try {
     const q = new URLSearchParams(location.search);
+    if (q.get('tab') && typeof showCatTab === 'function') {
+      const scr = document.querySelector('.screen.active');
+      if (scr) {
+        const btns = [...scr.querySelectorAll('.cat-tab')];
+        const b = btns.find(x => (x.getAttribute('onclick')||'').indexOf("'" + q.get('tab') + "'") !== -1);
+        if (b) b.click();
+      }
+    }
     if (q.get('cf') && typeof openCatForm === 'function') {
       openCatForm(q.get('cf'), q.get('mode') || 'novo');
     } else if (q.get('modal') && typeof openModal === 'function') {
@@ -536,3 +544,29 @@ function openCatDelete(name) {
   if (el) el.textContent = name || 'este item';
   openModal('cat-delete');
 }
+
+
+/* Pipeline/Jornada — labels extra + DnD + toggles */
+Object.assign(CAT_LABELS, {"etapa": {"n": "Nova Etapa", "e": "Editar Etapa"}, "substatus": {"n": "Novo Sub-status", "e": "Editar Sub-status"}, "template": {"n": "Novo Template de Jornada", "e": "Editar Template"}, "secao": {"n": "Nova Seção", "e": "Editar Seção"}});
+function toggleStageSub(idx, btn){
+  const el=document.getElementById('sub-'+idx); if(!el) return;
+  const open = el.style.display!=='none';
+  el.style.display = open ? 'none' : 'block';
+  const ic = btn.querySelector('i');
+  if(ic){ ic.setAttribute('data-lucide', open?'chevron-right':'chevron-down'); if(window.lucide) lucide.createIcons(); }
+}
+function _dndAfter(list, y){
+  const els=[...list.querySelectorAll(':scope > .dnd-row[draggable="true"]:not(.dnd-dragging)')];
+  let best={o:-Infinity,el:null};
+  for(const c of els){ const b=c.getBoundingClientRect(); const off=y-b.top-b.height/2; if(off<0 && off>best.o) best={o:off,el:c}; }
+  return best.el;
+}
+function initDnd(){
+  document.querySelectorAll('[data-sortable]').forEach(list=>{
+    if(list.__dnd) return; list.__dnd=true;
+    list.addEventListener('dragstart', e=>{ const r=e.target.closest('.dnd-row[draggable="true"]'); if(!r||!list.contains(r))return; r.classList.add('dnd-dragging'); e.dataTransfer.effectAllowed='move'; });
+    list.addEventListener('dragend', e=>{ const r=list.querySelector('.dnd-dragging'); if(r) r.classList.remove('dnd-dragging'); });
+    list.addEventListener('dragover', e=>{ e.preventDefault(); const drag=list.querySelector('.dnd-dragging'); if(!drag)return; const after=_dndAfter(list, e.clientY); if(after==null) list.appendChild(drag); else list.insertBefore(drag, after); });
+  });
+}
+document.addEventListener('DOMContentLoaded', initDnd);
