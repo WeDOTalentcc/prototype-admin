@@ -434,6 +434,15 @@ document.addEventListener('DOMContentLoaded', () => {
   } else {
     showScreen('screen-dashboard');
   }
+  // Deep-link opcional para abrir um modal: ?cf=<key>&mode=novo|editar  ou  ?modal=<id>
+  try {
+    const q = new URLSearchParams(location.search);
+    if (q.get('cf') && typeof openCatForm === 'function') {
+      openCatForm(q.get('cf'), q.get('mode') || 'novo');
+    } else if (q.get('modal') && typeof openModal === 'function') {
+      openModal(q.get('modal'));
+    }
+  } catch (e) {}
 });
 
 /* ----------------------------------------------------------
@@ -507,4 +516,23 @@ function showCatTab(screenId, tabKey, btn) {
   screen.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
   if (btn) btn.classList.add('active');
   if (window.lucide && lucide.createIcons) lucide.createIcons();
+}
+
+
+/* ----------------------------------------------------------
+   Dados de Referência — modais de CRUD (Novo/Editar/Excluir)
+   ---------------------------------------------------------- */
+const CAT_LABELS = {"paises": {"n": "Novo País", "e": "Editar País"}, "estados": {"n": "Novo Estado", "e": "Editar Estado"}, "cidades": {"n": "Nova Cidade", "e": "Editar Cidade"}, "idiomas": {"n": "Novo Idioma", "e": "Editar Idioma"}, "setores": {"n": "Novo Setor", "e": "Editar Setor"}, "senioridade": {"n": "Novo Nível", "e": "Editar Nível"}, "contrato": {"n": "Novo Tipo", "e": "Editar Tipo"}, "modelo": {"n": "Novo Modelo", "e": "Editar Modelo"}, "prioridade": {"n": "Nova Prioridade", "e": "Editar Prioridade"}, "urgencia": {"n": "Novo Nível", "e": "Editar Nível"}, "moedas": {"n": "Nova Moeda", "e": "Editar Moeda"}, "escolaridade": {"n": "Novo Nível", "e": "Editar Nível"}, "experiencia": {"n": "Nova Faixa", "e": "Editar Faixa"}, "niveis-skill": {"n": "Novo Nível", "e": "Editar Nível"}, "proficiencia": {"n": "Novo Nível", "e": "Editar Nível"}, "reprovacao": {"n": "Novo Motivo", "e": "Editar Motivo"}, "recusa": {"n": "Novo Motivo", "e": "Editar Motivo"}, "origem": {"n": "Nova Origem", "e": "Editar Origem"}, "afirmativo": {"n": "Novo Grupo", "e": "Editar Grupo"}, "departamentos": {"n": "Novo Departamento", "e": "Editar Departamento"}, "status-vaga": {"n": "Novo Status", "e": "Editar Status"}, "jornadas": {"n": "Nova Jornada", "e": "Editar Jornada"}, "beneficios": {"n": "Novo Benefício", "e": "Editar Benefício"}, "cat-skill": {"n": "Nova Categoria", "e": "Editar Categoria"}, "skills": {"n": "Nova Skill", "e": "Editar Skill"}, "comportamentais": {"n": "Nova Competência", "e": "Editar Competência"}, "ocupacoes": {"n": "Nova Ocupação", "e": "Editar Ocupação"}, "instituicoes": {"n": "Nova Instituição", "e": "Editar Instituição"}, "areas-estudo": {"n": "Nova Área", "e": "Editar Área"}};
+function openCatForm(key, mode) {
+  const meta = CAT_LABELS[key]; if (!meta) return;
+  const t = document.getElementById('cf-' + key + '-title');
+  if (t) t.textContent = (mode === 'editar' ? meta.e : meta.n);
+  const del = document.getElementById('cf-' + key + '-del');
+  if (del) del.style.display = (mode === 'editar' ? 'inline-flex' : 'none');
+  openModal('cf-' + key);
+}
+function openCatDelete(name) {
+  const el = document.getElementById('cat-delete-name');
+  if (el) el.textContent = name || 'este item';
+  openModal('cat-delete');
 }
