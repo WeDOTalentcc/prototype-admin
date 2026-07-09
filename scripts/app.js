@@ -47,6 +47,7 @@ function updateSidebarActive(screenId) {
     'screen-client-users':          'nav-client-users',
     'screen-billing':               'nav-billing',
     'screen-llm-config':            'nav-llm-config',
+    'screen-lia-persona':           'nav-lia-persona',
     'screen-feature-flags':         'nav-feature-flags',
     'screen-plans':                 'nav-plans',
     'screen-global-flags':          'nav-global-flags',
@@ -89,6 +90,7 @@ function updateTopbarContext(screenId) {
     'screen-client-users':          'Usuários — iFood Talentos',
     'screen-billing':               'Faturamento — iFood Talentos',
     'screen-llm-config':            'Configuração LLM — iFood Talentos',
+    'screen-lia-persona':           'Persona da LIA — iFood Talentos',
     'screen-feature-flags':         'Feature Flags — iFood Talentos',
     'screen-plans':                 'Planos & Preços',
     'screen-global-flags':          'Feature Flags Globais',
@@ -271,6 +273,15 @@ function toggleFeature(el) {
   el.style.background = isOn ? '#D1D5DB' : '#60BED1';
   const circle = el.querySelector('.toggle-circle');
   if (circle) circle.style.left = isOn ? '2px' : '22px';
+}
+
+/* ----------------------------------------------------------
+   Persona — seleção de tom (single-select entre os cards)
+   ---------------------------------------------------------- */
+function selectPersonaTone(el) {
+  const group = el.parentElement;
+  group.querySelectorAll('.provider-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
 }
 
 /* ----------------------------------------------------------

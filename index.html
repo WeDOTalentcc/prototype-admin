@@ -160,6 +160,10 @@
               <span class="nav-item-icon"><i data-lucide="bot"></i></span>
               <span class="nav-item-label">Config. LLM</span>
             </li>
+            <li id="nav-lia-persona" class="nav-item" data-tooltip="Persona da LIA" onclick="showScreen('screen-lia-persona')">
+              <span class="nav-item-icon"><i data-lucide="sparkles"></i></span>
+              <span class="nav-item-label">Persona da LIA</span>
+            </li>
           </ul>
         </div>
 
@@ -1731,6 +1735,245 @@
       </div><!-- /tab integrations -->
 
     </div><!-- /#screen-llm-config -->
+
+    <!-- ============================================================
+         SCREEN: PERSONA DA LIA (WEDO-1385)
+         Config de persona/tom por cliente, aplicada em runtime.
+         ============================================================ -->
+    <div class="screen" id="screen-lia-persona">
+
+      <!-- Breadcrumb -->
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:24px; font-size:14px;">
+        <a href="#" onclick="showScreen('screen-client-detail'); return false;" style="color:#C74446; font-weight:500;">iFood Talentos</a>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        <span style="color:#374151; font-weight:500;">Persona da LIA</span>
+      </div>
+
+      <!-- Header -->
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:20px; flex-wrap:wrap; gap:12px;">
+        <div>
+          <h1 style="font-size:22px; font-weight:700; color:#111827; margin:0 0 4px;">Persona da LIA</h1>
+          <p style="font-size:14px; color:#6B7280; margin:0;">Identidade, tom de voz e diretrizes da assistente — iFood Talentos</p>
+        </div>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <button style="padding:8px 16px; background:white; color:#374151; border:1px solid #D1D5DB; border-radius:8px; font-size:13px; font-weight:500; cursor:pointer; font-family:inherit;">Restaurar padrão WeDO</button>
+          <button style="padding:8px 20px; background:#C74446; color:white; border:none; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit;">Salvar persona</button>
+        </div>
+      </div>
+
+      <!-- Runtime + audit banner -->
+      <div style="display:flex; align-items:center; gap:10px; background:rgba(96,190,209,0.06); border:1px solid rgba(96,190,209,0.2); border-radius:8px; padding:10px 14px; margin-bottom:24px; flex-wrap:wrap;">
+        <div style="width:8px; height:8px; background:#5DA47A; border-radius:50%;"></div>
+        <span style="font-size:13px; color:#0E7490; font-weight:500;">Aplicado em runtime — sem redeploy.</span>
+        <span style="font-size:13px; color:#6B7280;">Alterações valem para o chat da LIA deste cliente em até 2 min.</span>
+        <span style="font-size:13px; color:#9CA3AF; margin-left:auto;">Última alteração: <strong style="color:#374151; font-weight:600;">Paulo Moraes</strong> · 08/07/2026 14:32</span>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs" style="margin-bottom:24px;">
+        <button class="tab-btn active" data-tab-group="persona-tabs" data-tab="identity" onclick="switchTab('persona-tabs','identity')">Identidade &amp; Tom</button>
+        <button class="tab-btn" data-tab-group="persona-tabs" data-tab="guidelines" onclick="switchTab('persona-tabs','guidelines')">Diretrizes</button>
+        <button class="tab-btn" data-tab-group="persona-tabs" data-tab="preview" onclick="switchTab('persona-tabs','preview')">Pré-visualização</button>
+      </div>
+
+      <!-- TAB: Identidade & Tom -->
+      <div data-tab-panel-group="persona-tabs" data-tab-panel="identity" style="display:block;">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+
+          <!-- Identidade -->
+          <div style="background:white; border:1px solid #E5E7EB; border-radius:12px; padding:24px;">
+            <div style="font-size:15px; font-weight:600; color:#111827; margin-bottom:20px;">Identidade da assistente</div>
+
+            <div style="margin-bottom:18px;">
+              <label style="display:block; font-size:13px; font-weight:500; color:#374151; margin-bottom:6px;">Nome exibido</label>
+              <input type="text" value="LIA" style="width:100%; padding:9px 12px; border:1px solid #D1D5DB; border-radius:8px; font-size:14px; color:#111827; outline:none; box-sizing:border-box; font-family:inherit;">
+              <div style="font-size:12px; color:#9CA3AF; margin-top:5px;">Como a assistente se apresenta aos usuários deste cliente.</div>
+            </div>
+
+            <div style="margin-bottom:18px;">
+              <label style="display:block; font-size:13px; font-weight:500; color:#374151; margin-bottom:6px;">Descrição de identidade</label>
+              <textarea rows="3" style="width:100%; padding:9px 12px; border:1px solid #D1D5DB; border-radius:8px; font-size:14px; color:#111827; outline:none; box-sizing:border-box; font-family:inherit; resize:vertical;">Recrutadora sênior de talent acquisition, parceira do time de RH do iFood. Domina processos seletivos, avaliação de pessoas e o setor de tecnologia/logística.</textarea>
+            </div>
+
+            <div style="display:flex; align-items:flex-start; gap:8px; background:rgba(93,164,122,0.06); border:1px solid rgba(93,164,122,0.2); border-radius:8px; padding:10px 12px;">
+              <i data-lucide="lock" style="width:15px; height:15px; color:#166534; flex-shrink:0; margin-top:1px;"></i>
+              <div style="font-size:12px; color:#166534;">O nome base "LIA", a regra de não revelar o modelo de IA e de nunca confirmar ação não executada são <strong>protegidos</strong> e não podem ser sobrescritos.</div>
+            </div>
+          </div>
+
+          <!-- Tom & Estilo -->
+          <div style="background:white; border:1px solid #E5E7EB; border-radius:12px; padding:24px;">
+            <div style="font-size:15px; font-weight:600; color:#111827; margin-bottom:16px;">Tom de voz</div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px;">
+              <div class="provider-card selected" style="padding:12px;" onclick="selectPersonaTone(this)">
+                <div style="font-size:13px; font-weight:600; color:#111827;">Corporativo</div>
+                <div style="font-size:12px; color:#6B7280; margin-top:2px;">Formal, sóbrio, consultivo</div>
+              </div>
+              <div class="provider-card" style="padding:12px;" onclick="selectPersonaTone(this)">
+                <div style="font-size:13px; font-weight:600; color:#111827;">Consultivo</div>
+                <div style="font-size:12px; color:#6B7280; margin-top:2px;">Próximo, orientador</div>
+              </div>
+              <div class="provider-card" style="padding:12px;" onclick="selectPersonaTone(this)">
+                <div style="font-size:13px; font-weight:600; color:#111827;">Acolhedor</div>
+                <div style="font-size:12px; color:#6B7280; margin-top:2px;">Caloroso, empático</div>
+              </div>
+              <div class="provider-card" style="padding:12px;" onclick="selectPersonaTone(this)">
+                <div style="font-size:13px; font-weight:600; color:#111827;">Descontraído</div>
+                <div style="font-size:12px; color:#6B7280; margin-top:2px;">Leve, informal</div>
+              </div>
+            </div>
+
+            <div style="margin-bottom:18px;">
+              <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                <label style="font-size:13px; font-weight:500; color:#374151;">Formalidade</label>
+                <span style="font-size:13px; font-weight:600; color:#111827;">Alta</span>
+              </div>
+              <input type="range" min="0" max="10" value="8" style="width:100%; accent-color:#C74446; cursor:pointer;">
+              <div style="display:flex; justify-content:space-between; margin-top:4px;">
+                <span style="font-size:11px; color:#9CA3AF;">Casual</span>
+                <span style="font-size:11px; color:#9CA3AF;">Corporativo</span>
+              </div>
+            </div>
+
+            <div style="margin-bottom:16px;">
+              <label style="display:block; font-size:13px; font-weight:500; color:#374151; margin-bottom:6px;">Tratamento</label>
+              <select style="width:100%; padding:9px 12px; border:1px solid #D1D5DB; border-radius:8px; font-size:14px; color:#111827; outline:none; box-sizing:border-box; font-family:inherit; background:white;">
+                <option selected>Você (padrão)</option>
+                <option>Sr./Sra. (formal)</option>
+              </select>
+            </div>
+
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:12px 0; border-top:1px solid #F3F4F6;">
+              <div>
+                <div style="font-size:13px; font-weight:500; color:#111827;">Uso de emojis</div>
+                <div style="font-size:12px; color:#6B7280; margin-top:2px;">Desligado para registro corporativo</div>
+              </div>
+              <div class="toggle-switch" data-on="false" onclick="toggleFeature(this)"><div class="toggle-circle"></div></div>
+            </div>
+          </div>
+        </div>
+      </div><!-- /tab identity -->
+
+      <!-- TAB: Diretrizes -->
+      <div data-tab-panel-group="persona-tabs" data-tab-panel="guidelines" style="display:none;">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+
+          <!-- Regras editáveis -->
+          <div style="background:white; border:1px solid #E5E7EB; border-radius:12px; padding:24px;">
+            <div style="font-size:15px; font-weight:600; color:#111827; margin-bottom:4px;">Regras de estilo (editáveis)</div>
+            <div style="font-size:12px; color:#6B7280; margin-bottom:18px;">Ajustes de comunicação específicos deste cliente.</div>
+
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:11px 0; border-bottom:1px solid #F3F4F6;">
+              <div style="font-size:13px; color:#111827;">Evitar gírias e informalidade</div>
+              <div class="toggle-switch on" data-on="true" onclick="toggleFeature(this)"><div class="toggle-circle"></div></div>
+            </div>
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:11px 0; border-bottom:1px solid #F3F4F6;">
+              <div style="font-size:13px; color:#111827;">Não usar jargão técnico com candidatos</div>
+              <div class="toggle-switch on" data-on="true" onclick="toggleFeature(this)"><div class="toggle-circle"></div></div>
+            </div>
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:11px 0; border-bottom:1px solid #F3F4F6;">
+              <div style="font-size:13px; color:#111827;">Respostas concisas por padrão</div>
+              <div class="toggle-switch on" data-on="true" onclick="toggleFeature(this)"><div class="toggle-circle"></div></div>
+            </div>
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:11px 0;">
+              <div style="font-size:13px; color:#111827;">Citar a marca do cliente nas saudações</div>
+              <div class="toggle-switch" data-on="false" onclick="toggleFeature(this)"><div class="toggle-circle"></div></div>
+            </div>
+
+            <button style="margin-top:16px; width:100%; padding:9px; border:1px dashed #D1D5DB; background:#F9FAFB; border-radius:8px; font-size:13px; color:#6B7280; cursor:pointer; font-family:inherit; display:flex; align-items:center; justify-content:center; gap:6px;">
+              <i data-lucide="plus" style="width:15px; height:15px;"></i> Adicionar regra personalizada
+            </button>
+          </div>
+
+          <!-- Invioláveis -->
+          <div style="background:white; border:1px solid #E5E7EB; border-radius:12px; padding:24px;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+              <i data-lucide="shield-check" style="width:17px; height:17px; color:#166534;"></i>
+              <div style="font-size:15px; font-weight:600; color:#111827;">Invioláveis de compliance</div>
+            </div>
+            <div style="font-size:12px; color:#6B7280; margin-bottom:18px;">Sempre ativos — não podem ser desligados por nenhum cliente.</div>
+
+            <div style="display:flex; align-items:flex-start; gap:10px; padding:11px 0; border-bottom:1px solid #F3F4F6;">
+              <i data-lucide="lock" style="width:15px; height:15px; color:#9CA3AF; flex-shrink:0; margin-top:2px;"></i>
+              <div>
+                <div style="font-size:13px; font-weight:500; color:#111827;">FairnessGuard (Regra dos 4/5)</div>
+                <div style="font-size:12px; color:#6B7280; margin-top:1px;">Bloqueia viés em decisões de contratação.</div>
+              </div>
+            </div>
+            <div style="display:flex; align-items:flex-start; gap:10px; padding:11px 0; border-bottom:1px solid #F3F4F6;">
+              <i data-lucide="lock" style="width:15px; height:15px; color:#9CA3AF; flex-shrink:0; margin-top:2px;"></i>
+              <div>
+                <div style="font-size:13px; font-weight:500; color:#111827;">LGPD — proteção de dados</div>
+                <div style="font-size:12px; color:#6B7280; margin-top:1px;">Sem PII em overrides; dados sensíveis com consentimento.</div>
+              </div>
+            </div>
+            <div style="display:flex; align-items:flex-start; gap:10px; padding:11px 0; border-bottom:1px solid #F3F4F6;">
+              <i data-lucide="lock" style="width:15px; height:15px; color:#9CA3AF; flex-shrink:0; margin-top:2px;"></i>
+              <div>
+                <div style="font-size:13px; font-weight:500; color:#111827;">Identidade protegida</div>
+                <div style="font-size:12px; color:#6B7280; margin-top:1px;">Não revela o modelo de IA; não confirma ação não executada.</div>
+              </div>
+            </div>
+            <div style="display:flex; align-items:flex-start; gap:10px; padding:11px 0;">
+              <i data-lucide="lock" style="width:15px; height:15px; color:#9CA3AF; flex-shrink:0; margin-top:2px;"></i>
+              <div>
+                <div style="font-size:13px; font-weight:500; color:#111827;">Português brasileiro + sem inventar dados</div>
+                <div style="font-size:12px; color:#6B7280; margin-top:1px;">Usa ferramentas para dados reais; nunca alucina números.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div><!-- /tab guidelines -->
+
+      <!-- TAB: Pré-visualização -->
+      <div data-tab-panel-group="persona-tabs" data-tab-panel="preview" style="display:none;">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+
+          <!-- Preview chat -->
+          <div style="background:white; border:1px solid #E5E7EB; border-radius:12px; padding:24px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
+              <div style="font-size:15px; font-weight:600; color:#111827;">Como a LIA responde</div>
+              <span style="background:rgba(199,68,70,0.08); color:#C74446; border-radius:99px; padding:3px 10px; font-size:12px; font-weight:600;">Tom: Corporativo</span>
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; margin-bottom:14px;">
+              <div style="background:#C74446; color:white; border-radius:12px 12px 2px 12px; padding:10px 14px; font-size:13px; max-width:80%;">Bom dia! Alguma novidade nas vagas?</div>
+            </div>
+
+            <div style="display:flex; gap:10px; margin-bottom:6px;">
+              <div style="width:30px; height:30px; background:#C74446; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                <i data-lucide="sparkles" style="width:15px; height:15px; color:white;"></i>
+              </div>
+              <div style="background:#F9FAFB; border:1px solid #E5E7EB; border-radius:12px 12px 12px 2px; padding:10px 14px; font-size:13px; color:#374151; max-width:85%; line-height:1.5;">Bom dia. Sim: a vaga de Engenheiro de Dados Sênior recebeu 3 novos candidatos ontem, e há 2 finalistas aguardando sua avaliação na de Product Manager. Recomendo priorizar a triagem dos finalistas hoje. Deseja que eu prepare um resumo comparativo?</div>
+            </div>
+
+            <button style="margin-top:18px; width:100%; padding:9px; border:1px solid #C74446; background:white; color:#C74446; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit;">Testar com esta configuração</button>
+          </div>
+
+          <!-- Antes / depois -->
+          <div style="background:white; border:1px solid #E5E7EB; border-radius:12px; padding:24px;">
+            <div style="font-size:15px; font-weight:600; color:#111827; margin-bottom:18px;">Padrão WeDO × este cliente</div>
+
+            <div style="margin-bottom:16px;">
+              <div style="font-size:11px; color:#9CA3AF; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:6px;">Padrão WeDO (acolhedor)</div>
+              <div style="background:#F9FAFB; border:1px solid #E5E7EB; border-radius:8px; padding:10px 12px; font-size:13px; color:#6B7280; line-height:1.5;">"Oi! 😊 Tudo certo? Deixa eu te contar as novidades das suas vagas..."</div>
+            </div>
+
+            <div>
+              <div style="font-size:11px; color:#C74446; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:6px;">iFood Talentos (corporativo)</div>
+              <div style="background:rgba(199,68,70,0.04); border:1px solid rgba(199,68,70,0.2); border-radius:8px; padding:10px 12px; font-size:13px; color:#374151; line-height:1.5;">"Bom dia. Sim: a vaga de Engenheiro de Dados Sênior recebeu 3 novos candidatos ontem..."</div>
+            </div>
+
+            <div style="display:flex; align-items:flex-start; gap:8px; margin-top:18px; background:rgba(96,190,209,0.06); border-radius:8px; padding:10px 12px;">
+              <i data-lucide="info" style="width:15px; height:15px; color:#0E7490; flex-shrink:0; margin-top:1px;"></i>
+              <div style="font-size:12px; color:#6B7280;">A configuração ajusta apenas tom e estilo. As capacidades, dados e compliance da LIA permanecem idênticos.</div>
+            </div>
+          </div>
+        </div>
+      </div><!-- /tab preview -->
+
+    </div><!-- /#screen-lia-persona -->
 
     <!-- ============================================================
          SCREEN: BILLING (WEDO-645)
