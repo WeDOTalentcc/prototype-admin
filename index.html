@@ -164,6 +164,10 @@
               <span class="nav-item-icon"><i data-lucide="sparkles"></i></span>
               <span class="nav-item-label">Persona da LIA</span>
             </li>
+            <li id="nav-wa-templates" class="nav-item" data-tooltip="WhatsApp &amp; Templates" onclick="showScreen('screen-whatsapp-templates')">
+              <span class="nav-item-icon"><i data-lucide="message-circle"></i></span>
+              <span class="nav-item-label">WhatsApp &amp; Templates</span>
+            </li>
           </ul>
         </div>
 
@@ -1708,10 +1712,11 @@
                 <div style="font-size:12px; color:#9CA3AF;">Comunicação com candidatos</div>
               </div>
             </div>
-            <div style="background:#F9FAFB; border-radius:8px; padding:10px 12px; margin-bottom:14px;">
-              <div style="font-size:12px; color:#9CA3AF; font-style:italic;">Não configurado — requer número WhatsApp Business</div>
+            <div style="background:rgba(37,211,102,0.06); border:1px solid rgba(37,211,102,0.25); border-radius:8px; padding:10px 12px; margin-bottom:14px;">
+              <div style="font-size:12px; font-weight:500; color:#166534; margin-bottom:2px;">Número compartilhado WeDOTalent</div>
+              <div style="font-size:12px; color:#6B7280;">+55 11 97250-1565 · 3 templates aprovados · 1 pendente</div>
             </div>
-            <button style="width:100%; padding:8px; border:1px solid #D1D5DB; background:white; border-radius:8px; font-size:13px; color:#374151; cursor:pointer; font-family:inherit;">Configurar</button>
+            <button onclick="showScreen('screen-whatsapp-templates')" style="width:100%; padding:8px; border:1px solid #D1D5DB; background:white; border-radius:8px; font-size:13px; color:#374151; cursor:pointer; font-family:inherit;" onmouseover="this.style.borderColor='#25D366';this.style.color='#166534';" onmouseout="this.style.borderColor='#D1D5DB';this.style.color='#374151';">Gerenciar Templates</button>
           </div>
 
           <div style="background:white; border:1px solid #E5E7EB; border-radius:12px; padding:20px;">
@@ -1735,6 +1740,201 @@
       </div><!-- /tab integrations -->
 
     </div><!-- /#screen-llm-config -->
+
+    <!-- ============================================================
+         SCREEN: WHATSAPP & TEMPLATES (por tenant) — WEDO-1038
+         Subtask da Story WEDO-1026 (Triagem WSI via WhatsApp).
+         Cadastro/submissão de templates Meta Business por cliente,
+         com estados de aprovação e config do número do canal.
+         ============================================================ -->
+    <div class="screen" id="screen-whatsapp-templates">
+      <div style="padding:24px 32px; max-width:1080px; margin:0 auto;">
+
+        <!-- Breadcrumb -->
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:20px; font-size:14px;">
+          <a href="#" onclick="showScreen('screen-client-detail'); return false;" style="color:#C74446; font-weight:500;">iFood Talentos</a>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          <span style="color:#374151; font-weight:500;">WhatsApp &amp; Templates</span>
+        </div>
+
+        <!-- Header -->
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:22px; flex-wrap:wrap; gap:12px;">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div style="width:42px; height:42px; background:#25D366; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i data-lucide="message-circle" style="width:22px;height:22px;color:white;"></i></div>
+            <div>
+              <h1 style="font-size:22px; font-weight:700; color:#111827; margin:0 0 4px;">WhatsApp &amp; Templates Meta</h1>
+              <p style="font-size:14px; color:#6B7280; margin:0;">Templates Meta Business e canal WhatsApp — iFood Talentos</p>
+            </div>
+          </div>
+          <div style="display:flex; gap:10px; align-items:center;">
+            <button onclick="openModal('wa-sync')" style="display:flex; align-items:center; gap:7px; padding:9px 14px; border:1px solid #D1D5DB; background:white; border-radius:8px; font-size:13px; font-weight:500; color:#374151; cursor:pointer; font-family:inherit;" onmouseover="this.style.borderColor='#25D366';this.style.color='#166534';" onmouseout="this.style.borderColor='#D1D5DB';this.style.color='#374151';"><i data-lucide="refresh-cw" style="width:14px;height:14px;"></i> Sincronizar com a Meta</button>
+            <button onclick="openModal('wa-template-new')" style="display:flex; align-items:center; gap:6px; padding:9px 16px; background:#C74446; color:white; border:none; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit;" onmouseover="this.style.background='#B23B3D'" onmouseout="this.style.background='#C74446'"><i data-lucide="plus" style="width:14px;height:14px;"></i> Novo Template</button>
+          </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs" style="margin-bottom:22px;">
+          <button class="tab-btn active" data-tab-group="wa-tabs" data-tab="templates" onclick="switchTab('wa-tabs','templates')">Templates</button>
+          <button class="tab-btn" data-tab-group="wa-tabs" data-tab="channel" onclick="switchTab('wa-tabs','channel')">Número &amp; Canal</button>
+        </div>
+
+        <!-- ============ TAB: TEMPLATES ============ -->
+        <div data-tab-panel-group="wa-tabs" data-tab-panel="templates" style="display:block;">
+
+          <!-- Aviso de degradação (DoD: rejeitado degrada com aviso) -->
+          <div style="display:flex; gap:12px; align-items:flex-start; background:#FEF2F2; border:1px solid #FECACA; border-radius:10px; padding:14px 16px; margin-bottom:20px;">
+            <i data-lucide="alert-triangle" style="width:18px;height:18px;color:#DC2626;flex-shrink:0;margin-top:1px;"></i>
+            <div style="flex:1; min-width:0;">
+              <div style="font-size:13px; font-weight:600; color:#991B1B; margin-bottom:2px;">Trilha de triagem WSI degradada</div>
+              <div style="font-size:12.5px; color:#7F1D1D; line-height:1.5;">O template <strong>evaluations</strong> foi <strong>rejeitado pela Meta</strong>. Enquanto não houver um template aprovado, os candidatos dessas vagas recebem um aviso automático e são direcionados à triagem por chat web — o fluxo não trava.</div>
+            </div>
+            <button onclick="openModal('wa-template-view')" style="align-self:center; padding:6px 12px; background:white; border:1px solid #FCA5A5; color:#991B1B; border-radius:7px; font-size:12px; font-weight:600; cursor:pointer; font-family:inherit; white-space:nowrap;">Ver motivo</button>
+          </div>
+
+          <!-- Resumo (contadores por status) -->
+          <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:18px;">
+            <div style="background:white; border:1px solid #E5E7EB; border-radius:10px; padding:14px 16px;"><div style="font-size:22px; font-weight:700; color:#166534;">3</div><div style="font-size:12px; color:#6B7280; margin-top:2px;">Aprovados</div></div>
+            <div style="background:white; border:1px solid #E5E7EB; border-radius:10px; padding:14px 16px;"><div style="font-size:22px; font-weight:700; color:#1E40AF;">1</div><div style="font-size:12px; color:#6B7280; margin-top:2px;">Pendentes</div></div>
+            <div style="background:white; border:1px solid #E5E7EB; border-radius:10px; padding:14px 16px;"><div style="font-size:22px; font-weight:700; color:#991B1B;">1</div><div style="font-size:12px; color:#6B7280; margin-top:2px;">Rejeitados</div></div>
+            <div style="background:white; border:1px solid #E5E7EB; border-radius:10px; padding:14px 16px;"><div style="font-size:22px; font-weight:700; color:#854D0E;">1</div><div style="font-size:12px; color:#6B7280; margin-top:2px;">Rascunhos</div></div>
+          </div>
+
+          <!-- Tabela de templates -->
+          <div style="background:white; border:1px solid #E5E7EB; border-radius:12px; overflow:hidden;">
+            <table style="width:100%; border-collapse:collapse;">
+              <thead><tr style="background:#F9FAFB; border-bottom:1px solid #E5E7EB;">
+                <th style="padding:10px 20px; text-align:left; font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em;">Template</th>
+                <th style="padding:10px 12px; text-align:left; font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em;">Categoria</th>
+                <th style="padding:10px 12px; text-align:center; font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em;">Idioma</th>
+                <th style="padding:10px 12px; text-align:center; font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em;">Status Meta</th>
+                <th style="padding:10px 12px; text-align:right; font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em;">Última sincronização</th>
+                <th style="padding:10px 20px; text-align:center; font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em;">Ações</th>
+              </tr></thead>
+              <tbody>
+                <!-- triagem_wsi_inicio — Aprovado -->
+                <tr style="border-top:1px solid #F3F4F6;">
+                  <td style="padding:14px 20px;"><div style="font-size:13px; font-weight:600; color:#111827; font-family:monospace;">triagem_wsi_inicio</div><div style="font-size:12px; color:#6B7280; margin-top:2px;">Dispara a triagem WSI por WhatsApp</div></td>
+                  <td style="padding:14px 12px;"><span style="background:#EEF2FF; color:#3730A3; font-size:11px; font-weight:600; padding:2px 8px; border-radius:99px;">Utility</span></td>
+                  <td style="padding:14px 12px; text-align:center; font-size:12px; color:#374151;">pt_BR</td>
+                  <td style="padding:14px 12px; text-align:center;"><span style="background:#DCFCE7; color:#166534; font-size:11px; font-weight:600; padding:2px 8px; border-radius:99px;">Aprovado</span></td>
+                  <td style="padding:14px 12px; text-align:right; font-size:12px; color:#6B7280; white-space:nowrap;">há 2 horas</td>
+                  <td style="padding:14px 20px;"><div style="display:flex; gap:6px; justify-content:center;"><button onclick="openModal('wa-template-view')" style="padding:5px 10px; border:1px solid #D1D5DB; background:white; border-radius:6px; font-size:12px; color:#374151; cursor:pointer; font-family:inherit;">Ver</button><button onclick="openModal('wa-template-edit')" style="padding:5px 10px; border:1px solid #D1D5DB; background:white; border-radius:6px; font-size:12px; color:#374151; cursor:pointer; font-family:inherit;">Editar</button></div></td>
+                </tr>
+                <!-- confirmacao_entrevista — Aprovado -->
+                <tr style="border-top:1px solid #F3F4F6; background:#F9FAFB;">
+                  <td style="padding:14px 20px;"><div style="font-size:13px; font-weight:600; color:#111827; font-family:monospace;">confirmacao_entrevista</div><div style="font-size:12px; color:#6B7280; margin-top:2px;">Confirmação de entrevista agendada</div></td>
+                  <td style="padding:14px 12px;"><span style="background:#EEF2FF; color:#3730A3; font-size:11px; font-weight:600; padding:2px 8px; border-radius:99px;">Utility</span></td>
+                  <td style="padding:14px 12px; text-align:center; font-size:12px; color:#374151;">pt_BR</td>
+                  <td style="padding:14px 12px; text-align:center;"><span style="background:#DCFCE7; color:#166534; font-size:11px; font-weight:600; padding:2px 8px; border-radius:99px;">Aprovado</span></td>
+                  <td style="padding:14px 12px; text-align:right; font-size:12px; color:#6B7280; white-space:nowrap;">há 2 horas</td>
+                  <td style="padding:14px 20px;"><div style="display:flex; gap:6px; justify-content:center;"><button onclick="openModal('wa-template-view')" style="padding:5px 10px; border:1px solid #D1D5DB; background:white; border-radius:6px; font-size:12px; color:#374151; cursor:pointer; font-family:inherit;">Ver</button><button onclick="openModal('wa-template-edit')" style="padding:5px 10px; border:1px solid #D1D5DB; background:white; border-radius:6px; font-size:12px; color:#374151; cursor:pointer; font-family:inherit;">Editar</button></div></td>
+                </tr>
+                <!-- entrevista — Aprovado -->
+                <tr style="border-top:1px solid #F3F4F6;">
+                  <td style="padding:14px 20px;"><div style="font-size:13px; font-weight:600; color:#111827; font-family:monospace;">entrevista</div><div style="font-size:12px; color:#6B7280; margin-top:2px;">Convite para entrevista</div></td>
+                  <td style="padding:14px 12px;"><span style="background:#EEF2FF; color:#3730A3; font-size:11px; font-weight:600; padding:2px 8px; border-radius:99px;">Utility</span></td>
+                  <td style="padding:14px 12px; text-align:center; font-size:12px; color:#374151;">pt_BR</td>
+                  <td style="padding:14px 12px; text-align:center;"><span style="background:#DCFCE7; color:#166534; font-size:11px; font-weight:600; padding:2px 8px; border-radius:99px;">Aprovado</span></td>
+                  <td style="padding:14px 12px; text-align:right; font-size:12px; color:#6B7280; white-space:nowrap;">há 2 horas</td>
+                  <td style="padding:14px 20px;"><div style="display:flex; gap:6px; justify-content:center;"><button onclick="openModal('wa-template-view')" style="padding:5px 10px; border:1px solid #D1D5DB; background:white; border-radius:6px; font-size:12px; color:#374151; cursor:pointer; font-family:inherit;">Ver</button><button onclick="openModal('wa-template-edit')" style="padding:5px 10px; border:1px solid #D1D5DB; background:white; border-radius:6px; font-size:12px; color:#374151; cursor:pointer; font-family:inherit;">Editar</button></div></td>
+                </tr>
+                <!-- triagem_wsi_lembrete — Pendente -->
+                <tr style="border-top:1px solid #F3F4F6; background:#F9FAFB;">
+                  <td style="padding:14px 20px;"><div style="font-size:13px; font-weight:600; color:#111827; font-family:monospace;">triagem_wsi_lembrete</div><div style="font-size:12px; color:#6B7280; margin-top:2px;">Lembrete de triagem não concluída</div></td>
+                  <td style="padding:14px 12px;"><span style="background:#EEF2FF; color:#3730A3; font-size:11px; font-weight:600; padding:2px 8px; border-radius:99px;">Utility</span></td>
+                  <td style="padding:14px 12px; text-align:center; font-size:12px; color:#374151;">pt_BR</td>
+                  <td style="padding:14px 12px; text-align:center;"><span style="background:#DBEAFE; color:#1E40AF; font-size:11px; font-weight:600; padding:2px 8px; border-radius:99px;">Pendente</span></td>
+                  <td style="padding:14px 12px; text-align:right; font-size:12px; color:#6B7280; white-space:nowrap;">há 2 horas</td>
+                  <td style="padding:14px 20px;"><div style="display:flex; gap:6px; justify-content:center;"><button onclick="openModal('wa-template-view')" style="padding:5px 10px; border:1px solid #D1D5DB; background:white; border-radius:6px; font-size:12px; color:#374151; cursor:pointer; font-family:inherit;">Ver</button><button style="padding:5px 10px; border:1px solid #D1D5DB; background:#F9FAFB; border-radius:6px; font-size:12px; color:#9CA3AF; cursor:not-allowed; font-family:inherit;" disabled title="Aguardando decisão da Meta">Aguardando Meta</button></div></td>
+                </tr>
+                <!-- evaluations — Rejeitado -->
+                <tr style="border-top:1px solid #F3F4F6;">
+                  <td style="padding:14px 20px;"><div style="font-size:13px; font-weight:600; color:#111827; font-family:monospace;">evaluations</div><div style="font-size:12px; color:#6B7280; margin-top:2px;">Início de avaliação/triagem (legado)</div></td>
+                  <td style="padding:14px 12px;"><span style="background:#FCE7F3; color:#9D174D; font-size:11px; font-weight:600; padding:2px 8px; border-radius:99px;">Marketing</span></td>
+                  <td style="padding:14px 12px; text-align:center; font-size:12px; color:#374151;">pt_BR</td>
+                  <td style="padding:14px 12px; text-align:center;"><span style="background:#FEE2E2; color:#991B1B; font-size:11px; font-weight:600; padding:2px 8px; border-radius:99px;">Rejeitado</span></td>
+                  <td style="padding:14px 12px; text-align:right; font-size:12px; color:#6B7280; white-space:nowrap;">há 2 horas</td>
+                  <td style="padding:14px 20px;"><div style="display:flex; gap:6px; justify-content:center;"><button onclick="openModal('wa-template-view')" style="padding:5px 10px; border:1px solid #D1D5DB; background:white; border-radius:6px; font-size:12px; color:#374151; cursor:pointer; font-family:inherit;">Ver motivo</button><button onclick="openModal('wa-submit-meta')" style="padding:5px 10px; border:none; background:#C74446; border-radius:6px; font-size:12px; color:white; font-weight:600; cursor:pointer; font-family:inherit;">Corrigir &amp; reenviar</button></div></td>
+                </tr>
+                <!-- cadence_followup — Rascunho -->
+                <tr style="border-top:1px solid #F3F4F6; background:#F9FAFB;">
+                  <td style="padding:14px 20px;"><div style="font-size:13px; font-weight:600; color:#111827; font-family:monospace;">cadence_followup</div><div style="font-size:12px; color:#6B7280; margin-top:2px;">Follow-up de cadência (ainda não submetido)</div></td>
+                  <td style="padding:14px 12px;"><span style="background:#FCE7F3; color:#9D174D; font-size:11px; font-weight:600; padding:2px 8px; border-radius:99px;">Marketing</span></td>
+                  <td style="padding:14px 12px; text-align:center; font-size:12px; color:#374151;">pt_BR</td>
+                  <td style="padding:14px 12px; text-align:center;"><span style="background:#FEF9C3; color:#854D0E; font-size:11px; font-weight:600; padding:2px 8px; border-radius:99px;">Rascunho</span></td>
+                  <td style="padding:14px 12px; text-align:right; font-size:12px; color:#6B7280; white-space:nowrap;">—</td>
+                  <td style="padding:14px 20px;"><div style="display:flex; gap:6px; justify-content:center;"><button onclick="openModal('wa-template-edit')" style="padding:5px 10px; border:1px solid #D1D5DB; background:white; border-radius:6px; font-size:12px; color:#374151; cursor:pointer; font-family:inherit;">Editar</button><button onclick="openModal('wa-submit-meta')" style="padding:5px 10px; border:none; background:#C74446; border-radius:6px; font-size:12px; color:white; font-weight:600; cursor:pointer; font-family:inherit;">Submeter à Meta</button></div></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Nota de implementação p/ o dev -->
+          <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:12px; padding:18px 20px; margin-top:22px;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;"><i data-lucide="code-2" style="width:16px;height:16px;color:#475569;"></i><span style="font-size:13px; font-weight:700; color:#334155;">Comportamento esperado (referência de implementação — WEDO-1038)</span></div>
+            <ul style="margin:0; padding-left:18px; display:flex; flex-direction:column; gap:7px; font-size:12.5px; color:#475569; line-height:1.55;">
+              <li><strong>Novo Template / Editar</strong> → grava rascunho em <code style="background:#EEF2F7; padding:1px 5px; border-radius:4px;">whatsapp_templates</code> no schema do tenant (nome/slug Meta, categoria Utility/Marketing, idioma, corpo com variáveis <code style="background:#EEF2F7; padding:1px 5px; border-radius:4px;">{{1}}..{{n}}</code>, botões). Isolamento por tenant validado por spec (sem vazamento de config entre schemas).</li>
+              <li><strong>Submeter à Meta</strong> → <code style="background:#EEF2F7; padding:1px 5px; border-radius:4px;">POST /{waba_id}/message_templates</code> (Graph API). Status local vira <em>Pendente</em>.</li>
+              <li><strong>Sincronizar com a Meta</strong> → puxa o status atual (Aprovado/Rejeitado/Pendente). O webhook <code style="background:#EEF2F7; padding:1px 5px; border-radius:4px;">message_template_status_update</code> também deve atualizar o registro automaticamente (hoje não há tratamento — parte desta subtask).</li>
+              <li><strong>Rejeitado / sem template aprovado</strong> → a triagem WSI por WhatsApp <strong>degrada</strong>: envia aviso e direciona ao chat web (não trava). É a Definição de Pronto do card.</li>
+              <li><strong>Número</strong> → hoje ENV global compartilhado (<code style="background:#EEF2F7; padding:1px 5px; border-radius:4px;">META_WHATSAPP_PHONE_NUMBER_ID</code>). A config por tenant reusa <code style="background:#EEF2F7; padding:1px 5px; border-radius:4px;">WhatsappConfiguration</code>/<code style="background:#EEF2F7; padding:1px 5px; border-radius:4px;">WhatsappTenantMapping</code>. Número dedicado + aprovação self-service = Fase 2 (aba “Número &amp; Canal”).</li>
+            </ul>
+          </div>
+
+        </div><!-- /tab templates -->
+
+        <!-- ============ TAB: NÚMERO & CANAL ============ -->
+        <div data-tab-panel-group="wa-tabs" data-tab-panel="channel" style="display:none;">
+
+          <!-- Escolha do número -->
+          <div style="background:white; border:1px solid #E5E7EB; border-radius:12px; padding:22px 24px; margin-bottom:18px;">
+            <div style="font-size:15px; font-weight:700; color:#111827; margin-bottom:4px;">Número do canal WhatsApp</div>
+            <p style="font-size:13px; color:#6B7280; margin:0 0 18px;">Define de qual número as mensagens deste cliente são enviadas e recebidas.</p>
+
+            <!-- Opção 1: número compartilhado WeDO (ativo) -->
+            <label style="display:flex; gap:14px; align-items:flex-start; border:2px solid #C74446; background:rgba(199,68,70,0.03); border-radius:10px; padding:16px 18px; margin-bottom:12px; cursor:pointer;">
+              <input type="radio" name="wa-number-mode" checked style="margin-top:3px; width:16px; height:16px; accent-color:#C74446;">
+              <div style="flex:1;">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;"><span style="font-size:14px; font-weight:600; color:#111827;">Número compartilhado WeDOTalent</span><span style="background:#DCFCE7; color:#166534; font-size:10px; font-weight:700; padding:2px 8px; border-radius:99px; text-transform:uppercase; letter-spacing:0.04em;">Atual</span></div>
+                <div style="font-size:13px; color:#6B7280; line-height:1.5;">Todos os clientes usam o número e a WABA da WeDOTalent. Os templates deste cliente são cadastrados e aprovados aqui pelo time WeDOTalent. Ideal para começar sem burocracia de verificação Meta por cliente.</div>
+                <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:14px;">
+                  <div style="background:#F9FAFB; border-radius:8px; padding:10px 12px;"><div style="font-size:11px; color:#9CA3AF; margin-bottom:2px;">Número</div><div style="font-size:13px; font-weight:600; color:#111827;">+55 11 97250-1565</div></div>
+                  <div style="background:#F9FAFB; border-radius:8px; padding:10px 12px;"><div style="font-size:11px; color:#9CA3AF; margin-bottom:2px;">WABA</div><div style="font-size:13px; font-weight:600; color:#111827;">WeDOTalent PRD</div></div>
+                  <div style="background:#F9FAFB; border-radius:8px; padding:10px 12px;"><div style="font-size:11px; color:#9CA3AF; margin-bottom:2px;">Phone Number ID</div><div style="font-size:13px; font-weight:600; color:#111827; font-family:monospace;">7446••••71182</div></div>
+                </div>
+              </div>
+            </label>
+
+            <!-- Opção 2: número dedicado (Em breve) -->
+            <label style="display:flex; gap:14px; align-items:flex-start; border:1px dashed #D1D5DB; background:#FAFAFA; border-radius:10px; padding:16px 18px; cursor:not-allowed; opacity:0.9;">
+              <input type="radio" name="wa-number-mode" disabled style="margin-top:3px; width:16px; height:16px;">
+              <div style="flex:1;">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;"><span style="font-size:14px; font-weight:600; color:#374151;">Número dedicado do cliente (BYON)</span><span style="background:#FEF3C7; color:#92400E; font-size:10px; font-weight:700; padding:2px 8px; border-radius:99px; text-transform:uppercase; letter-spacing:0.04em;">Em breve · Fase 2</span></div>
+                <div style="font-size:13px; color:#6B7280; line-height:1.5;">O cliente “aluga” um número dedicado (modelo estilo Twilio) com brand próprio e WABA própria, conectado via Embedded Signup. Nesse modelo a <strong>aprovação de template vira self-service</strong>: o cliente submete os próprios templates pelo painel LIA (ai-ui).</div>
+                <button onclick="openModal('wa-byon')" style="margin-top:12px; padding:7px 14px; border:1px solid #D1D5DB; background:white; border-radius:8px; font-size:12px; font-weight:500; color:#374151; cursor:pointer; font-family:inherit;">Ver como vai funcionar</button>
+              </div>
+            </label>
+          </div>
+
+          <!-- Roadmap de fases -->
+          <div style="background:white; border:1px solid #E5E7EB; border-radius:12px; padding:22px 24px;">
+            <div style="font-size:15px; font-weight:700; color:#111827; margin-bottom:16px;">Evolução do modelo</div>
+            <div style="display:flex; gap:16px;">
+              <div style="flex:1; border:1px solid #BBF7D0; background:rgba(93,164,122,0.05); border-radius:10px; padding:16px;">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;"><span style="width:22px;height:22px;border-radius:50%;background:#166534;color:white;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;">1</span><span style="font-size:13px; font-weight:700; color:#166534;">Agora — Número WeDO compartilhado</span></div>
+                <div style="font-size:12.5px; color:#4B5563; line-height:1.55;">Número único WeDOTalent para todos os clientes. Templates por tenant, aprovados pelo time WeDOTalent neste painel. Inbound roteado por <code style="background:#EEF2F7; padding:1px 5px; border-radius:4px;">WhatsappTenantMapping</code> (telefone → tenant).</div>
+              </div>
+              <div style="flex:1; border:1px dashed #D1D5DB; background:#FAFAFA; border-radius:10px; padding:16px;">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;"><span style="width:22px;height:22px;border-radius:50%;background:#9CA3AF;color:white;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;">2</span><span style="font-size:13px; font-weight:700; color:#374151;">Depois — Número dedicado + self-service</span></div>
+                <div style="font-size:12.5px; color:#6B7280; line-height:1.55;">Cliente aluga número próprio (Embedded Signup / WeDO como Tech Provider), com brand e WABA próprios. Submissão e aprovação de templates viram self-service no painel LIA. Credenciais (<code style="background:#EEF2F7; padding:1px 5px; border-radius:4px;">phone_number_id</code>/<code style="background:#EEF2F7; padding:1px 5px; border-radius:4px;">waba_id</code>/token) passam a ser por tenant.</div>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /tab channel -->
+
+      </div>
+    </div><!-- /#screen-whatsapp-templates -->
 
     <!-- ============================================================
          SCREEN: PERSONA DA LIA (WEDO-1385)
@@ -3479,7 +3679,7 @@
               <span style="background:#DCFCE7; color:#166534; font-size:11px; font-weight:600; padding:3px 8px; border-radius:99px;">Conectado</span>
             </div>
             <div style="font-size:12px; color:#6B7280; margin-bottom:12px;">Mensagens este mês: <strong style="color:#374151;">4.218</strong> · Limite: ilimitado</div>
-            <button style="width:100%; padding:8px; border:1px solid #D1D5DB; background:white; border-radius:7px; font-size:12px; color:#374151; cursor:pointer; font-family:inherit;">Gerenciar</button>
+            <button onclick="showScreen('screen-whatsapp-templates')" style="width:100%; padding:8px; border:1px solid #D1D5DB; background:white; border-radius:7px; font-size:12px; color:#374151; cursor:pointer; font-family:inherit;">Gerenciar Templates por Cliente</button>
           </div>
           <div style="background:white; border:1px solid #E5E7EB; border-radius:12px; padding:20px;">
             <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
@@ -5250,6 +5450,149 @@ Este link expira em 7 dias.</textarea>
         </div>
       </div>
     </div><!-- /#overlay-new-email-template -->
+
+    <!-- ===== Modais WhatsApp/Templates (WEDO-1038) ===== -->
+
+    <!-- Modal: Novo Template WhatsApp -->
+    <div class="modal-overlay" id="overlay-wa-template-new" onclick="handleOverlayClick(event)">
+      <div class="modal" onclick="event.stopPropagation()" style="width:660px; max-width:95vw; max-height:90vh; overflow-y:auto; border-radius:16px; padding:28px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+          <div style="font-size:18px; font-weight:700; color:#111827;">Novo Template WhatsApp</div>
+          <button onclick="closeModal()" style="background:transparent; border:none; cursor:pointer; padding:6px; color:#6B7280; border-radius:6px;" onmouseover="this.style.background='#F3F4F6'" onmouseout="this.style.background='transparent'"><i data-lucide="x" style="width:20px;height:20px;"></i></button>
+        </div>
+        <p style="font-size:12.5px; color:#6B7280; margin:0 0 20px;">Cadastrado no schema do cliente <strong>iFood Talentos</strong>. Ao submeter, é enviado à Meta para aprovação.</p>
+        <div style="display:flex; flex-direction:column; gap:14px; margin-bottom:20px;">
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+            <div><label style="display:block; font-size:13px; font-weight:500; color:#374151; margin-bottom:6px;">Nome / slug Meta <span style="color:#C74446;">*</span></label><input type="text" placeholder="ex: triagem_wsi_inicio" style="width:100%; border:1px solid #D1D5DB; border-radius:8px; padding:10px 12px; font-size:14px; color:#111827; outline:none; box-sizing:border-box; font-family:monospace;"></div>
+            <div><label style="display:block; font-size:13px; font-weight:500; color:#374151; margin-bottom:6px;">Idioma <span style="color:#C74446;">*</span></label><select style="width:100%; border:1px solid #D1D5DB; border-radius:8px; padding:10px 12px; font-size:14px; color:#111827; outline:none; box-sizing:border-box; font-family:inherit; background:white;"><option>pt_BR</option><option>en_US</option><option>es_ES</option></select></div>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+            <div><label style="display:block; font-size:13px; font-weight:500; color:#374151; margin-bottom:6px;">Categoria Meta <span style="color:#C74446;">*</span></label><select style="width:100%; border:1px solid #D1D5DB; border-radius:8px; padding:10px 12px; font-size:14px; color:#111827; outline:none; box-sizing:border-box; font-family:inherit; background:white;"><option>Utility</option><option>Marketing</option><option>Authentication</option></select></div>
+            <div><label style="display:block; font-size:13px; font-weight:500; color:#374151; margin-bottom:6px;">Vincular ao fluxo</label><select style="width:100%; border:1px solid #D1D5DB; border-radius:8px; padding:10px 12px; font-size:14px; color:#111827; outline:none; box-sizing:border-box; font-family:inherit; background:white;"><option>Triagem WSI (início)</option><option>Triagem WSI (lembrete)</option><option>Convite de entrevista</option><option>Confirmação de entrevista</option><option>Cadência / follow-up</option><option>Nenhum</option></select></div>
+          </div>
+          <div><label style="display:block; font-size:13px; font-weight:500; color:#374151; margin-bottom:6px;">Corpo do template <span style="font-size:11px; font-weight:400; color:#9CA3AF;">Use variáveis posicionais {{1}}, {{2}}, ...</span></label><textarea rows="5" placeholder="Olá {{1}}! Vamos iniciar sua triagem para a vaga {{2}}. Responda esta mensagem para começar." style="width:100%; border:1px solid #D1D5DB; border-radius:8px; padding:10px 12px; font-size:13px; color:#374151; outline:none; box-sizing:border-box; font-family:inherit; resize:vertical; line-height:1.5;"></textarea></div>
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:10px;">
+          <button onclick="closeModal()" style="padding:9px 20px; border:1px solid #D1D5DB; background:white; color:#374151; border-radius:8px; font-size:14px; font-weight:500; cursor:pointer; font-family:inherit;">Salvar rascunho</button>
+          <button onclick="openModal('wa-submit-meta')" style="padding:9px 20px; background:#C74446; color:white; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; font-family:inherit;" onmouseover="this.style.background='#B23B3D'" onmouseout="this.style.background='#C74446'">Salvar &amp; submeter à Meta</button>
+        </div>
+      </div>
+    </div><!-- /#overlay-wa-template-new -->
+
+    <!-- Modal: Editar Template WhatsApp -->
+    <div class="modal-overlay" id="overlay-wa-template-edit" onclick="handleOverlayClick(event)">
+      <div class="modal" onclick="event.stopPropagation()" style="width:660px; max-width:95vw; max-height:90vh; overflow-y:auto; border-radius:16px; padding:28px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;">
+          <div style="font-size:18px; font-weight:700; color:#111827;">Editar Template — <span style="font-family:monospace;">triagem_wsi_inicio</span></div>
+          <button onclick="closeModal()" style="background:transparent; border:none; cursor:pointer; padding:6px; color:#6B7280; border-radius:6px;" onmouseover="this.style.background='#F3F4F6'" onmouseout="this.style.background='transparent'"><i data-lucide="x" style="width:20px;height:20px;"></i></button>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px; background:#FEF9C3; border:1px solid #FDE68A; border-radius:8px; padding:10px 14px; margin-bottom:18px;">
+          <i data-lucide="info" style="width:15px;height:15px;color:#854D0E;flex-shrink:0;"></i>
+          <span style="font-size:12.5px; color:#854D0E; line-height:1.4;">Editar um template aprovado exige <strong>nova submissão à Meta</strong> — ele volta ao estado Pendente até ser reaprovado.</span>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:14px; margin-bottom:20px;">
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+            <div><label style="display:block; font-size:13px; font-weight:500; color:#374151; margin-bottom:6px;">Categoria Meta</label><select style="width:100%; border:1px solid #D1D5DB; border-radius:8px; padding:10px 12px; font-size:14px; color:#111827; outline:none; box-sizing:border-box; font-family:inherit; background:white;"><option>Utility</option><option>Marketing</option></select></div>
+            <div><label style="display:block; font-size:13px; font-weight:500; color:#374151; margin-bottom:6px;">Idioma</label><input type="text" value="pt_BR" style="width:100%; border:1px solid #D1D5DB; border-radius:8px; padding:10px 12px; font-size:14px; color:#111827; outline:none; box-sizing:border-box; font-family:monospace;"></div>
+          </div>
+          <div><label style="display:block; font-size:13px; font-weight:500; color:#374151; margin-bottom:6px;">Corpo do template</label><textarea rows="5" style="width:100%; border:1px solid #D1D5DB; border-radius:8px; padding:10px 12px; font-size:13px; color:#374151; outline:none; box-sizing:border-box; font-family:inherit; resize:vertical; line-height:1.5;">Olá {{1}}! Vamos iniciar sua triagem para a vaga {{2}}. Responda esta mensagem para começar quando quiser.</textarea></div>
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:10px;">
+          <button onclick="closeModal()" style="padding:9px 20px; border:1px solid #D1D5DB; background:white; color:#374151; border-radius:8px; font-size:14px; font-weight:500; cursor:pointer; font-family:inherit;">Cancelar</button>
+          <button onclick="openModal('wa-submit-meta')" style="padding:9px 20px; background:#C74446; color:white; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; font-family:inherit;" onmouseover="this.style.background='#B23B3D'" onmouseout="this.style.background='#C74446'">Salvar &amp; reenviar à Meta</button>
+        </div>
+      </div>
+    </div><!-- /#overlay-wa-template-edit -->
+
+    <!-- Modal: Ver Template + status de aprovação -->
+    <div class="modal-overlay" id="overlay-wa-template-view" onclick="handleOverlayClick(event)">
+      <div class="modal" onclick="event.stopPropagation()" style="width:600px; max-width:95vw; max-height:90vh; overflow-y:auto; border-radius:16px; padding:28px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+          <div style="font-size:18px; font-weight:700; color:#111827; font-family:monospace;">evaluations</div>
+          <button onclick="closeModal()" style="background:transparent; border:none; cursor:pointer; padding:6px; color:#6B7280; border-radius:6px;" onmouseover="this.style.background='#F3F4F6'" onmouseout="this.style.background='transparent'"><i data-lucide="x" style="width:20px;height:20px;"></i></button>
+        </div>
+        <div style="display:flex; gap:8px; margin-bottom:20px;"><span style="background:#FEE2E2; color:#991B1B; font-size:11px; font-weight:600; padding:2px 10px; border-radius:99px;">Rejeitado</span><span style="background:#FCE7F3; color:#9D174D; font-size:11px; font-weight:600; padding:2px 10px; border-radius:99px;">Marketing</span><span style="background:#F3F4F6; color:#374151; font-size:11px; font-weight:600; padding:2px 10px; border-radius:99px;">pt_BR</span></div>
+
+        <!-- Motivo da rejeição -->
+        <div style="background:#FEF2F2; border:1px solid #FECACA; border-radius:10px; padding:14px 16px; margin-bottom:18px;">
+          <div style="font-size:12px; font-weight:700; color:#991B1B; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:6px;">Motivo da rejeição (Meta)</div>
+          <div style="font-size:13px; color:#7F1D1D; line-height:1.5;">Categoria incorreta: conteúdo é transacional mas foi submetido como <strong>Marketing</strong>. Recategorize como <strong>Utility</strong> e remova a variável promocional final antes de reenviar.</div>
+        </div>
+
+        <!-- Preview do corpo -->
+        <div style="margin-bottom:18px;">
+          <div style="font-size:12px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:8px;">Corpo</div>
+          <div style="background:#ECFDF5; border:1px solid #A7F3D0; border-radius:12px; border-top-left-radius:2px; padding:12px 14px; font-size:13px; color:#111827; line-height:1.5; max-width:80%;">Olá {{1}}! Tudo bem? Sua avaliação para a vaga {{2}} já pode começar. {{3}}</div>
+        </div>
+
+        <!-- Timeline de aprovação -->
+        <div style="margin-bottom:22px;">
+          <div style="font-size:12px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:12px;">Histórico de aprovação</div>
+          <div style="display:flex; flex-direction:column; gap:12px;">
+            <div style="display:flex; gap:10px; align-items:flex-start;"><span style="width:9px;height:9px;border-radius:50%;background:#DC2626;margin-top:4px;flex-shrink:0;"></span><div><div style="font-size:13px; color:#111827; font-weight:500;">Rejeitado pela Meta</div><div style="font-size:12px; color:#9CA3AF;">Hoje, 09:12 · via webhook message_template_status_update</div></div></div>
+            <div style="display:flex; gap:10px; align-items:flex-start;"><span style="width:9px;height:9px;border-radius:50%;background:#1E40AF;margin-top:4px;flex-shrink:0;"></span><div><div style="font-size:13px; color:#111827; font-weight:500;">Submetido à Meta</div><div style="font-size:12px; color:#9CA3AF;">Ontem, 17:40 · por Rodrigo Alfieri</div></div></div>
+            <div style="display:flex; gap:10px; align-items:flex-start;"><span style="width:9px;height:9px;border-radius:50%;background:#9CA3AF;margin-top:4px;flex-shrink:0;"></span><div><div style="font-size:13px; color:#111827; font-weight:500;">Rascunho criado</div><div style="font-size:12px; color:#9CA3AF;">Ontem, 17:31</div></div></div>
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:10px;">
+          <button onclick="closeModal()" style="padding:9px 20px; border:1px solid #D1D5DB; background:white; color:#374151; border-radius:8px; font-size:14px; font-weight:500; cursor:pointer; font-family:inherit;">Fechar</button>
+          <button onclick="openModal('wa-template-edit')" style="padding:9px 20px; background:#C74446; color:white; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; font-family:inherit;" onmouseover="this.style.background='#B23B3D'" onmouseout="this.style.background='#C74446'">Corrigir &amp; reenviar</button>
+        </div>
+      </div>
+    </div><!-- /#overlay-wa-template-view -->
+
+    <!-- Modal: Confirmar submissão à Meta -->
+    <div class="modal-overlay" id="overlay-wa-submit-meta" style="background:rgba(0,0,0,0.5);" onclick="handleOverlayClick(event)">
+      <div class="modal" onclick="event.stopPropagation()" style="width:460px; max-width:95vw; border-radius:16px; padding:26px; text-align:center;">
+        <div style="width:52px; height:52px; border-radius:50%; background:rgba(37,211,102,0.12); display:flex; align-items:center; justify-content:center; margin:0 auto 16px;"><i data-lucide="send" style="width:24px;height:24px;color:#166534;"></i></div>
+        <div style="font-size:17px; font-weight:700; color:#111827; margin-bottom:8px;">Submeter template à Meta?</div>
+        <p style="font-size:13px; color:#6B7280; line-height:1.55; margin:0 0 22px;">O template será enviado para revisão da Meta Business (<code style="background:#F3F4F6; padding:1px 5px; border-radius:4px;">POST /message_templates</code>). A aprovação pode levar de minutos a 24h. Enquanto isso o status fica <strong>Pendente</strong> e o fluxo vinculado degrada com aviso.</p>
+        <div style="display:flex; justify-content:center; gap:10px;">
+          <button onclick="closeModal()" style="padding:9px 20px; border:1px solid #D1D5DB; background:white; color:#374151; border-radius:8px; font-size:14px; font-weight:500; cursor:pointer; font-family:inherit;">Cancelar</button>
+          <button onclick="closeModal(); showScreen('screen-whatsapp-templates');" style="padding:9px 22px; background:#C74446; color:white; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; font-family:inherit;" onmouseover="this.style.background='#B23B3D'" onmouseout="this.style.background='#C74446'">Submeter</button>
+        </div>
+      </div>
+    </div><!-- /#overlay-wa-submit-meta -->
+
+    <!-- Modal: Sincronizar com a Meta -->
+    <div class="modal-overlay" id="overlay-wa-sync" style="background:rgba(0,0,0,0.5);" onclick="handleOverlayClick(event)">
+      <div class="modal" onclick="event.stopPropagation()" style="width:460px; max-width:95vw; border-radius:16px; padding:26px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+          <div style="font-size:17px; font-weight:700; color:#111827;">Sincronizar status com a Meta</div>
+          <button onclick="closeModal()" style="background:transparent; border:none; cursor:pointer; padding:6px; color:#6B7280; border-radius:6px;" onmouseover="this.style.background='#F3F4F6'" onmouseout="this.style.background='transparent'"><i data-lucide="x" style="width:20px;height:20px;"></i></button>
+        </div>
+        <p style="font-size:13px; color:#6B7280; line-height:1.55; margin:0 0 16px;">Puxa o status atual de todos os templates da WABA para este cliente. Normalmente atualizado em tempo real pelo webhook; use aqui para forçar a reconciliação.</p>
+        <div style="background:#F9FAFB; border:1px solid #E5E7EB; border-radius:10px; padding:12px 14px; margin-bottom:20px; font-size:12.5px; color:#374151; line-height:1.7;">
+          <div style="display:flex; justify-content:space-between;"><span>Última sincronização</span><strong>há 2 horas</strong></div>
+          <div style="display:flex; justify-content:space-between;"><span>Templates rastreados</span><strong>6</strong></div>
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:10px;">
+          <button onclick="closeModal()" style="padding:9px 20px; border:1px solid #D1D5DB; background:white; color:#374151; border-radius:8px; font-size:14px; font-weight:500; cursor:pointer; font-family:inherit;">Fechar</button>
+          <button onclick="closeModal()" style="padding:9px 20px; background:#C74446; color:white; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; font-family:inherit;" onmouseover="this.style.background='#B23B3D'" onmouseout="this.style.background='#C74446'">Sincronizar agora</button>
+        </div>
+      </div>
+    </div><!-- /#overlay-wa-sync -->
+
+    <!-- Modal: Número dedicado (BYON) — Em breve -->
+    <div class="modal-overlay" id="overlay-wa-byon" onclick="handleOverlayClick(event)">
+      <div class="modal" onclick="event.stopPropagation()" style="width:520px; max-width:95vw; border-radius:16px; padding:28px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+          <div style="font-size:18px; font-weight:700; color:#111827;">Número dedicado &amp; self-service</div>
+          <button onclick="closeModal()" style="background:transparent; border:none; cursor:pointer; padding:6px; color:#6B7280; border-radius:6px;" onmouseover="this.style.background='#F3F4F6'" onmouseout="this.style.background='transparent'"><i data-lucide="x" style="width:20px;height:20px;"></i></button>
+        </div>
+        <div style="display:inline-flex; align-items:center; gap:6px; background:#FEF3C7; color:#92400E; font-size:11px; font-weight:700; padding:3px 10px; border-radius:99px; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:16px;"><i data-lucide="clock" style="width:12px;height:12px;"></i> Fase 2 · em planejamento</div>
+        <p style="font-size:13px; color:#4B5563; line-height:1.6; margin:0 0 16px;">Nesta fase o cliente deixa de usar o número compartilhado e passa a ter o seu próprio:</p>
+        <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:22px;">
+          <div style="display:flex; gap:10px; align-items:flex-start;"><i data-lucide="phone" style="width:16px;height:16px;color:#C74446;flex-shrink:0;margin-top:2px;"></i><div style="font-size:13px; color:#374151; line-height:1.5;"><strong>Número dedicado (BYON)</strong> — o cliente “aluga” um número (modelo estilo Twilio) com WABA e brand próprios, conectado via Embedded Signup, com a WeDO como Tech Provider.</div></div>
+          <div style="display:flex; gap:10px; align-items:flex-start;"><i data-lucide="badge-check" style="width:16px;height:16px;color:#C74446;flex-shrink:0;margin-top:2px;"></i><div style="font-size:13px; color:#374151; line-height:1.5;"><strong>Aprovação self-service</strong> — o cliente cadastra e submete os próprios templates direto no painel LIA (ai-ui), sem depender do time WeDOTalent.</div></div>
+          <div style="display:flex; gap:10px; align-items:flex-start;"><i data-lucide="database" style="width:16px;height:16px;color:#C74446;flex-shrink:0;margin-top:2px;"></i><div style="font-size:13px; color:#374151; line-height:1.5;"><strong>Credenciais por tenant</strong> — <code style="background:#F3F4F6; padding:1px 5px; border-radius:4px;">phone_number_id</code>, <code style="background:#F3F4F6; padding:1px 5px; border-radius:4px;">waba_id</code> e token passam a ser persistidos por cliente (hoje são ENV global).</div></div>
+        </div>
+        <div style="display:flex; justify-content:flex-end;">
+          <button onclick="closeModal()" style="padding:9px 22px; background:#111827; color:white; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; font-family:inherit;">Entendi</button>
+        </div>
+      </div>
+    </div><!-- /#overlay-wa-byon -->
 
     <div class="modal-overlay" id="overlay-lock-tenant" style="background:rgba(0,0,0,0.5);" onclick="handleOverlayClick(event)">
       <div class="modal" onclick="event.stopPropagation()" style="width:460px; max-width:95vw; border-radius:16px; padding:32px;">
