@@ -345,11 +345,97 @@ function fairSetDomain(domain) {
 /* ----------------------------------------------------------
    Audit Log Drawer
    ---------------------------------------------------------- */
+const AUDIT_SEVERITY_COLORS = {
+  info: { bg: '#EFF6FF', fg: '#1D4ED8' },
+  warning: { bg: '#FEF3C7', fg: '#B45309' },
+  critical: { bg: '#FEE2E2', fg: '#B91C1C' }
+};
+
+const AUDIT_FIELD_LABELS = {
+  id: 'ID do evento', type: 'Tipo', timestamp: 'Timestamp', tenant: 'Tenant',
+  actor: 'Agente / Usuário', action: 'Ação', resource: 'Recurso',
+  old_value: 'Valor anterior', new_value: 'Novo valor', ip: 'IP de origem',
+  candidate_id: 'Candidato', score: 'Score', approved: 'Aprovado',
+  fairness_passed: 'FairnessGuard', subject_cpf: 'CPF do titular',
+  requester: 'Solicitante', purpose: 'Finalidade', job_id: 'Vaga'
+};
+
+// Campos de rastreabilidade/integridade (ADR-004) renderizados em bloco próprio.
+const AUDIT_TRACE_FIELDS = ['correlation_id', 'decision_category', 'hash', 'prev_hash', 'payload_uri', 'chain_verified'];
+
+function auditFmtValue(v) {
+  if (v === true) return 'Sim';
+  if (v === false) return 'Não';
+  if (v === null || v === undefined || v === '') return '—';
+  return String(v);
+}
+
+function auditRow(label, valueHtml) {
+  return '<div style="display:flex; gap:12px; padding:10px 0; border-top:1px solid #F3F4F6;">'
+    + '<div style="flex:0 0 150px; font-size:12px; color:#6B7280;">' + label + '</div>'
+    + '<div style="flex:1; font-size:13px; color:#111827; word-break:break-word;">' + valueHtml + '</div>'
+    + '</div>';
+}
+
 function openDrawer(rowData) {
   const drawer = document.getElementById('audit-drawer');
   const content = document.getElementById('audit-drawer-content');
   if (!drawer || !content) return;
-  content.textContent = JSON.stringify(rowData, null, 2);
+
+  const sev = (rowData.severity || 'info').toLowerCase();
+  const sevColor = AUDIT_SEVERITY_COLORS[sev] || AUDIT_SEVERITY_COLORS.info;
+  const isDecision = rowData.type === 'ai_decision';
+  const category = rowData.decision_category || (isDecision ? 'business' : null);
+  const catColor = category === 'compliance' ? { bg: '#F5F3FF', fg: '#6D28D9' } : { bg: '#ECFDF5', fg: '#047857' };
+
+  let html = '';
+  // Cabeçalho
+  html += '<div style="display:flex; align-items:center; gap:10px; margin-bottom:4px;">'
+    + '<span style="font-family:ui-monospace,monospace; font-size:13px; font-weight:600; color:#111827;">' + auditFmtValue(rowData.action || rowData.type) + '</span>'
+    + '<span style="padding:2px 8px; border-radius:6px; font-size:11px; font-weight:600; background:' + sevColor.bg + '; color:' + sevColor.fg + ';">' + sev.toUpperCase() + '</span>'
+    + (category ? '<span style="padding:2px 8px; border-radius:6px; font-size:11px; font-weight:600; background:' + catColor.bg + '; color:' + catColor.fg + ';">' + category + '</span>' : '')
+    + '</div>';
+  html += '<div style="font-size:12px; color:#6B7280; margin-bottom:16px;">' + auditFmtValue(rowData.timestamp) + '</div>';
+
+  // Detalhes gerais
+  html += '<div style="margin-bottom:20px;">';
+  Object.keys(rowData).forEach(k => {
+    if (k === 'severity' || k === 'timestamp' || k === 'action' || AUDIT_TRACE_FIELDS.indexOf(k) !== -1) return;
+    const label = AUDIT_FIELD_LABELS[k] || k;
+    let val = auditFmtValue(rowData[k]);
+    if (k === 'fairness_passed') {
+      val = rowData[k]
+        ? '<span style="color:#047857; font-weight:600;">✓ Aprovado</span>'
+        : '<span style="color:#B91C1C; font-weight:600;">✗ Bloqueado</span>';
+    }
+    html += auditRow(label, val);
+  });
+  html += '</div>';
+
+  // Bloco de integridade & rastreabilidade (ADR-004) — trilha imutável append-only + hash-chain
+  const hasTrace = AUDIT_TRACE_FIELDS.some(f => rowData[f] !== undefined) || isDecision;
+  if (hasTrace) {
+    const verified = rowData.chain_verified !== false; // default verificado na referência
+    const corr = rowData.correlation_id || 'req_' + (rowData.id || 'na');
+    html += '<div style="background:#F9FAFB; border:1px solid #E5E7EB; border-radius:10px; padding:14px 16px;">';
+    html += '<div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">'
+      + '<i data-lucide="shield-check" style="width:15px; height:15px; color:' + (verified ? '#047857' : '#B91C1C') + ';"></i>'
+      + '<span style="font-size:12px; font-weight:700; color:#111827;">Integridade & Rastreabilidade</span>'
+      + '<span style="margin-left:auto; padding:2px 8px; border-radius:6px; font-size:11px; font-weight:600; background:' + (verified ? '#ECFDF5' : '#FEE2E2') + '; color:' + (verified ? '#047857' : '#B91C1C') + ';">'
+      + (verified ? 'hash-chain verificada' : 'integridade comprometida') + '</span>'
+      + '</div>';
+    html += auditRow('correlation_id', '<span style="font-family:ui-monospace,monospace; font-size:12px;">' + corr + '</span>');
+    if (rowData.hash) html += auditRow('hash (SHA-256)', '<span style="font-family:ui-monospace,monospace; font-size:11px; color:#6B7280;">' + rowData.hash + '</span>');
+    if (rowData.prev_hash) html += auditRow('hash anterior', '<span style="font-family:ui-monospace,monospace; font-size:11px; color:#6B7280;">' + rowData.prev_hash + '</span>');
+    html += auditRow('payload', rowData.payload_uri
+      ? '<a href="#" onclick="return false" style="color:#2563EB; text-decoration:none; font-size:12px;">object storage ↗ <span style="color:#9CA3AF;">(' + rowData.payload_uri + ')</span></a>'
+      : '<span style="color:#6B7280; font-size:12px;">inline (metadata store)</span>');
+    html += '<div style="margin-top:10px; font-size:11px; color:#9CA3AF; line-height:1.5;">Registro append-only imutável (não editável/removível). LGPD · EU AI Act.</div>';
+    html += '</div>';
+  }
+
+  content.innerHTML = html;
+  if (window.lucide) lucide.createIcons();
   drawer.classList.add('open');
 }
 

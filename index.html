@@ -3040,7 +3040,7 @@
                 </tr>
                 <!-- Row 2 -->
                 <tr style="border-top:1px solid #F3F4F6; background:#F9FAFB; cursor:pointer;" onmouseover="this.style.background='#F3F4F6'" onmouseout="this.style.background='#F9FAFB'"
-                  onclick="openDrawer({id:'evt-002',type:'ai_decision',timestamp:'2026-06-16T08:54:11-03:00',tenant:'ifood-talentos',actor:'LIA Core v2.4',action:'candidate.screening',candidate_id:'cand-9281',score:0.87,approved:true,fairness_passed:true,severity:'info'})">
+                  onclick="openDrawer({id:'evt-002',type:'ai_decision',decision_category:'compliance',timestamp:'2026-06-16T08:54:11-03:00',tenant:'ifood-talentos',actor:'LIA Core v2.4',action:'candidate.screening',candidate_id:'cand-9281',score:0.87,approved:true,fairness_passed:true,severity:'info',correlation_id:'req_9c1f4a7e2b',hash:'a3f5...9d2c',prev_hash:'8b1e...44af',chain_verified:true})">
                   <td style="padding:11px 16px; font-size:12px; color:#374151; white-space:nowrap; font-family:monospace;">2026-06-16 08:54:11</td>
                   <td style="padding:11px 12px;"><span style="background:rgba(152,96,209,0.1); color:#7C3AED; font-size:11px; font-weight:600; padding:2px 8px; border-radius:99px;">ai_decision</span></td>
                   <td style="padding:11px 12px; font-size:13px; color:#374151;">iFood Talentos</td>
@@ -3048,6 +3048,17 @@
                   <td style="padding:11px 12px; font-size:13px; color:#374151;">Triagem candidato cand-9281 — score 0.87 — Aprovado</td>
                   <td style="padding:11px 12px; text-align:center;"><span style="background:#DCFCE7; color:#166534; font-size:10px; font-weight:700; padding:2px 6px; border-radius:4px;">INFO</span></td>
                   <td style="padding:11px 16px; text-align:center;"><button style="font-size:12px; color:#60BED1; background:none; border:none; cursor:pointer; font-family:inherit;" onclick="event.stopPropagation(); openDrawer({id:'evt-002',type:'ai_decision'})">Ver</button></td>
+                </tr>
+                <!-- Row 2b: decisão de negócio (geração de JD) -->
+                <tr style="border-top:1px solid #F3F4F6; cursor:pointer;" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background=''"
+                  onclick="openDrawer({id:'evt-002b',type:'ai_decision',decision_category:'business',timestamp:'2026-06-16T08:49:33-03:00',tenant:'totvs-people',actor:'LIA Core v2.4',action:'job.generate_description',job_id:'job-4471',severity:'info',correlation_id:'req_5d2b8f10ac',hash:'c7d9...1a05',prev_hash:'a3f5...9d2c',payload_uri:'gs://wedo-ai-decisions/totvs-people/2026/06/evt-002b.json',chain_verified:true})">
+                  <td style="padding:11px 16px; font-size:12px; color:#374151; white-space:nowrap; font-family:monospace;">2026-06-16 08:49:33</td>
+                  <td style="padding:11px 12px;"><span style="background:rgba(152,96,209,0.1); color:#7C3AED; font-size:11px; font-weight:600; padding:2px 8px; border-radius:99px;">ai_decision</span></td>
+                  <td style="padding:11px 12px; font-size:13px; color:#374151;">Totvs People</td>
+                  <td style="padding:11px 12px; font-size:12px; color:#374151; font-family:monospace;">LIA Core v2.4</td>
+                  <td style="padding:11px 12px; font-size:13px; color:#374151;">Geração de descrição da vaga job-4471</td>
+                  <td style="padding:11px 12px; text-align:center;"><span style="background:#DCFCE7; color:#166534; font-size:10px; font-weight:700; padding:2px 6px; border-radius:4px;">INFO</span></td>
+                  <td style="padding:11px 16px; text-align:center;"><button style="font-size:12px; color:#60BED1; background:none; border:none; cursor:pointer; font-family:inherit;" onclick="event.stopPropagation(); openDrawer({id:'evt-002b',type:'ai_decision'})">Ver</button></td>
                 </tr>
                 <!-- Row 3 -->
                 <tr style="border-top:1px solid #F3F4F6; cursor:pointer;" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background=''"
