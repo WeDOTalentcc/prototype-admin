@@ -49,6 +49,7 @@ function updateSidebarActive(screenId) {
     'screen-llm-config':            'nav-llm-config',
     'screen-lia-persona':           'nav-lia-persona',
     'screen-whatsapp-templates':    'nav-wa-templates',
+    'screen-fairness-policies':     'nav-fairness-policies',
     'screen-feature-flags':         'nav-feature-flags',
     'screen-plans':                 'nav-plans',
     'screen-global-flags':          'nav-global-flags',
@@ -93,6 +94,7 @@ function updateTopbarContext(screenId) {
     'screen-llm-config':            'Configuração LLM — iFood Talentos',
     'screen-lia-persona':           'Persona da LIA — iFood Talentos',
     'screen-whatsapp-templates':    'WhatsApp & Templates — iFood Talentos',
+    'screen-fairness-policies':     'Políticas de Fairness — iFood Talentos',
     'screen-feature-flags':         'Feature Flags — iFood Talentos',
     'screen-plans':                 'Planos & Preços',
     'screen-global-flags':          'Feature Flags Globais',
@@ -328,6 +330,16 @@ function switchTab(groupId, tabId) {
   // Show active panel
   const activePanel = document.querySelector('[data-tab-panel-group="' + groupId + '"][data-tab-panel="' + tabId + '"]');
   if (activePanel) activePanel.style.display = 'block';
+}
+
+/* ----------------------------------------------------------
+   Políticas de Fairness — seletor de domínio (WEDO-1559)
+   Protótipo: o domínio "screening" (triagem) está totalmente modelado;
+   os demais reusam a mesma estrutura por domínio.
+   ---------------------------------------------------------- */
+function fairSetDomain(domain) {
+  const ctx = document.getElementById('topbar-context');
+  if (ctx) ctx.textContent = 'Políticas de Fairness — iFood Talentos · ' + domain;
 }
 
 /* ----------------------------------------------------------

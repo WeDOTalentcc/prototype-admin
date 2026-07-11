@@ -168,6 +168,10 @@
               <span class="nav-item-icon"><i data-lucide="message-circle"></i></span>
               <span class="nav-item-label">WhatsApp &amp; Templates</span>
             </li>
+            <li id="nav-fairness-policies" class="nav-item" data-tooltip="Políticas de Fairness" onclick="showScreen('screen-fairness-policies')">
+              <span class="nav-item-icon"><i data-lucide="scale"></i></span>
+              <span class="nav-item-label">Políticas de Fairness</span>
+            </li>
           </ul>
         </div>
 
@@ -1935,6 +1939,274 @@
 
       </div>
     </div><!-- /#screen-whatsapp-templates -->
+
+    <!-- ============================================================
+         SCREEN: POLÍTICAS DE FAIRNESS (WEDO-1559 / épico WEDO-1547)
+         Editor de políticas de fairness por tenant. Modelo To-Be (ADR-001):
+         3 camadas (platform_general · platform_domain · tenant), 7 tipos de
+         regra, ciclo draft→published→active→superseded, endurece-nunca-afrouxa,
+         consome a governance-api. Tenant edita SÓ a camada tenant e só endurece.
+         ============================================================ -->
+    <div class="screen" id="screen-fairness-policies">
+      <div style="max-width:1080px;">
+
+      <!-- Breadcrumb -->
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:20px; font-size:14px;">
+        <a href="#" onclick="showScreen('screen-client-detail'); return false;" style="color:#C74446; font-weight:500;">iFood Talentos</a>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        <span style="color:#374151; font-weight:500;">Políticas de Fairness</span>
+      </div>
+
+      <!-- Header -->
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:18px; flex-wrap:wrap; gap:12px;">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div style="width:42px; height:42px; background:rgba(93,164,122,0.12); border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i data-lucide="scale" style="width:22px;height:22px;color:#166534;"></i></div>
+          <div>
+            <h1 style="font-size:22px; font-weight:700; color:#111827; margin:0 0 4px;">Políticas de Fairness</h1>
+            <p style="font-size:14px; color:#6B7280; margin:0;">Regras anti-viés aplicadas em runtime — iFood Talentos</p>
+          </div>
+        </div>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <div style="display:flex; align-items:center; gap:6px; font-size:12px; color:#6B7280;">Domínio:
+            <select onchange="fairSetDomain(this.value)" style="border:1px solid #D1D5DB; border-radius:7px; padding:6px 10px; font-size:13px; color:#111827; font-family:inherit; background:white;">
+              <option value="screening">Triagem (screening)</option>
+              <option value="sourcing">Sourcing</option>
+              <option value="pipeline">Pipeline</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Faixa de estado da Effective Policy -->
+      <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap; background:white; border:1px solid #E5E7EB; border-radius:12px; padding:14px 18px; margin-bottom:18px;">
+        <div style="display:flex; align-items:center; gap:8px;"><i data-lucide="shield-check" style="width:18px;height:18px;color:#166534;"></i><span style="font-size:14px; font-weight:700; color:#111827;">Política Efetiva ativa</span></div>
+        <span style="background:#DCFCE7; color:#166534; font-size:11px; font-weight:600; padding:3px 9px; border-radius:99px;">ACTIVE</span>
+        <span style="font-size:12px; color:#6B7280;">Versão (triplete):</span>
+        <span style="font-family:monospace; font-size:12px; color:#374151; background:#F9FAFB; border:1px solid #E5E7EB; border-radius:6px; padding:2px 8px;">plataforma-geral v3 · plataforma-triagem v2 · tenant v5</span>
+        <span style="margin-left:auto; font-size:12px; color:#9CA3AF;">via governance-api · cache Redis 5min</span>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs" style="margin-bottom:22px;">
+        <button class="tab-btn active" data-tab-group="fair-tabs" data-tab="effective" onclick="switchTab('fair-tabs','effective')">Política Efetiva</button>
+        <button class="tab-btn" data-tab-group="fair-tabs" data-tab="editor" onclick="switchTab('fair-tabs','editor')">Editor do Tenant</button>
+        <button class="tab-btn" data-tab-group="fair-tabs" data-tab="versions" onclick="switchTab('fair-tabs','versions')">Versões &amp; Auditoria</button>
+      </div>
+
+      <!-- ============ TAB 1: POLÍTICA EFETIVA ============ -->
+      <div data-tab-panel-group="fair-tabs" data-tab-panel="effective" style="display:block;">
+        <div style="display:flex; gap:12px; align-items:flex-start; background:#EFF6FF; border:1px solid #BFDBFE; border-radius:10px; padding:14px 16px; margin-bottom:18px;">
+          <i data-lucide="layers" style="width:18px;height:18px;color:#1E40AF;flex-shrink:0;margin-top:1px;"></i>
+          <div style="font-size:12.5px; color:#1E3A8A; line-height:1.55;">A política que a IA aplica é a <strong>composição aditiva de 3 camadas</strong> (a plataforma define o piso; o tenant só endurece). Listas somam (união); limiares ficam com o <strong>valor mais restritivo</strong>. Abaixo, o resultado por tipo de regra.</div>
+        </div>
+
+        <!-- Camadas -->
+        <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:20px;">
+          <div style="background:white; border:1px solid #E5E7EB; border-radius:10px; padding:14px 16px;"><div style="display:flex; align-items:center; gap:7px; margin-bottom:4px;"><i data-lucide="lock" style="width:13px;height:13px;color:#6B7280;"></i><span style="font-size:12px; font-weight:700; color:#374151;">Plataforma-geral</span></div><div style="font-size:11px; color:#9CA3AF;">domain: null · v3 · obrigatória</div></div>
+          <div style="background:white; border:1px solid #E5E7EB; border-radius:10px; padding:14px 16px;"><div style="display:flex; align-items:center; gap:7px; margin-bottom:4px;"><i data-lucide="lock" style="width:13px;height:13px;color:#6B7280;"></i><span style="font-size:12px; font-weight:700; color:#374151;">Plataforma-triagem</span></div><div style="font-size:11px; color:#9CA3AF;">domain: screening · v2 · obrigatória</div></div>
+          <div style="background:rgba(199,68,70,0.04); border:1px solid rgba(199,68,70,0.25); border-radius:10px; padding:14px 16px;"><div style="display:flex; align-items:center; gap:7px; margin-bottom:4px;"><i data-lucide="user-cog" style="width:13px;height:13px;color:#C74446;"></i><span style="font-size:12px; font-weight:700; color:#C74446;">Tenant (iFood)</span></div><div style="font-size:11px; color:#9CA3AF;">domain: screening · v5 · opcional</div></div>
+        </div>
+
+        <!-- Tabela efetiva por tipo de regra -->
+        <div style="background:white; border:1px solid #E5E7EB; border-radius:12px; overflow:hidden;">
+          <table style="width:100%; border-collapse:collapse;">
+            <thead><tr style="background:#F9FAFB; border-bottom:1px solid #E5E7EB;">
+              <th style="padding:10px 18px; text-align:left; font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em;">Tipo de regra</th>
+              <th style="padding:10px 12px; text-align:left; font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em;">Valor efetivo (composto)</th>
+              <th style="padding:10px 12px; text-align:center; font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em;">Origem</th>
+            </tr></thead>
+            <tbody>
+              <tr style="border-top:1px solid #F3F4F6;">
+                <td style="padding:13px 18px;"><div style="font-size:13px; font-weight:600; color:#111827;">Atributos bloqueados</div><div style="font-size:11px; color:#9CA3AF; font-family:monospace;">blocked_attribute</div></td>
+                <td style="padding:13px 12px; font-size:12.5px; color:#374151;">gênero, raça, estado civil <span style="color:#C74446; font-weight:600;">+ religião</span></td>
+                <td style="padding:13px 12px; text-align:center;"><span style="font-size:11px; color:#6B7280;">plataforma 🔒 + tenant</span></td>
+              </tr>
+              <tr style="border-top:1px solid #F3F4F6; background:#F9FAFB;">
+                <td style="padding:13px 18px;"><div style="font-size:13px; font-weight:600; color:#111827;">Anonimização obrigatória</div><div style="font-size:11px; color:#9CA3AF; font-family:monospace;">mandatory_anonymization</div></td>
+                <td style="padding:13px 12px; font-size:12.5px; color:#374151;">foto, data de nascimento</td>
+                <td style="padding:13px 12px; text-align:center;"><span style="font-size:11px; color:#6B7280;">plataforma 🔒</span></td>
+              </tr>
+              <tr style="border-top:1px solid #F3F4F6;">
+                <td style="padding:13px 18px;"><div style="font-size:13px; font-weight:600; color:#111827;">Banlist linguística</div><div style="font-size:11px; color:#9CA3AF; font-family:monospace;">linguistic_banlist</div></td>
+                <td style="padding:13px 12px; font-size:12.5px; color:#374151;">12 termos <span style="color:#C74446; font-weight:600;">+ 3 do tenant</span></td>
+                <td style="padding:13px 12px; text-align:center;"><span style="font-size:11px; color:#6B7280;">plataforma + tenant</span></td>
+              </tr>
+              <tr style="border-top:1px solid #F3F4F6; background:#F9FAFB;">
+                <td style="padding:13px 18px;"><div style="font-size:13px; font-weight:600; color:#111827;">Limiar de decisão</div><div style="font-size:11px; color:#9CA3AF; font-family:monospace;">decision_threshold · rejeição automática</div></td>
+                <td style="padding:13px 12px; font-size:12.5px; color:#374151;">confiança mínima <strong style="color:#C74446;">0.92</strong> <span style="color:#9CA3AF;">(piso plataforma 0.85)</span></td>
+                <td style="padding:13px 12px; text-align:center;"><span style="font-size:11px; color:#6B7280;">tenant (endureceu ↑)</span></td>
+              </tr>
+              <tr style="border-top:1px solid #F3F4F6;">
+                <td style="padding:13px 18px;"><div style="font-size:13px; font-weight:600; color:#111827;">Revisão humana</div><div style="font-size:11px; color:#9CA3AF; font-family:monospace;">human_in_the_loop</div></td>
+                <td style="padding:13px 12px; font-size:12.5px; color:#374151;">rejeição final <span style="color:#C74446; font-weight:600;">+ avanço p/ entrevista</span></td>
+                <td style="padding:13px 12px; text-align:center;"><span style="font-size:11px; color:#6B7280;">plataforma + tenant</span></td>
+              </tr>
+              <tr style="border-top:1px solid #F3F4F6; background:#F9FAFB;">
+                <td style="padding:13px 18px;"><div style="font-size:13px; font-weight:600; color:#111827;">Campos de auditoria</div><div style="font-size:11px; color:#9CA3AF; font-family:monospace;">audit_required_fields</div></td>
+                <td style="padding:13px 12px; font-size:12.5px; color:#374151;">evidência, versão do modelo, confiança, versão da política</td>
+                <td style="padding:13px 12px; text-align:center;"><span style="font-size:11px; color:#6B7280;">plataforma 🔒</span></td>
+              </tr>
+              <tr style="border-top:1px solid #F3F4F6;">
+                <td style="padding:13px 18px;"><div style="font-size:13px; font-weight:600; color:#111827;">Métrica de paridade</div><div style="font-size:11px; color:#9CA3AF; font-family:monospace;">pipeline_fairness_metric</div></td>
+                <td style="padding:13px 12px; font-size:12.5px; color:#374151;">paridade demográfica <strong style="color:#C74446;">≥ 0.85</strong> <span style="color:#9CA3AF;">(piso 0.80 — Regra dos 4/5)</span></td>
+                <td style="padding:13px 12px; text-align:center;"><span style="font-size:11px; color:#6B7280;">tenant (endureceu ↑)</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="font-size:12px; color:#9CA3AF; margin-top:12px;">🔒 = regra travada pela plataforma (o tenant não pode alterar). As demais são <em>endurecíveis</em> (o tenant só torna mais restritivo).</p>
+      </div><!-- /tab effective -->
+
+      <!-- ============ TAB 2: EDITOR DO TENANT ============ -->
+      <div data-tab-panel-group="fair-tabs" data-tab-panel="editor" style="display:none;">
+
+        <!-- Aviso de rascunho -->
+        <div style="display:flex; gap:12px; align-items:center; background:#FEF9C3; border:1px solid #FDE68A; border-radius:10px; padding:12px 16px; margin-bottom:18px;">
+          <i data-lucide="file-edit" style="width:18px;height:18px;color:#854D0E;flex-shrink:0;"></i>
+          <div style="flex:1; font-size:12.5px; color:#854D0E; line-height:1.5;">Existe um <strong>rascunho (tenant v6)</strong> não publicado. Publique e ative para aplicar em runtime — sem deploy.</div>
+          <button onclick="openModal('fair-publish')" style="padding:7px 14px; background:#C74446; color:white; border:none; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; font-family:inherit; white-space:nowrap;">Publicar rascunho</button>
+        </div>
+
+        <div style="display:flex; gap:12px; align-items:flex-start; background:#F8FAFC; border:1px solid #E2E8F0; border-radius:10px; padding:14px 16px; margin-bottom:18px;">
+          <i data-lucide="arrow-up-circle" style="width:18px;height:18px;color:#475569;flex-shrink:0;margin-top:1px;"></i>
+          <div style="font-size:12.5px; color:#475569; line-height:1.55;">Você edita <strong>apenas a camada do tenant</strong>. O piso da plataforma é somente-leitura. Toda alteração só pode <strong>endurecer</strong> — tentativas de afrouxar são barradas (a política nem chega a rascunho).</div>
+        </div>
+
+        <!-- Cards de regra editáveis -->
+        <div style="display:flex; flex-direction:column; gap:12px;">
+
+          <!-- blocked_attribute -->
+          <div style="background:white; border:1px solid #E5E7EB; border-radius:12px; padding:18px 20px;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">
+              <div>
+                <div style="font-size:14px; font-weight:600; color:#111827;">Atributos bloqueados</div>
+                <div style="font-size:12px; color:#6B7280; margin-top:2px;">Piso plataforma: <span style="font-family:monospace;">gênero, raça, estado civil</span> <span style="background:#F3F4F6; color:#6B7280; font-size:10px; font-weight:600; padding:1px 6px; border-radius:99px;">🔒 travado</span></div>
+                <div style="font-size:12px; color:#166534; margin-top:6px;">Tenant adicionou: <strong>religião</strong></div>
+              </div>
+              <button onclick="openModal('fair-add-attribute')" style="padding:7px 13px; border:1px solid #D1D5DB; background:white; border-radius:8px; font-size:12px; font-weight:500; color:#374151; cursor:pointer; font-family:inherit; white-space:nowrap;"><i data-lucide="plus" style="width:12px;height:12px;vertical-align:-1px;"></i> Adicionar atributo</button>
+            </div>
+          </div>
+
+          <!-- decision_threshold (a estrela: endurecer vs bloquear afrouxamento) -->
+          <div style="background:white; border:1px solid #E5E7EB; border-radius:12px; padding:18px 20px;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:12px;">
+              <div>
+                <div style="font-size:14px; font-weight:600; color:#111827;">Limiar de decisão — rejeição automática</div>
+                <div style="font-size:12px; color:#6B7280; margin-top:2px;">Piso da plataforma: <strong>0.85</strong> <span style="background:#DBEAFE; color:#1E40AF; font-size:10px; font-weight:600; padding:1px 6px; border-radius:99px;">↑ só para cima</span></div>
+                <div style="font-size:12px; color:#166534; margin-top:6px;">Tenant: <strong>0.92</strong> (mais restritivo que o piso)</div>
+              </div>
+            </div>
+            <div style="display:flex; gap:10px;">
+              <button onclick="openModal('fair-edit-threshold')" style="padding:8px 14px; background:#C74446; color:white; border:none; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; font-family:inherit;"><i data-lucide="arrow-up" style="width:12px;height:12px;vertical-align:-1px;"></i> Endurecer (subir piso)</button>
+              <button onclick="openModal('fair-block-loosen')" style="padding:8px 14px; border:1px solid #FCA5A5; background:white; color:#991B1B; border-radius:8px; font-size:12px; font-weight:500; cursor:pointer; font-family:inherit;"><i data-lucide="arrow-down" style="width:12px;height:12px;vertical-align:-1px;"></i> Tentar afrouxar (baixar)</button>
+            </div>
+          </div>
+
+          <!-- human_in_the_loop -->
+          <div style="background:white; border:1px solid #E5E7EB; border-radius:12px; padding:18px 20px;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">
+              <div>
+                <div style="font-size:14px; font-weight:600; color:#111827;">Revisão humana obrigatória</div>
+                <div style="font-size:12px; color:#6B7280; margin-top:2px;">Piso plataforma: <span style="font-family:monospace;">rejeição final</span></div>
+                <div style="font-size:12px; color:#166534; margin-top:6px;">Tenant exige também: <strong>avanço para entrevista</strong></div>
+              </div>
+              <button onclick="openModal('fair-add-hitl')" style="padding:7px 13px; border:1px solid #D1D5DB; background:white; border-radius:8px; font-size:12px; font-weight:500; color:#374151; cursor:pointer; font-family:inherit; white-space:nowrap;"><i data-lucide="plus" style="width:12px;height:12px;vertical-align:-1px;"></i> Exigir em mais decisões</button>
+            </div>
+          </div>
+
+          <!-- linguistic_banlist -->
+          <div style="background:white; border:1px solid #E5E7EB; border-radius:12px; padding:18px 20px;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">
+              <div>
+                <div style="font-size:14px; font-weight:600; color:#111827;">Banlist linguística</div>
+                <div style="font-size:12px; color:#6B7280; margin-top:2px;">Piso plataforma: 12 termos discriminatórios (contextos: prompt, descrição de vaga, comunicação)</div>
+                <div style="font-size:12px; color:#166534; margin-top:6px;">Tenant adicionou: 3 termos</div>
+              </div>
+              <button onclick="openModal('fair-add-term')" style="padding:7px 13px; border:1px solid #D1D5DB; background:white; border-radius:8px; font-size:12px; font-weight:500; color:#374151; cursor:pointer; font-family:inherit; white-space:nowrap;"><i data-lucide="plus" style="width:12px;height:12px;vertical-align:-1px;"></i> Adicionar termo</button>
+            </div>
+          </div>
+
+          <!-- Regras travadas (read-only) -->
+          <div style="background:#F9FAFB; border:1px dashed #D1D5DB; border-radius:12px; padding:18px 20px;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;"><i data-lucide="lock" style="width:15px;height:15px;color:#6B7280;"></i><span style="font-size:13px; font-weight:700; color:#374151;">Travadas pela plataforma (somente leitura)</span></div>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <div style="display:flex; justify-content:space-between; font-size:12.5px; color:#6B7280;"><span>Anonimização obrigatória <span style="font-family:monospace; font-size:11px;">(mandatory_anonymization)</span></span><span>foto, data de nascimento</span></div>
+              <div style="display:flex; justify-content:space-between; font-size:12.5px; color:#6B7280;"><span>Campos de auditoria <span style="font-family:monospace; font-size:11px;">(audit_required_fields)</span></span><span>evidência, modelo, confiança, versão</span></div>
+            </div>
+            <p style="font-size:11.5px; color:#9CA3AF; margin:10px 0 0;">Essas regras vêm travadas do piso da plataforma — o tenant não pode reduzi-las (LGPD / EU AI Act).</p>
+          </div>
+
+        </div>
+      </div><!-- /tab editor -->
+
+      <!-- ============ TAB 3: VERSÕES & AUDITORIA ============ -->
+      <div data-tab-panel-group="fair-tabs" data-tab-panel="versions" style="display:none;">
+
+        <!-- Ciclo de vida -->
+        <div style="background:white; border:1px solid #E5E7EB; border-radius:12px; padding:20px 22px; margin-bottom:18px;">
+          <div style="font-size:14px; font-weight:700; color:#111827; margin-bottom:16px;">Ciclo de vida da política <span style="font-size:12px; font-weight:400; color:#9CA3AF;">(imutável e versionada — atualizar = nova versão)</span></div>
+          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            <span style="background:#FEF9C3; color:#854D0E; font-size:12px; font-weight:600; padding:5px 12px; border-radius:99px;">draft</span>
+            <i data-lucide="arrow-right" style="width:15px;height:15px;color:#9CA3AF;"></i>
+            <span style="background:#DBEAFE; color:#1E40AF; font-size:12px; font-weight:600; padding:5px 12px; border-radius:99px;">published</span>
+            <i data-lucide="arrow-right" style="width:15px;height:15px;color:#9CA3AF;"></i>
+            <span style="background:#DCFCE7; color:#166534; font-size:12px; font-weight:600; padding:5px 12px; border-radius:99px;">active</span>
+            <i data-lucide="arrow-right" style="width:15px;height:15px;color:#9CA3AF;"></i>
+            <span style="background:#F3F4F6; color:#6B7280; font-size:12px; font-weight:600; padding:5px 12px; border-radius:99px;">superseded</span>
+          </div>
+        </div>
+
+        <!-- Histórico de versões -->
+        <div style="background:white; border:1px solid #E5E7EB; border-radius:12px; overflow:hidden; margin-bottom:18px;">
+          <div style="padding:14px 18px; border-bottom:1px solid #F3F4F6; font-size:14px; font-weight:700; color:#111827;">Versões da política do tenant (triagem)</div>
+          <table style="width:100%; border-collapse:collapse;">
+            <thead><tr style="background:#F9FAFB; border-bottom:1px solid #E5E7EB;">
+              <th style="padding:10px 18px; text-align:left; font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase;">Versão</th>
+              <th style="padding:10px 12px; text-align:center; font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase;">Estado</th>
+              <th style="padding:10px 12px; text-align:left; font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase;">Autor</th>
+              <th style="padding:10px 12px; text-align:right; font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase;">Quando</th>
+              <th style="padding:10px 18px; text-align:center; font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase;">Ações</th>
+            </tr></thead>
+            <tbody>
+              <tr style="border-top:1px solid #F3F4F6;">
+                <td style="padding:12px 18px; font-family:monospace; font-size:13px; color:#111827;">v6</td>
+                <td style="padding:12px 12px; text-align:center;"><span style="background:#FEF9C3; color:#854D0E; font-size:11px; font-weight:600; padding:2px 8px; border-radius:99px;">draft</span></td>
+                <td style="padding:12px 12px; font-size:12.5px; color:#374151;">Rodrigo Alfieri</td>
+                <td style="padding:12px 12px; text-align:right; font-size:12px; color:#6B7280;">há 5 min</td>
+                <td style="padding:12px 18px; text-align:center;"><button onclick="openModal('fair-publish')" style="padding:5px 10px; border:none; background:#C74446; color:white; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; font-family:inherit;">Publicar</button></td>
+              </tr>
+              <tr style="border-top:1px solid #F3F4F6; background:#F9FAFB;">
+                <td style="padding:12px 18px; font-family:monospace; font-size:13px; color:#111827;">v5</td>
+                <td style="padding:12px 12px; text-align:center;"><span style="background:#DCFCE7; color:#166534; font-size:11px; font-weight:600; padding:2px 8px; border-radius:99px;">active</span></td>
+                <td style="padding:12px 12px; font-size:12.5px; color:#374151;">Rodrigo Alfieri</td>
+                <td style="padding:12px 12px; text-align:right; font-size:12px; color:#6B7280;">12/07 14:20</td>
+                <td style="padding:12px 18px; text-align:center;"><span style="font-size:12px; color:#9CA3AF;">em uso</span></td>
+              </tr>
+              <tr style="border-top:1px solid #F3F4F6;">
+                <td style="padding:12px 18px; font-family:monospace; font-size:13px; color:#111827;">v4</td>
+                <td style="padding:12px 12px; text-align:center;"><span style="background:#F3F4F6; color:#6B7280; font-size:11px; font-weight:600; padding:2px 8px; border-radius:99px;">superseded</span></td>
+                <td style="padding:12px 12px; font-size:12.5px; color:#374151;">Paulo Moraes</td>
+                <td style="padding:12px 12px; text-align:right; font-size:12px; color:#6B7280;">02/07 09:10</td>
+                <td style="padding:12px 18px; text-align:center;"><button onclick="openModal('fair-rollback')" style="padding:5px 10px; border:1px solid #D1D5DB; background:white; color:#374151; border-radius:6px; font-size:12px; cursor:pointer; font-family:inherit;">Reativar</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Trilha de auditoria -->
+        <div style="background:white; border:1px solid #E5E7EB; border-radius:12px; overflow:hidden;">
+          <div style="padding:14px 18px; border-bottom:1px solid #F3F4F6; font-size:14px; font-weight:700; color:#111827;">Trilha de auditoria <span style="font-size:12px; font-weight:400; color:#9CA3AF;">(append-only — LGPD / EU AI Act)</span></div>
+          <div style="padding:8px 18px;">
+            <div style="display:flex; gap:10px; align-items:flex-start; padding:10px 0; border-bottom:1px solid #F9FAFB;"><span style="width:8px;height:8px;border-radius:50%;background:#854D0E;margin-top:5px;flex-shrink:0;"></span><div><div style="font-size:13px; color:#111827;">Rascunho v6 criado — endureceu limiar 0.90 → 0.92</div><div style="font-size:11px; color:#9CA3AF;">Rodrigo Alfieri · há 5 min</div></div></div>
+            <div style="display:flex; gap:10px; align-items:flex-start; padding:10px 0; border-bottom:1px solid #F9FAFB;"><span style="width:8px;height:8px;border-radius:50%;background:#DC2626;margin-top:5px;flex-shrink:0;"></span><div><div style="font-size:13px; color:#111827;">Tentativa de afrouxar rejeitada — baixar limiar para 0.80 (abaixo do piso 0.85)</div><div style="font-size:11px; color:#9CA3AF;">Rodrigo Alfieri · há 6 min · <span style="font-family:monospace;">422 tenant_cannot_weaken_platform_rule</span></div></div></div>
+            <div style="display:flex; gap:10px; align-items:flex-start; padding:10px 0;"><span style="width:8px;height:8px;border-radius:50%;background:#166534;margin-top:5px;flex-shrink:0;"></span><div><div style="font-size:13px; color:#111827;">Versão v5 ativada para (iFood, triagem)</div><div style="font-size:11px; color:#9CA3AF;">Rodrigo Alfieri · 12/07 14:20 · evento <span style="font-family:monospace;">fairness.policy.activated</span></div></div></div>
+          </div>
+        </div>
+
+      </div><!-- /tab versions -->
+
+      </div>
+    </div><!-- /#screen-fairness-policies -->
 
     <!-- ============================================================
          SCREEN: PERSONA DA LIA (WEDO-1385)
@@ -5593,6 +5865,134 @@ Este link expira em 7 dias.</textarea>
         </div>
       </div>
     </div><!-- /#overlay-wa-byon -->
+
+    <!-- ===== Modais Políticas de Fairness (WEDO-1559) ===== -->
+
+    <!-- Modal: bloqueio de afrouxamento (endurece-nunca-afrouxa · 422) -->
+    <div class="modal-overlay" id="overlay-fair-block-loosen" style="background:rgba(0,0,0,0.5);" onclick="handleOverlayClick(event)">
+      <div class="modal" onclick="event.stopPropagation()" style="width:480px; max-width:95vw; border-radius:16px; padding:26px;">
+        <div style="width:52px; height:52px; border-radius:50%; background:#FEE2E2; display:flex; align-items:center; justify-content:center; margin:0 auto 16px;"><i data-lucide="shield-x" style="width:26px;height:26px;color:#DC2626;"></i></div>
+        <div style="font-size:17px; font-weight:700; color:#111827; text-align:center; margin-bottom:8px;">Afrouxamento bloqueado</div>
+        <p style="font-size:13px; color:#6B7280; line-height:1.55; text-align:center; margin:0 0 16px;">Você tentou <strong>baixar o limiar para 0.80</strong>, abaixo do piso da plataforma (<strong>0.85</strong>). O tenant só pode <strong>endurecer</strong> — nunca afrouxar. A política nem chega a rascunho.</p>
+        <div style="background:#FEF2F2; border:1px solid #FECACA; border-radius:8px; padding:10px 14px; margin-bottom:20px;">
+          <div style="font-size:11px; font-weight:700; color:#991B1B; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:3px;">Resposta da governance-api</div>
+          <div style="font-size:12.5px; color:#7F1D1D; font-family:monospace;">HTTP 422 · policy_validation_failed</div>
+          <div style="font-size:12.5px; color:#7F1D1D; font-family:monospace;">reason: tenant_cannot_weaken_platform_rule</div>
+        </div>
+        <div style="display:flex; justify-content:center; gap:10px;">
+          <button onclick="closeModal()" style="padding:9px 20px; border:1px solid #D1D5DB; background:white; color:#374151; border-radius:8px; font-size:14px; font-weight:500; cursor:pointer; font-family:inherit;">Entendi</button>
+          <button onclick="openModal('fair-edit-threshold')" style="padding:9px 20px; background:#C74446; color:white; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; font-family:inherit;">Endurecer em vez disso</button>
+        </div>
+      </div>
+    </div><!-- /#overlay-fair-block-loosen -->
+
+    <!-- Modal: endurecer limiar (happy path) -->
+    <div class="modal-overlay" id="overlay-fair-edit-threshold" onclick="handleOverlayClick(event)">
+      <div class="modal" onclick="event.stopPropagation()" style="width:520px; max-width:95vw; border-radius:16px; padding:28px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+          <div style="font-size:18px; font-weight:700; color:#111827;">Endurecer limiar de decisão</div>
+          <button onclick="closeModal()" style="background:transparent; border:none; cursor:pointer; padding:6px; color:#6B7280; border-radius:6px;"><i data-lucide="x" style="width:20px;height:20px;"></i></button>
+        </div>
+        <p style="font-size:12.5px; color:#6B7280; margin:0 0 18px;">Rejeição automática · domínio triagem. Só é possível <strong>subir</strong> o piso (nunca abaixo de 0.85).</p>
+        <label style="display:block; font-size:13px; font-weight:500; color:#374151; margin-bottom:8px;">Confiança mínima <span style="color:#9CA3AF; font-weight:400;">(piso plataforma 0.85 · atual 0.92)</span></label>
+        <input type="range" min="0.85" max="1" step="0.01" value="0.92" style="width:100%; accent-color:#C74446;">
+        <div style="display:flex; justify-content:space-between; font-size:11px; color:#9CA3AF; margin-top:4px;"><span>0.85 (piso)</span><span style="color:#C74446; font-weight:600;">0.92</span><span>1.00</span></div>
+        <div style="display:flex; gap:8px; align-items:center; background:#F0FDF4; border:1px solid #BBF7D0; border-radius:8px; padding:10px 14px; margin:18px 0;">
+          <i data-lucide="check-circle" style="width:15px;height:15px;color:#166534;"></i>
+          <span style="font-size:12.5px; color:#166534;">Valor válido — mais restritivo que o piso. Gera rascunho tenant v6.</span>
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:10px;">
+          <button onclick="closeModal()" style="padding:9px 20px; border:1px solid #D1D5DB; background:white; color:#374151; border-radius:8px; font-size:14px; font-weight:500; cursor:pointer; font-family:inherit;">Cancelar</button>
+          <button onclick="closeModal(); showScreen('screen-fairness-policies'); switchTab('fair-tabs','editor');" style="padding:9px 20px; background:#C74446; color:white; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; font-family:inherit;">Salvar rascunho</button>
+        </div>
+      </div>
+    </div><!-- /#overlay-fair-edit-threshold -->
+
+    <!-- Modal: adicionar atributo bloqueado -->
+    <div class="modal-overlay" id="overlay-fair-add-attribute" onclick="handleOverlayClick(event)">
+      <div class="modal" onclick="event.stopPropagation()" style="width:500px; max-width:95vw; border-radius:16px; padding:28px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+          <div style="font-size:18px; font-weight:700; color:#111827;">Adicionar atributo bloqueado</div>
+          <button onclick="closeModal()" style="background:transparent; border:none; cursor:pointer; padding:6px; color:#6B7280; border-radius:6px;"><i data-lucide="x" style="width:20px;height:20px;"></i></button>
+        </div>
+        <p style="font-size:12.5px; color:#6B7280; margin:0 0 18px;">Bloqueia o atributo como entrada de decisão. Só adiciona (a lista da plataforma não pode ser reduzida).</p>
+        <label style="display:block; font-size:13px; font-weight:500; color:#374151; margin-bottom:6px;">Atributo</label>
+        <select style="width:100%; border:1px solid #D1D5DB; border-radius:8px; padding:10px 12px; font-size:14px; color:#111827; font-family:inherit; background:white; margin-bottom:6px;">
+          <option>orientação sexual</option>
+          <option>deficiência</option>
+          <option>nacionalidade</option>
+          <option>região</option>
+        </select>
+        <p style="font-size:11.5px; color:#9CA3AF; margin:6px 0 20px;">Já bloqueados (não removíveis): gênero, raça, estado civil (plataforma), religião (tenant).</p>
+        <div style="display:flex; justify-content:flex-end; gap:10px;">
+          <button onclick="closeModal()" style="padding:9px 20px; border:1px solid #D1D5DB; background:white; color:#374151; border-radius:8px; font-size:14px; font-weight:500; cursor:pointer; font-family:inherit;">Cancelar</button>
+          <button onclick="closeModal(); switchTab('fair-tabs','editor');" style="padding:9px 20px; background:#C74446; color:white; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; font-family:inherit;">Adicionar (endurecer)</button>
+        </div>
+      </div>
+    </div><!-- /#overlay-fair-add-attribute -->
+
+    <!-- Modal: exigir revisão humana em mais decisões -->
+    <div class="modal-overlay" id="overlay-fair-add-hitl" onclick="handleOverlayClick(event)">
+      <div class="modal" onclick="event.stopPropagation()" style="width:500px; max-width:95vw; border-radius:16px; padding:28px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+          <div style="font-size:18px; font-weight:700; color:#111827;">Exigir revisão humana</div>
+          <button onclick="closeModal()" style="background:transparent; border:none; cursor:pointer; padding:6px; color:#6B7280; border-radius:6px;"><i data-lucide="x" style="width:20px;height:20px;"></i></button>
+        </div>
+        <p style="font-size:12.5px; color:#6B7280; margin:0 0 18px;">Marque os tipos de decisão que passam a exigir aprovação humana (só amplia a cobertura).</p>
+        <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px;">
+          <label style="display:flex; align-items:center; gap:8px; font-size:13px; color:#9CA3AF;"><input type="checkbox" checked disabled style="width:15px;height:15px;"> rejeição final <span style="font-size:11px;">(piso plataforma)</span></label>
+          <label style="display:flex; align-items:center; gap:8px; font-size:13px; color:#374151;"><input type="checkbox" checked style="width:15px;height:15px; accent-color:#C74446;"> avanço para entrevista <span style="font-size:11px; color:#166534;">(tenant)</span></label>
+          <label style="display:flex; align-items:center; gap:8px; font-size:13px; color:#374151; cursor:pointer;"><input type="checkbox" style="width:15px;height:15px; accent-color:#C74446;"> shortlist automático</label>
+          <label style="display:flex; align-items:center; gap:8px; font-size:13px; color:#374151; cursor:pointer;"><input type="checkbox" style="width:15px;height:15px; accent-color:#C74446;"> rejeição em massa</label>
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:10px;">
+          <button onclick="closeModal()" style="padding:9px 20px; border:1px solid #D1D5DB; background:white; color:#374151; border-radius:8px; font-size:14px; font-weight:500; cursor:pointer; font-family:inherit;">Cancelar</button>
+          <button onclick="closeModal(); switchTab('fair-tabs','editor');" style="padding:9px 20px; background:#C74446; color:white; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; font-family:inherit;">Salvar (endurecer)</button>
+        </div>
+      </div>
+    </div><!-- /#overlay-fair-add-hitl -->
+
+    <!-- Modal: adicionar termo à banlist -->
+    <div class="modal-overlay" id="overlay-fair-add-term" onclick="handleOverlayClick(event)">
+      <div class="modal" onclick="event.stopPropagation()" style="width:500px; max-width:95vw; border-radius:16px; padding:28px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+          <div style="font-size:18px; font-weight:700; color:#111827;">Adicionar termo à banlist</div>
+          <button onclick="closeModal()" style="background:transparent; border:none; cursor:pointer; padding:6px; color:#6B7280; border-radius:6px;"><i data-lucide="x" style="width:20px;height:20px;"></i></button>
+        </div>
+        <p style="font-size:12.5px; color:#6B7280; margin:0 0 18px;">Termo proibido em prompts, descrições de vaga e comunicação com o candidato.</p>
+        <label style="display:block; font-size:13px; font-weight:500; color:#374151; margin-bottom:6px;">Termo / expressão</label>
+        <input type="text" placeholder="ex: boa aparência" style="width:100%; border:1px solid #D1D5DB; border-radius:8px; padding:10px 12px; font-size:14px; color:#111827; box-sizing:border-box; font-family:inherit; margin-bottom:20px;">
+        <div style="display:flex; justify-content:flex-end; gap:10px;">
+          <button onclick="closeModal()" style="padding:9px 20px; border:1px solid #D1D5DB; background:white; color:#374151; border-radius:8px; font-size:14px; font-weight:500; cursor:pointer; font-family:inherit;">Cancelar</button>
+          <button onclick="closeModal(); switchTab('fair-tabs','editor');" style="padding:9px 20px; background:#C74446; color:white; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; font-family:inherit;">Adicionar</button>
+        </div>
+      </div>
+    </div><!-- /#overlay-fair-add-term -->
+
+    <!-- Modal: publicar + ativar rascunho -->
+    <div class="modal-overlay" id="overlay-fair-publish" style="background:rgba(0,0,0,0.5);" onclick="handleOverlayClick(event)">
+      <div class="modal" onclick="event.stopPropagation()" style="width:480px; max-width:95vw; border-radius:16px; padding:26px;">
+        <div style="width:52px; height:52px; border-radius:50%; background:rgba(93,164,122,0.12); display:flex; align-items:center; justify-content:center; margin:0 auto 16px;"><i data-lucide="rocket" style="width:24px;height:24px;color:#166534;"></i></div>
+        <div style="font-size:17px; font-weight:700; color:#111827; text-align:center; margin-bottom:8px;">Publicar e ativar o rascunho v6?</div>
+        <p style="font-size:13px; color:#6B7280; line-height:1.55; text-align:center; margin:0 0 20px;">Passa por <strong>published → active</strong> para (iFood, triagem). A v5 atual vira <strong>superseded</strong>. Aplica em runtime sem deploy (evento <span style="font-family:monospace;">fairness.policy.activated</span> invalida o cache).</p>
+        <div style="display:flex; justify-content:center; gap:10px;">
+          <button onclick="closeModal()" style="padding:9px 20px; border:1px solid #D1D5DB; background:white; color:#374151; border-radius:8px; font-size:14px; font-weight:500; cursor:pointer; font-family:inherit;">Cancelar</button>
+          <button onclick="closeModal(); showScreen('screen-fairness-policies'); switchTab('fair-tabs','versions');" style="padding:9px 22px; background:#C74446; color:white; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; font-family:inherit;">Publicar &amp; ativar</button>
+        </div>
+      </div>
+    </div><!-- /#overlay-fair-publish -->
+
+    <!-- Modal: reativar versão anterior (rollback) -->
+    <div class="modal-overlay" id="overlay-fair-rollback" style="background:rgba(0,0,0,0.5);" onclick="handleOverlayClick(event)">
+      <div class="modal" onclick="event.stopPropagation()" style="width:460px; max-width:95vw; border-radius:16px; padding:26px;">
+        <div style="font-size:17px; font-weight:700; color:#111827; margin-bottom:8px;">Reativar a versão v4?</div>
+        <p style="font-size:13px; color:#6B7280; line-height:1.55; margin:0 0 20px;">Rollback = ativar uma versão anterior (nada é deletado). A versão ativa atual vira <strong>superseded</strong>. Fica registrado na trilha de auditoria.</p>
+        <div style="display:flex; justify-content:flex-end; gap:10px;">
+          <button onclick="closeModal()" style="padding:9px 20px; border:1px solid #D1D5DB; background:white; color:#374151; border-radius:8px; font-size:14px; font-weight:500; cursor:pointer; font-family:inherit;">Cancelar</button>
+          <button onclick="closeModal(); switchTab('fair-tabs','versions');" style="padding:9px 20px; background:#C74446; color:white; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; font-family:inherit;">Reativar v4</button>
+        </div>
+      </div>
+    </div><!-- /#overlay-fair-rollback -->
 
     <div class="modal-overlay" id="overlay-lock-tenant" style="background:rgba(0,0,0,0.5);" onclick="handleOverlayClick(event)">
       <div class="modal" onclick="event.stopPropagation()" style="width:460px; max-width:95vw; border-radius:16px; padding:32px;">
