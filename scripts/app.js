@@ -705,3 +705,131 @@ function openConfirmAction(title, msg, label){
   var b=document.getElementById('confirm-action-btn'); if(b) b.textContent=label||'Confirmar';
   if(typeof openModal==='function') openModal('confirm-action');
 }
+
+
+/* ----------------------------------------------------------
+   Pipeline do cliente — bloqueio, visibilidade e exclusão de etapa
+   O admin decide o que fica travado em cada cliente: o cadeado
+   comanda arraste, edição, ocultação e exclusão da etapa.
+   ---------------------------------------------------------- */
+function _stageIcon(el, name) {
+  if (!el) return;
+  el.innerHTML = '';
+  var i = document.createElement('i');
+  i.setAttribute('data-lucide', name);
+  i.style.width = '14px'; i.style.height = '14px';
+  el.appendChild(i);
+  if (window.lucide) lucide.createIcons({ nodes: [i] });
+}
+
+function _stageBadge(text, color, bg) {
+  return '<span style="display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;color:' +
+    color + ';background:' + bg + ';white-space:nowrap;">' + text + '</span>';
+}
+
+function _stageRefresh(row) {
+  var locked = row.dataset.locked === '1';
+  var hidden = row.dataset.hidden === '1';
+  var kind = row.dataset.kind;
+  var name = row.dataset.stage;
+
+  var lockBtn = row.querySelector('[data-role="lock"]');
+  if (lockBtn) {
+    _stageIcon(lockBtn, locked ? 'lock' : 'lock-open');
+    var ic = lockBtn.querySelector('i');
+    if (ic) { ic.style.width = '13px'; ic.style.height = '13px'; ic.style.color = locked ? '#C74446' : '#9CA3AF'; }
+    lockBtn.style.borderColor = locked ? '#F0D2D2' : '#E5E7EB';
+    lockBtn.style.background = locked ? 'rgba(199,68,70,0.06)' : 'white';
+    lockBtn.title = locked
+      ? 'Etapa travada. Clique para liberar renomear, arrastar, ocultar e excluir.'
+      : 'Etapa livre. Clique para travar.';
+  }
+
+  var grip = row.querySelector('[data-role="grip"]');
+  if (grip) grip.style.visibility = locked ? 'hidden' : 'visible';
+  if (locked) row.removeAttribute('draggable'); else row.setAttribute('draggable', 'true');
+
+  var lockBadge = row.querySelector('[data-role="lock-badge"]');
+  if (lockBadge) lockBadge.innerHTML = locked
+    ? _stageBadge('Travada', '#C74446', 'rgba(199,68,70,0.10)')
+    : _stageBadge('Livre', '#5DA47A', 'rgba(93,164,122,0.12)');
+
+  var hiddenBadge = row.querySelector('[data-role="hidden-badge"]');
+  if (hiddenBadge) hiddenBadge.style.display = hidden ? 'inline' : 'none';
+
+  var hideBtn = row.querySelector('[data-role="hide"]');
+  if (hideBtn) {
+    _stageIcon(hideBtn, hidden ? 'eye' : 'eye-off');
+    hideBtn.disabled = locked && !hidden;
+    hideBtn.style.opacity = hideBtn.disabled ? '0.35' : '';
+    hideBtn.style.cursor = hideBtn.disabled ? 'not-allowed' : 'pointer';
+    hideBtn.title = hidden
+      ? 'Reexibir etapa no processo'
+      : (locked ? 'Etapa travada não pode ser ocultada' : 'Ocultar etapa do processo, sem apagar o histórico');
+  }
+
+  var delBtn = row.querySelector('[data-role="del"]');
+  if (delBtn) {
+    delBtn.disabled = locked;
+    delBtn.style.opacity = locked ? '0.35' : '';
+    delBtn.style.cursor = locked ? 'not-allowed' : 'pointer';
+    delBtn.title = locked ? 'Etapa travada não pode ser excluída' : 'Excluir etapa';
+    delBtn.setAttribute('onclick', "openStageDelete('" + name + "','" + kind + "')");
+  }
+
+  row.style.opacity = hidden ? '0.55' : '';
+  row.style.background = hidden ? '#FAFAFA' : 'white';
+}
+
+function toggleStageLock(btn) {
+  var row = btn.closest('.dnd-row');
+  if (!row) return;
+  row.dataset.locked = row.dataset.locked === '1' ? '0' : '1';
+  _stageRefresh(row);
+}
+
+function toggleStageHidden(btn) {
+  var row = btn.closest('.dnd-row');
+  if (!row || btn.disabled) return;
+  row.dataset.hidden = row.dataset.hidden === '1' ? '0' : '1';
+  _stageRefresh(row);
+  _stageHiddenCount();
+  var cb = document.getElementById('pipe-show-hidden');
+  if (cb) toggleHiddenStages(cb);
+}
+
+function _stageHiddenCount() {
+  var list = document.getElementById('pipeline-stages');
+  var el = document.getElementById('pipe-hidden-count');
+  if (!list || !el) return;
+  var n = list.querySelectorAll('.dnd-row[data-hidden="1"]').length;
+  el.textContent = '(' + n + ')';
+}
+
+function toggleHiddenStages(cb) {
+  var list = document.getElementById('pipeline-stages');
+  if (!list) return;
+  list.querySelectorAll('.dnd-row[data-hidden="1"]').forEach(function (row) {
+    row.style.display = cb.checked ? '' : 'none';
+  });
+}
+
+/* Etapa estrutural exclui igual, mas com aviso reforçado do que ela ancora. */
+var STAGE_DELETE_WARNINGS = {
+  system: 'Esta é a etapa de <strong>Triagem</strong>: ela ancora a triagem automática da LIA e é onde entram as candidaturas vindas do site. Sem ela, o candidato passa a entrar na primeira etapa do pipeline.',
+  standard: 'Esta é uma etapa <strong>estrutural</strong> do processo. Relatórios e contadores que a usam como referência passam a mostrar zero para este cliente.'
+};
+
+function openStageDelete(name, kind) {
+  var n = document.getElementById('stage-delete-name');
+  if (n) n.textContent = name || 'esta etapa';
+  var box = document.getElementById('stage-delete-warning');
+  var txt = document.getElementById('stage-delete-warning-text');
+  var warning = STAGE_DELETE_WARNINGS[kind];
+  if (box) box.style.display = warning ? 'block' : 'none';
+  if (txt) txt.innerHTML = warning || '';
+  if (typeof openModal === 'function') openModal('stage-delete');
+  if (window.lucide) lucide.createIcons();
+}
+
+document.addEventListener('DOMContentLoaded', _stageHiddenCount);
