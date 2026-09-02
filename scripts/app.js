@@ -43,6 +43,10 @@ function updateSidebarActive(screenId) {
     'screen-onboarding-client':           'nav-client-onboarding',
     'screen-ai-monitoring':         'nav-ai-monitoring',
     'screen-audit-logs':            'nav-audit-logs',
+    'screen-assisted-access':         'nav-assisted-access',
+    'screen-assisted-access-empty':   'nav-assisted-access',
+    'screen-assisted-access-loading': 'nav-assisted-access',
+    'screen-assisted-access-error':   'nav-assisted-access',
     'screen-client-detail':         'nav-client-overview',
     'screen-client-users':          'nav-client-users',
     'screen-billing':               'nav-billing',
@@ -88,6 +92,10 @@ function updateTopbarContext(screenId) {
     'screen-onboarding-client':          'Onboarding — iFood Talentos',
     'screen-ai-monitoring':         'Monitoramento de Agentes IA',
     'screen-audit-logs':            'Logs & Auditoria',
+    'screen-assisted-access':         'Acessos Assistidos',
+    'screen-assisted-access-empty':   'Acessos Assistidos',
+    'screen-assisted-access-loading': 'Acessos Assistidos',
+    'screen-assisted-access-error':   'Acessos Assistidos',
     'screen-client-detail':         'iFood Talentos',
     'screen-client-users':          'Usuários — iFood Talentos',
     'screen-billing':               'Faturamento — iFood Talentos',
@@ -513,6 +521,7 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
     closeModal();
     closeDrawer();
+    aaCloseDetail();
     closeScopeDropdown();
     closeNotifDropdown();
     closeUserDropdown();
@@ -833,3 +842,364 @@ function openStageDelete(name, kind) {
 }
 
 document.addEventListener('DOMContentLoaded', _stageHiddenCount);
+
+/* ----------------------------------------------------------
+   Acesso Assistido: abertura da sessão e histórico
+   O acesso é total: a contenção é o registro, a confirmação
+   em ação irreversível e o prazo curto da sessão.
+   ---------------------------------------------------------- */
+
+// Cada cliente carrega o estado que libera ou barra a abertura:
+//   ok        -> pode abrir
+//   disabled  -> o cliente desligou o acesso assistido em contrato
+//   suspended -> conta suspensa, ninguém entra
+// Usuários com acesso global da WeDO nunca entram nesta lista.
+const AA_CLIENTS = {
+  ifood: {
+    name: 'iFood Talentos', initials: 'IF', color: 'var(--lia-brand-primary)', state: 'ok',
+    users: [
+      { id: 'u-101', name: 'Ana Beatriz Ramos', email: 'ana.ramos@ifoodtalentos.com.br', role: 'admin do cliente' },
+      { id: 'u-102', name: 'Carlos Menezes',    email: 'carlos.menezes@ifoodtalentos.com.br', role: 'recrutador' },
+      { id: 'u-103', name: 'Juliana Torres',    email: 'juliana.torres@ifoodtalentos.com.br', role: 'recrutadora' },
+      { id: 'u-104', name: 'Pedro Sales',       email: 'pedro.sales@ifoodtalentos.com.br', role: 'recrutador' }
+    ]
+  },
+  nubank: {
+    name: 'Nubank Recrutamento', initials: 'NR', color: 'var(--wedo-cyan)', state: 'ok',
+    users: [
+      { id: 'u-201', name: 'Fernanda Lima', email: 'fernanda.lima@nubankrecrutamento.com.br', role: 'admin do cliente' },
+      { id: 'u-202', name: 'Diego Barros',  email: 'diego.barros@nubankrecrutamento.com.br', role: 'recrutador' }
+    ]
+  },
+  vega: {
+    name: 'Vega Recruit', initials: 'VG', color: 'var(--wedo-orange)', state: 'disabled',
+    blockedTitle: 'Acesso assistido desligado para este cliente',
+    blockedText: 'Vega Recruit exigiu autorização prévia em contrato e mantém o acesso assistido desligado. Para abrir uma sessão, o cliente precisa religar a chave nas configurações da conta.',
+    users: []
+  },
+  globalhire: {
+    name: 'GlobalHire Co.', initials: 'GH', color: 'var(--lia-text-tertiary)', state: 'suspended',
+    blockedTitle: 'Conta suspensa',
+    blockedText: 'GlobalHire Co. está com a conta suspensa desde março de 2026. Nenhuma sessão pode ser aberta enquanto a conta não for reativada.',
+    users: []
+  }
+};
+
+let aaClientKey = null;
+let aaSelectedUser = null;
+let aaDuration = 30;
+
+const AA_REASON_MIN = 10;
+
+function aaOpenModal(clientKey) {
+  const client = AA_CLIENTS[clientKey];
+  if (!client) return;
+
+  aaClientKey = clientKey;
+  aaSelectedUser = null;
+  aaDuration = 30;
+
+  const avatar = document.getElementById('aa-client-avatar');
+  if (avatar) {
+    avatar.textContent = client.initials;
+    avatar.style.backgroundColor = client.color;
+  }
+  const nameEl = document.getElementById('aa-client-name');
+  if (nameEl) nameEl.textContent = client.name;
+
+  const blocked = client.state !== 'ok';
+  const blockedBox = document.getElementById('aa-blocked');
+  const form = document.getElementById('aa-form');
+  const opening = document.getElementById('aa-opening');
+  const footer = document.getElementById('aa-footer');
+  const submit = document.getElementById('aa-submit');
+
+  if (opening) opening.style.display = 'none';
+  if (footer) footer.style.display = 'flex';
+  if (form) form.style.display = blocked ? 'none' : 'block';
+  if (blockedBox) blockedBox.style.display = blocked ? 'flex' : 'none';
+  if (submit) submit.style.display = blocked ? 'none' : 'inline-flex';
+
+  if (blocked) {
+    const t = document.getElementById('aa-blocked-title');
+    const x = document.getElementById('aa-blocked-text');
+    if (t) t.textContent = client.blockedTitle;
+    if (x) x.textContent = client.blockedText;
+  } else {
+    const reason = document.getElementById('aa-reason');
+    if (reason) reason.value = '';
+    const search = document.getElementById('aa-user-search');
+    if (search) search.value = '';
+    document.querySelectorAll('#aa-duration button').forEach(b => {
+      b.classList.toggle('selected', b.textContent.trim() === '30 min');
+    });
+    aaRenderUsers('');
+    aaValidate();
+  }
+
+  openModal('assisted-access');
+  if (window.lucide) lucide.createIcons();
+}
+
+function aaRenderUsers(query) {
+  const list = document.getElementById('aa-user-list');
+  const client = AA_CLIENTS[aaClientKey];
+  if (!list || !client) return;
+
+  const q = (query || '').trim().toLowerCase();
+  const users = client.users.filter(u =>
+    !q || u.name.toLowerCase().indexOf(q) !== -1 || u.email.toLowerCase().indexOf(q) !== -1
+  );
+
+  if (!users.length) {
+    list.innerHTML = '<div class="text-sm text-secondary" style="padding:14px 12px; text-align:center;">Nenhum usuário ativo corresponde à busca.</div>';
+    return;
+  }
+
+  list.innerHTML = users.map(u =>
+    '<button type="button" class="aa-user-option' + (aaSelectedUser === u.id ? ' selected' : '') + '"'
+    + ' onclick="aaSelectUser(\'' + u.id + '\', this)">'
+    + '<span class="avatar avatar-sm" style="background-color:var(--lia-bg-tertiary); color:var(--lia-text-secondary);">'
+    + u.name.split(' ')[0].charAt(0) + u.name.split(' ').slice(-1)[0].charAt(0) + '</span>'
+    + '<span class="flex-1 min-w-0">'
+    + '<span class="block text-base font-medium text-primary truncate">' + u.name + '</span>'
+    + '<span class="block text-sm text-secondary truncate">' + u.email + '</span>'
+    + '</span>'
+    + '<span class="badge badge-gray badge-sm">' + u.role + '</span>'
+    + '</button>'
+  ).join('');
+}
+
+function aaFilterUsers(query) {
+  aaRenderUsers(query);
+}
+
+function aaSelectUser(userId, el) {
+  aaSelectedUser = userId;
+  document.querySelectorAll('#aa-user-list .aa-user-option').forEach(b => b.classList.remove('selected'));
+  if (el) el.classList.add('selected');
+  aaValidate();
+}
+
+function aaSetDuration(minutes, btn) {
+  aaDuration = minutes;
+  document.querySelectorAll('#aa-duration button').forEach(b => b.classList.remove('selected'));
+  if (btn) btn.classList.add('selected');
+}
+
+function aaValidate() {
+  const reason = document.getElementById('aa-reason');
+  const counter = document.getElementById('aa-reason-counter');
+  const submit = document.getElementById('aa-submit');
+  const length = reason ? reason.value.trim().length : 0;
+  const reasonOk = length >= AA_REASON_MIN;
+
+  if (counter) {
+    counter.textContent = reasonOk
+      ? length + ' caracteres'
+      : length + '/' + AA_REASON_MIN + ' caracteres';
+    counter.classList.toggle('invalid', !reasonOk);
+  }
+  if (reason) reason.classList.toggle('error', length > 0 && !reasonOk);
+  if (submit) submit.disabled = !(reasonOk && aaSelectedUser);
+}
+
+function aaSubmit() {
+  const form = document.getElementById('aa-form');
+  const opening = document.getElementById('aa-opening');
+  const footer = document.getElementById('aa-footer');
+  if (form) form.style.display = 'none';
+  if (footer) footer.style.display = 'none';
+  if (opening) opening.style.display = 'block';
+}
+
+function aaConfirmRevoke(clientName, adminName) {
+  const c = document.getElementById('aa-revoke-client');
+  const a = document.getElementById('aa-revoke-admin');
+  if (c) c.textContent = clientName;
+  if (a) a.textContent = adminName;
+  openModal('assisted-revoke');
+  if (window.lucide) lucide.createIcons();
+}
+
+function aaExport(btn) {
+  if (!btn) return;
+  const original = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<i data-lucide="loader"></i>Gerando arquivo...';
+  if (window.lucide) lucide.createIcons({ nodes: [btn] });
+  setTimeout(() => {
+    btn.innerHTML = original;
+    btn.disabled = false;
+    if (window.lucide) lucide.createIcons({ nodes: [btn] });
+  }, 1600);
+}
+
+/* ----------------------------------------------------------
+   Acesso Assistido: trilha de ações da sessão
+   Ação sensível (irreversível ou visível para terceiro) sai
+   em destaque: é o que a auditoria procura primeiro.
+   ---------------------------------------------------------- */
+const AA_SESSIONS = {
+  s1: {
+    client: 'iFood Talentos', targetUser: 'Ana Beatriz Ramos', targetRole: 'admin do cliente',
+    admin: 'Marina Vasconcelos', status: 'Ativa', statusClass: 'aa-live-tag',
+    started: '02/09/2026 14:52', ends: '02/09/2026 15:22', duration: 'em curso',
+    reason: 'Cliente relatou que a triagem da LIA não pontua candidatos da vaga de Analista Fiscal.',
+    ip: '177.22.4.89',
+    actions: [
+      { at: '14:52', label: 'Entrou na plataforma do cliente', detail: 'Sessão iniciada como Ana Beatriz Ramos' },
+      { at: '14:54', label: 'Abriu a vaga Analista Fiscal Sênior', detail: 'Leitura: não conta como atividade do cliente' },
+      { at: '14:57', label: 'Alterou o filtro de triagem da vaga', detail: 'Nota mínima: 7,0 para 6,0' },
+      { at: '15:02', label: 'Reenviou convite de entrevista ao candidato', detail: 'Candidato cand-9281 · e-mail entregue', sensitive: 'Comunicação ao candidato' },
+      { at: '15:05', label: 'Exportou a lista de candidatos da vaga', detail: '48 candidatos · arquivo CSV', sensitive: 'Exportação de base' }
+    ]
+  },
+  s2: {
+    client: 'Nubank Recrutamento', targetUser: 'Diego Barros', targetRole: 'recrutador',
+    admin: 'Rafael Antunes', status: 'Ativa', statusClass: 'aa-live-tag',
+    started: '02/09/2026 15:04', ends: '02/09/2026 15:19', duration: 'em curso',
+    reason: 'Investigar o erro ao publicar vaga relatado no chamado 4821.',
+    ip: '191.5.88.201',
+    actions: [
+      { at: '15:04', label: 'Entrou na plataforma do cliente', detail: 'Sessão iniciada como Diego Barros' },
+      { at: '15:06', label: 'Abriu o formulário da vaga Engenheiro de Dados', detail: 'Leitura: não conta como atividade do cliente' },
+      { at: '15:09', label: 'Publicou a vaga Engenheiro de Dados', detail: 'Vaga visível no site de carreiras', sensitive: 'Publicação de vaga' }
+    ]
+  },
+  s3: {
+    client: 'TechAlpha Ltda', targetUser: 'Marcos Vinícius Aguiar', targetRole: 'admin do cliente',
+    admin: 'Camila Prado', status: 'Encerrada', statusClass: 'badge badge-gray',
+    started: '02/09/2026 11:18', ends: '02/09/2026 11:30', duration: '12 min (saída pelo botão)',
+    reason: 'Conferir o mapeamento de etapas do processo seletivo junto com o cliente.',
+    ip: '201.44.10.7',
+    actions: [
+      { at: '11:18', label: 'Entrou na plataforma do cliente', detail: 'Sessão iniciada como Marcos Vinícius Aguiar' },
+      { at: '11:21', label: 'Abriu o editor do processo seletivo', detail: 'Leitura: não conta como atividade do cliente' },
+      { at: '11:26', label: 'Renomeou a etapa Entrevista Técnica', detail: 'Novo nome: Entrevista Técnica (time de dados)' },
+      { at: '11:30', label: 'Saiu do acesso assistido', detail: 'Encerramento manual' }
+    ]
+  },
+  s4: {
+    client: 'RH Solutions', targetUser: 'Letícia Furtado', targetRole: 'recrutadora',
+    admin: 'Marina Vasconcelos', status: 'Expirada', statusClass: 'badge badge-yellow',
+    started: '01/09/2026 17:40', ends: '01/09/2026 18:10', duration: '30 min (prazo esgotado)',
+    reason: 'Validar o envio de WhatsApp depois da mudança de template.',
+    ip: '177.22.4.89',
+    actions: [
+      { at: '17:40', label: 'Entrou na plataforma do cliente', detail: 'Sessão iniciada como Letícia Furtado' },
+      { at: '17:44', label: 'Abriu a triagem por WhatsApp da vaga Consultor Comercial', detail: 'Leitura: não conta como atividade do cliente' },
+      { at: '17:52', label: 'Enviou mensagem de WhatsApp ao candidato', detail: 'Candidato cand-7734 · template de convite', sensitive: 'Comunicação ao candidato' },
+      { at: '18:10', label: 'Sessão expirada pelo prazo', detail: 'Encerramento automático, sem ação do operador' }
+    ]
+  },
+  s5: {
+    client: 'iFood Talentos', targetUser: 'Carlos Menezes', targetRole: 'recrutador',
+    admin: 'Rafael Antunes', status: 'Revogada', statusClass: 'badge badge-red',
+    started: '01/09/2026 09:12', ends: '01/09/2026 09:16', duration: '4 min (revogada por Camila Prado)',
+    reason: 'Reproduzir a falha do funil relatada por telefone.',
+    ip: '191.5.88.201',
+    actions: [
+      { at: '09:12', label: 'Entrou na plataforma do cliente', detail: 'Sessão iniciada como Carlos Menezes' },
+      { at: '09:14', label: 'Abriu o funil de talentos', detail: 'Leitura: não conta como atividade do cliente' },
+      { at: '09:16', label: 'Sessão revogada pelo painel interno', detail: 'Revogada por Camila Prado: acesso aberto na conta errada' }
+    ]
+  },
+  s6: {
+    client: 'Nubank Recrutamento', targetUser: 'Fernanda Lima', targetRole: 'admin do cliente',
+    admin: 'Camila Prado', status: 'Encerrada', statusClass: 'badge badge-gray',
+    started: '29/08/2026 16:03', ends: '29/08/2026 16:25', duration: '22 min (saída pelo botão)',
+    reason: 'Ajustar a configuração de triagem junto com o cliente durante a reunião.',
+    ip: '201.44.10.7',
+    actions: [
+      { at: '16:03', label: 'Entrou na plataforma do cliente', detail: 'Sessão iniciada como Fernanda Lima' },
+      { at: '16:08', label: 'Alterou o peso das competências na triagem', detail: 'Competências técnicas: 40% para 55%' },
+      { at: '16:19', label: 'Reprovou candidato no processo', detail: 'Candidato cand-5512 · motivo: fora do perfil', sensitive: 'Desfecho de candidato' },
+      { at: '16:25', label: 'Saiu do acesso assistido', detail: 'Encerramento manual' }
+    ]
+  }
+};
+
+function aaDetailRow(label, value) {
+  return '<div style="display:flex; gap:12px; padding:10px 0; border-top:1px solid var(--lia-border-subtle);">'
+    + '<div style="flex:0 0 130px;" class="text-sm text-secondary">' + label + '</div>'
+    + '<div class="flex-1 text-base text-primary" style="word-break:break-word;">' + value + '</div>'
+    + '</div>';
+}
+
+function aaOpenDetail(sessionId) {
+  const drawer = document.getElementById('assisted-drawer');
+  const content = document.getElementById('assisted-drawer-content');
+  const session = AA_SESSIONS[sessionId];
+  if (!drawer || !content || !session) return;
+
+  const isLive = session.status === 'Ativa';
+  const statusHtml = isLive
+    ? '<span class="aa-live-tag"><span class="aa-live-pulse"></span>Ativa</span>'
+    : '<span class="' + session.statusClass + '">' + session.status + '</span>';
+
+  const sensitiveCount = session.actions.filter(a => a.sensitive).length;
+
+  let html = '';
+
+  html += '<div class="flex items-center gap-8 mb-4 flex-wrap">'
+    + '<span class="text-md font-semibold text-primary">' + session.client + '</span>'
+    + statusHtml
+    + '</div>';
+  html += '<div class="text-sm text-secondary mb-16">'
+    + session.admin + ' (WeDO) atuando como ' + session.targetUser
+    + '</div>';
+
+  html += '<div class="aa-callout mb-16">'
+    + '<i data-lucide="quote"></i>'
+    + '<div><strong>Motivo informado na abertura</strong><div class="mt-4">' + session.reason + '</div></div>'
+    + '</div>';
+
+  html += '<div class="mb-20">';
+  html += aaDetailRow('Usuário do cliente', session.targetUser + ' <span class="badge badge-gray badge-sm">' + session.targetRole + '</span>');
+  html += aaDetailRow('Quem acessou', session.admin + ' <span class="badge badge-gray badge-sm">acesso global WeDO</span>');
+  html += aaDetailRow('Início', session.started);
+  html += aaDetailRow(isLive ? 'Expira em' : 'Fim', session.ends);
+  html += aaDetailRow('Duração', session.duration);
+  html += aaDetailRow('IP de origem', '<span class="font-inter text-sm">' + session.ip + '</span>');
+  html += '</div>';
+
+  html += '<div class="flex items-center justify-between mb-8">'
+    + '<span class="text-base font-semibold text-primary">Ações executadas na sessão</span>'
+    + (sensitiveCount
+        ? '<span class="aa-badge-sensitive"><i data-lucide="alert-triangle"></i>' + sensitiveCount + ' sensíveis</span>'
+        : '')
+    + '</div>';
+
+  html += session.actions.map(a =>
+    '<div class="aa-action-row' + (a.sensitive ? ' sensitive' : '') + '">'
+    + '<div class="font-inter text-sm text-secondary" style="flex:0 0 44px;">' + a.at + '</div>'
+    + '<div class="flex-1 min-w-0">'
+    + '<div class="text-base ' + (a.sensitive ? 'font-semibold' : 'font-medium') + ' text-primary">' + a.label + '</div>'
+    + '<div class="text-sm text-secondary mt-4">' + a.detail + '</div>'
+    + (a.sensitive
+        ? '<div class="mt-8"><span class="aa-badge-sensitive"><i data-lucide="alert-triangle"></i>' + a.sensitive + '</span></div>'
+        : '')
+    + '</div>'
+    + '</div>'
+  ).join('');
+
+  html += '<div class="text-sm text-secondary mt-16" style="line-height:1.6;">'
+    + 'Toda ação acima está registrada no nome de ' + session.admin + ', não no nome do usuário do cliente. '
+    + 'A leitura de tela durante a sessão não altera notificação, último acesso nem métrica de uso do cliente.'
+    + '</div>';
+
+  if (isLive) {
+    html += '<button class="btn btn-danger w-full mt-16" onclick="aaConfirmRevoke(\'' + session.client + '\',\'' + session.admin + '\')">'
+      + '<i data-lucide="power"></i>Revogar esta sessão</button>';
+  }
+
+  content.innerHTML = html;
+  if (window.lucide) lucide.createIcons();
+  drawer.classList.add('open');
+}
+
+function aaCloseDetail() {
+  const drawer = document.getElementById('assisted-drawer');
+  if (drawer) drawer.classList.remove('open');
+}

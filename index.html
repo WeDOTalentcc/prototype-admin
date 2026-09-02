@@ -81,6 +81,10 @@
               <span class="nav-item-icon"><i data-lucide="clipboard-list"></i></span>
               <span class="nav-item-label">Logs &amp; Auditoria</span>
             </li>
+            <li id="nav-assisted-access" class="nav-item" data-tooltip="Acessos Assistidos" onclick="showScreen('screen-assisted-access')">
+              <span class="nav-item-icon"><i data-lucide="user-check"></i></span>
+              <span class="nav-item-label">Acessos Assistidos</span>
+            </li>
           </ul>
         </div>
 
@@ -537,6 +541,7 @@
             <span style="font-size:13px; color:#6B7280;">4 usuários</span>
           <div style="display:flex; align-items:center; gap:4px; font-size:11px; font-weight:600; color:#FF7A59; margin-top:6px;"><svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>Importado via HubSpot</div>
           </div>
+          <button class="btn btn-secondary btn-sm w-full mt-12" onclick="event.stopPropagation(); aaOpenModal('ifood')"><i data-lucide="user-check"></i>Acessar como cliente</button>
         </div>
 
         <div onclick="showScreen('screen-client-detail'); setClientContext('nubank');" style="background:white; border:1px solid #E5E7EB; border-radius:12px; padding:20px; cursor:pointer; transition:box-shadow 0.15s;" onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'" onmouseout="this.style.boxShadow=''">
@@ -602,6 +607,7 @@
             <span style="font-size:13px; color:#9CA3AF;">MRR: —</span>
             <span style="font-size:13px; color:#6B7280;">3 usuários</span>
           </div>
+          <button class="btn btn-secondary btn-sm w-full mt-12" onclick="event.stopPropagation(); aaOpenModal('vega')"><i data-lucide="user-check"></i>Acessar como cliente</button>
         </div>
 
         <div onclick="showScreen('screen-client-detail');" style="background:white; border:1px solid #E5E7EB; border-radius:12px; padding:20px; cursor:pointer; transition:box-shadow 0.15s;" onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'" onmouseout="this.style.boxShadow=''">
@@ -618,6 +624,7 @@
             <span style="font-size:13px; color:#374151; font-weight:500;">MRR: R$ 890</span>
             <span style="font-size:13px; color:#6B7280;">2 usuários</span>
           </div>
+          <button class="btn btn-secondary btn-sm w-full mt-12" onclick="event.stopPropagation(); aaOpenModal('globalhire')"><i data-lucide="user-check"></i>Acessar como cliente</button>
         </div>
 
       </div>
@@ -722,6 +729,7 @@
           <div style="display:flex; gap:10px; flex-wrap:wrap;">
             <button style="padding:8px 16px; border:1px solid #D1D5DB; background:white; color:#374151; border-radius:8px; font-size:13px; font-weight:500; cursor:pointer; font-family:inherit;">Suspender Cliente</button>
             <button style="display:flex; align-items:center; gap:6px; padding:8px 16px; border:1px solid #D1D5DB; background:white; color:#374151; border-radius:8px; font-size:13px; font-weight:500; cursor:pointer; font-family:inherit;">Ver no ATS <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></button>
+            <button class="btn btn-secondary" onclick="aaOpenModal('ifood')" title="Abrir uma sessão de suporte na plataforma deste cliente"><i data-lucide="user-check"></i>Acessar como cliente</button>
             <button style="padding:8px 16px; background:#111827; color:white; border:none; border-radius:8px; font-size:13px; font-weight:500; cursor:pointer; font-family:inherit;">Editar</button>
             <button onclick="openModal('alterar-plano')" style="display:flex; align-items:center; gap:6px; padding:8px 16px; background:#C74446; color:white; border:none; border-radius:8px; font-size:13px; font-weight:500; cursor:pointer; font-family:inherit;" onmouseover="this.style.background='#B03335'" onmouseout="this.style.background='#C74446'"><i data-lucide="repeat" style="width:14px;height:14px;"></i>Alterar Plano</button>
           </div>
@@ -5486,6 +5494,310 @@ Princípios: (1) Imparcialidade — aplicar sempre o FairnessGuard (Four-Fifths 
       </div>
     </div>
 
+
+    <!-- ============================================================
+         ACESSOS ASSISTIDOS: histórico das sessões de suporte
+         ============================================================ -->
+    <div class="screen" id="screen-assisted-access">
+      <div style="padding:24px 32px; max-width:1200px; margin:0 auto;">
+
+        <div class="page-header">
+          <div class="page-header-left">
+            <h1 class="page-title">Acessos Assistidos</h1>
+            <p class="page-subtitle">Quem da WeDO entrou na conta de cada cliente, quando, por quê e o que fez</p>
+          </div>
+          <div class="page-actions">
+            <button class="btn btn-secondary" onclick="aaExport(this)"><i data-lucide="download"></i>Exportar histórico</button>
+          </div>
+        </div>
+
+        <!-- Indicadores -->
+        <div class="grid grid-cols-3 gap-16 mb-24">
+          <div class="metric-card">
+            <div class="metric-card-label">Sessões ativas agora</div>
+            <div class="metric-card-value" style="color:var(--lia-assisted-fg);">2</div>
+            <span class="text-sm text-secondary">em 2 clientes distintos</span>
+          </div>
+          <div class="metric-card">
+            <div class="metric-card-label">Sessões nos últimos 30 dias</div>
+            <div class="metric-card-value">18</div>
+            <span class="text-sm text-secondary">por 3 pessoas da WeDO</span>
+          </div>
+          <div class="metric-card">
+            <div class="metric-card-label">Duração média</div>
+            <div class="metric-card-value">14 min</div>
+            <span class="text-sm text-secondary">limite por sessão: 120 min</span>
+          </div>
+        </div>
+
+        <!-- Sessões ativas -->
+        <div class="section-header mb-12" style="display:flex; align-items:center; gap:8px;">
+          <span class="aa-live-pulse"></span>
+          <span class="text-md font-semibold text-primary">Sessões ativas agora</span>
+        </div>
+
+        <div class="flex flex-col gap-12 mb-24">
+
+          <div class="aa-live-card">
+            <div class="avatar avatar-md avatar-square" style="background-color:var(--lia-brand-primary); color:var(--lia-bg-primary);">IF</div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-8 mb-4 flex-wrap">
+                <span class="text-base font-semibold text-primary">iFood Talentos</span>
+                <span class="aa-live-tag"><span class="aa-live-pulse"></span>Sessão ativa</span>
+              </div>
+              <div class="text-sm text-secondary">
+                <strong class="text-primary font-medium">Marina Vasconcelos</strong> (WeDO) atuando como
+                <strong class="text-primary font-medium">Ana Beatriz Ramos</strong>
+                <span class="badge badge-gray badge-sm" style="margin-left:4px;">admin do cliente</span>
+              </div>
+              <div class="text-sm text-secondary mt-4">Iniciada às 14:52 · expira às 15:22</div>
+            </div>
+            <div style="text-align:right; flex-shrink:0;">
+              <div class="aa-remaining">18 min</div>
+              <div class="aa-remaining-label">restantes</div>
+            </div>
+            <div class="flex gap-8 flex-shrink-0">
+              <button class="btn btn-secondary btn-sm" onclick="aaOpenDetail('s1')"><i data-lucide="list"></i>Ver ações</button>
+              <button class="btn btn-danger btn-sm" onclick="aaConfirmRevoke('iFood Talentos','Marina Vasconcelos')"><i data-lucide="power"></i>Revogar</button>
+            </div>
+          </div>
+
+          <div class="aa-live-card">
+            <div class="avatar avatar-md avatar-square" style="background-color:var(--wedo-cyan); color:var(--lia-bg-primary);">NR</div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-8 mb-4 flex-wrap">
+                <span class="text-base font-semibold text-primary">Nubank Recrutamento</span>
+                <span class="aa-live-tag"><span class="aa-live-pulse"></span>Sessão ativa</span>
+              </div>
+              <div class="text-sm text-secondary">
+                <strong class="text-primary font-medium">Rafael Antunes</strong> (WeDO) atuando como
+                <strong class="text-primary font-medium">Diego Barros</strong>
+                <span class="badge badge-gray badge-sm" style="margin-left:4px;">recrutador</span>
+              </div>
+              <div class="text-sm text-secondary mt-4">Iniciada às 15:04 · expira às 15:19</div>
+            </div>
+            <div style="text-align:right; flex-shrink:0;">
+              <div class="aa-remaining">6 min</div>
+              <div class="aa-remaining-label">restantes</div>
+            </div>
+            <div class="flex gap-8 flex-shrink-0">
+              <button class="btn btn-secondary btn-sm" onclick="aaOpenDetail('s2')"><i data-lucide="list"></i>Ver ações</button>
+              <button class="btn btn-danger btn-sm" onclick="aaConfirmRevoke('Nubank Recrutamento','Rafael Antunes')"><i data-lucide="power"></i>Revogar</button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Filtros -->
+        <div class="card mb-16">
+          <div class="card-body" style="padding:14px 16px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+            <div class="input-group" style="flex:1; min-width:200px;">
+              <span class="input-group-icon"><i data-lucide="search"></i></span>
+              <input class="input" type="text" placeholder="Buscar por cliente, usuário ou motivo...">
+            </div>
+            <select class="input" style="width:auto;">
+              <option value="">Todos os clientes</option>
+              <option>iFood Talentos</option>
+              <option>Nubank Recrutamento</option>
+              <option>TechAlpha Ltda</option>
+              <option>RH Solutions</option>
+            </select>
+            <select class="input" style="width:auto;">
+              <option value="">Toda a equipe WeDO</option>
+              <option>Marina Vasconcelos</option>
+              <option>Rafael Antunes</option>
+              <option>Camila Prado</option>
+            </select>
+            <select class="input" style="width:auto;">
+              <option value="">Todas as situações</option>
+              <option>Ativa</option>
+              <option>Encerrada</option>
+              <option>Expirada</option>
+              <option>Revogada</option>
+            </select>
+            <select class="input" style="width:auto;">
+              <option>Últimos 30 dias</option>
+              <option>Últimos 7 dias</option>
+              <option>Hoje</option>
+              <option>Período personalizado</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Histórico -->
+        <div class="card" style="overflow:hidden;">
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Início</th>
+                  <th>Cliente</th>
+                  <th>Usuário do cliente</th>
+                  <th>Quem acessou (WeDO)</th>
+                  <th>Motivo</th>
+                  <th>Duração</th>
+                  <th>Situação</th>
+                  <th style="text-align:center;">Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+
+                <tr style="cursor:pointer;" onclick="aaOpenDetail('s1')">
+                  <td class="font-inter text-sm" style="white-space:nowrap;">02/09 14:52</td>
+                  <td class="font-medium">iFood Talentos</td>
+                  <td>Ana Beatriz Ramos <span class="badge badge-gray badge-sm">admin</span></td>
+                  <td>Marina Vasconcelos</td>
+                  <td class="text-secondary" style="max-width:280px;">Triagem da LIA não pontua candidatos da vaga de Analista Fiscal</td>
+                  <td class="font-inter text-sm">em curso</td>
+                  <td><span class="aa-live-tag"><span class="aa-live-pulse"></span>Ativa</span></td>
+                  <td style="text-align:center;"><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); aaOpenDetail('s1')">Ver</button></td>
+                </tr>
+
+                <tr style="cursor:pointer;" onclick="aaOpenDetail('s2')">
+                  <td class="font-inter text-sm" style="white-space:nowrap;">02/09 15:04</td>
+                  <td class="font-medium">Nubank Recrutamento</td>
+                  <td>Diego Barros <span class="badge badge-gray badge-sm">recrutador</span></td>
+                  <td>Rafael Antunes</td>
+                  <td class="text-secondary" style="max-width:280px;">Erro ao publicar vaga relatado no chamado 4821</td>
+                  <td class="font-inter text-sm">em curso</td>
+                  <td><span class="aa-live-tag"><span class="aa-live-pulse"></span>Ativa</span></td>
+                  <td style="text-align:center;"><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); aaOpenDetail('s2')">Ver</button></td>
+                </tr>
+
+                <tr style="cursor:pointer;" onclick="aaOpenDetail('s3')">
+                  <td class="font-inter text-sm" style="white-space:nowrap;">02/09 11:18</td>
+                  <td class="font-medium">TechAlpha Ltda</td>
+                  <td>Marcos Vinícius Aguiar <span class="badge badge-gray badge-sm">admin</span></td>
+                  <td>Camila Prado</td>
+                  <td class="text-secondary" style="max-width:280px;">Conferir o mapeamento de etapas do processo seletivo com o cliente</td>
+                  <td class="font-inter text-sm">12 min</td>
+                  <td><span class="badge badge-gray">Encerrada</span></td>
+                  <td style="text-align:center;"><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); aaOpenDetail('s3')">Ver</button></td>
+                </tr>
+
+                <tr style="cursor:pointer;" onclick="aaOpenDetail('s4')">
+                  <td class="font-inter text-sm" style="white-space:nowrap;">01/09 17:40</td>
+                  <td class="font-medium">RH Solutions</td>
+                  <td>Letícia Furtado <span class="badge badge-gray badge-sm">recrutadora</span></td>
+                  <td>Marina Vasconcelos</td>
+                  <td class="text-secondary" style="max-width:280px;">Validar o envio de WhatsApp após a mudança de template</td>
+                  <td class="font-inter text-sm">30 min</td>
+                  <td><span class="badge badge-yellow">Expirada</span></td>
+                  <td style="text-align:center;"><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); aaOpenDetail('s4')">Ver</button></td>
+                </tr>
+
+                <tr style="cursor:pointer;" onclick="aaOpenDetail('s5')">
+                  <td class="font-inter text-sm" style="white-space:nowrap;">01/09 09:12</td>
+                  <td class="font-medium">iFood Talentos</td>
+                  <td>Carlos Menezes <span class="badge badge-gray badge-sm">recrutador</span></td>
+                  <td>Rafael Antunes</td>
+                  <td class="text-secondary" style="max-width:280px;">Reproduzir a falha do funil relatada por telefone</td>
+                  <td class="font-inter text-sm">4 min</td>
+                  <td><span class="badge badge-red">Revogada</span></td>
+                  <td style="text-align:center;"><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); aaOpenDetail('s5')">Ver</button></td>
+                </tr>
+
+                <tr style="cursor:pointer;" onclick="aaOpenDetail('s6')">
+                  <td class="font-inter text-sm" style="white-space:nowrap;">29/08 16:03</td>
+                  <td class="font-medium">Nubank Recrutamento</td>
+                  <td>Fernanda Lima <span class="badge badge-gray badge-sm">admin</span></td>
+                  <td>Camila Prado</td>
+                  <td class="text-secondary" style="max-width:280px;">Ajustar a configuração de triagem junto com o cliente na reunião</td>
+                  <td class="font-inter text-sm">22 min</td>
+                  <td><span class="badge badge-gray">Encerrada</span></td>
+                  <td style="text-align:center;"><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); aaOpenDetail('s6')">Ver</button></td>
+                </tr>
+
+                <tr style="cursor:pointer;" onclick="aaOpenDetail('s3')">
+                  <td class="font-inter text-sm" style="white-space:nowrap;">28/08 10:47</td>
+                  <td class="font-medium">TechAlpha Ltda</td>
+                  <td>Marcos Vinícius Aguiar <span class="badge badge-gray badge-sm">admin</span></td>
+                  <td>Marina Vasconcelos</td>
+                  <td class="text-secondary" style="max-width:280px;">Investigar a duplicidade de candidatos vinda da importação</td>
+                  <td class="font-inter text-sm">9 min</td>
+                  <td><span class="badge badge-gray">Encerrada</span></td>
+                  <td style="text-align:center;"><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); aaOpenDetail('s3')">Ver</button></td>
+                </tr>
+
+              </tbody>
+            </table>
+          </div>
+          <div class="card-footer flex items-center justify-between">
+            <span class="text-sm text-secondary">Exibindo 7 de <strong class="text-primary">18</strong> sessões</span>
+            <button class="btn btn-secondary btn-sm">Carregar mais</button>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /#screen-assisted-access -->
+
+    <!-- Acessos Assistidos: nenhuma sessão registrada -->
+    <div class="screen" id="screen-assisted-access-empty">
+      <div style="padding:24px 32px; max-width:1200px; margin:0 auto;">
+        <div class="page-header">
+          <div class="page-header-left">
+            <h1 class="page-title">Acessos Assistidos</h1>
+            <p class="page-subtitle">Quem da WeDO entrou na conta de cada cliente, quando, por quê e o que fez</p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="empty-state">
+            <div class="empty-state-icon"><i data-lucide="user-check"></i></div>
+            <div class="empty-state-title">Nenhum acesso assistido registrado</div>
+            <div class="empty-state-desc">Quando alguém da WeDO abrir uma sessão na plataforma de um cliente, ela aparece aqui com motivo, duração e as ações executadas.</div>
+            <button class="btn btn-secondary" onclick="showScreen('screen-clients')"><i data-lucide="users"></i>Ir para a lista de clientes</button>
+          </div>
+        </div>
+      </div>
+    </div><!-- /#screen-assisted-access-empty -->
+
+    <!-- Acessos Assistidos: carregando -->
+    <div class="screen" id="screen-assisted-access-loading">
+      <div style="padding:24px 32px; max-width:1200px; margin:0 auto;">
+        <div class="page-header">
+          <div class="page-header-left">
+            <h1 class="page-title">Acessos Assistidos</h1>
+            <p class="page-subtitle">Quem da WeDO entrou na conta de cada cliente, quando, por quê e o que fez</p>
+          </div>
+        </div>
+        <div class="grid grid-cols-3 gap-16 mb-24">
+          <div class="metric-card"><div class="aa-skeleton" style="height:12px; width:60%; margin-bottom:12px;"></div><div class="aa-skeleton" style="height:28px; width:35%;"></div></div>
+          <div class="metric-card"><div class="aa-skeleton" style="height:12px; width:70%; margin-bottom:12px;"></div><div class="aa-skeleton" style="height:28px; width:30%;"></div></div>
+          <div class="metric-card"><div class="aa-skeleton" style="height:12px; width:50%; margin-bottom:12px;"></div><div class="aa-skeleton" style="height:28px; width:40%;"></div></div>
+        </div>
+        <div class="card">
+          <div class="card-body flex flex-col gap-16">
+            <div class="aa-skeleton" style="height:14px; width:100%;"></div>
+            <div class="aa-skeleton" style="height:14px; width:92%;"></div>
+            <div class="aa-skeleton" style="height:14px; width:96%;"></div>
+            <div class="aa-skeleton" style="height:14px; width:80%;"></div>
+            <div class="aa-skeleton" style="height:14px; width:88%;"></div>
+            <div class="aa-skeleton" style="height:14px; width:74%;"></div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /#screen-assisted-access-loading -->
+
+    <!-- Acessos Assistidos: falha ao carregar -->
+    <div class="screen" id="screen-assisted-access-error">
+      <div style="padding:24px 32px; max-width:1200px; margin:0 auto;">
+        <div class="page-header">
+          <div class="page-header-left">
+            <h1 class="page-title">Acessos Assistidos</h1>
+            <p class="page-subtitle">Quem da WeDO entrou na conta de cada cliente, quando, por quê e o que fez</p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="empty-state">
+            <div class="empty-state-icon" style="background-color:var(--lia-brand-primary-light);"><i data-lucide="alert-triangle" style="color:var(--lia-brand-primary);"></i></div>
+            <div class="empty-state-title">Não foi possível carregar o histórico</div>
+            <div class="empty-state-desc">A consulta ao registro de acessos falhou. As sessões continuam sendo gravadas: nada foi perdido. Tente novamente em alguns instantes.</div>
+            <button class="btn btn-primary" onclick="showScreen('screen-assisted-access')"><i data-lucide="refresh-cw"></i>Tentar novamente</button>
+          </div>
+        </div>
+      </div>
+    </div><!-- /#screen-assisted-access-error -->
+
   </main><!-- /#main-content -->
 
 </div><!-- /#app-shell -->
@@ -6292,6 +6604,130 @@ Este link expira em 7 dias.</textarea>
     </div>
   </div>
 </div>
+
+<!-- ============================================================
+     MODAL: Acessar como cliente (abertura da sessão de suporte)
+     ============================================================ -->
+<div class="modal-overlay" id="overlay-assisted-access" onclick="handleOverlayClick(event)">
+  <div class="modal" onclick="event.stopPropagation()" style="max-width:560px;">
+
+    <div class="modal-header">
+      <div class="flex items-center gap-12 min-w-0">
+        <div id="aa-client-avatar" class="avatar avatar-md avatar-square" style="background-color:var(--lia-brand-primary); color:var(--lia-bg-primary);">IF</div>
+        <div class="min-w-0">
+          <div class="modal-title">Acessar como cliente</div>
+          <div class="modal-subtitle">Plataforma de <strong id="aa-client-name" class="text-primary">iFood Talentos</strong></div>
+        </div>
+      </div>
+      <button class="modal-close" onclick="closeModal()"><i data-lucide="x"></i></button>
+    </div>
+
+    <div class="modal-body" style="padding:20px 24px; overflow-y:auto;">
+
+      <!-- Bloqueio: política desligada pelo cliente ou conta suspensa -->
+      <div id="aa-blocked" class="aa-blocked" style="display:none;">
+        <i data-lucide="lock"></i>
+        <div>
+          <strong id="aa-blocked-title">Acesso assistido desligado para este cliente</strong>
+          <div id="aa-blocked-text" class="mt-4"></div>
+        </div>
+      </div>
+
+      <!-- Formulário de abertura -->
+      <div id="aa-form">
+
+        <div class="form-group mb-20">
+          <label class="form-label">Entrar como qual usuário do cliente</label>
+          <div class="input-group mb-8">
+            <span class="input-group-icon"><i data-lucide="search"></i></span>
+            <input class="input" type="text" id="aa-user-search" placeholder="Buscar por nome ou e-mail..." oninput="aaFilterUsers(this.value)">
+          </div>
+          <div class="aa-user-list" id="aa-user-list"></div>
+          <span class="form-hint">Somente usuários ativos da conta. Quem tem acesso global da WeDO não aparece nesta lista.</span>
+        </div>
+
+        <div class="form-group mb-20">
+          <div class="flex items-center justify-between">
+            <label class="form-label" for="aa-reason">Motivo do acesso</label>
+            <span class="aa-counter invalid" id="aa-reason-counter">0/10 caracteres</span>
+          </div>
+          <textarea class="input" id="aa-reason" rows="3" style="resize:vertical; min-height:76px;"
+            placeholder="Ex.: cliente relatou que a triagem não pontua candidatos da vaga de Analista Fiscal"
+            oninput="aaValidate()"></textarea>
+          <span class="form-hint">O motivo entra no registro da sessão e fica visível para o cliente.</span>
+        </div>
+
+        <div class="form-group mb-20">
+          <label class="form-label">Duração da sessão</label>
+          <div class="aa-duration" id="aa-duration">
+            <button type="button" onclick="aaSetDuration(15, this)">15 min</button>
+            <button type="button" class="selected" onclick="aaSetDuration(30, this)">30 min</button>
+            <button type="button" onclick="aaSetDuration(60, this)">60 min</button>
+            <button type="button" onclick="aaSetDuration(120, this)">120 min</button>
+          </div>
+          <span class="form-hint">A sessão expira sozinha no fim do prazo. Você também pode sair antes.</span>
+        </div>
+
+        <div class="aa-callout">
+          <i data-lucide="shield-alert"></i>
+          <div>
+            <strong>Este acesso é auditado e permite agir na conta.</strong>
+            Tudo o que você fizer vale de verdade para o cliente: mensagem enviada a candidato chega ao candidato, e exclusão apaga o dado. Cada ação fica registrada no seu nome, não no nome do usuário do cliente.
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Abrindo a sessão -->
+      <div id="aa-opening" style="display:none; padding:24px 0; text-align:center;">
+        <div class="aa-skeleton" style="height:44px; width:44px; border-radius:12px; margin:0 auto 16px;"></div>
+        <div class="text-base font-semibold text-primary mb-4">Abrindo a sessão</div>
+        <div class="text-sm text-secondary">A plataforma do cliente abre em uma nova aba em instantes.</div>
+      </div>
+
+    </div>
+
+    <div class="modal-footer flex items-center justify-end gap-8" id="aa-footer">
+      <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" id="aa-submit" disabled onclick="aaSubmit()"><i data-lucide="external-link"></i>Abrir sessão</button>
+    </div>
+
+  </div>
+</div><!-- /#overlay-assisted-access -->
+
+<!-- MODAL: revogar sessão ativa -->
+<div class="modal-overlay" id="overlay-assisted-revoke" onclick="handleOverlayClick(event)">
+  <div class="modal modal-sm" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title">Revogar esta sessão</div>
+      <button class="modal-close" onclick="closeModal()"><i data-lucide="x"></i></button>
+    </div>
+    <div class="modal-body" style="padding:20px 24px;">
+      <p class="text-base text-primary mb-12">
+        A sessão de <strong id="aa-revoke-admin">Marina Vasconcelos</strong> em
+        <strong id="aa-revoke-client">iFood Talentos</strong> é encerrada na hora.
+      </p>
+      <p class="text-sm text-secondary">
+        A pessoa perde o acesso na próxima ação e precisa abrir uma sessão nova para continuar. A revogação fica registrada com o seu nome.
+      </p>
+    </div>
+    <div class="modal-footer flex items-center justify-end gap-8">
+      <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-danger" onclick="closeModal()"><i data-lucide="power"></i>Revogar agora</button>
+    </div>
+  </div>
+</div><!-- /#overlay-assisted-revoke -->
+
+<!-- DRAWER: detalhe da sessão de acesso assistido -->
+<div id="assisted-drawer" class="drawer-overlay" onclick="if(event.target===this) aaCloseDetail()">
+  <div class="drawer">
+    <div class="drawer-header">
+      <span class="drawer-title">Detalhe da sessão</span>
+      <div class="drawer-close" onclick="aaCloseDetail()"><i data-lucide="x"></i></div>
+    </div>
+    <div class="drawer-body" id="assisted-drawer-content"></div>
+  </div>
+</div><!-- /#assisted-drawer -->
 
 <script src="scripts/app.js"></script>
 </body>

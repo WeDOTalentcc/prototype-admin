@@ -1475,3 +1475,205 @@ select.input {
 .dnd-dragging { opacity:0.45; }
 .dnd-row [draggable] , .dnd-row.dnd-row { }
 .dnd-handle:active { cursor:grabbing; }
+
+/* ----------------------------------------------------------
+   ACESSO ASSISTIDO
+   Componentes da sessão de suporte na conta do cliente.
+   ---------------------------------------------------------- */
+
+/* Aviso de que o acesso é auditado e permite agir na conta */
+.aa-callout {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  line-height: 1.55;
+  background-color: var(--lia-assisted-bg);
+  border: 1px solid var(--lia-assisted-border);
+  color: var(--lia-assisted-fg);
+}
+
+.aa-callout i { width: 16px; height: 16px; flex-shrink: 0; margin-top: 2px; }
+.aa-callout strong { font-weight: 700; }
+
+/* Bloqueio: política desligada pelo cliente ou conta suspensa */
+.aa-blocked {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  line-height: 1.55;
+  background-color: var(--lia-bg-secondary);
+  border: 1px solid var(--lia-border-subtle);
+  color: var(--lia-text-secondary);
+}
+
+.aa-blocked i { width: 16px; height: 16px; flex-shrink: 0; margin-top: 2px; color: var(--lia-text-tertiary); }
+.aa-blocked strong { color: var(--lia-text-primary); font-weight: 600; }
+
+/* Cartão de sessão viva */
+.aa-live-card {
+  background-color: var(--lia-bg-primary);
+  border: 1px solid var(--lia-assisted-border);
+  border-left: 3px solid var(--lia-assisted-solid);
+  border-radius: 12px;
+  padding: 16px 18px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.aa-live-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 10px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: 'Inter', sans-serif;
+  background-color: var(--lia-assisted-bg-strong);
+  color: var(--lia-assisted-fg);
+  white-space: nowrap;
+}
+
+.aa-live-pulse {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--lia-assisted-solid);
+  flex-shrink: 0;
+  animation: aa-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes aa-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.25; }
+}
+
+/* Contagem regressiva da sessão */
+.aa-remaining {
+  font-family: 'Inter', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--lia-assisted-fg);
+  line-height: 1.1;
+}
+
+.aa-remaining-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--lia-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* Ação sensível na trilha da sessão */
+.aa-action-row {
+  display: flex;
+  gap: 12px;
+  padding: 12px 0;
+  border-top: 1px solid var(--lia-border-subtle);
+}
+
+.aa-action-row.sensitive {
+  background-color: var(--lia-sensitive-bg);
+  border-radius: 8px;
+  padding: 12px;
+  border-top: none;
+  margin: 6px 0;
+}
+
+.aa-badge-sensitive {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 8px;
+  border-radius: 100px;
+  font-size: 10px;
+  font-weight: 700;
+  font-family: 'Inter', sans-serif;
+  background-color: var(--lia-sensitive-bg);
+  border: 1px solid var(--lia-sensitive-border);
+  color: var(--lia-sensitive-fg);
+  white-space: nowrap;
+}
+
+.aa-badge-sensitive i { width: 10px; height: 10px; }
+
+/* Lista de usuários elegíveis do cliente */
+.aa-user-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  text-align: left;
+  transition: background-color 150ms ease, border-color 150ms ease;
+}
+
+.aa-user-option:hover { background-color: var(--lia-bg-secondary); }
+
+.aa-user-option.selected {
+  background-color: var(--lia-brand-primary-light);
+  border-color: var(--lia-brand-primary);
+}
+
+.aa-user-list {
+  max-height: 188px;
+  overflow-y: auto;
+  border: 1px solid var(--lia-border-subtle);
+  border-radius: 10px;
+  padding: 4px;
+  background-color: var(--lia-bg-primary);
+}
+
+/* Escolha de duração da sessão */
+.aa-duration {
+  display: flex;
+  gap: 4px;
+  background-color: var(--lia-bg-tertiary);
+  border-radius: 10px;
+  padding: 3px;
+}
+
+.aa-duration button {
+  flex: 1;
+  padding: 7px 4px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: 'Open Sans', sans-serif;
+  color: var(--lia-text-secondary);
+  background-color: transparent;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+.aa-duration button.selected {
+  background-color: var(--lia-bg-primary);
+  color: var(--lia-text-primary);
+  font-weight: 600;
+  box-shadow: var(--lia-shadow-default);
+}
+
+/* Contador do campo de motivo */
+.aa-counter { font-size: 11px; color: var(--lia-text-tertiary); font-family: 'Inter', sans-serif; }
+.aa-counter.invalid { color: var(--lia-brand-primary); }
+
+/* Esqueleto de carregamento */
+.aa-skeleton {
+  border-radius: 8px;
+  background-color: var(--lia-bg-tertiary);
+  animation: aa-shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes aa-shimmer {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.45; }
+}
