@@ -71,12 +71,37 @@ git push origin main
 | Notificações | `screen-notifications` | Alertas e RBAC |
 | AI Monitoring | `screen-ai-monitoring` | Monitoramento de agentes IA |
 | Audit Logs | `screen-audit-logs` | Logs de auditoria |
+| Acessos Assistidos | `screen-assisted-access` | Histórico das sessões de suporte na conta do cliente |
+
+---
+
+## Acesso assistido
+
+Sessão curta e auditada em que alguém da WeDO entra na plataforma do cliente como um usuário real dele. O protótipo cobre os dois pontos da jornada:
+
+**Modal "Acessar como cliente"** (`#overlay-assisted-access`), aberto pelo botão na lista de clientes e no detalhe do cliente. Coleta usuário alvo, motivo e duração. Estados, cada um em um cliente da lista:
+
+| Estado | Como ver |
+|--------|----------|
+| Normal | Botão no card de **iFood Talentos** (ou no detalhe do cliente) |
+| Motivo inválido | No modal do iFood, digite menos de 10 caracteres no motivo: o botão de abrir fica desabilitado |
+| Acesso desligado pelo cliente | Botão no card de **Vega Recruit** |
+| Conta suspensa | Botão no card de **GlobalHire Co.** |
+| Abrindo a sessão | Selecione usuário, escreva o motivo e clique em **Abrir sessão** |
+
+**Tela "Acessos Assistidos"** (sidebar, grupo Monitoramento): sessões ativas no topo com tempo restante e revogação, histórico filtrável, detalhe da sessão em drawer com as ações executadas (as sensíveis em destaque) e exportação.
+
+Os demais estados da tela são telas próprias, alcançáveis por deep link (como as de `screen-clients`). O protótipo aplica o `#hash` no carregamento da página, então **recarregue** ao trocar o endereço:
+
+- `index.html#screen-assisted-access-empty`: nenhuma sessão registrada
+- `index.html#screen-assisted-access-loading`: carregando
+- `index.html#screen-assisted-access-error`: falha ao carregar o histórico
 
 ---
 
 ## Histórias Jira relacionadas
 
-WEDO-640 · WEDO-641 · WEDO-642 · WEDO-643 · WEDO-644 · WEDO-645 · WEDO-646 · WEDO-647 · WEDO-648 · WEDO-702 · WEDO-703 · WEDO-704 · WEDO-705 · WEDO-706 · WEDO-707 · WEDO-708 · WEDO-709
+WEDO-640 · WEDO-641 · WEDO-642 · WEDO-643 · WEDO-644 · WEDO-645 · WEDO-646 · WEDO-647 · WEDO-648 · WEDO-702 · WEDO-703 · WEDO-704 · WEDO-705 · WEDO-706 · WEDO-707 · WEDO-708 · WEDO-709 · WEDO-3468 · WEDO-3473
 
 ---
 

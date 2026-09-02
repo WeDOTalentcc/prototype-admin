@@ -40,3 +40,22 @@
   --topbar-height:            56px;
   --sidebar-transition:       300ms ease;
 }
+
+/* ==========================================================
+   Acesso Assistido
+   Destaque da sessão de suporte aberta na conta do cliente e
+   das ações sensíveis executadas durante ela.
+   ========================================================== */
+:root {
+  /* Sessão de acesso assistido (atenção, não é erro) */
+  --lia-assisted-bg:          #FFF7ED;
+  --lia-assisted-bg-strong:   #FFEDD5;
+  --lia-assisted-fg:          #9A3412;
+  --lia-assisted-border:      #FED7AA;
+  --lia-assisted-solid:       #B45309;
+
+  /* Ação sensível: irreversível ou visível para terceiro */
+  --lia-sensitive-bg:         #FEF2F2;
+  --lia-sensitive-fg:         #B91C1C;
+  --lia-sensitive-border:     #FECACA;
+}
