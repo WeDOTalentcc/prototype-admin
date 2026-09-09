@@ -112,6 +112,7 @@
         <div class="nav-group">
           <div class="nav-group-label">Configurações da Plataforma</div>
           <ul>
+            <li id="nav-wedo-users" class="nav-item" data-tooltip="Usuários da WeDO" onclick="showScreen('screen-wedo-users')"><span class="nav-item-icon"><i data-lucide="user-cog"></i></span><span class="nav-item-label">Usuários da WeDO</span></li>
             <li id="nav-settings" class="nav-item" data-tooltip="Configurações" onclick="showScreen('screen-settings')"><span class="nav-item-icon"><i data-lucide="settings"></i></span><span class="nav-item-label">Configurações</span></li>
             <li id="nav-global-integrations" class="nav-item" data-tooltip="Integrações Globais" onclick="showScreen('screen-global-integrations')"><span class="nav-item-icon"><i data-lucide="plug"></i></span><span class="nav-item-label">Integrações Globais</span></li>
             <li id="nav-lia-global" class="nav-item" data-tooltip="LIA Global" onclick="showScreen('screen-lia-global')"><span class="nav-item-icon"><i data-lucide="bot"></i></span><span class="nav-item-label">LIA Global</span></li>
@@ -3791,6 +3792,127 @@
     </div><!-- /#screen-contracts -->
 
     <!-- ============================================================
+         SCREEN: USUÁRIOS DA WEDO (WEDO-3669)
+         Área de usuários globais, fora do escopo de Cliente Ativo.
+         Lista só quem tem role global (super_admin) — usuário de
+         cliente vive em Clientes > Usuários, dentro de cada conta.
+         ============================================================ -->
+    <div class="screen" id="screen-wedo-users">
+      <div style="padding:24px 32px; max-width:1100px; margin:0 auto;">
+
+        <!-- Header -->
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
+          <div>
+            <h1 style="font-size:22px; font-weight:700; color:#111827; margin:0 0 4px 0;">Usuários da WeDO</h1>
+            <p style="font-size:14px; color:#6B7280; margin:0;">Quem tem acesso ao painel interno · 5 usuários</p>
+          </div>
+          <button onclick="openModal('grant-global-access')" style="display:flex; align-items:center; gap:6px; padding:8px 16px; background:#C74446; color:white; border:none; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit;"><i data-lucide="user-plus" style="width:14px; height:14px;"></i>Conceder acesso</button>
+        </div>
+
+        <!-- Nota de escopo -->
+        <div style="display:flex; gap:10px; padding:12px 14px; background:#F0F6FF; border:1px solid #D3E3FA; border-radius:10px; margin-bottom:16px;">
+          <i data-lucide="info" style="width:16px; height:16px; color:#1D4ED8; flex-shrink:0; margin-top:1px;"></i>
+          <div style="font-size:13px; color:#1E3A8A; line-height:1.5;">
+            Esta área é da WeDO e não depende de cliente selecionado. Lista só quem tem <strong>role global</strong>, que é o que abre o painel interno.
+            Usuário de cliente fica em <strong>Clientes &rsaquo; Usuários</strong>, dentro da conta dele.
+          </div>
+        </div>
+
+        <!-- Stats Row -->
+        <div style="display:flex; gap:12px; margin-bottom:16px; flex-wrap:wrap;">
+          <div style="display:flex; align-items:center; gap:6px; padding:6px 14px; background:white; border:1px solid #E5E7EB; border-radius:99px; font-size:13px;">
+            <svg width="7" height="7" viewBox="0 0 8 8" fill="#22C55E"><circle cx="4" cy="4" r="4"/></svg>
+            <span style="color:#374151; font-weight:500;">3 pessoas ativas</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:6px; padding:6px 14px; background:white; border:1px solid #E5E7EB; border-radius:99px; font-size:13px;">
+            <svg width="7" height="7" viewBox="0 0 8 8" fill="#D19960"><circle cx="4" cy="4" r="4"/></svg>
+            <span style="color:#374151; font-weight:500;">1 convite pendente</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:6px; padding:6px 14px; background:white; border:1px solid #E5E7EB; border-radius:99px; font-size:13px;">
+            <i data-lucide="bot" style="width:12px; height:12px; color:#6B7280;"></i>
+            <span style="color:#374151; font-weight:500;">1 conta de serviço</span>
+          </div>
+        </div>
+
+        <!-- Search & Filter Bar -->
+        <div style="display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; align-items:center;">
+          <div style="flex:1; min-width:200px; position:relative;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2" style="position:absolute; left:10px; top:50%; transform:translateY(-50%); pointer-events:none;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" placeholder="Buscar por nome ou e-mail..." style="width:100%; padding:8px 12px 8px 32px; border:1px solid #E5E7EB; border-radius:8px; font-size:13px; color:#111827; font-family:inherit; outline:none; background:white; box-sizing:border-box;" onfocus="this.style.borderColor='#C74446'" onblur="this.style.borderColor='#E5E7EB'">
+          </div>
+          <select style="padding:8px 12px; border:1px solid #E5E7EB; border-radius:8px; font-size:13px; color:#374151; font-family:inherit; background:white; cursor:pointer; outline:none;" onfocus="this.style.borderColor='#C74446'" onblur="this.style.borderColor='#E5E7EB'">
+            <option value="">Todas as roles globais</option>
+            <option>super_admin</option>
+          </select>
+          <select style="padding:8px 12px; border:1px solid #E5E7EB; border-radius:8px; font-size:13px; color:#374151; font-family:inherit; background:white; cursor:pointer; outline:none;" onfocus="this.style.borderColor='#C74446'" onblur="this.style.borderColor='#E5E7EB'">
+            <option value="">Todos os status</option>
+            <option>Ativo</option>
+            <option>Convite pendente</option>
+            <option>Inativo</option>
+          </select>
+          <select style="padding:8px 12px; border:1px solid #E5E7EB; border-radius:8px; font-size:13px; color:#374151; font-family:inherit; background:white; cursor:pointer; outline:none;" onfocus="this.style.borderColor='#C74446'" onblur="this.style.borderColor='#E5E7EB'">
+            <option value="people">Só pessoas</option>
+            <option value="all">Pessoas e contas de serviço</option>
+          </select>
+        </div>
+
+        <!-- Users Table -->
+        <div style="background:white; border:1px solid #E5E7EB; border-radius:12px; overflow:hidden;">
+          <div style="overflow-x:auto;">
+          <table style="width:100%; border-collapse:collapse; font-size:14px;">
+            <thead>
+              <tr style="background:#F9FAFB; border-bottom:1px solid #E5E7EB;">
+                <th style="padding:12px 16px; text-align:left; font-size:12px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em;">Usuário</th>
+                <th style="padding:12px 16px; text-align:left; font-size:12px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em;">Role global</th>
+                <th style="padding:12px 16px; text-align:left; font-size:12px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em;">Status SSO</th>
+                <th style="padding:12px 16px; text-align:left; font-size:12px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em;">Último acesso</th>
+                <th style="padding:12px 16px; text-align:left; font-size:12px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em;">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom:1px solid #F3F4F6;" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background=''">
+                <td style="padding:14px 16px;"><div style="display:flex; align-items:center; gap:12px;"><div style="width:36px; height:36px; border-radius:8px; background:#9860D1; color:white; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0;">HP</div><div><div style="font-weight:500; color:#111827;">Helena Prado</div><div style="font-size:12px; color:#9CA3AF;">helena.prado@wedotalent.cc</div></div></div></td>
+                <td style="padding:14px 16px;"><span style="background:rgba(152,96,209,0.12); color:#5B21B6; border-radius:99px; padding:2px 10px; font-size:12px; font-weight:600;">super_admin</span></td>
+                <td style="padding:14px 16px;"><span style="display:flex; align-items:center; gap:5px; font-size:13px; color:#166534;"><svg width="7" height="7" viewBox="0 0 8 8" fill="#22C55E"><circle cx="4" cy="4" r="4"/></svg>Ativo</span></td>
+                <td style="padding:14px 16px; color:#6B7280; font-size:13px;">Hoje, 09:12</td>
+                <td style="padding:14px 16px;"><button onclick="openModal('manage-wedo-user')" style="padding:4px 10px; border:1px solid #E5E7EB; background:white; color:#374151; border-radius:6px; font-size:12px; cursor:pointer; font-family:inherit;">Gerenciar</button></td>
+              </tr>
+              <tr style="border-bottom:1px solid #F3F4F6;" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background=''">
+                <td style="padding:14px 16px;"><div style="display:flex; align-items:center; gap:12px;"><div style="width:36px; height:36px; border-radius:8px; background:#60BED1; color:white; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0;">MT</div><div><div style="font-weight:500; color:#111827;">Marcelo Tavares</div><div style="font-size:12px; color:#9CA3AF;">marcelo.tavares@wedotalent.cc</div></div></div></td>
+                <td style="padding:14px 16px;"><span style="background:rgba(152,96,209,0.12); color:#5B21B6; border-radius:99px; padding:2px 10px; font-size:12px; font-weight:600;">super_admin</span></td>
+                <td style="padding:14px 16px;"><span style="display:flex; align-items:center; gap:5px; font-size:13px; color:#166534;"><svg width="7" height="7" viewBox="0 0 8 8" fill="#22C55E"><circle cx="4" cy="4" r="4"/></svg>Ativo</span></td>
+                <td style="padding:14px 16px; color:#6B7280; font-size:13px;">Ontem, 18:40</td>
+                <td style="padding:14px 16px;"><button onclick="openModal('manage-wedo-user')" style="padding:4px 10px; border:1px solid #E5E7EB; background:white; color:#374151; border-radius:6px; font-size:12px; cursor:pointer; font-family:inherit;">Gerenciar</button></td>
+              </tr>
+              <tr style="border-bottom:1px solid #F3F4F6;" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background=''">
+                <td style="padding:14px 16px;"><div style="display:flex; align-items:center; gap:12px;"><div style="width:36px; height:36px; border-radius:8px; background:#5DA47A; color:white; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0;">BR</div><div><div style="font-weight:500; color:#111827;">Bianca Rocha</div><div style="font-size:12px; color:#9CA3AF;">bianca.rocha@wedotalent.cc</div></div></div></td>
+                <td style="padding:14px 16px;"><span style="background:rgba(152,96,209,0.12); color:#5B21B6; border-radius:99px; padding:2px 10px; font-size:12px; font-weight:600;">super_admin</span></td>
+                <td style="padding:14px 16px;"><span style="display:flex; align-items:center; gap:5px; font-size:13px; color:#166534;"><svg width="7" height="7" viewBox="0 0 8 8" fill="#22C55E"><circle cx="4" cy="4" r="4"/></svg>Ativo</span></td>
+                <td style="padding:14px 16px; color:#6B7280; font-size:13px;">05/09/2026, 14:22</td>
+                <td style="padding:14px 16px;"><button onclick="openModal('manage-wedo-user')" style="padding:4px 10px; border:1px solid #E5E7EB; background:white; color:#374151; border-radius:6px; font-size:12px; cursor:pointer; font-family:inherit;">Gerenciar</button></td>
+              </tr>
+              <tr style="border-bottom:1px solid #F3F4F6;" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background=''">
+                <td style="padding:14px 16px;"><div style="display:flex; align-items:center; gap:12px;"><div style="width:36px; height:36px; border-radius:8px; background:#D19960; color:white; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0;">OL</div><div><div style="font-weight:500; color:#111827;">Otávio Lins</div><div style="font-size:12px; color:#9CA3AF;">otavio.lins@wedotalent.cc</div></div></div></td>
+                <td style="padding:14px 16px;"><span style="background:rgba(152,96,209,0.12); color:#5B21B6; border-radius:99px; padding:2px 10px; font-size:12px; font-weight:600;">super_admin</span></td>
+                <td style="padding:14px 16px;"><span style="display:flex; align-items:center; gap:5px; font-size:13px; color:#D19960;"><svg width="7" height="7" viewBox="0 0 8 8" fill="#D19960"><circle cx="4" cy="4" r="4"/></svg>Convite pendente</span></td>
+                <td style="padding:14px 16px; color:#9CA3AF; font-size:13px;">&mdash;</td>
+                <td style="padding:14px 16px;"><button onclick="openModal('manage-wedo-user')" style="padding:4px 10px; border:1px solid #E5E7EB; background:white; color:#374151; border-radius:6px; font-size:12px; cursor:pointer; font-family:inherit;">Gerenciar</button></td>
+              </tr>
+              <tr onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background=''">
+                <td style="padding:14px 16px;"><div style="display:flex; align-items:center; gap:12px;"><div style="width:36px; height:36px; border-radius:8px; background:#6B7280; color:white; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i data-lucide="bot" style="width:16px; height:16px;"></i></div><div><div style="display:flex; align-items:center; gap:6px;"><span style="font-weight:500; color:#111827;">Automação E2E</span><span style="background:#F3F4F6; color:#4B5563; border-radius:99px; padding:1px 8px; font-size:11px; font-weight:600;">Conta de serviço</span></div><div style="font-size:12px; color:#9CA3AF;">automacao-e2e@wedotalent.cc</div></div></div></td>
+                <td style="padding:14px 16px;"><span style="background:rgba(152,96,209,0.12); color:#5B21B6; border-radius:99px; padding:2px 10px; font-size:12px; font-weight:600;">super_admin</span></td>
+                <td style="padding:14px 16px;"><span style="display:flex; align-items:center; gap:5px; font-size:13px; color:#6B7280;"><svg width="7" height="7" viewBox="0 0 8 8" fill="#9CA3AF"><circle cx="4" cy="4" r="4"/></svg>Não usa SSO</span></td>
+                <td style="padding:14px 16px; color:#6B7280; font-size:13px;">Hoje, 03:00</td>
+                <td style="padding:14px 16px;"><button onclick="openModal('manage-wedo-user')" style="padding:4px 10px; border:1px solid #E5E7EB; background:white; color:#374151; border-radius:6px; font-size:12px; cursor:pointer; font-family:inherit;">Gerenciar</button></td>
+              </tr>
+            </tbody>
+          </table>
+          </div>
+        </div>
+      </div>
+    </div><!-- /#screen-wedo-users -->
+
+    <!-- ============================================================
          SCREEN: CONFIGURAÇÕES (WEDO-690)
          ============================================================ -->
     <div class="screen" id="screen-settings">
@@ -6791,6 +6913,85 @@ Este link expira em 7 dias.</textarea>
     <!-- ======================================================
          MODAL: GERENCIAR USUÁRIO ATIVO (WEDO-730)
          ====================================================== -->
+
+    <!-- ============================================================
+         MODAL: CONCEDER ACESSO AO PAINEL (WEDO-3669)
+         ============================================================ -->
+    <div class="modal-overlay" id="overlay-grant-global-access" onclick="handleOverlayClick(event)" style="background:rgba(0,0,0,0.45);">
+      <div class="modal" style="width:520px; background:white; border-radius:16px; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,0.18);">
+        <div style="padding:24px 28px 20px; border-bottom:1px solid #F3F4F6; display:flex; align-items:center; justify-content:space-between;">
+          <div>
+            <div style="font-size:16px; font-weight:700; color:#111827;">Conceder acesso ao painel</div>
+            <div style="font-size:13px; color:#6B7280; margin-top:2px;">Dá role global a alguém da WeDO</div>
+          </div>
+          <button onclick="closeModal()" style="width:32px; height:32px; border:none; background:#F3F4F6; border-radius:8px; cursor:pointer; display:flex; align-items:center; justify-content:center;"><i data-lucide="x" style="width:16px; height:16px; color:#6B7280;"></i></button>
+        </div>
+        <div style="padding:20px 28px;">
+          <div style="margin-bottom:16px;">
+            <label style="display:block; font-size:13px; font-weight:600; color:#374151; margin-bottom:6px;">E-mail corporativo</label>
+            <input type="email" placeholder="nome.sobrenome@wedotalent.cc" style="width:100%; padding:9px 12px; border:1px solid #D1D5DB; border-radius:8px; font-size:14px; color:#111827; font-family:inherit; outline:none; box-sizing:border-box;" onfocus="this.style.borderColor='#C74446'" onblur="this.style.borderColor='#D1D5DB'">
+          </div>
+          <div style="margin-bottom:18px;">
+            <label style="display:block; font-size:13px; font-weight:600; color:#374151; margin-bottom:6px;">Role global</label>
+            <select style="width:100%; padding:9px 12px; border:1px solid #D1D5DB; border-radius:8px; font-size:14px; color:#111827; font-family:inherit; outline:none; background:white;">
+              <option value="super_admin" selected>super_admin &mdash; acesso ao painel interno</option>
+            </select>
+          </div>
+
+          <!-- Caso do usuário que já existe em outra conta -->
+          <div style="display:flex; gap:10px; padding:12px 14px; background:#FFF7ED; border:1px solid #FDE1C3; border-radius:10px; margin-bottom:4px;">
+            <i data-lucide="alert-triangle" style="width:16px; height:16px; color:#B45309; flex-shrink:0; margin-top:1px;"></i>
+            <div style="font-size:13px; color:#7C2D12; line-height:1.5;">
+              Se o e-mail já existir na plataforma, o acesso é concedido ao usuário existente, sem criar outro e sem tirá-lo da conta em que está.
+              O e-mail é único na plataforma inteira, então <strong>não</strong> dá para criar um segundo usuário com o mesmo e-mail dentro de um cliente.
+            </div>
+          </div>
+        </div>
+        <div style="padding:16px 28px 22px; display:flex; gap:10px; justify-content:flex-end;">
+          <button onclick="closeModal()" style="padding:9px 18px; border:1px solid #E5E7EB; background:white; color:#374151; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit;">Cancelar</button>
+          <button onclick="closeModal()" style="padding:9px 18px; background:#C74446; color:white; border:none; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit;">Conceder acesso</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         MODAL: GERENCIAR USUÁRIO DA WEDO (WEDO-3669)
+         ============================================================ -->
+    <div class="modal-overlay" id="overlay-manage-wedo-user" onclick="handleOverlayClick(event)" style="background:rgba(0,0,0,0.45);">
+      <div class="modal" style="width:520px; background:white; border-radius:16px; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,0.18);">
+        <div style="padding:24px 28px 20px; border-bottom:1px solid #F3F4F6; display:flex; align-items:center; justify-content:space-between;">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div style="width:40px; height:40px; border-radius:10px; background:#9860D1; color:white; font-size:14px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0;">HP</div>
+            <div>
+              <div style="font-size:15px; font-weight:700; color:#111827;">Helena Prado</div>
+              <div style="font-size:12px; color:#9CA3AF;">helena.prado@wedotalent.cc</div>
+            </div>
+            <span style="background:rgba(34,197,94,0.1); color:#166534; border-radius:99px; padding:2px 9px; font-size:11px; font-weight:600;">Ativo</span>
+          </div>
+          <button onclick="closeModal()" style="width:32px; height:32px; border:none; background:#F3F4F6; border-radius:8px; cursor:pointer; display:flex; align-items:center; justify-content:center;"><i data-lucide="x" style="width:16px; height:16px; color:#6B7280;"></i></button>
+        </div>
+        <div style="padding:20px 28px;">
+          <div style="margin-bottom:20px;">
+            <div style="font-size:13px; font-weight:600; color:#374151; margin-bottom:10px;">Role global</div>
+            <div style="display:flex; gap:10px; align-items:center;">
+              <select style="flex:1; padding:9px 12px; border:1px solid #D1D5DB; border-radius:8px; font-size:14px; color:#111827; font-family:inherit; outline:none; background:white;">
+                <option value="super_admin" selected>super_admin</option>
+              </select>
+              <button style="padding:9px 16px; background:#111827; color:white; border:none; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; white-space:nowrap;">Salvar</button>
+            </div>
+          </div>
+          <div style="border-top:1px solid #F3F4F6; margin-bottom:18px;"></div>
+          <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:16px;">
+            <div>
+              <div style="font-size:13px; font-weight:600; color:#374151;">Revogar acesso ao painel</div>
+              <div style="font-size:12px; color:#6B7280; margin-top:2px; line-height:1.5;">Remove só a role global. O usuário continua existindo e mantém o acesso que tiver na conta dele.</div>
+            </div>
+            <button style="padding:8px 14px; border:1px solid #F3C7C7; background:white; color:#B91C1C; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; white-space:nowrap;">Revogar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="modal-overlay" id="overlay-manage-user" onclick="handleOverlayClick(event)" style="background:rgba(0,0,0,0.45);">
       <div class="modal" style="width:500px; background:white; border-radius:16px; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,0.18);">
         <!-- Header -->
