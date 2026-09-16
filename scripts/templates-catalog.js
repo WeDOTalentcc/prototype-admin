@@ -21,8 +21,27 @@ let catSelecionado = null;
 let catRascunho = null;
 
 const catFiltro = {
-  global:  { canal: 'todos', categoria: 'todas', origem: 'todas', busca: '' },
-  cliente: { canal: 'todos', categoria: 'todas', origem: 'todas', busca: '' },
+  global:  { tipo: 'todos', canal: 'todos', categoria: 'todas', origem: 'todas', busca: '' },
+  cliente: { tipo: 'todos', canal: 'todos', categoria: 'todas', origem: 'todas', busca: '' },
+};
+
+/* Os tres tipos fechados na reuniao de 16/09 com o Paulo e o Jader. */
+const CAT_TIPO = {
+  modal:      { texto: 'Modal',      bg: 'rgba(152,96,209,.14)', cor: '#6D3FA0',
+                ajuda: 'O recrutador escolhe este texto na hora de mover o candidato no Kanban.' },
+  automatica: { texto: 'Automática', bg: 'rgba(96,190,209,.14)', cor: '#2B7A8C',
+                ajuda: 'Dispara sozinha: o recrutador não escolhe, mas o texto é configurável.' },
+  alerta:     { texto: 'Alerta',     bg: 'rgba(209,153,96,.16)', cor: '#8A5A20',
+                ajuda: 'Notificação da plataforma ao recrutador. Texto único da WeDO: não é personalizado por cliente nesta fase.' },
+};
+
+/* Quanto do texto o cliente ja consegue mudar hoje, antes da migracao.
+   Responde a divergencia da reuniao: o convite de triagem respeita o config,
+   mas so no paragrafo de abertura (custom_message_html, WEDO-3394). */
+const CAT_CONFIG_HOJE = {
+  nenhum:   '<span style="color:#B91C1C;">não alcança nada: o texto vem todo do código</span>',
+  abertura: '<span style="color:#9A3412;">alcança só o parágrafo de abertura e o assunto</span>',
+  total:    '<span style="color:#166534;">já alcança o corpo inteiro</span>',
 };
 
 const CAT_CANAL = {
@@ -66,6 +85,7 @@ function catListaFiltrada() {
   const f = catF();
   const b = f.busca.trim().toLowerCase();
   return CATALOGO.filter(t => {
+    if (f.tipo !== 'todos' && t.type !== f.tipo) return false;
     if (f.canal !== 'todos' && t.channel !== f.canal) return false;
     if (f.categoria !== 'todas' && t.category !== f.categoria) return false;
     if (catEscopo === 'cliente') {
@@ -88,6 +108,7 @@ function catRenderFiltros() {
     `<select onchange="catSetFiltro('${campo}', this.value)" style="padding:7px 10px; border:1px solid #D1D5DB; border-radius:8px; font-size:12px; color:#374151; background:white; font-family:inherit; cursor:pointer;">
        ${opcoes.map(o => `<option value="${o[0]}"${f[campo] === o[0] ? ' selected' : ''}>${o[1]}</option>`).join('')}
      </select>`;
+  const tipos = [['todos', 'Todos os tipos'], ['modal', 'Modal'], ['automatica', 'Automática'], ['alerta', 'Alerta']];
   const origens = catEscopo === 'global'
     ? [['todas', 'Todos'], ['padrao', 'Sem cliente fora do padrão'], ['personalizados', 'Com cliente fora do padrão']]
     : [['todas', 'Padrão e personalizados'], ['padrao', 'Só os que seguem o padrão'], ['personalizados', 'Só os personalizados']];
@@ -99,6 +120,7 @@ function catRenderFiltros() {
              placeholder="Buscar por nome, assunto ou gatilho"
              style="width:100%; padding:7px 10px 7px 30px; border:1px solid #D1D5DB; border-radius:8px; font-size:12px; color:#374151; font-family:inherit;">
     </div>
+    ${sel('tipo', 'tipo', tipos)}
     ${sel('canal', 'canal', [['todos', 'Todos os canais'], ['email', 'E-mail'], ['whatsapp', 'WhatsApp']])}
     ${sel('cat', 'categoria', [['todas', 'Todas as categorias']].concat(categorias.map(c => [c, c[0].toUpperCase() + c.slice(1)])))}
     ${sel('origem', 'origem', origens)}
@@ -114,10 +136,16 @@ function catSetFiltro(campo, valor) {
 
 function catSeloOrigem(t) {
   if (catEscopo === 'global') {
+    if (!t.clientEditable) {
+      return `<span style="background:rgba(209,153,96,.16); color:#8A5A20; font-size:11px; font-weight:600; padding:2px 8px; border-radius:99px; white-space:nowrap;">Não personalizável</span>`;
+    }
     const n = catForaDoPadrao(t).length;
     return n
       ? `<span title="${catEscapar(catForaDoPadrao(t).join(', '))}" style="background:#FEF3C7; color:#92400E; font-size:11px; font-weight:600; padding:2px 8px; border-radius:99px; white-space:nowrap;">${n} fora do padrão</span>`
       : `<span style="background:#DCFCE7; color:#166534; font-size:11px; font-weight:600; padding:2px 8px; border-radius:99px; white-space:nowrap;">Todos herdam</span>`;
+  }
+  if (!t.clientEditable) {
+    return `<span title="Texto único da plataforma" style="background:rgba(209,153,96,.16); color:#8A5A20; font-size:11px; font-weight:600; padding:2px 8px; border-radius:99px; white-space:nowrap;">Texto da WeDO</span>`;
   }
   return t.customized
     ? `<span style="background:#FEF3C7; color:#92400E; font-size:11px; font-weight:600; padding:2px 8px; border-radius:99px; white-space:nowrap;">Personalizado</span>`
@@ -149,6 +177,7 @@ function catRenderTabela() {
 
   corpo.innerHTML = lista.map((t, i) => {
     const ca = CAT_CANAL[t.channel];
+    const ti = CAT_TIPO[t.type];
     const vig = catEscopo === 'global' ? t.defaultSubject : t.subject;
     const ultima = catEscopo === 'global'
       ? (catForaDoPadrao(t).length ? catEscapar(catForaDoPadrao(t).join(', ')) : 'nenhum')
@@ -161,8 +190,8 @@ function catRenderTabela() {
         <div style="font-size:12px; color:#6B7280; margin-top:2px;">${vig ? catEscapar(vig) : '<span style="color:#9CA3AF;">mensagem direta, sem assunto</span>'}</div>
       </td>
       <td style="padding:13px 12px;">
-        <span style="background:${ca.bg}; color:${ca.cor}; font-size:11px; font-weight:600; padding:2px 8px; border-radius:99px; white-space:nowrap;">${ca.texto}</span>
-        <div style="font-size:11px; color:#6B7280; margin-top:4px; text-transform:capitalize;">${catEscapar(t.audience)}</div>
+        <span title="${catEscapar(ti.ajuda)}" style="background:${ti.bg}; color:${ti.cor}; font-size:11px; font-weight:600; padding:2px 8px; border-radius:99px; white-space:nowrap;">${ti.texto}</span>
+        <div style="font-size:11px; color:#6B7280; margin-top:4px;">${ca.texto} · <span style="text-transform:capitalize;">${catEscapar(t.audience)}</span></div>
       </td>
       <td style="padding:13px 12px; font-size:12px; color:#6B7280; max-width:280px;">${catEscapar(t.trigger)}</td>
       <td style="padding:13px 12px; text-align:center;">${catSeloOrigem(t)}</td>
@@ -173,7 +202,7 @@ function catRenderTabela() {
 }
 
 function catLimparFiltros() {
-  Object.assign(catF(), { canal: 'todos', categoria: 'todas', origem: 'todas', busca: '' });
+  Object.assign(catF(), { tipo: 'todos', canal: 'todos', categoria: 'todas', origem: 'todas', busca: '' });
   catRenderFiltros(); catRenderTabela();
 }
 
@@ -208,15 +237,33 @@ function catRenderDrawer() {
     `<span style="font-family:monospace;">${catEscapar(t.key)}</span> ·
      <span style="color:${ca.cor}; font-weight:600;">${ca.texto}</span> ·
      <span style="text-transform:capitalize;">${catEscapar(t.audience)}</span>`;
-  document.getElementById('cat-btn-salvar').textContent =
-    catEscopo === 'global' ? 'Publicar o padrão' : 'Salvar para este cliente';
-  document.getElementById('cat-aba-padrao').style.display = catEscopo === 'global' ? 'none' : 'block';
+  const btnSalvar = document.getElementById('cat-btn-salvar');
+  btnSalvar.textContent = catEscopo === 'global' ? 'Publicar o padrão' : 'Salvar para este cliente';
+  const ro = catSomenteLeitura();
+  btnSalvar.style.display = ro ? 'none' : 'inline-block';
+  document.getElementById('cat-btn-descartar').style.display = ro ? 'none' : 'inline-block';
+  document.getElementById('cat-aba-padrao').style.display =
+    (catEscopo === 'global' || !catSelecionado.clientEditable) ? 'none' : 'block';
   catRenderConteudo();
   if (catEscopo === 'cliente') catRenderPadrao();
   catRenderHistorico();
 }
 
 function catFaixaEscopo(t) {
+  if (catEscopo === 'cliente' && !t.clientEditable) {
+    return `<div style="background:#FFF7ED; border:1px solid #FED7AA; border-radius:8px; padding:11px 13px; margin-bottom:16px; font-size:12px; color:#9A3412;">
+      <strong>Alerta da plataforma, com texto único da WeDO.</strong>
+      O Paulo e o Jader decidiram em 16/09 que alerta não é personalizado por cliente nesta fase. Para mudar este texto, edite no catálogo global: a mudança vale para todos.
+      ${t.defaultEnabled === false ? ' Este alerta nasce desligado no cliente.' : ''}
+    </div>`;
+  }
+  if (catEscopo === 'global' && !t.clientEditable) {
+    return `<div style="background:#F5F3FF; border:1px solid #DDD6FE; border-radius:8px; padding:11px 13px; margin-bottom:16px; font-size:12px; color:#5B21B6;">
+      <strong>Alerta da plataforma.</strong>
+      Texto único: publicar vale para todos os clientes, e nenhum cliente pode fugir dele nesta fase.
+      Alerta nasce desligado em cliente novo, até a copy ser revisada.
+    </div>`;
+  }
   if (catEscopo === 'global') {
     const fora = catForaDoPadrao(t);
     const herdam = 6 - fora.length;
@@ -241,8 +288,13 @@ function catFaixaEscopo(t) {
   </div>`;
 }
 
+function catSomenteLeitura() {
+  return catEscopo === 'cliente' && !catSelecionado.clientEditable;
+}
+
 function catRenderConteudo() {
   const t = catSelecionado;
+  const ro = catSomenteLeitura();
   const vars = t.variables.length ? t.variables : ['candidate_name', 'job_title'];
   document.getElementById('cat-painel-conteudo').innerHTML = `
     ${catFaixaEscopo(t)}
@@ -251,8 +303,8 @@ function catRenderConteudo() {
 
     <label style="display:block; font-size:12px; font-weight:600; color:#374151; margin-bottom:6px;">Assunto</label>
     <input id="cat-in-subject" value="${catEscapar(catRascunho.subject)}" oninput="catEditar('subject', this.value)"
-           ${t.channel === 'whatsapp' ? 'disabled placeholder="WhatsApp não tem assunto"' : ''}
-           style="width:100%; padding:9px 11px; border:1px solid #D1D5DB; border-radius:8px; font-size:13px; color:#111827; font-family:inherit; margin-bottom:18px; ${t.channel === 'whatsapp' ? 'background:#F3F4F6; color:#9CA3AF;' : ''}">
+           ${t.channel === 'whatsapp' ? 'disabled placeholder="WhatsApp não tem assunto"' : (ro ? 'disabled' : '')}
+           style="width:100%; padding:9px 11px; border:1px solid #D1D5DB; border-radius:8px; font-size:13px; color:#111827; font-family:inherit; margin-bottom:18px; ${(t.channel === 'whatsapp' || ro) ? 'background:#F3F4F6; color:#9CA3AF;' : ''}">
 
     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
       <label style="font-size:12px; font-weight:600; color:#374151;">Corpo da mensagem</label>
@@ -261,12 +313,13 @@ function catRenderConteudo() {
     <div style="display:flex; flex-wrap:wrap; gap:5px; margin-bottom:8px;">
       ${vars.map(v => `<button onclick="catInserirVar('${v}')" style="padding:3px 8px; border:1px solid #D1D5DB; background:white; border-radius:6px; font-size:11px; color:#1F6B7D; font-family:monospace; cursor:pointer;" onmouseover="this.style.background='#F3F4F6'" onmouseout="this.style.background='white'">{{${v}}}</button>`).join('')}
     </div>
-    <textarea id="cat-in-body" oninput="catEditar('body', this.value)" rows="12"
-      style="width:100%; padding:11px; border:1px solid #D1D5DB; border-radius:8px; font-size:12px; color:#111827; font-family:inherit; line-height:1.6; resize:vertical;">${catEscapar(catRascunho.body)}</textarea>
+    <textarea id="cat-in-body" oninput="catEditar('body', this.value)" rows="12" ${ro ? 'disabled' : ''}
+      style="width:100%; ${ro ? 'background:#F3F4F6; color:#6B7280;' : ''} padding:11px; border:1px solid #D1D5DB; border-radius:8px; font-size:12px; color:#111827; font-family:inherit; line-height:1.6; resize:vertical;">${catEscapar(catRascunho.body)}</textarea>
 
-    <div style="display:flex; gap:8px; margin-top:8px; align-items:center; flex-wrap:wrap;">
-      <span style="font-size:11px; color:#9CA3AF;">Origem no código:</span>
-      <code style="font-size:11px; color:#6B7280; background:#F3F4F6; padding:2px 6px; border-radius:4px;">${catEscapar(t.source)}</code>
+    <div style="margin-top:14px; padding-top:12px; border-top:1px solid #F3F4F6; display:grid; grid-template-columns:110px 1fr; gap:6px 10px; font-size:11px; color:#6B7280;">
+      <span style="color:#9CA3AF;">Remetente</span><span><code style="background:#F3F4F6; padding:1px 5px; border-radius:4px;">${catEscapar(t.sender)}</code></span>
+      <span style="color:#9CA3AF;">Hoje o config</span><span>${CAT_CONFIG_HOJE[t.configToday]}</span>
+      <span style="color:#9CA3AF;">No código</span><span><code style="background:#F3F4F6; padding:1px 5px; border-radius:4px;">${catEscapar(t.source)}</code></span>
     </div>
     ${t.hasText ? `<p style="font-size:11px; color:#9A3412; margin-top:8px;">Esta comunicação também tem versão em texto puro, que precisa acompanhar a edição.</p>` : ''}
   `;
