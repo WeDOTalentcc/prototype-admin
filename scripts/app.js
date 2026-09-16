@@ -107,7 +107,7 @@ function updateTopbarContext(screenId) {
     'screen-feature-flags':         'Feature Flags — iFood Talentos',
     'screen-plans':                 'Planos & Preços',
     'screen-global-flags':          'Feature Flags Globais',
-    'screen-email-templates':       'Templates de E-mail',
+    'screen-email-templates':       'Catálogo de Templates',
     'screen-contracts':             'Contratos',
     'screen-wedo-users':            'Usuários da WeDO',
     'screen-settings':              'Configurações da Plataforma',
