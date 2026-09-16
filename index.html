@@ -93,7 +93,7 @@
           <ul>
             <li id="nav-plans" class="nav-item" data-tooltip="Planos &amp; Preços" onclick="showScreen('screen-plans')"><span class="nav-item-icon"><i data-lucide="tag"></i></span><span class="nav-item-label">Planos &amp; Preços</span></li>
             <li id="nav-global-flags" class="nav-item" data-tooltip="Feature Flags Globais" onclick="showScreen('screen-global-flags')"><span class="nav-item-icon"><i data-lucide="flag"></i></span><span class="nav-item-label">Feature Flags Globais</span></li>
-            <li id="nav-email-templates" class="nav-item" data-tooltip="Catálogo de Templates" onclick="showScreen('screen-email-templates')"><span class="nav-item-icon"><i data-lucide="mail"></i></span><span class="nav-item-label">Catálogo de Templates</span></li>
+            <li id="nav-templates-globais" class="nav-item" data-tooltip="Catálogo de Templates" onclick="catIr('global')"><span class="nav-item-icon"><i data-lucide="mail"></i></span><span class="nav-item-label">Catálogo de Templates</span></li>
             <li id="nav-contracts" class="nav-item" data-tooltip="Contratos" onclick="showScreen('screen-contracts')"><span class="nav-item-icon"><i data-lucide="file-signature"></i></span><span class="nav-item-label">Contratos</span></li>
           </ul>
         </div>
@@ -168,6 +168,10 @@
             <li id="nav-lia-persona" class="nav-item" data-tooltip="Persona da LIA" onclick="showScreen('screen-lia-persona')">
               <span class="nav-item-icon"><i data-lucide="sparkles"></i></span>
               <span class="nav-item-label">Persona da LIA</span>
+            </li>
+            <li id="nav-client-templates" class="nav-item" data-tooltip="Templates de Comunicação" onclick="catIr('cliente')">
+              <span class="nav-item-icon"><i data-lucide="mail"></i></span>
+              <span class="nav-item-label">Templates de Comunicação</span>
             </li>
             <li id="nav-wa-templates" class="nav-item" data-tooltip="WhatsApp &amp; Templates" onclick="showScreen('screen-whatsapp-templates')">
               <span class="nav-item-icon"><i data-lucide="message-circle"></i></span>
@@ -3656,27 +3660,22 @@
     <!-- ============================================================
          SCREEN: TEMPLATES DE E-MAIL (WEDO-689)
          ============================================================ -->
-    <div class="screen" id="screen-email-templates">
+    <div class="screen" id="screen-client-templates">
       <div style="padding:24px 32px; max-width:1180px; margin:0 auto;">
 
-        <div style="display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:6px;">
-          <div>
-            <h1 style="font-size:22px; font-weight:700; color:#111827; margin:0 0 4px 0;">Catálogo de Templates</h1>
-            <p style="font-size:13px; color:#6B7280; margin:0;">Todo texto de e-mail e WhatsApp que a plataforma envia. O cliente herda daqui e pode personalizar.</p>
-          </div>
-          <button onclick="catAviso('No produto, isso abre o formulário de template novo.')" style="display:flex; align-items:center; gap:6px; padding:9px 16px; background:#C74446; color:white; border:none; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; white-space:nowrap;" onmouseover="this.style.background='#B23B3D'" onmouseout="this.style.background='#C74446'">
-            <i data-lucide="plus" style="width:14px;height:14px;"></i> Novo template
-          </button>
+        <div style="margin-bottom:6px;">
+          <h1 style="font-size:22px; font-weight:700; color:#111827; margin:0 0 4px 0;">Templates de Comunicação</h1>
+          <p style="font-size:13px; color:#6B7280; margin:0;">Textos que a plataforma envia em nome de <strong>iFood Talentos</strong>. Herdam do catálogo da WeDO e podem ser ajustados só para este cliente.</p>
         </div>
 
-        <div style="background:#FFF7ED; border:1px solid #FED7AA; border-radius:8px; padding:11px 14px; margin:16px 0; font-size:12px; color:#9A3412;">
-          Hoje esses textos estão escritos direto no código e só mudam com deploy. Esta tela é o lugar onde eles passam a ser editáveis, e o cliente herda no tenant dele.
+        <div style="background:#F9FAFB; border:1px solid #E5E7EB; border-radius:8px; padding:11px 14px; margin:16px 0; font-size:12px; color:#6B7280;">
+          Enquanto o texto não for ajustado aqui, este cliente acompanha o catálogo da WeDO: uma revisão de copy chega sozinha. Ao salvar uma alteração, a comunicação passa a ter a versão deste cliente e deixa de acompanhar o padrão.
         </div>
 
-        <div id="cat-filtros" style="display:flex; gap:8px; align-items:center; margin-bottom:12px; flex-wrap:wrap;"></div>
+        <div id="cat-filtros-cliente" style="display:flex; gap:8px; align-items:center; margin-bottom:12px; flex-wrap:wrap;"></div>
 
         <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
-          <span id="cat-contagem" style="font-size:12px; color:#6B7280;"></span>
+          <span id="cat-contagem-cliente" style="font-size:12px; color:#6B7280;"></span>
           <span style="font-size:11px; color:#9CA3AF;">clique numa linha para abrir o texto</span>
         </div>
 
@@ -3686,22 +3685,62 @@
               <th style="padding:10px 20px; text-align:left; font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em;">Comunicação</th>
               <th style="padding:10px 12px; text-align:left; font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em;">Canal</th>
               <th style="padding:10px 12px; text-align:left; font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em;">Quando dispara</th>
-              <th style="padding:10px 12px; text-align:center; font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em;">Herança</th>
-              <th style="padding:10px 20px; text-align:center; font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em;">Estado</th>
+              <th style="padding:10px 12px; text-align:center; font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em;">Origem do texto</th>
+              <th style="padding:10px 20px; text-align:right; font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em;">Ajustado em</th>
             </tr></thead>
-            <tbody id="cat-tbody"></tbody>
+            <tbody id="cat-tbody-cliente"></tbody>
           </table>
         </div>
 
         <div style="background:white; border:1px solid #E5E7EB; border-radius:12px; padding:18px 20px; margin-top:20px;">
           <h2 style="font-size:14px; font-weight:700; color:#111827; margin:0 0 4px 0;">Fora do catálogo</h2>
-          <p style="font-size:12px; color:#6B7280; margin:0 0 12px 0;">Texto que existe no código e não tem ponto de disparo. Não entra no catálogo e vira limpeza técnica.</p>
-          <div id="cat-mortos"></div>
+          <p style="font-size:12px; color:#6B7280; margin:0 0 12px 0;">Texto que existe no código e não tem ponto de disparo. Não chega a ninguém e vira limpeza técnica.</p>
+          <div id="cat-mortos-cliente"></div>
         </div>
 
       </div>
+    </div><!-- /#screen-client-templates -->
 
-    </div><!-- /#screen-email-templates -->
+    <div class="screen" id="screen-templates-globais">
+      <div style="padding:24px 32px; max-width:1180px; margin:0 auto;">
+
+        <div style="margin-bottom:6px;">
+          <h1 style="font-size:22px; font-weight:700; color:#111827; margin:0 0 4px 0;">Catálogo de Templates</h1>
+          <p style="font-size:13px; color:#6B7280; margin:0;">O texto padrão da WeDO para toda comunicação da plataforma. É daqui que o cliente herda quando não tem versão própria.</p>
+        </div>
+
+        <div style="background:#F5F3FF; border:1px solid #DDD6FE; border-radius:8px; padding:11px 14px; margin:16px 0; font-size:12px; color:#5B21B6;">
+          Publicar aqui alcança na hora todo cliente que não ajustou aquela comunicação. Quem ajustou mantém o texto próprio até alguém voltar ao padrão, dentro do cliente.
+        </div>
+
+        <div id="cat-filtros-global" style="display:flex; gap:8px; align-items:center; margin-bottom:12px; flex-wrap:wrap;"></div>
+
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+          <span id="cat-contagem-global" style="font-size:12px; color:#6B7280;"></span>
+          <span style="font-size:11px; color:#9CA3AF;">clique numa linha para abrir o texto</span>
+        </div>
+
+        <div style="background:white; border:1px solid #E5E7EB; border-radius:12px; overflow:hidden;">
+          <table style="width:100%; border-collapse:collapse;">
+            <thead><tr style="background:#F9FAFB; border-bottom:1px solid #E5E7EB;">
+              <th style="padding:10px 20px; text-align:left; font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em;">Comunicação</th>
+              <th style="padding:10px 12px; text-align:left; font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em;">Canal</th>
+              <th style="padding:10px 12px; text-align:left; font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em;">Quando dispara</th>
+              <th style="padding:10px 12px; text-align:center; font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em;">Clientes fora do padrão</th>
+              <th style="padding:10px 20px; text-align:right; font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em;">Quem fugiu do padrão</th>
+            </tr></thead>
+            <tbody id="cat-tbody-global"></tbody>
+          </table>
+        </div>
+
+        <div style="background:white; border:1px solid #E5E7EB; border-radius:12px; padding:18px 20px; margin-top:20px;">
+          <h2 style="font-size:14px; font-weight:700; color:#111827; margin:0 0 4px 0;">Fora do catálogo</h2>
+          <p style="font-size:12px; color:#6B7280; margin:0 0 12px 0;">Texto que existe no código e não tem ponto de disparo. Não chega a ninguém e vira limpeza técnica.</p>
+          <div id="cat-mortos-global"></div>
+        </div>
+
+      </div>
+    </div><!-- /#screen-templates-globais -->
 
     <!-- ============================================================
          SCREEN: CONTRATOS (WEDO-689)
@@ -6841,7 +6880,10 @@ Este link expira em 7 dias.</textarea>
 
       <div style="padding:18px 22px; border-bottom:1px solid #E5E7EB; display:flex; align-items:flex-start; justify-content:space-between; gap:12px;">
         <div style="min-width:0;">
-          <h2 id="cat-drawer-titulo" style="font-size:16px; font-weight:700; color:#111827; margin:0 0 4px 0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></h2>
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+            <h2 id="cat-drawer-titulo" style="font-size:16px; font-weight:700; color:#111827; margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></h2>
+            <span id="cat-drawer-escopo"></span>
+          </div>
           <div id="cat-drawer-sub" style="font-size:11px; color:#6B7280;"></div>
         </div>
         <button onclick="catFechar()" style="background:none; border:none; cursor:pointer; color:#9CA3AF; padding:4px;" title="Fechar (Esc)">
@@ -6852,22 +6894,22 @@ Este link expira em 7 dias.</textarea>
       <div style="display:flex; gap:20px; padding:0 22px; border-bottom:1px solid #E5E7EB;">
         <button id="cat-aba-conteudo"   onclick="catAba('conteudo')"   style="background:none; border:none; border-bottom:2px solid #C74446; padding:11px 0; font-size:13px; font-weight:600; color:#111827; cursor:pointer; font-family:inherit;">Conteúdo</button>
         <button id="cat-aba-preview"    onclick="catAba('preview')"    style="background:none; border:none; border-bottom:2px solid transparent; padding:11px 0; font-size:13px; font-weight:500; color:#6B7280; cursor:pointer; font-family:inherit;">Pré-visualização</button>
-        <button id="cat-aba-clientes"   onclick="catAba('clientes')"   style="background:none; border:none; border-bottom:2px solid transparent; padding:11px 0; font-size:13px; font-weight:500; color:#6B7280; cursor:pointer; font-family:inherit;">Clientes</button>
+        <button id="cat-aba-padrao"     onclick="catAba('padrao')"     style="background:none; border:none; border-bottom:2px solid transparent; padding:11px 0; font-size:13px; font-weight:500; color:#6B7280; cursor:pointer; font-family:inherit;">Padrão da WeDO</button>
         <button id="cat-aba-historico"  onclick="catAba('historico')"  style="background:none; border:none; border-bottom:2px solid transparent; padding:11px 0; font-size:13px; font-weight:500; color:#6B7280; cursor:pointer; font-family:inherit;">Histórico</button>
       </div>
 
       <div style="flex:1; overflow-y:auto; padding:20px 22px;">
         <div id="cat-painel-conteudo"></div>
         <div id="cat-painel-preview" style="display:none;"></div>
-        <div id="cat-painel-clientes" style="display:none;"></div>
+        <div id="cat-painel-padrao" style="display:none;"></div>
         <div id="cat-painel-historico" style="display:none;"></div>
       </div>
 
       <div style="padding:14px 22px; border-top:1px solid #E5E7EB; display:flex; align-items:center; justify-content:space-between; gap:12px;">
-        <span id="cat-sujo" style="display:none; font-size:12px; color:#9A3412;">Alteração não publicada</span>
+        <span id="cat-sujo" style="display:none; font-size:12px; color:#9A3412;">Alteração não salva</span>
         <div style="display:flex; gap:8px; margin-left:auto;">
           <button onclick="catDescartar()" style="padding:8px 14px; border:1px solid #D1D5DB; background:white; border-radius:8px; font-size:13px; color:#374151; cursor:pointer; font-family:inherit;">Descartar</button>
-          <button id="cat-btn-publicar" onclick="catPublicar()" disabled style="padding:8px 16px; border:none; background:#C74446; color:white; border-radius:8px; font-size:13px; font-weight:600; cursor:not-allowed; opacity:.45; font-family:inherit;">Publicar</button>
+          <button id="cat-btn-salvar" onclick="catSalvar()" disabled style="padding:8px 16px; border:none; background:#C74446; color:white; border-radius:8px; font-size:13px; font-weight:600; cursor:not-allowed; opacity:.45; font-family:inherit;">Salvar para este cliente</button>
         </div>
       </div>
     </div>

@@ -57,7 +57,8 @@ function updateSidebarActive(screenId) {
     'screen-feature-flags':         'nav-feature-flags',
     'screen-plans':                 'nav-plans',
     'screen-global-flags':          'nav-global-flags',
-    'screen-email-templates':       'nav-email-templates',
+    'screen-client-templates':      'nav-client-templates',
+    'screen-templates-globais':     'nav-templates-globais',
     'screen-contracts':             'nav-contracts',
     'screen-wedo-users':            'nav-wedo-users',
     'screen-settings':              'nav-settings',
@@ -107,7 +108,8 @@ function updateTopbarContext(screenId) {
     'screen-feature-flags':         'Feature Flags — iFood Talentos',
     'screen-plans':                 'Planos & Preços',
     'screen-global-flags':          'Feature Flags Globais',
-    'screen-email-templates':       'Catálogo de Templates',
+    'screen-client-templates':      'Templates de Comunicação',
+    'screen-templates-globais':     'Catálogo de Templates',
     'screen-contracts':             'Contratos',
     'screen-wedo-users':            'Usuários da WeDO',
     'screen-settings':              'Configurações da Plataforma',
@@ -220,7 +222,7 @@ function clearClientContext() {
     lucide.createIcons({ nodes: [scopeBtn] });
   }
 
-  const clientScreens = ['screen-client-detail','screen-client-users','screen-billing','screen-llm-config','screen-feature-flags','screen-onboarding-client'];
+  const clientScreens = ['screen-client-detail','screen-client-users','screen-billing','screen-llm-config','screen-feature-flags','screen-onboarding-client','screen-client-templates'];
   if (clientScreens.includes(currentScreen)) {
     showScreen('screen-clients');
   }

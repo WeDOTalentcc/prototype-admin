@@ -26,10 +26,12 @@ const CATALOGO = [
   "body": "Oportunidade — {{company_name}}\n\nOlá, {{candidate_name}}.\n\n{{custom_message_html}}\n\nMeu nome é {{recruiter_name}} e faço parte do time de recrutamento da {{company_name}}.\nIdentificamos seu perfil e gostaríamos de conversar sobre a vaga de\n{{job_title}}.\n\nPara dar início ao processo, convidamos você a uma conversa com a LIA\n— nossa assistente de inteligência artificial. É uma etapa breve e assíncrona, criada para que possamos conhecer\nsua trajetória e expectativas antes de qualquer entrevista formal.\n\nPara melhor experiência, escolha um momento tranquilo e verifique sua conexão à internet.\nCompatível com Chrome, Firefox e Edge.",
   "note": "",
   "hasText": false,
-  "custom": [
-   "Sodexo",
-   "Localiza"
-  ]
+  "defaultSubject": "{{company_name}} — Convite para triagem sobre {{job_title}}",
+  "defaultBody": "Oportunidade — {{company_name}}\n\nOlá, {{candidate_name}}.\n\n{{custom_message_html}}\n\nMeu nome é {{recruiter_name}} e faço parte do time de recrutamento da {{company_name}}.\nIdentificamos seu perfil e gostaríamos de conversar sobre a vaga de\n{{job_title}}.\n\nPara dar início ao processo, convidamos você a uma conversa com a LIA\n— nossa assistente de inteligência artificial. É uma etapa breve e assíncrona, criada para que possamos conhecer\nsua trajetória e expectativas antes de qualquer entrevista formal.\n\nPara melhor experiência, escolha um momento tranquilo e verifique sua conexão à internet.\nCompatível com Chrome, Firefox e Edge.",
+  "customized": false,
+  "customizedBy": null,
+  "customizedAt": null,
+  "otherClients": []
  },
  {
   "key": "screening_reminder",
@@ -50,10 +52,12 @@ const CATALOGO = [
   "body": "Lembrete — {{company_name}}\n\nOlá, {{candidate_name}}.\n\nVocê ainda não concluiu a conversa com a LIA sobre a vaga de\n{{job_title}}.\n\nReserve alguns minutos para continuar. O processo é assíncrono — você pode pausar e retomar quando quiser.",
   "note": "",
   "hasText": false,
-  "custom": [
-   "Mappit",
-   "Talenses"
-  ]
+  "defaultSubject": "{{company_name}} — Continue sua triagem",
+  "defaultBody": "Lembrete — {{company_name}}\n\nOlá, {{candidate_name}}.\n\nVocê ainda não concluiu a conversa com a LIA sobre a vaga de\n{{job_title}}.\n\nReserve alguns minutos para continuar. O processo é assíncrono — você pode pausar e retomar quando quiser.",
+  "customized": false,
+  "customizedBy": null,
+  "customizedAt": null,
+  "otherClients": []
  },
  {
   "key": "screening_last_chance",
@@ -74,7 +78,15 @@ const CATALOGO = [
   "body": "Última chance — {{company_name}}\n\nOlá, {{candidate_name}}.\n\nEsta é nossa última tentativa de contato. A conversa com a LIA sobre a vaga de\n{{job_title}} ainda está pendente.\n\nSe você ainda tem interesse, complete a triagem agora. Caso contrário, entenderemos que não deseja seguir com o processo.",
   "note": "",
   "hasText": false,
-  "custom": []
+  "defaultSubject": "{{company_name}} — Última chance: complete sua triagem",
+  "defaultBody": "Última chance — {{company_name}}\n\nOlá, {{candidate_name}}.\n\nEsta é nossa última tentativa de contato. A conversa com a LIA sobre a vaga de\n{{job_title}} ainda está pendente.\n\nSe você ainda tem interesse, complete a triagem agora. Caso contrário, entenderemos que não deseja seguir com o processo.",
+  "customized": false,
+  "customizedBy": null,
+  "customizedAt": null,
+  "otherClients": [
+   "Sodexo",
+   "Localiza"
+  ]
  },
  {
   "key": "cv_adherence_feedback",
@@ -95,7 +107,12 @@ const CATALOGO = [
   "body": "Processo seletivo\n\nOlá, {{candidate}}.\n\nSegue o retorno sobre sua candidatura à vaga de {{job}}:\n\n{{phrase}}\n\nAgradecemos seu interesse e o tempo dedicado ao processo. Ficamos à disposição para futuras oportunidades.",
   "note": "",
   "hasText": false,
-  "custom": []
+  "defaultSubject": "Atualização sobre sua candidatura - {{job_title}}",
+  "defaultBody": "Processo seletivo\n\nOlá, {{candidate}}.\n\nSegue o retorno sobre sua candidatura à vaga de {{job}}:\n\n{{phrase}}\n\nAgradecemos seu interesse e o tempo dedicado ao processo. Ficamos à disposição para futuras oportunidades.",
+  "customized": false,
+  "customizedBy": null,
+  "customizedAt": null,
+  "otherClients": []
  },
  {
   "key": "rejection_feedback",
@@ -113,11 +130,15 @@ const CATALOGO = [
    "feedback_body",
    "reaction_url"
   ],
-  "body": "Processo seletivo\n\nOlá, {{candidate}}.\n\nSegue o retorno sobre sua candidatura à vaga de {{job}}:\n\n{{feedback_html}}\n\nAgradecemos seu interesse e o tempo dedicado ao processo. Desejamos sucesso em sua trajetória profissional e ficamos à disposição para futuras oportunidades.",
+  "body": "Processo seletivo\n\nOlá, {{candidate}}.\n\nSegue o retorno sobre sua candidatura à vaga de {{job}}:\n\n{{feedback_html}}\n\nAgradecemos seu interesse e o tempo dedicado ao processo. Desejamos sucesso em sua trajetória profissional e ficamos à disposição para futuras oportunidades.\n\nTime de Atração de Talentos do iFood",
   "note": "O recrutador pode escrever o titulo do feedback; o assunto do catalogo e o texto de reserva.",
   "hasText": false,
-  "custom": [
-   "Sodexo",
+  "defaultSubject": "Atualização sobre sua candidatura - {{job_title}}",
+  "defaultBody": "Processo seletivo\n\nOlá, {{candidate}}.\n\nSegue o retorno sobre sua candidatura à vaga de {{job}}:\n\n{{feedback_html}}\n\nAgradecemos seu interesse e o tempo dedicado ao processo. Desejamos sucesso em sua trajetória profissional e ficamos à disposição para futuras oportunidades.",
+  "customized": true,
+  "customizedBy": "Rodrigo Alfieri",
+  "customizedAt": "05/09/2026",
+  "otherClients": [
    "Localiza"
   ]
  },
@@ -137,12 +158,15 @@ const CATALOGO = [
    "scheduling_url",
    "slot_options"
   ],
-  "body": "Agendamento de entrevista\n\n{{subject}}\n\nOlá, {{candidate}}.\n\n{{message}}\n\nVocê foi convidado(a) para agendar uma entrevista. Escolha o melhor horário para você.\n\nEscolha um horário disponível:\n\n{{option}}\n\nClique em um horário para confirmar sua presença.",
+  "body": "Agendamento de entrevista\n\n{{subject}}\n\nOlá, {{candidate}}.\n\n{{message}}\n\nVocê foi convidado(a) para agendar uma entrevista. Escolha o melhor horário para você.\n\nEscolha um horário disponível:\n\n{{option}}\n\nClique em um horário para confirmar sua presença.\n\nTime de Atração de Talentos do iFood",
   "note": "O assunto do catalogo so vale quando o recrutador deixa o campo em branco.",
   "hasText": false,
-  "custom": [
-   "Grupo Boticário"
-  ]
+  "defaultSubject": "Escolha o horário da sua entrevista",
+  "defaultBody": "Agendamento de entrevista\n\n{{subject}}\n\nOlá, {{candidate}}.\n\n{{message}}\n\nVocê foi convidado(a) para agendar uma entrevista. Escolha o melhor horário para você.\n\nEscolha um horário disponível:\n\n{{option}}\n\nClique em um horário para confirmar sua presença.",
+  "customized": true,
+  "customizedBy": "Rodrigo Alfieri",
+  "customizedAt": "16/06/2026",
+  "otherClients": []
  },
  {
   "key": "booking_confirmed_candidate",
@@ -163,7 +187,12 @@ const CATALOGO = [
   "body": "Entrevista confirmada\n\nOlá, {{candidate}}.\n\nSua entrevista foi confirmada com sucesso.\n\nLink da reunião\n\nNo horário, entre na sua entrevista por este link:\n\nEntrar na reunião\n\n{{meeting}}\n\nEstamos ansiosos para conhecê-lo(a)!",
   "note": "",
   "hasText": false,
-  "custom": []
+  "defaultSubject": "Sua entrevista foi agendada: {{meeting_subject}}",
+  "defaultBody": "Entrevista confirmada\n\nOlá, {{candidate}}.\n\nSua entrevista foi confirmada com sucesso.\n\nLink da reunião\n\nNo horário, entre na sua entrevista por este link:\n\nEntrar na reunião\n\n{{meeting}}\n\nEstamos ansiosos para conhecê-lo(a)!",
+  "customized": false,
+  "customizedBy": null,
+  "customizedAt": null,
+  "otherClients": []
  },
  {
   "key": "job_lifecycle_notice",
@@ -183,7 +212,12 @@ const CATALOGO = [
   "body": "",
   "note": "Tem tres variantes de assunto, pausada, retomada e cancelada. Cada variante vira uma chave propria no catalogo.",
   "hasText": false,
-  "custom": []
+  "defaultSubject": "A vaga {{job_title}} foi pausada temporariamente",
+  "defaultBody": "",
+  "customized": false,
+  "customizedBy": null,
+  "customizedAt": null,
+  "otherClients": []
  },
  {
   "key": "account_signup",
@@ -203,7 +237,12 @@ const CATALOGO = [
   "body": "Novo acesso\n\nBem-vindo ao {{account_name}}!\n\n{{content}}\n\nOu copie e cole este link no seu navegador:\n\n{{setup_url}}",
   "note": "",
   "hasText": true,
-  "custom": []
+  "defaultSubject": "Bem-vindo ao {{account_name}}! Complete seu cadastro",
+  "defaultBody": "Novo acesso\n\nBem-vindo ao {{account_name}}!\n\n{{content}}\n\nOu copie e cole este link no seu navegador:\n\n{{setup_url}}",
+  "customized": false,
+  "customizedBy": null,
+  "customizedAt": null,
+  "otherClients": []
  },
  {
   "key": "evaluation_completed",
@@ -224,7 +263,12 @@ const CATALOGO = [
   "body": "Avaliação concluída\n\n{{candidate_name}} finalizou a avaliação\n\nO candidato {{candidate_name}} concluiu a avaliação\n{{evaluation_name}}.",
   "note": "",
   "hasText": false,
-  "custom": []
+  "defaultSubject": "{{candidate_name}} concluiu a avaliação — {{job_title}}",
+  "defaultBody": "Avaliação concluída\n\n{{candidate_name}} finalizou a avaliação\n\nO candidato {{candidate_name}} concluiu a avaliação\n{{evaluation_name}}.",
+  "customized": false,
+  "customizedBy": null,
+  "customizedAt": null,
+  "otherClients": []
  },
  {
   "key": "evaluation_declined",
@@ -244,7 +288,12 @@ const CATALOGO = [
   "body": "Avaliação recusada\n\n{{candidate_name}} recusou a avaliação\n\nO candidato {{candidate_name}} recusou participar da avaliação\n{{evaluation_name}}.\n\nMotivo da recusa\n\n{{declined_reason}}",
   "note": "",
   "hasText": false,
-  "custom": []
+  "defaultSubject": "{{candidate_name}} recusou a avaliação — {{job_title}}",
+  "defaultBody": "Avaliação recusada\n\n{{candidate_name}} recusou a avaliação\n\nO candidato {{candidate_name}} recusou participar da avaliação\n{{evaluation_name}}.\n\nMotivo da recusa\n\n{{declined_reason}}",
+  "customized": false,
+  "customizedBy": null,
+  "customizedAt": null,
+  "otherClients": []
  },
  {
   "key": "evaluation_stalled_alert",
@@ -264,9 +313,12 @@ const CATALOGO = [
   "body": "Alerta — Triagem não concluída\n\nCandidato não concluiu a triagem\n\nO candidato {{candidate_name}} não concluiu a avaliação\n{{evaluation_name}} após 96 horas.",
   "note": "",
   "hasText": false,
-  "custom": [
-   "Localiza"
-  ]
+  "defaultSubject": "Alerta: Triagem não concluída — {{candidate_name}} ({{job_title}})",
+  "defaultBody": "Alerta — Triagem não concluída\n\nCandidato não concluiu a triagem\n\nO candidato {{candidate_name}} não concluiu a avaliação\n{{evaluation_name}} após 96 horas.",
+  "customized": false,
+  "customizedBy": null,
+  "customizedAt": null,
+  "otherClients": []
  },
  {
   "key": "job_closed",
@@ -283,10 +335,15 @@ const CATALOGO = [
    "closed_by",
    "summary"
   ],
-  "body": "Encerramento de vaga\n\nOlá, {{recipient}}.\n\nA vaga {{job}} foi encerrada.\n\n{{feedback_summary}}\n{{feedback_summary}} o feedback do processo.\n\nNão foi possível enviar para\n{{feedback_summary}}\n{{feedback_summary}}.",
+  "body": "Encerramento de vaga\n\nOlá, {{recipient}}.\n\nA vaga {{job}} foi encerrada.\n\n{{feedback_summary}}\n{{feedback_summary}} o feedback do processo.\n\nNão foi possível enviar para\n{{feedback_summary}}\n{{feedback_summary}}.\n\nTime de Atração de Talentos do iFood",
   "note": "",
   "hasText": false,
-  "custom": []
+  "defaultSubject": "Vaga encerrada - {{job_title}}",
+  "defaultBody": "Encerramento de vaga\n\nOlá, {{recipient}}.\n\nA vaga {{job}} foi encerrada.\n\n{{feedback_summary}}\n{{feedback_summary}} o feedback do processo.\n\nNão foi possível enviar para\n{{feedback_summary}}\n{{feedback_summary}}.",
+  "customized": true,
+  "customizedBy": "Paulo Moraes",
+  "customizedAt": "12/09/2026",
+  "otherClients": []
  },
  {
   "key": "job_closure_message_test",
@@ -306,8 +363,13 @@ const CATALOGO = [
   "body": "Teste — não foi enviado a ninguém\n\nPrévia da mensagem de encerramento\n\nVaga {{job}}.\nAbaixo está exatamente o texto que o candidato receberia.\n\n{{body}}",
   "note": "",
   "hasText": false,
-  "custom": [
-   "Talenses"
+  "defaultSubject": "[TESTE] {{subject}}",
+  "defaultBody": "Teste — não foi enviado a ninguém\n\nPrévia da mensagem de encerramento\n\nVaga {{job}}.\nAbaixo está exatamente o texto que o candidato receberia.\n\n{{body}}",
+  "customized": false,
+  "customizedBy": null,
+  "customizedAt": null,
+  "otherClients": [
+   "Mappit"
   ]
  },
  {
@@ -328,9 +390,14 @@ const CATALOGO = [
   "body": "Problema reportado\n\nProblema reportado no Screening",
   "note": "",
   "hasText": true,
-  "custom": [
-   "Localiza",
-   "Grupo Boticário"
+  "defaultSubject": "[Screening] Problema reportado por {{candidate_name}} - {{job_title}}",
+  "defaultBody": "Problema reportado\n\nProblema reportado no Screening",
+  "customized": false,
+  "customizedBy": null,
+  "customizedAt": null,
+  "otherClients": [
+   "Grupo Boticário",
+   "Sodexo"
   ]
  },
  {
@@ -351,7 +418,14 @@ const CATALOGO = [
   "body": "Novo agendamento\n\nUm candidato agendou uma entrevista\n\nUm candidato agendou uma entrevista através do seu link de agendamento.",
   "note": "",
   "hasText": false,
-  "custom": []
+  "defaultSubject": "Entrevista agendada: {{meeting_subject}}",
+  "defaultBody": "Novo agendamento\n\nUm candidato agendou uma entrevista\n\nUm candidato agendou uma entrevista através do seu link de agendamento.",
+  "customized": false,
+  "customizedBy": null,
+  "customizedAt": null,
+  "otherClients": [
+   "Sodexo"
+  ]
  },
  {
   "key": "notification_digest",
@@ -371,8 +445,14 @@ const CATALOGO = [
   "body": "{{notification}}\n\n{{notification}}",
   "note": "O assunto do catalogo e o texto de reserva para quando a notificacao nao tem titulo.",
   "hasText": true,
-  "custom": [
-   "Localiza"
+  "defaultSubject": "Notificação WeDO",
+  "defaultBody": "{{notification}}\n\n{{notification}}",
+  "customized": false,
+  "customizedBy": null,
+  "customizedAt": null,
+  "otherClients": [
+   "Localiza",
+   "Mappit"
   ]
  },
  {
@@ -392,7 +472,15 @@ const CATALOGO = [
   "body": "{{notifications}} alertas das suas vagas\n\n{{title}} ({{grouped}})\n\n{{notification}}",
   "note": "",
   "hasText": true,
-  "custom": []
+  "defaultSubject": "{{grouped_subject}}",
+  "defaultBody": "{{notifications}} alertas das suas vagas\n\n{{title}} ({{grouped}})\n\n{{notification}}",
+  "customized": false,
+  "customizedBy": null,
+  "customizedAt": null,
+  "otherClients": [
+   "Sodexo",
+   "Localiza"
+  ]
  },
  {
   "key": "insights_report",
@@ -412,7 +500,12 @@ const CATALOGO = [
   "body": "",
   "note": "",
   "hasText": false,
-  "custom": []
+  "defaultSubject": "Relatório de Insights - {{jobs_count}} vaga(s)",
+  "defaultBody": "",
+  "customized": false,
+  "customizedBy": null,
+  "customizedAt": null,
+  "otherClients": []
  },
  {
   "key": "business_site_analysis_ready",
@@ -432,7 +525,12 @@ const CATALOGO = [
   "body": "Processamos as informações do site\n\nOlá {{user}},\n\nAnalisamos o site {{analysis}} e o LinkedIn da empresa\ne encontramos as informações abaixo.\n\n{{label}}\n\n{{value}}\n\nConfira os dados na plataforma: você pode editar o que precisar antes de confirmar.\n\nRevisar e confirmar\n\nSe o botão não funcionar, copie e cole este endereço no navegador:\n\n{{confirm_url}}\n\nNada é salvo na sua empresa até você confirmar.",
   "note": "",
   "hasText": true,
-  "custom": []
+  "defaultSubject": "Processamos as informações do site de {{company_name}}",
+  "defaultBody": "Processamos as informações do site\n\nOlá {{user}},\n\nAnalisamos o site {{analysis}} e o LinkedIn da empresa\ne encontramos as informações abaixo.\n\n{{label}}\n\n{{value}}\n\nConfira os dados na plataforma: você pode editar o que precisar antes de confirmar.\n\nRevisar e confirmar\n\nSe o botão não funcionar, copie e cole este endereço no navegador:\n\n{{confirm_url}}\n\nNada é salvo na sua empresa até você confirmar.",
+  "customized": false,
+  "customizedBy": null,
+  "customizedAt": null,
+  "otherClients": []
  },
  {
   "key": "manual_dispatch",
@@ -453,8 +551,12 @@ const CATALOGO = [
   "body": "{{message}}\n\nNao desejo mais receber estes emails",
   "note": "E o unico caminho que o cliente ja edita hoje, pela tela de Templates.",
   "hasText": false,
-  "custom": [
-   "Grupo Boticário",
+  "defaultSubject": "{{message_subject}}",
+  "defaultBody": "{{message}}\n\nNao desejo mais receber estes emails",
+  "customized": false,
+  "customizedBy": null,
+  "customizedAt": null,
+  "otherClients": [
    "Mappit"
   ]
  },
@@ -476,7 +578,12 @@ const CATALOGO = [
   "body": "Verificação de Segurança\n\nSeu código de acesso\n\nOlá, {{user}}!\nUse o código abaixo para completar seu login:\n\nCódigo de Verificação\n\n{{code}}\n\n⏱ Válido por {{expires_in}}\n\n✓\n\nCódigo expira em {{expires_in}}\n\n✓\n\nPode ser usado apenas uma vez\n\n✓\n\nNão compartilhe com ninguém\n\n⚠️\n\nNão solicitou este código? Ignore este email. Sua conta permanece segura.",
   "note": "",
   "hasText": false,
-  "custom": []
+  "defaultSubject": "Seu código de verificação - WeDOTalent",
+  "defaultBody": "Verificação de Segurança\n\nSeu código de acesso\n\nOlá, {{user}}!\nUse o código abaixo para completar seu login:\n\nCódigo de Verificação\n\n{{code}}\n\n⏱ Válido por {{expires_in}}\n\n✓\n\nCódigo expira em {{expires_in}}\n\n✓\n\nPode ser usado apenas uma vez\n\n✓\n\nNão compartilhe com ninguém\n\n⚠️\n\nNão solicitou este código? Ignore este email. Sua conta permanece segura.",
+  "customized": false,
+  "customizedBy": null,
+  "customizedAt": null,
+  "otherClients": []
  },
  {
   "key": "mfa_policy_required",
@@ -492,10 +599,18 @@ const CATALOGO = [
    "user_name",
    "account_name"
   ],
-  "body": "Verificação em duas etapas agora é obrigatória\n\nOlá {{user}},\n\nA administração de {{company_name}} ativou a verificação em duas etapas (MFA)\ncomo obrigatória para todos os usuários. Esse controle está alinhado com NIST SP 800-63B AAL2,\nISO 27001 A.9.4.2 e SOC 2 CC6.1.\n\nNo seu próximo login você será solicitado a verificar sua identidade por um código enviado ao\nseu e-mail. Não é necessário cadastrar nada agora — o processo será apresentado automaticamente\npelo sistema.\n\nEm caso de dúvidas, fale com o administrador da sua conta ou acesse\n{{front_url}}.\n\nEsta é uma mensagem automática. Você está recebendo porque é usuário ativo da conta\n{{company_name}}.",
+  "body": "Verificação em duas etapas agora é obrigatória\n\nOlá {{user}},\n\nA administração de {{company_name}} ativou a verificação em duas etapas (MFA)\ncomo obrigatória para todos os usuários. Esse controle está alinhado com NIST SP 800-63B AAL2,\nISO 27001 A.9.4.2 e SOC 2 CC6.1.\n\nNo seu próximo login você será solicitado a verificar sua identidade por um código enviado ao\nseu e-mail. Não é necessário cadastrar nada agora — o processo será apresentado automaticamente\npelo sistema.\n\nEm caso de dúvidas, fale com o administrador da sua conta ou acesse\n{{front_url}}.\n\nEsta é uma mensagem automática. Você está recebendo porque é usuário ativo da conta\n{{company_name}}.\n\nTime de Atração de Talentos do iFood",
   "note": "",
   "hasText": false,
-  "custom": []
+  "defaultSubject": "Verificação em duas etapas agora é obrigatória",
+  "defaultBody": "Verificação em duas etapas agora é obrigatória\n\nOlá {{user}},\n\nA administração de {{company_name}} ativou a verificação em duas etapas (MFA)\ncomo obrigatória para todos os usuários. Esse controle está alinhado com NIST SP 800-63B AAL2,\nISO 27001 A.9.4.2 e SOC 2 CC6.1.\n\nNo seu próximo login você será solicitado a verificar sua identidade por um código enviado ao\nseu e-mail. Não é necessário cadastrar nada agora — o processo será apresentado automaticamente\npelo sistema.\n\nEm caso de dúvidas, fale com o administrador da sua conta ou acesse\n{{front_url}}.\n\nEsta é uma mensagem automática. Você está recebendo porque é usuário ativo da conta\n{{company_name}}.",
+  "customized": true,
+  "customizedBy": "Paulo Moraes",
+  "customizedAt": "05/09/2026",
+  "otherClients": [
+   "Mappit",
+   "Sodexo"
+  ]
  },
  {
   "key": "password_reset",
@@ -515,7 +630,12 @@ const CATALOGO = [
   "body": "Redefinição de senha\n\nOlá, {{user}}!\n\nVocê solicitou a redefinição da sua senha no WeDOTalent.\n\nPara criar uma nova senha, clique no botão abaixo:\n\nOu copie e cole este link no seu navegador:\n\n{{reset_url}}",
   "note": "",
   "hasText": true,
-  "custom": []
+  "defaultSubject": "Redefinição de senha - We Do Talent",
+  "defaultBody": "Redefinição de senha\n\nOlá, {{user}}!\n\nVocê solicitou a redefinição da sua senha no WeDOTalent.\n\nPara criar uma nova senha, clique no botão abaixo:\n\nOu copie e cole este link no seu navegador:\n\n{{reset_url}}",
+  "customized": false,
+  "customizedBy": null,
+  "customizedAt": null,
+  "otherClients": []
  },
  {
   "key": "new_access_created",
@@ -535,7 +655,12 @@ const CATALOGO = [
   "body": "Novo acesso criado\n\nOlá, {{user}}!\n\nUm novo acesso foi criado para você no WeDOTalent.\n\nPara definir sua senha e acessar o sistema, clique no botão abaixo:\n\nOu copie e cole este link no seu navegador:\n\n{{reset_url}}",
   "note": "",
   "hasText": true,
-  "custom": []
+  "defaultSubject": "Novo acesso criado - We Do Talent",
+  "defaultBody": "Novo acesso criado\n\nOlá, {{user}}!\n\nUm novo acesso foi criado para você no WeDOTalent.\n\nPara definir sua senha e acessar o sistema, clique no botão abaixo:\n\nOu copie e cole este link no seu navegador:\n\n{{reset_url}}",
+  "customized": false,
+  "customizedBy": null,
+  "customizedAt": null,
+  "otherClients": []
  },
  {
   "key": "login_alert",
@@ -553,10 +678,18 @@ const CATALOGO = [
    "location",
    "access_time"
   ],
-  "body": "Detectamos um acesso fora do padrão\n\nOlá {{user}},\n\nIdentificamos um novo login na sua conta com características diferentes das suas\núltimas sessões. Confira os detalhes:\n\nData e hora\n\n{{when}} (BRT)\n\nLocalização aproximada\n\n(diferente do habitual)\n\nNavegador\n\n{{device}}\n\nSistema\n\n{{device}}\n(dispositivo novo)\n\nEndereço IP\n\n{{ip}}\n\nFoi você? Se sim, pode ignorar este aviso.\n\nSe não foi você:\n\nAcesse {{front_url}}.\n\nTroque sua senha imediatamente.\n\nHabilite ou revise sua verificação em duas etapas (MFA).\n\nAvise o administrador da sua conta.\n\nEste alerta é automático. Geolocalização baseada em IP é aproximada e pode\nindicar a cidade do provedor de internet, não a sua localização exata.",
+  "body": "Detectamos um acesso fora do padrão\n\nOlá {{user}},\n\nIdentificamos um novo login na sua conta com características diferentes das suas\núltimas sessões. Confira os detalhes:\n\nData e hora\n\n{{when}} (BRT)\n\nLocalização aproximada\n\n(diferente do habitual)\n\nNavegador\n\n{{device}}\n\nSistema\n\n{{device}}\n(dispositivo novo)\n\nEndereço IP\n\n{{ip}}\n\nFoi você? Se sim, pode ignorar este aviso.\n\nSe não foi você:\n\nAcesse {{front_url}}.\n\nTroque sua senha imediatamente.\n\nHabilite ou revise sua verificação em duas etapas (MFA).\n\nAvise o administrador da sua conta.\n\nEste alerta é automático. Geolocalização baseada em IP é aproximada e pode\nindicar a cidade do provedor de internet, não a sua localização exata.\n\nTime de Atração de Talentos do iFood",
   "note": "Tem tres variantes de assunto, dispositivo novo, local novo e os dois. Cada variante vira uma chave propria.",
   "hasText": true,
-  "custom": []
+  "defaultSubject": "Novo dispositivo detectado em sua conta",
+  "defaultBody": "Detectamos um acesso fora do padrão\n\nOlá {{user}},\n\nIdentificamos um novo login na sua conta com características diferentes das suas\núltimas sessões. Confira os detalhes:\n\nData e hora\n\n{{when}} (BRT)\n\nLocalização aproximada\n\n(diferente do habitual)\n\nNavegador\n\n{{device}}\n\nSistema\n\n{{device}}\n(dispositivo novo)\n\nEndereço IP\n\n{{ip}}\n\nFoi você? Se sim, pode ignorar este aviso.\n\nSe não foi você:\n\nAcesse {{front_url}}.\n\nTroque sua senha imediatamente.\n\nHabilite ou revise sua verificação em duas etapas (MFA).\n\nAvise o administrador da sua conta.\n\nEste alerta é automático. Geolocalização baseada em IP é aproximada e pode\nindicar a cidade do provedor de internet, não a sua localização exata.",
+  "customized": true,
+  "customizedBy": "Paulo Moraes",
+  "customizedAt": "28/08/2026",
+  "otherClients": [
+   "Localiza",
+   "Talenses"
+  ]
  },
  {
   "key": "cadence_followup_email",
@@ -577,7 +710,12 @@ const CATALOGO = [
   "body": "Toque 1: Olá! Seguimos com o seu processo seletivo e gostaríamos de dar continuidade ao seu contato.\n\nToque 2: Olá! Notamos que ainda não avançamos por aqui, seguimos à disposição para dar continuidade.\n\nToque 3: Olá! Este é um último lembrete sobre o seu processo seletivo.\n\nCaso não queira mais receber estes contatos, utilize o link de descadastramento ao final do email.",
   "note": "O corpo muda por toque. Tres chaves no catalogo, uma por toque.",
   "hasText": false,
-  "custom": []
+  "defaultSubject": "Sobre sua candidatura à vaga {{job_title}}",
+  "defaultBody": "Toque 1: Olá! Seguimos com o seu processo seletivo e gostaríamos de dar continuidade ao seu contato.\n\nToque 2: Olá! Notamos que ainda não avançamos por aqui, seguimos à disposição para dar continuidade.\n\nToque 3: Olá! Este é um último lembrete sobre o seu processo seletivo.\n\nCaso não queira mais receber estes contatos, utilize o link de descadastramento ao final do email.",
+  "customized": false,
+  "customizedBy": null,
+  "customizedAt": null,
+  "otherClients": []
  },
  {
   "key": "cadence_followup_whatsapp",
@@ -597,9 +735,12 @@ const CATALOGO = [
   "body": "Toque 1: Olá! Seguimos com o seu processo seletivo e gostaríamos de dar continuidade ao seu contato.\n\nToque 2: Olá! Notamos que ainda não avançamos por aqui, seguimos à disposição para dar continuidade.\n\nToque 3: Olá! Este é um último lembrete sobre o seu processo seletivo.\n\nSe não quiser mais receber estes contatos, responda SAIR.",
   "note": "O aviso de opt out responda SAIR e exigencia de LGPD e nao pode sair do texto.",
   "hasText": false,
-  "custom": [
-   "Sodexo"
-  ]
+  "defaultSubject": "",
+  "defaultBody": "Toque 1: Olá! Seguimos com o seu processo seletivo e gostaríamos de dar continuidade ao seu contato.\n\nToque 2: Olá! Notamos que ainda não avançamos por aqui, seguimos à disposição para dar continuidade.\n\nToque 3: Olá! Este é um último lembrete sobre o seu processo seletivo.\n\nSe não quiser mais receber estes contatos, responda SAIR.",
+  "customized": false,
+  "customizedBy": null,
+  "customizedAt": null,
+  "otherClients": []
  },
  {
   "key": "lia_user_invite",
@@ -618,7 +759,14 @@ const CATALOGO = [
   "body": "",
   "note": "",
   "hasText": false,
-  "custom": []
+  "defaultSubject": "Você foi convidado para a Plataforma LIA",
+  "defaultBody": "",
+  "customized": false,
+  "customizedBy": null,
+  "customizedAt": null,
+  "otherClients": [
+   "Mappit"
+  ]
  },
  {
   "key": "lia_password_reset",
@@ -637,7 +785,12 @@ const CATALOGO = [
   "body": "",
   "note": "O prazo diverge do password_reset do ats-api. Unificar na migracao.",
   "hasText": false,
-  "custom": []
+  "defaultSubject": "Redefinição de Senha - Plataforma LIA",
+  "defaultBody": "",
+  "customized": true,
+  "customizedBy": "Jader Ota",
+  "customizedAt": "28/08/2026",
+  "otherClients": []
  },
  {
   "key": "lia_email_verification",
@@ -656,8 +809,13 @@ const CATALOGO = [
   "body": "",
   "note": "",
   "hasText": false,
-  "custom": [
-   "Mappit"
+  "defaultSubject": "Verifique seu Email - Plataforma LIA",
+  "defaultBody": "",
+  "customized": false,
+  "customizedBy": null,
+  "customizedAt": null,
+  "otherClients": [
+   "Grupo Boticário"
   ]
  },
  {
@@ -678,7 +836,15 @@ const CATALOGO = [
   "body": "",
   "note": "",
   "hasText": false,
-  "custom": []
+  "defaultSubject": "Entrevista cancelada — {{job_title}}",
+  "defaultBody": "",
+  "customized": true,
+  "customizedBy": "Rodrigo Alfieri",
+  "customizedAt": "05/09/2026",
+  "otherClients": [
+   "Localiza",
+   "Mappit"
+  ]
  },
  {
   "key": "interview_rescheduled",
@@ -698,9 +864,13 @@ const CATALOGO = [
   "body": "",
   "note": "",
   "hasText": false,
-  "custom": [
-   "Grupo Boticário",
-   "Sodexo"
+  "defaultSubject": "Entrevista reagendada — {{job_title}}",
+  "defaultBody": "",
+  "customized": false,
+  "customizedBy": null,
+  "customizedAt": null,
+  "otherClients": [
+   "Localiza"
   ]
  },
  {
@@ -721,9 +891,12 @@ const CATALOGO = [
   "body": "",
   "note": "",
   "hasText": false,
-  "custom": [
-   "Sodexo"
-  ]
+  "defaultSubject": "Relatório de KPIs de Recrutamento",
+  "defaultBody": "",
+  "customized": false,
+  "customizedBy": null,
+  "customizedAt": null,
+  "otherClients": []
  },
  {
   "key": "initial_contact",
@@ -743,7 +916,12 @@ const CATALOGO = [
   "body": "Olá {{candidate_name}}, tudo bem?\nEstamos fazendo uma triagem inicial para a vaga de {{job_title}}.\nGostaríamos de confirmar seu interesse e seguir com algumas perguntas conduzidas pela LIA, nossa assistente de recrutamento com inteligência artificial (IA). Esta conversa é processada via Twilio (sub-processador de dados — LGPD). {{privacy_line}}Responda 'NÃO' se não deseja participar.\nVocê pode responder agora?",
   "note": "Texto vive hoje no catálogo Python do motor de IA.",
   "hasText": false,
-  "custom": []
+  "defaultSubject": "",
+  "defaultBody": "Olá {{candidate_name}}, tudo bem?\nEstamos fazendo uma triagem inicial para a vaga de {{job_title}}.\nGostaríamos de confirmar seu interesse e seguir com algumas perguntas conduzidas pela LIA, nossa assistente de recrutamento com inteligência artificial (IA). Esta conversa é processada via Twilio (sub-processador de dados — LGPD). {{privacy_line}}Responda 'NÃO' se não deseja participar.\nVocê pode responder agora?",
+  "customized": false,
+  "customizedBy": null,
+  "customizedAt": null,
+  "otherClients": []
  },
  {
   "key": "screening_start",
@@ -762,7 +940,12 @@ const CATALOGO = [
   "body": "Ótimo, {{candidate_name}}! Vamos começar.\n\nEsta triagem é para a posição de *{{job_title}}*.\n\nVou fazer algumas perguntas sobre sua experiência e competências. Você pode responder por texto ou áudio.\n\nPronto(a) para começar?",
   "note": "Texto vive hoje no catálogo Python do motor de IA.",
   "hasText": false,
-  "custom": []
+  "defaultSubject": "",
+  "defaultBody": "Ótimo, {{candidate_name}}! Vamos começar.\n\nEsta triagem é para a posição de *{{job_title}}*.\n\nVou fazer algumas perguntas sobre sua experiência e competências. Você pode responder por texto ou áudio.\n\nPronto(a) para começar?",
+  "customized": false,
+  "customizedBy": null,
+  "customizedAt": null,
+  "otherClients": []
  },
  {
   "key": "screening_reminder",
@@ -781,7 +964,12 @@ const CATALOGO = [
   "body": "Oi {{candidate_name}}! 👋\n\nVi que nossa conversa ficou pausada. Você ainda tem *{{hours_remaining}}h* para completar a triagem.\n\nPosso continuar de onde paramos quando estiver disponível. É só me chamar!",
   "note": "Texto vive hoje no catálogo Python do motor de IA.",
   "hasText": false,
-  "custom": []
+  "defaultSubject": "",
+  "defaultBody": "Oi {{candidate_name}}! 👋\n\nVi que nossa conversa ficou pausada. Você ainda tem *{{hours_remaining}}h* para completar a triagem.\n\nPosso continuar de onde paramos quando estiver disponível. É só me chamar!",
+  "customized": false,
+  "customizedBy": null,
+  "customizedAt": null,
+  "otherClients": []
  },
  {
   "key": "screening_passed",
@@ -797,10 +985,17 @@ const CATALOGO = [
    "candidate_name",
    "strengths_text"
   ],
-  "body": "Parabéns, {{candidate_name}}! 🎉\n\nVocê foi aprovado(a) na triagem!\n\n*Seus pontos fortes:*\n{{strengths_text}}\n\nVou conversar com o recrutador sobre seu perfil e em breve retorno com informações sobre a próxima etapa.\n\nQualquer dúvida, é só me chamar!",
+  "body": "Parabéns, {{candidate_name}}! 🎉\n\nVocê foi aprovado(a) na triagem!\n\n*Seus pontos fortes:*\n{{strengths_text}}\n\nVou conversar com o recrutador sobre seu perfil e em breve retorno com informações sobre a próxima etapa.\n\nQualquer dúvida, é só me chamar!\n\nTime de Atração de Talentos do iFood",
   "note": "Texto vive hoje no catálogo Python do motor de IA.",
   "hasText": false,
-  "custom": []
+  "defaultSubject": "",
+  "defaultBody": "Parabéns, {{candidate_name}}! 🎉\n\nVocê foi aprovado(a) na triagem!\n\n*Seus pontos fortes:*\n{{strengths_text}}\n\nVou conversar com o recrutador sobre seu perfil e em breve retorno com informações sobre a próxima etapa.\n\nQualquer dúvida, é só me chamar!",
+  "customized": true,
+  "customizedBy": "Rodrigo Alfieri",
+  "customizedAt": "16/06/2026",
+  "otherClients": [
+   "Sodexo"
+  ]
  },
  {
   "key": "screening_failed",
@@ -820,7 +1015,14 @@ const CATALOGO = [
   "body": "Olá {{candidate_name}},\n\nObrigada por participar da triagem! Foi muito bom conversar com você.\n\n*Pontos fortes:*\n{{strengths_text}}\n\n*Áreas para desenvolvimento:*\n{{development_text}}\n\nPara esta posição específica, seguiremos com outros candidatos. Mas seu perfil fica em nosso banco e te aviso sobre outras oportunidades!\n\nSucesso! 🍀",
   "note": "Texto vive hoje no catálogo Python do motor de IA.",
   "hasText": false,
-  "custom": []
+  "defaultSubject": "",
+  "defaultBody": "Olá {{candidate_name}},\n\nObrigada por participar da triagem! Foi muito bom conversar com você.\n\n*Pontos fortes:*\n{{strengths_text}}\n\n*Áreas para desenvolvimento:*\n{{development_text}}\n\nPara esta posição específica, seguiremos com outros candidatos. Mas seu perfil fica em nosso banco e te aviso sobre outras oportunidades!\n\nSucesso! 🍀",
+  "customized": false,
+  "customizedBy": null,
+  "customizedAt": null,
+  "otherClients": [
+   "Grupo Boticário"
+  ]
  },
  {
   "key": "interview_scheduled",
@@ -840,7 +1042,14 @@ const CATALOGO = [
   "body": "Oi {{candidate_name}}! 📅\n\nSua entrevista está agendada:\n\n*Data:* {{date_formatted}}\n*Link:* {{interview_link}}\n\nVou te lembrar no dia, tá?\n\nBoa sorte! 🍀",
   "note": "Texto vive hoje no catálogo Python do motor de IA.",
   "hasText": false,
-  "custom": []
+  "defaultSubject": "",
+  "defaultBody": "Oi {{candidate_name}}! 📅\n\nSua entrevista está agendada:\n\n*Data:* {{date_formatted}}\n*Link:* {{interview_link}}\n\nVou te lembrar no dia, tá?\n\nBoa sorte! 🍀",
+  "customized": false,
+  "customizedBy": null,
+  "customizedAt": null,
+  "otherClients": [
+   "Sodexo"
+  ]
  },
  {
   "key": "interview_reminder",
@@ -860,7 +1069,12 @@ const CATALOGO = [
   "body": "Oi {{candidate_name}}! 👋\n\nLembrete: sua entrevista é *hoje às {{time_formatted}}*!\n\n*Link:* {{interview_link}}\n\nDicas rápidas:\n✅ Teste áudio e vídeo\n✅ Ambiente tranquilo\n✅ Tenha seu currículo à mão\n\nBoa sorte! 🍀",
   "note": "Texto vive hoje no catálogo Python do motor de IA.",
   "hasText": false,
-  "custom": []
+  "defaultSubject": "",
+  "defaultBody": "Oi {{candidate_name}}! 👋\n\nLembrete: sua entrevista é *hoje às {{time_formatted}}*!\n\n*Link:* {{interview_link}}\n\nDicas rápidas:\n✅ Teste áudio e vídeo\n✅ Ambiente tranquilo\n✅ Tenha seu currículo à mão\n\nBoa sorte! 🍀",
+  "customized": false,
+  "customizedBy": null,
+  "customizedAt": null,
+  "otherClients": []
  },
  {
   "key": "rejection_feedback",
@@ -879,7 +1093,14 @@ const CATALOGO = [
   "body": "Olá {{candidate_name}},\n\n{{feedback}}\n\nSeu perfil fica em nosso banco de talentos. Te aviso sobre novas oportunidades!\n\nSucesso na sua jornada! 🍀",
   "note": "Texto vive hoje no catálogo Python do motor de IA.",
   "hasText": false,
-  "custom": []
+  "defaultSubject": "",
+  "defaultBody": "Olá {{candidate_name}},\n\n{{feedback}}\n\nSeu perfil fica em nosso banco de talentos. Te aviso sobre novas oportunidades!\n\nSucesso na sua jornada! 🍀",
+  "customized": false,
+  "customizedBy": null,
+  "customizedAt": null,
+  "otherClients": [
+   "Mappit"
+  ]
  },
  {
   "key": "process_closed",
@@ -898,7 +1119,12 @@ const CATALOGO = [
   "body": "Olá {{candidate_name}}! 👋\n\nA posição de *{{job_title}}* foi preenchida.\n\nAgradeço seu interesse! Seu perfil fica em nosso banco e te aviso sobre novas oportunidades.\n\nSucesso! 🍀",
   "note": "Texto vive hoje no catálogo Python do motor de IA.",
   "hasText": false,
-  "custom": []
+  "defaultSubject": "",
+  "defaultBody": "Olá {{candidate_name}}! 👋\n\nA posição de *{{job_title}}* foi preenchida.\n\nAgradeço seu interesse! Seu perfil fica em nosso banco e te aviso sobre novas oportunidades.\n\nSucesso! 🍀",
+  "customized": false,
+  "customizedBy": null,
+  "customizedAt": null,
+  "otherClients": []
  },
  {
   "key": "interview_reminder_urgent",
@@ -916,10 +1142,17 @@ const CATALOGO = [
    "job_info",
    "time_formatted"
   ],
-  "body": "⏰ {{candidate_name}}, sua entrevista{{job_info}} começa em *1 hora*!\n\n*Horário:* {{time_formatted}}\n*Link:* {{interview_link}}\n\nÚltimas dicas:\n✅ Verifique conexão de internet\n✅ Teste câmera e microfone agora\n✅ Tenha água por perto\n\nTe desejo muito sucesso! 🍀",
+  "body": "⏰ {{candidate_name}}, sua entrevista{{job_info}} começa em *1 hora*!\n\n*Horário:* {{time_formatted}}\n*Link:* {{interview_link}}\n\nÚltimas dicas:\n✅ Verifique conexão de internet\n✅ Teste câmera e microfone agora\n✅ Tenha água por perto\n\nTe desejo muito sucesso! 🍀\n\nTime de Atração de Talentos do iFood",
   "note": "Texto vive hoje no catálogo Python do motor de IA.",
   "hasText": false,
-  "custom": []
+  "defaultSubject": "",
+  "defaultBody": "⏰ {{candidate_name}}, sua entrevista{{job_info}} começa em *1 hora*!\n\n*Horário:* {{time_formatted}}\n*Link:* {{interview_link}}\n\nÚltimas dicas:\n✅ Verifique conexão de internet\n✅ Teste câmera e microfone agora\n✅ Tenha água por perto\n\nTe desejo muito sucesso! 🍀",
+  "customized": true,
+  "customizedBy": "Paulo Moraes",
+  "customizedAt": "05/09/2026",
+  "otherClients": [
+   "Sodexo"
+  ]
  },
  {
   "key": "offer_deadline_reminder",
@@ -942,7 +1175,15 @@ const CATALOGO = [
   "body": "{{urgency}} Oi {{candidate_name}}!\n\nLembrete: sua proposta para *{{job_title}}* expira em *{{hours_remaining}}h* ({{deadline}}).\n\nPrecisa de mais tempo ou tem alguma dúvida? Me avisa que posso ajudar!\n{{link_section}}\nAguardo seu retorno! 😊",
   "note": "Texto vive hoje no catálogo Python do motor de IA.",
   "hasText": false,
-  "custom": []
+  "defaultSubject": "",
+  "defaultBody": "{{urgency}} Oi {{candidate_name}}!\n\nLembrete: sua proposta para *{{job_title}}* expira em *{{hours_remaining}}h* ({{deadline}}).\n\nPrecisa de mais tempo ou tem alguma dúvida? Me avisa que posso ajudar!\n{{link_section}}\nAguardo seu retorno! 😊",
+  "customized": false,
+  "customizedBy": null,
+  "customizedAt": null,
+  "otherClients": [
+   "Mappit",
+   "Talenses"
+  ]
  },
  {
   "key": "follow_up",
@@ -962,7 +1203,12 @@ const CATALOGO = [
   "body": "Oi {{candidate_name}}! 👋\n\nVi que sua triagem para *{{job_title}}* ficou pausada há {{days_inactive}} dias.\n\nPosso te ajudar a continuar? É só me chamar!\n\nAguardo seu retorno 😊",
   "note": "Texto vive hoje no catálogo Python do motor de IA.",
   "hasText": false,
-  "custom": []
+  "defaultSubject": "",
+  "defaultBody": "Oi {{candidate_name}}! 👋\n\nVi que sua triagem para *{{job_title}}* ficou pausada há {{days_inactive}} dias.\n\nPosso te ajudar a continuar? É só me chamar!\n\nAguardo seu retorno 😊",
+  "customized": false,
+  "customizedBy": null,
+  "customizedAt": null,
+  "otherClients": []
  },
  {
   "key": "no_show_first",
@@ -983,7 +1229,12 @@ const CATALOGO = [
   "body": "Oi {{candidate_name}}! 👋\n\nSentimos sua falta na entrevista de hoje ({{date_formatted}}) para *{{job_title}}*.\n\nImprevistos acontecem! Podemos reagendar para outro horário que funcione melhor para você?\n{{link_section}}\nMe avisa sua disponibilidade que eu ajudo a remarcar! 😊",
   "note": "Texto vive hoje no catálogo Python do motor de IA.",
   "hasText": false,
-  "custom": []
+  "defaultSubject": "",
+  "defaultBody": "Oi {{candidate_name}}! 👋\n\nSentimos sua falta na entrevista de hoje ({{date_formatted}}) para *{{job_title}}*.\n\nImprevistos acontecem! Podemos reagendar para outro horário que funcione melhor para você?\n{{link_section}}\nMe avisa sua disponibilidade que eu ajudo a remarcar! 😊",
+  "customized": false,
+  "customizedBy": null,
+  "customizedAt": null,
+  "otherClients": []
  },
  {
   "key": "no_show_final",
@@ -1003,7 +1254,14 @@ const CATALOGO = [
   "body": "Oi {{candidate_name}},\n\nInfelizmente você não compareceu às entrevistas agendadas para *{{job_title}}* ({{no_show_count}} ausências).\n\nCaso ainda tenha interesse, por favor entre em contato conosco nas próximas *48 horas*.\n\nSe não conseguir, seu processo será encerrado. Desejamos sucesso na sua jornada! 🍀",
   "note": "Texto vive hoje no catálogo Python do motor de IA.",
   "hasText": false,
-  "custom": []
+  "defaultSubject": "",
+  "defaultBody": "Oi {{candidate_name}},\n\nInfelizmente você não compareceu às entrevistas agendadas para *{{job_title}}* ({{no_show_count}} ausências).\n\nCaso ainda tenha interesse, por favor entre em contato conosco nas próximas *48 horas*.\n\nSe não conseguir, seu processo será encerrado. Desejamos sucesso na sua jornada! 🍀",
+  "customized": false,
+  "customizedBy": null,
+  "customizedAt": null,
+  "otherClients": [
+   "Localiza"
+  ]
  },
  {
   "key": "job_paused",
@@ -1019,10 +1277,17 @@ const CATALOGO = [
    "candidate_name",
    "job_title"
   ],
-  "body": "Olá {{candidate_name}}! 👋\n\nInformamos que o processo para *{{job_title}}* está temporariamente pausado. Não se preocupe, isso não tem relação com seu desempenho.\n\nAssim que tivermos novidades, entraremos em contato. Seu perfil continua sendo considerado.\n\nAgradecemos sua paciência! 🙏",
+  "body": "Olá {{candidate_name}}! 👋\n\nInformamos que o processo para *{{job_title}}* está temporariamente pausado. Não se preocupe, isso não tem relação com seu desempenho.\n\nAssim que tivermos novidades, entraremos em contato. Seu perfil continua sendo considerado.\n\nAgradecemos sua paciência! 🙏\n\nTime de Atração de Talentos do iFood",
   "note": "Texto vive hoje no catálogo Python do motor de IA.",
   "hasText": false,
-  "custom": []
+  "defaultSubject": "",
+  "defaultBody": "Olá {{candidate_name}}! 👋\n\nInformamos que o processo para *{{job_title}}* está temporariamente pausado. Não se preocupe, isso não tem relação com seu desempenho.\n\nAssim que tivermos novidades, entraremos em contato. Seu perfil continua sendo considerado.\n\nAgradecemos sua paciência! 🙏",
+  "customized": true,
+  "customizedBy": "Paulo Moraes",
+  "customizedAt": "05/09/2026",
+  "otherClients": [
+   "Localiza"
+  ]
  },
  {
   "key": "job_reactivated",
@@ -1041,7 +1306,14 @@ const CATALOGO = [
   "body": "Oi {{candidate_name}}! 🎉\n\nBoas notícias! O processo para *{{job_title}}* foi reativado e você continua sendo considerado(a)!\n\nCaso tenha mudanças na sua disponibilidade, é só me avisar.\n\nObrigado pela paciência! 😊",
   "note": "Texto vive hoje no catálogo Python do motor de IA.",
   "hasText": false,
-  "custom": []
+  "defaultSubject": "",
+  "defaultBody": "Oi {{candidate_name}}! 🎉\n\nBoas notícias! O processo para *{{job_title}}* foi reativado e você continua sendo considerado(a)!\n\nCaso tenha mudanças na sua disponibilidade, é só me avisar.\n\nObrigado pela paciência! 😊",
+  "customized": false,
+  "customizedBy": null,
+  "customizedAt": null,
+  "otherClients": [
+   "Mappit"
+  ]
  },
  {
   "key": "job_cancelled",
@@ -1060,7 +1332,12 @@ const CATALOGO = [
   "body": "Olá {{candidate_name}}! 👋\n\nInformamos que o processo para *{{job_title}}* foi encerrado. Essa decisão não tem relação com seu desempenho.\n\nSeu perfil permanece em nosso banco de talentos e entraremos em contato sobre novas oportunidades.\n\nDesejamos sucesso! 🍀",
   "note": "Texto vive hoje no catálogo Python do motor de IA.",
   "hasText": false,
-  "custom": []
+  "defaultSubject": "",
+  "defaultBody": "Olá {{candidate_name}}! 👋\n\nInformamos que o processo para *{{job_title}}* foi encerrado. Essa decisão não tem relação com seu desempenho.\n\nSeu perfil permanece em nosso banco de talentos e entraremos em contato sobre novas oportunidades.\n\nDesejamos sucesso! 🍀",
+  "customized": false,
+  "customizedBy": null,
+  "customizedAt": null,
+  "otherClients": []
  }
 ];
 
