@@ -260,7 +260,7 @@ function catFaixaEscopo(t) {
   if (catEscopo === 'global' && !t.clientEditable) {
     return `<div style="background:#F5F3FF; border:1px solid #DDD6FE; border-radius:8px; padding:11px 13px; margin-bottom:16px; font-size:12px; color:#5B21B6;">
       <strong>Alerta da plataforma.</strong>
-      Texto único: publicar vale para todos os clientes, e nenhum cliente pode fugir dele nesta fase.
+      Texto único: publicar propaga para todos os clientes, e nenhum cliente pode fugir dele nesta fase.
       Alerta nasce desligado em cliente novo, até a copy ser revisada.
     </div>`;
   }
@@ -269,7 +269,7 @@ function catFaixaEscopo(t) {
     const herdam = 6 - fora.length;
     return `<div style="background:#F5F3FF; border:1px solid #DDD6FE; border-radius:8px; padding:11px 13px; margin-bottom:16px; font-size:12px; color:#5B21B6;">
       <strong>Você está editando o padrão da WeDO.</strong>
-      Publicar alcança na hora os ${herdam} cliente(s) que herdam esta comunicação.
+      Publicar propaga para os ${herdam} cliente(s) que ainda herdam esta comunicação.
       ${fora.length ? `Não alcança ${catEscapar(fora.join(', '))}, que ajustaram o texto por conta.` : 'Nenhum cliente fugiu do padrão nesta comunicação.'}
     </div>`;
   }
@@ -284,7 +284,7 @@ function catFaixaEscopo(t) {
   }
   return `<div style="background:#F9FAFB; border:1px solid #E5E7EB; border-radius:8px; padding:11px 13px; margin-bottom:16px; font-size:12px; color:#6B7280;">
     <strong style="color:#374151;">Segue o padrão da WeDO.</strong>
-    Enquanto for assim, uma revisão do padrão chega aqui sozinha. Se você salvar uma alteração, este cliente passa a ter a versão dele e para de acompanhar o padrão.
+    Enquanto for assim, este cliente recebe as revisões do padrão sozinho. Se você salvar uma alteração, este cliente passa a ter a versão dele e para de acompanhar o padrão.
   </div>`;
 }
 
@@ -456,7 +456,7 @@ function catSalvar() {
     t.defaultBody = catRascunho.body;
     if (herdava) { t.subject = t.defaultSubject; t.body = t.defaultBody; }
     const fora = catForaDoPadrao(t);
-    catAviso(`Padrão publicado. ${6 - fora.length} cliente(s) recebem o texto novo agora.` +
+    catAviso(`Padrão publicado e propagado para ${6 - fora.length} cliente(s) que ainda herdam.` +
              (fora.length ? ` ${fora.join(', ')} seguem com o texto próprio.` : ''));
   } else {
     const eraPadrao = !t.customized;
@@ -489,7 +489,7 @@ function catVoltarPadrao() {
   catRenderDrawer();
   catMarcarSujo();
   catRenderTabela();
-  catAviso('Voltou ao padrão da WeDO. Revisões do padrão voltam a chegar aqui sozinhas.');
+  catAviso('Voltou ao padrão da WeDO. Este cliente volta a receber as revisões do padrão.');
 }
 
 function catDescartar() {
