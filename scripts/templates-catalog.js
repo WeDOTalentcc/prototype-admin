@@ -192,6 +192,7 @@ function catRenderTable() {
       <td style="padding:13px 12px;">
         <span title="${catEscape(kindMeta.ajuda)}" style="background:${kindMeta.bg}; color:${kindMeta.cor}; font-size:11px; font-weight:600; padding:2px 8px; border-radius:99px; white-space:nowrap;">${kindMeta.texto}</span>
         <div style="font-size:11px; color:#6B7280; margin-top:4px;">${channelMeta.texto} · <span style="text-transform:capitalize;">${catEscape(t.audience)}</span></div>
+        ${catScope === 'cliente' && t.channel === 'whatsapp' && typeof mcMetaSummary === 'function' ? `<div style="font-size:11px; margin-top:3px;">${mcMetaSummary(t.key)}</div>` : ''}
       </td>
       <td style="padding:13px 12px; font-size:12px; color:#6B7280; max-width:280px;">${catEscape(t.trigger)}</td>
       <td style="padding:13px 12px; text-align:center;">${catOriginBadge(t)}</td>
@@ -321,6 +322,15 @@ function catRenderContent() {
       <span style="color:#9CA3AF;">Hoje o config</span><span>${CAT_CONFIG_REACH[t.configToday]}</span>
       <span style="color:#9CA3AF;">No código</span><span><code style="background:#F3F4F6; padding:1px 5px; border-radius:4px;">${catEscape(t.source)}</code></span>
     </div>
+    ${catScope === 'cliente' && t.channel === 'whatsapp' && typeof mcMetaAccountsLine === 'function' ? `
+      <div style="margin-top:16px; border:1px solid #E5E7EB; border-radius:8px; padding:10px 12px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+          <span style="font-size:12px; font-weight:600; color:#374151;">Modelo na Meta, por conta</span>
+          <a href="#" onclick="catClose(); commTab('modelos'); return false;" style="font-size:11px; color:#C74446; font-weight:500;">ver em Modelos na Meta</a>
+        </div>
+        ${mcMetaAccountsLine(t.key)}
+        <p style="font-size:11px; color:#6B7280; margin:8px 0 0;">Salvar este texto submete de novo à Meta em cada conta. Fora da janela de 24 horas, só sai o que estiver aprovado.</p>
+      </div>` : ''}
     ${t.hasText ? `<p style="font-size:11px; color:#9A3412; margin-top:8px;">Esta comunicação também tem versão em texto puro, que precisa acompanhar a edição.</p>` : ''}
   `;
 }
@@ -465,9 +475,11 @@ function catSave() {
     t.customized = true;
     t.customizedBy = 'Rodrigo Alfieri';
     t.customizedAt = 'hoje';
-    catToast(wasDefault
+    const meta = t.channel === 'whatsapp' && typeof mcMetaAccountCount === 'function'
+      ? ` Submetido de novo à Meta nas ${mcMetaAccountCount()} contas de WhatsApp do cliente.` : '';
+    catToast((wasDefault
       ? 'Salvo. Este cliente passa a ter a versão dele e não acompanha mais o padrão desta comunicação.'
-      : 'Salvo para este cliente.');
+      : 'Salvo para este cliente.') + meta);
   }
 
   catDraft = Object.assign({}, catCurrentText(t));
@@ -520,9 +532,10 @@ function catRenderDeadList() {
 /* -------------------------------------------------------------- navegação */
 
 function catGoTo(escopo) {
+  if (escopo === 'cliente' && typeof commGoTo === 'function') { commGoTo('textos'); return; }
   catScope = escopo;
   catClose();
-  showScreen(escopo === 'global' ? 'screen-templates-globais' : 'screen-client-templates');
+  showScreen('screen-templates-globais');
   catRenderScreen();
 }
 

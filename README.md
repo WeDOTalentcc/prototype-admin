@@ -24,13 +24,33 @@ Funciona em qualquer browser moderno. Nenhuma dependência ou servidor necessár
 
 ```
 prototype-admin/
-├── index.html          # Toda a UI — telas, modais e componentes
+├── index.html                    # Toda a UI — telas, modais e componentes
 ├── styles/
-│   ├── tokens.css      # Design tokens (cores, espaçamentos, sombras)
-│   └── components.css  # Estilos dos componentes
+│   ├── tokens.css                # Design tokens (cores, espaçamentos, sombras)
+│   └── components.css            # Estilos dos componentes
 └── scripts/
-    └── app.js          # Navegação entre telas, modais, estado da sidebar
+    ├── app.js                    # Navegação entre telas, modais, estado da sidebar
+    ├── templates-catalog-data.js # Dados do catálogo de comunicação, gerados do ats-api
+    ├── templates-catalog.js      # Catálogo de textos: lista, filtros e painel de edição
+    └── messaging-channels.js     # Canais de mensagem: números, modelos na Meta e saúde
 ```
+
+As telas maiores são montadas por JavaScript, e não escritas à mão no `index.html`: o
+`index.html` guarda só o esqueleto da tela (um `div` vazio com id) e o script correspondente
+rende o conteúdo. Vale para o catálogo de templates e para os canais de mensagem.
+
+### Atalhos por URL
+
+O protótipo aceita alguns parâmetros para abrir direto num estado, o que ajuda na revisão:
+
+| URL | Abre |
+| --- | ---- |
+| `#screen-client-communication` | Comunicação do cliente, na aba Textos |
+| `?aba=canais#screen-client-communication` | a aba Canais, com o simulador de escolha do número |
+| `?aba=modelos#screen-client-communication` | a aba Modelos na Meta |
+| `#screen-channels-health` | Saúde dos canais, em produção |
+| `?ambiente=staging#screen-channels-health` | Saúde dos canais em staging (números compartilhados) |
+| `?ambiente=development#screen-channels-health` | o mesmo, em desenvolvimento |
 
 ---
 
