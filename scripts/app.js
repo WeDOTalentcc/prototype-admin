@@ -52,12 +52,12 @@ function updateSidebarActive(screenId) {
     'screen-billing':               'nav-billing',
     'screen-llm-config':            'nav-llm-config',
     'screen-lia-persona':           'nav-lia-persona',
-    'screen-whatsapp-templates':    'nav-wa-templates',
     'screen-fairness-policies':     'nav-fairness-policies',
     'screen-feature-flags':         'nav-feature-flags',
     'screen-plans':                 'nav-plans',
     'screen-global-flags':          'nav-global-flags',
-    'screen-client-templates':      'nav-client-templates',
+    'screen-client-communication':  'nav-client-communication',
+    'screen-channels-health':       'nav-channels-health',
     'screen-templates-globais':     'nav-templates-globais',
     'screen-contracts':             'nav-contracts',
     'screen-wedo-users':            'nav-wedo-users',
@@ -103,12 +103,12 @@ function updateTopbarContext(screenId) {
     'screen-billing':               'Faturamento — iFood Talentos',
     'screen-llm-config':            'Configuração LLM — iFood Talentos',
     'screen-lia-persona':           'Persona da LIA — iFood Talentos',
-    'screen-whatsapp-templates':    'WhatsApp & Templates — iFood Talentos',
     'screen-fairness-policies':     'Políticas de Fairness — iFood Talentos',
     'screen-feature-flags':         'Feature Flags — iFood Talentos',
     'screen-plans':                 'Planos & Preços',
     'screen-global-flags':          'Feature Flags Globais',
-    'screen-client-templates':      'Templates de Comunicação',
+    'screen-client-communication':  'Comunicação — iFood Talentos',
+    'screen-channels-health':       'Canais de Mensagem',
     'screen-templates-globais':     'Catálogo de Templates',
     'screen-contracts':             'Contratos',
     'screen-wedo-users':            'Usuários da WeDO',
@@ -222,7 +222,7 @@ function clearClientContext() {
     lucide.createIcons({ nodes: [scopeBtn] });
   }
 
-  const clientScreens = ['screen-client-detail','screen-client-users','screen-billing','screen-llm-config','screen-feature-flags','screen-onboarding-client','screen-client-templates'];
+  const clientScreens = ['screen-client-detail','screen-client-users','screen-billing','screen-llm-config','screen-feature-flags','screen-onboarding-client','screen-client-communication'];
   if (clientScreens.includes(currentScreen)) {
     showScreen('screen-clients');
   }
