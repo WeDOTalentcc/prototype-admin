@@ -6633,9 +6633,10 @@ Este link expira em 7 dias.</textarea>
   <!-- ===== Catálogo de Templates: painel lateral =====
        Fica FORA do #app-shell de proposito: o #main-content tem overflow:auto e
        top:56px, e recorta o painel na faixa da topbar mesmo ele sendo fixed. ===== -->
-    <!-- painel lateral do template -->
-    <div id="cat-drawer-backdrop" onclick="catClose()" style="display:none; position:fixed; inset:0; background:rgba(17,24,39,.35); z-index:900;"></div>
-    <div id="cat-drawer" style="position:fixed; top:0; right:0; bottom:0; width:640px; max-width:92vw; background:white; box-shadow:-8px 0 24px rgba(0,0,0,.10); z-index:901; transform:translateX(100%); transition:transform 260ms ease; display:flex; flex-direction:column;">
+    <!-- editor de template: modal, no mesmo padrao das demais telas do painel -->
+    <div id="cat-drawer-backdrop" onclick="catClose()" style="display:none; position:fixed; inset:0; background:rgba(17,24,39,.55); z-index:900;"></div>
+    <div id="cat-drawer" style="display:none; position:fixed; inset:0; z-index:901; align-items:center; justify-content:center; padding:24px; pointer-events:none;">
+      <div id="cat-modal" onclick="event.stopPropagation()" style="pointer-events:auto; width:960px; max-width:94vw; max-height:calc(100vh - 48px); background:white; border-radius:16px; box-shadow:0 20px 48px rgba(0,0,0,.22); display:flex; flex-direction:column; overflow:hidden; transition:width 200ms ease;">
 
       <div style="padding:18px 22px; border-bottom:1px solid #E5E7EB; display:flex; align-items:flex-start; justify-content:space-between; gap:12px;">
         <div style="min-width:0;">
@@ -6671,6 +6672,7 @@ Este link expira em 7 dias.</textarea>
           <button id="cat-btn-salvar" onclick="catSave()" disabled style="padding:8px 16px; border:none; background:#C74446; color:white; border-radius:8px; font-size:13px; font-weight:600; cursor:not-allowed; opacity:.45; font-family:inherit;">Salvar para este cliente</button>
         </div>
       </div>
+      </div><!-- /#cat-modal -->
     </div>
 
     <div id="mc-drawer-backdrop" onclick="mcCloseDrawer()" style="display:none; position:fixed; inset:0; background:rgba(17,24,39,.35); z-index:900;"></div>

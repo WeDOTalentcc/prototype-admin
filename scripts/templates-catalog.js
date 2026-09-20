@@ -213,7 +213,7 @@ function catOpen(chave, canal) {
   catSelected = CATALOGO.find(t => t.key === chave && t.channel === canal);
   if (!catSelected) return;
   catDraft = Object.assign({}, catCurrentText(catSelected));
-  document.getElementById('cat-drawer').style.transform = 'translateX(0)';
+  document.getElementById('cat-drawer').style.display = 'flex';
   document.getElementById('cat-drawer-backdrop').style.display = 'block';
   catRenderDrawer();
   catTab('conteudo');
@@ -222,7 +222,7 @@ function catOpen(chave, canal) {
 function catClose() {
   const d = document.getElementById('cat-drawer');
   if (!d) return;
-  d.style.transform = 'translateX(100%)';
+  d.style.display = 'none';
   document.getElementById('cat-drawer-backdrop').style.display = 'none';
   catSelected = null;
 }
@@ -374,16 +374,16 @@ function catTab(aba) {
     botao.style.borderBottom = ativo ? '2px solid #C74446' : '2px solid transparent';
     botao.style.fontWeight = ativo ? '600' : '500';
   });
-  catAdjustDrawerWidth(aba);
+  catAdjustModalWidth(aba);
   if (aba === 'preview') catRenderPreview();
 }
 
-/* A previa e' para ler a mensagem inteira, nao para rolar: na aba de previa a
-   gaveta ocupa a largura util da tela. */
-function catAdjustDrawerWidth(aba) {
-  const gaveta = document.getElementById('cat-drawer');
-  if (!gaveta) return;
-  gaveta.style.width = aba === 'preview' ? '1080px' : '640px';
+/* A previa e' para ler a mensagem inteira, nao para rolar: nela o modal ocupa a
+   largura util da tela e volta ao tamanho de leitura nas demais abas. */
+function catAdjustModalWidth(aba) {
+  const modal = document.getElementById('cat-modal');
+  if (!modal) return;
+  modal.style.width = aba === 'preview' ? '1180px' : '960px';
 }
 
 function catEmailCard(assunto, corpo) {
