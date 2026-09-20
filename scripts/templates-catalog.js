@@ -49,6 +49,19 @@ const CAT_CHANNEL = {
   whatsapp: { texto: 'WhatsApp', bg: 'rgba(93,164,122,.14)', cor: '#3D7A56' },
 };
 
+/* Tres remetentes por finalidade: e' o que faz o candidato nao receber convite
+   de triagem com a mesma cara do aviso de senha. */
+const CAT_SENDER = {
+  processo:     { texto: 'Processo seletivo', endereco: 'processo@vagas.wedotalent.cc' },
+  acesso:       { texto: 'Acesso e codigos',  endereco: 'acesso@conta.wedotalent.cc' },
+  notificacoes: { texto: 'Avisos',            endereco: 'notificacoes@avisos.wedotalent.cc' },
+};
+
+const CAT_STATUS = {
+  active:  { texto: 'Publicado',  bg: '#DCFCE7', cor: '#166534' },
+  dynamic: { texto: 'Montado no codigo', bg: '#F3F4F6', cor: '#6B7280' },
+};
+
 /* ---------------------------------------------------------------- helpers */
 
 function catEscape(s) {
@@ -79,14 +92,24 @@ function catCurrentText(t) {
     : { subject: t.subject, body: t.body };
 }
 
+/* Comunicacao que sai pelos dois canais: a mesma chave com linha de e-mail e de
+   WhatsApp. A linha continua sendo uma por canal, porque o texto e' de cada um. */
+function catBothChannels() {
+  const porChave = {};
+  CATALOGO.forEach(t => { (porChave[t.key] = porChave[t.key] || new Set()).add(t.channel); });
+  return new Set(Object.keys(porChave).filter(k => porChave[k].size > 1));
+}
+
 /* --------------------------------------------------------------- listagem */
 
 function catFilteredList() {
   const f = catF();
   const b = f.busca.trim().toLowerCase();
+  const nosDois = catBothChannels();
   return CATALOGO.filter(t => {
     if (f.tipo !== 'todos' && t.type !== f.tipo) return false;
-    if (f.canal !== 'todos' && t.channel !== f.canal) return false;
+    if (f.canal === 'ambos' && !nosDois.has(t.key)) return false;
+    if (f.canal !== 'todos' && f.canal !== 'ambos' && t.channel !== f.canal) return false;
     if (f.categoria !== 'todas' && t.category !== f.categoria) return false;
     if (catScope === 'cliente') {
       if (f.origem === 'personalizados' && !t.customized) return false;
@@ -121,7 +144,7 @@ function catRenderFilters() {
              style="width:100%; padding:7px 10px 7px 30px; border:1px solid #D1D5DB; border-radius:8px; font-size:12px; color:#374151; font-family:inherit;">
     </div>
     ${select('tipo', 'tipo', tipos)}
-    ${select('canal', 'canal', [['todos', 'Todos os canais'], ['email', 'E-mail'], ['whatsapp', 'WhatsApp']])}
+    ${select('canal', 'canal', [['todos', 'Todos os canais'], ['email', 'E-mail'], ['whatsapp', 'WhatsApp'], ['ambos', 'Nos dois canais']])}
     ${select('cat', 'categoria', [['todas', 'Todas as categorias']].concat(categorias.map(c => [c, c[0].toUpperCase() + c.slice(1)])))}
     ${select('origem', 'origem', origens)}
   `;
@@ -166,7 +189,7 @@ function catRenderTable() {
   }
 
   if (!lista.length) {
-    corpo.innerHTML = `<tr><td colspan="5" style="padding:48px 20px; text-align:center;">
+    corpo.innerHTML = `<tr><td colspan="7" style="padding:48px 20px; text-align:center;">
       <i data-lucide="search-x" style="width:28px;height:28px;color:#D1D5DB;"></i>
       <p style="font-size:13px; color:#6B7280; margin:10px 0 0 0;">Nenhuma comunicação bate com esse filtro.</p>
       <button onclick="catClearFilters()" style="margin-top:10px; padding:6px 12px; border:1px solid #D1D5DB; background:white; border-radius:6px; font-size:12px; color:#374151; cursor:pointer; font-family:inherit;">Limpar filtros</button>
@@ -175,13 +198,18 @@ function catRenderTable() {
     return;
   }
 
+  const nosDois = catBothChannels();
   corpo.innerHTML = lista.map((t, i) => {
     const channelMeta = CAT_CHANNEL[t.channel];
     const kindMeta = CAT_KIND[t.type];
+    const senderMeta = CAT_SENDER[t.sender] || { texto: t.sender, endereco: '' };
+    const statusMeta = CAT_STATUS[t.status] || { texto: t.status, bg: '#F3F4F6', cor: '#6B7280' };
     const currentSubject = catScope === 'global' ? t.defaultSubject : t.subject;
     const ultima = catScope === 'global'
       ? (catOffDefault(t).length ? catEscape(catOffDefault(t).join(', ')) : 'nenhum')
       : (t.customized ? catEscape(t.customizedAt) : 'segue o padrão');
+    const metaNaConta = catScope === 'cliente' && t.channel === 'whatsapp' && typeof mcMetaSummary === 'function'
+      ? `<div style="font-size:11px; margin-top:4px;">${mcMetaSummary(t.key)}</div>` : '';
     return `
     <tr onclick="catOpen('${t.key}','${t.channel}')" style="border-top:1px solid #F3F4F6; cursor:pointer; ${i % 2 ? 'background:#F9FAFB;' : ''}"
         onmouseover="this.style.background='#F3F4F6'" onmouseout="this.style.background='${i % 2 ? '#F9FAFB' : 'white'}'">
@@ -190,13 +218,20 @@ function catRenderTable() {
         <div style="font-size:12px; color:#6B7280; margin-top:2px;">${currentSubject ? catEscape(currentSubject) : '<span style="color:#9CA3AF;">mensagem direta, sem assunto</span>'}</div>
       </td>
       <td style="padding:13px 12px;">
-        <span title="${catEscape(kindMeta.ajuda)}" style="background:${kindMeta.bg}; color:${kindMeta.cor}; font-size:11px; font-weight:600; padding:2px 8px; border-radius:99px; white-space:nowrap;">${kindMeta.texto}</span>
-        <div style="font-size:11px; color:#6B7280; margin-top:4px;">${channelMeta.texto} · <span style="text-transform:capitalize;">${catEscape(t.audience)}</span></div>
-        ${catScope === 'cliente' && t.channel === 'whatsapp' && typeof mcMetaSummary === 'function' ? `<div style="font-size:11px; margin-top:3px;">${mcMetaSummary(t.key)}</div>` : ''}
+        <span style="background:${channelMeta.bg}; color:${channelMeta.cor}; font-size:11px; font-weight:600; padding:2px 8px; border-radius:99px; white-space:nowrap;">${channelMeta.texto}</span>
+        ${nosDois.has(t.key) ? '<div style="font-size:11px; color:#6B7280; margin-top:4px;">também no outro canal</div>' : ''}
       </td>
-      <td style="padding:13px 12px; font-size:12px; color:#6B7280; max-width:280px;">${catEscape(t.trigger)}</td>
-      <td style="padding:13px 12px; text-align:center;">${catOriginBadge(t)}</td>
-      <td style="padding:13px 20px; text-align:right; font-size:11px; color:#9CA3AF; max-width:180px;">${ultima}</td>
+      <td style="padding:13px 12px;">
+        <span title="${catEscape(kindMeta.ajuda)}" style="background:${kindMeta.bg}; color:${kindMeta.cor}; font-size:11px; font-weight:600; padding:2px 8px; border-radius:99px; white-space:nowrap;">${kindMeta.texto}</span>
+        <div style="font-size:11px; color:#6B7280; margin-top:4px; text-transform:capitalize;">${catEscape(t.audience)}</div>
+      </td>
+      <td style="padding:13px 12px; font-size:12px; color:#6B7280;" title="${catEscape(senderMeta.endereco)}">${catEscape(senderMeta.texto)}</td>
+      <td style="padding:13px 12px; font-size:12px; color:#6B7280; max-width:260px;">${catEscape(t.trigger)}</td>
+      <td style="padding:13px 12px; text-align:center;">${catOriginBadge(t)}${metaNaConta}</td>
+      <td style="padding:13px 20px; text-align:right;">
+        <span style="background:${statusMeta.bg}; color:${statusMeta.cor}; font-size:11px; font-weight:600; padding:2px 8px; border-radius:99px; white-space:nowrap;">${statusMeta.texto}</span>
+        <div style="font-size:11px; color:#9CA3AF; margin-top:4px;">${ultima}</div>
+      </td>
     </tr>`;
   }).join('');
   if (window.lucide) lucide.createIcons();
@@ -302,10 +337,14 @@ function catRenderContent() {
     ${t.note ? `<div style="background:#FFF7ED; border:1px solid #FED7AA; border-radius:8px; padding:10px 12px; margin-bottom:16px; font-size:12px; color:#9A3412;">${catEscape(t.note)}</div>` : ''}
     ${!t.defaultBody ? `<div style="background:#FEF2F2; border:1px solid #FECACA; border-radius:8px; padding:10px 12px; margin-bottom:16px; font-size:12px; color:#B91C1C;">O texto desta comunicação não está numa view de e-mail: ele é montado em <code style="background:none;">${catEscape(t.source)}</code>. Precisa ser extraído de lá na migração.</div>` : ''}
 
+    ${t.channel === 'whatsapp' ? `
+    <div style="background:#ECFDF5; border:1px solid #A7F3D0; border-radius:8px; padding:11px 13px; margin-bottom:16px; font-size:12px; color:#065F46;">
+      <strong>WhatsApp não tem assunto.</strong> Publicar este texto submete o modelo à Meta em cada conta do cliente. Fora da janela de 24 horas, só sai o que estiver aprovado.
+    </div>` : `
     <label style="display:block; font-size:12px; font-weight:600; color:#374151; margin-bottom:6px;">Assunto</label>
     <input id="cat-in-subject" value="${catEscape(catDraft.subject)}" oninput="catEdit('subject', this.value)"
-           ${t.channel === 'whatsapp' ? 'disabled placeholder="WhatsApp não tem assunto"' : (readOnly ? 'disabled' : '')}
-           style="width:100%; padding:9px 11px; border:1px solid #D1D5DB; border-radius:8px; font-size:13px; color:#111827; font-family:inherit; margin-bottom:18px; ${(t.channel === 'whatsapp' || readOnly) ? 'background:#F3F4F6; color:#9CA3AF;' : ''}">
+           ${readOnly ? 'disabled' : ''}
+           style="width:100%; padding:9px 11px; border:1px solid #D1D5DB; border-radius:8px; font-size:13px; color:#111827; font-family:inherit; margin-bottom:18px; ${readOnly ? 'background:#F3F4F6; color:#9CA3AF;' : ''}">`}
 
     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
       <label style="font-size:12px; font-weight:600; color:#374151;">Corpo da mensagem</label>
@@ -318,7 +357,7 @@ function catRenderContent() {
       style="width:100%; ${readOnly ? 'background:#F3F4F6; color:#6B7280;' : ''} padding:11px; border:1px solid #D1D5DB; border-radius:8px; font-size:12px; color:#111827; font-family:inherit; line-height:1.6; resize:vertical;">${catEscape(catDraft.body)}</textarea>
 
     <div style="margin-top:14px; padding-top:12px; border-top:1px solid #F3F4F6; display:grid; grid-template-columns:110px 1fr; gap:6px 10px; font-size:11px; color:#6B7280;">
-      <span style="color:#9CA3AF;">Remetente</span><span><code style="background:#F3F4F6; padding:1px 5px; border-radius:4px;">${catEscape(t.sender)}</code></span>
+      <span style="color:#9CA3AF;">Remetente</span><span>${catEscape((CAT_SENDER[t.sender] || { texto: t.sender }).texto)} <code style="background:#F3F4F6; padding:1px 5px; border-radius:4px;">${catEscape((CAT_SENDER[t.sender] || { endereco: '' }).endereco)}</code></span>
       <span style="color:#9CA3AF;">Hoje o config</span><span>${CAT_CONFIG_REACH[t.configToday]}</span>
       <span style="color:#9CA3AF;">No código</span><span><code style="background:#F3F4F6; padding:1px 5px; border-radius:4px;">${catEscape(t.source)}</code></span>
     </div>
