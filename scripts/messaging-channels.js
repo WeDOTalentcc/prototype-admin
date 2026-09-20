@@ -314,8 +314,7 @@ function mcRenderTabCounts() {
   const nRep = document.getElementById('comm-count-modelos');
   if (nRep) {
     const rep = mcWhatsappTexts().reduce((n, t) =>
-      n + Object.keys(MC_ACCOUNTS).filter(a => MC_ACCOUNTS[a].provider === 'meta')
-        .filter(a => mcMetaStatus(a, t.key).s === 'rejected').length, 0);
+      n + mcMetaAccounts().filter(a => mcMetaStatus(a, t.key).s === 'rejected').length, 0);
     nRep.style.display = rep ? 'inline-block' : 'none';
     nRep.textContent = rep + (rep === 1 ? ' reprovado' : ' reprovados');
   }
@@ -797,12 +796,24 @@ function mcWhatsappTexts() {
   return (typeof CATALOGO !== 'undefined' ? CATALOGO : []).filter(t => t.channel === 'whatsapp');
 }
 
+/* Cliente sem canal de WhatsApp configurado. E um estado real: enquanto o
+   numero nao existe nao ha conta da Meta onde submeter, e oferecer o botao
+   "Submeter" ali seria prometer o que nao acontece. Abre com ?conta=nenhuma. */
+let mcSemCanal = false;
+
+function mcMetaAccounts() {
+  if (mcSemCanal) return [];
+  return Object.keys(MC_ACCOUNTS).filter(a => MC_ACCOUNTS[a].provider === 'meta');
+}
+
 function mcSetMetaAccount(a) { mcMetaAccount = a; mcRenderMeta(); }
 
 function mcRenderMeta() {
   const alvo = document.getElementById('mc-modelos');
   if (!alvo) return;
-  const contas = Object.keys(MC_ACCOUNTS).filter(a => MC_ACCOUNTS[a].provider === 'meta');
+  const contas = mcMetaAccounts();
+  if (!contas.length) return mcRenderMetaSemConta(alvo);
+
   const textos = mcWhatsappTexts();
   const linhas = textos.map(t => ({ t, st: mcMetaStatus(mcMetaAccount, t.key) }));
   const conta = (s) => linhas.filter(l => l.st.s === s).length;
@@ -876,6 +887,26 @@ function mcRenderMeta() {
   mcIcons();
 }
 
+/* Sem conta da Meta nao ha o que acompanhar, e o caminho e configurar o canal
+   primeiro. A tabela de comunicacoes sairia inteira em "nao submetido", que e
+   verdade e nao ajuda: o que falta nao e submeter, e o numero. */
+function mcRenderMetaSemConta(alvo) {
+  alvo.innerHTML = `
+    <div style="display:flex; gap:10px; align-items:flex-start; background:#EFF6FF; border:1px solid #BFDBFE; border-radius:10px; padding:12px 14px; margin-bottom:18px;">
+      <i data-lucide="info" style="width:16px;height:16px;color:#1E40AF;flex-shrink:0;margin-top:1px;"></i>
+      <div style="font-size:12.5px; color:#1E3A8A; line-height:1.55;">Aqui se acompanha, não se escreve. O texto de cada comunicação vive em <a href="#" onclick="commTab('textos'); return false;" style="color:#1E40AF; font-weight:600;">Textos</a>; publicar lá submete de novo à Meta. A aprovação é <strong>por conta</strong>, e não por número: os números da mesma conta dividem os mesmos modelos aprovados.</div>
+    </div>
+
+    <div style="background:white; border:1px solid #E5E7EB; border-radius:12px; padding:44px 20px; text-align:center;">
+      <i data-lucide="message-circle-off" style="width:28px;height:28px;color:#D1D5DB;"></i>
+      <p style="font-size:14px; font-weight:600; color:#374151; margin:12px 0 0;">Este cliente ainda não tem conta da Meta</p>
+      <p style="font-size:12.5px; color:#6B7280; margin:6px auto 0; max-width:520px; line-height:1.6;">A aprovação de modelo é por conta da Meta, então não há onde submeter enquanto o canal de WhatsApp não existir. Sem canal, este cliente não envia por aqui: a plataforma não cai no número de outro cliente.</p>
+      <button onclick="commTab('canais')" style="margin-top:16px; padding:8px 16px; border:none; background:#C74446; border-radius:8px; font-size:13px; color:white; font-weight:600; cursor:pointer; font-family:inherit;">Configurar canal</button>
+    </div>
+  `;
+  mcIcons();
+}
+
 function mcFixInTexts(key) {
   closeModal();
   commTab('textos');
@@ -920,7 +951,9 @@ function mcOpenModel(key) {
 
 /* Resumo do estado na Meta de um texto de WhatsApp, usado na aba Textos. */
 function mcMetaSummary(key) {
-  const contas = Object.keys(MC_ACCOUNTS).filter(a => MC_ACCOUNTS[a].provider === 'meta');
+  const contas = mcMetaAccounts();
+  if (!contas.length) return `<span style="color:#6B7280;">Meta: sem canal configurado</span>`;
+
   const estados = contas.map(a => mcMetaStatus(a, key).s);
   const rep = estados.filter(s => s === 'rejected').length;
   const pend = estados.filter(s => s === 'pending').length;
@@ -932,7 +965,7 @@ function mcMetaSummary(key) {
 }
 
 function mcMetaAccountsLine(key) {
-  return Object.keys(MC_ACCOUNTS).filter(a => MC_ACCOUNTS[a].provider === 'meta').map(a => {
+  return mcMetaAccounts().map(a => {
     const st = mcMetaStatus(a, key);
     return `<div style="display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid #F3F4F6;">
       <span style="font-size:12px; color:#374151;">${mcEsc(MC_ACCOUNTS[a].nome)}</span>${mcBadge(MC_META_STATE[st.s])}</div>`;
@@ -940,7 +973,7 @@ function mcMetaAccountsLine(key) {
 }
 
 function mcMetaAccountCount() {
-  return Object.keys(MC_ACCOUNTS).filter(a => MC_ACCOUNTS[a].provider === 'meta').length;
+  return mcMetaAccounts().length;
 }
 
 /* -------------------------------------------------- saúde dos canais */
@@ -1161,6 +1194,8 @@ document.addEventListener('DOMContentLoaded', () => {
   mcRenderTabCounts();
   try {
     const q = new URLSearchParams(location.search);
+    mcSemCanal = q.get('conta') === 'nenhuma';
+    if (mcSemCanal) mcRenderMeta();
     const aba = q.get('aba');
     if (aba && location.hash === '#screen-client-communication') commTab(aba);
     if (q.get('ambiente') && location.hash === '#screen-channels-health') mcSetHealthEnv(q.get('ambiente'));

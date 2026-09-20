@@ -48,6 +48,7 @@ O protótipo aceita alguns parâmetros para abrir direto num estado, o que ajuda
 | `#screen-client-communication` | Comunicação do cliente, na aba Textos |
 | `?aba=canais#screen-client-communication` | a aba Canais, com o simulador de escolha do número |
 | `?aba=modelos#screen-client-communication` | a aba Modelos na Meta |
+| `?aba=modelos&conta=nenhuma#screen-client-communication` | a aba Modelos na Meta para um cliente sem canal configurado |
 | `#screen-channels-health` | Saúde dos canais, em produção |
 | `?ambiente=staging#screen-channels-health` | Saúde dos canais em staging (números compartilhados) |
 | `?ambiente=development#screen-channels-health` | o mesmo, em desenvolvimento |
