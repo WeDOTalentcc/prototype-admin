@@ -374,14 +374,23 @@ function catTab(aba) {
     botao.style.borderBottom = ativo ? '2px solid #C74446' : '2px solid transparent';
     botao.style.fontWeight = ativo ? '600' : '500';
   });
+  catAdjustDrawerWidth(aba);
   if (aba === 'preview') catRenderPreview();
+}
+
+/* A previa e' para ler a mensagem inteira, nao para rolar: na aba de previa a
+   gaveta ocupa a largura util da tela. */
+function catAdjustDrawerWidth(aba) {
+  const gaveta = document.getElementById('cat-drawer');
+  if (!gaveta) return;
+  gaveta.style.width = aba === 'preview' ? '1080px' : '640px';
 }
 
 function catEmailCard(assunto, corpo) {
   const remetente = catScope === 'global' ? 'Empresa do cliente' : CURRENT_CLIENT;
   return `
     <div style="background:#F9FAFB; border:1px solid #E5E7EB; border-radius:10px; padding:20px;">
-      <div style="max-width:560px; margin:0 auto; background:#fff; border:1px solid #E5E7EB; border-radius:12px; overflow:hidden;">
+      <div style="max-width:760px; margin:0 auto; background:#fff; border:1px solid #E5E7EB; border-radius:12px; overflow:hidden;">
         <div style="padding:18px 24px; border-bottom:1px solid #F3F4F6; display:flex; align-items:center; justify-content:space-between;">
           <span style="font-size:13px; font-weight:600; color:#6B7280;">${catEscape(remetente)}</span>
           <span style="width:8px;height:8px;border-radius:50%;background:#60BED1;display:inline-block;"></span>
@@ -399,20 +408,39 @@ function catEmailCard(assunto, corpo) {
     </div>`;
 }
 
-function catWhatsappBubble(corpo) {
+function catWhatsappConversation(corpo) {
+  const remetente = catScope === 'global' ? 'Empresa do cliente' : CURRENT_CLIENT;
+  const inicial = remetente.trim().charAt(0).toUpperCase() || '?';
+  const agora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  const corpoRenderizado = catHighlightVariables(corpo).replace(/\n/g, '<br>')
+    || '<span style="color:#9CA3AF;">Sem corpo definido.</span>';
   return `
-    <div style="background:#ECE5DD; border-radius:12px; padding:18px;">
-      <div style="background:#fff; border-radius:8px 8px 8px 2px; padding:10px 12px; max-width:85%; box-shadow:0 1px 1px rgba(0,0,0,.08); font-size:13px; color:#111827; line-height:1.5;">
-        ${catHighlightVariables(corpo).replace(/\n/g, '<br>') || '<span style="color:#9CA3AF;">Sem corpo definido.</span>'}
-        <div style="text-align:right; font-size:10px; color:#9CA3AF; margin-top:4px;">agora</div>
+    <div style="max-width:520px; margin:0 auto; border:1px solid #E5E7EB; border-radius:14px; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,.06); display:flex; flex-direction:column; height:100%;">
+      <div style="background:#075E54; padding:12px 14px; display:flex; align-items:center; gap:10px;">
+        <span style="width:34px; height:34px; border-radius:50%; background:#128C7E; color:#fff; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:600;">${catEscape(inicial)}</span>
+        <div style="min-width:0;">
+          <div style="font-size:13px; font-weight:600; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${catEscape(remetente)}</div>
+          <div style="font-size:11px; color:rgba(255,255,255,.72);">conta comercial</div>
+        </div>
+      </div>
+      <div style="background:#ECE5DD; padding:16px 14px; flex:1; min-height:260px;">
+        <div style="text-align:center; margin-bottom:14px;">
+          <span style="background:#FDF4C6; color:#7A6A2F; font-size:10px; padding:4px 10px; border-radius:6px;">As mensagens são protegidas com criptografia de ponta a ponta.</span>
+        </div>
+        <div style="position:relative; background:#fff; border-radius:8px 8px 8px 2px; padding:9px 11px 6px 11px; max-width:86%; box-shadow:0 1px 1px rgba(0,0,0,.10); font-size:13.5px; color:#111827; line-height:1.55;">
+          ${corpoRenderizado}
+          <div style="text-align:right; font-size:10px; color:#9CA3AF; margin-top:4px;">${agora}</div>
+        </div>
       </div>
     </div>`;
 }
 
 function catRenderPreview() {
   const t = catSelected;
-  document.getElementById('cat-painel-preview').innerHTML = t.channel === 'whatsapp'
-    ? `<p style="font-size:11px; color:#9CA3AF; margin:0 0 10px 0;">como chega no WhatsApp do candidato</p>${catWhatsappBubble(catDraft.body)}`
+  const painel = document.getElementById('cat-painel-preview');
+  painel.style.height = '100%';
+  painel.innerHTML = t.channel === 'whatsapp'
+    ? `<p style="font-size:11px; color:#9CA3AF; margin:0 0 10px 0;">como chega no WhatsApp do candidato</p><div style="height:calc(100% - 26px);">${catWhatsappConversation(catDraft.body)}</div>`
     : `<p style="font-size:11px; color:#9CA3AF; margin:0 0 10px 0;">como chega na caixa de entrada, dentro do layout do produto</p>${catEmailCard(catDraft.subject, catDraft.body)}`;
 }
 
@@ -425,8 +453,9 @@ function catRenderDefault() {
         ? 'Texto do catálogo da WeDO, para comparar com o que está valendo neste cliente.'
         : 'Este cliente está usando exatamente o texto do catálogo da WeDO.'}
     </p>
+    ${t.channel === 'whatsapp' ? '' : `
     <label style="display:block; font-size:12px; font-weight:600; color:#374151; margin-bottom:6px;">Assunto padrão</label>
-    <div style="padding:9px 11px; border:1px solid #E5E7EB; background:#F9FAFB; border-radius:8px; font-size:13px; color:#374151; margin-bottom:16px;">${catHighlightVariables(t.defaultSubject) || '<span style="color:#9CA3AF;">sem assunto</span>'}</div>
+    <div style="padding:9px 11px; border:1px solid #E5E7EB; background:#F9FAFB; border-radius:8px; font-size:13px; color:#374151; margin-bottom:16px;">${catHighlightVariables(t.defaultSubject) || '<span style="color:#9CA3AF;">sem assunto</span>'}</div>`}
     <label style="display:block; font-size:12px; font-weight:600; color:#374151; margin-bottom:6px;">Corpo padrão</label>
     <div style="padding:11px; border:1px solid #E5E7EB; background:#F9FAFB; border-radius:8px; font-size:12px; color:#374151; line-height:1.6; white-space:pre-wrap;">${catHighlightVariables(t.defaultBody) || '<span style="color:#9CA3AF;">Sem corpo definido.</span>'}</div>
     ${t.customized ? `<button onclick="catResetToDefault()" style="margin-top:14px; padding:8px 14px; border:1px solid #FECACA; background:#FEF2F2; color:#B91C1C; border-radius:8px; font-size:13px; cursor:pointer; font-family:inherit;">Voltar ao padrão neste cliente</button>` : ''}
