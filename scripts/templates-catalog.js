@@ -39,6 +39,7 @@ const CAT_KIND = {
    Responde a divergencia da reuniao: o convite de triagem respeita o config,
    mas so no paragrafo de abertura (custom_message_html, WEDO-3394). */
 const CAT_CONFIG_REACH = {
+  proprio:  '<span style="color:#166534;">escrito aqui, o painel manda em tudo</span>',
   nenhum:   '<span style="color:#B91C1C;">não alcança nada: o texto vem todo do código</span>',
   abertura: '<span style="color:#9A3412;">alcança só o parágrafo de abertura e o assunto</span>',
   total:    '<span style="color:#166534;">já alcança o corpo inteiro</span>',
@@ -119,6 +120,10 @@ function catFilteredList() {
       if (f.origem === 'padrao' && catOffDefault(t).length) return false;
     }
     if (!b) return true;
+    // Termo so' de digitos casa o id INTEIRO, e nao como pedaco de texto: com
+    // `includes` a busca por 10 devolveria 10, 100 e 210 juntos, e quem digita
+    // um id esta conferindo uma linha especifica.
+    if (/^\d+$/.test(b)) return String(catId(t)) === b;
     return (t.name + ' ' + t.key + ' ' + t.subject + ' ' + t.defaultSubject + ' ' + t.trigger + ' ' + t.source)
       .toLowerCase().includes(b);
   });
@@ -140,7 +145,7 @@ function catRenderFilters() {
     <div style="position:relative; flex:1; min-width:200px;">
       <i data-lucide="search" style="width:14px;height:14px;position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#9CA3AF;"></i>
       <input id="cat-busca-${catScope}" value="${catEscape(f.busca)}" oninput="catSetFilter('busca', this.value)"
-             placeholder="Buscar por nome, assunto ou gatilho"
+             placeholder="Buscar por id, nome, assunto ou gatilho"
              style="width:100%; padding:7px 10px 7px 30px; border:1px solid #D1D5DB; border-radius:8px; font-size:12px; color:#374151; font-family:inherit;">
     </div>
     ${select('tipo', 'tipo', tipos)}
@@ -175,6 +180,13 @@ function catOriginBadge(t) {
     : `<span style="background:#F3F4F6; color:#6B7280; font-size:11px; font-weight:600; padding:2px 8px; border-radius:99px; white-space:nowrap;">Padrão da WeDO</span>`;
 }
 
+/* O painel mostra o id da linha no banco, que e' como se confere uma
+   comunicacao especifica. Aqui a posicao no catalogo faz esse papel: o que
+   importa no desenho e' a coluna existir e caber no mesmo lugar. */
+function catId(t) {
+  return CATALOGO.indexOf(t) + 1;
+}
+
 function catRenderTable() {
   const lista = catFilteredList();
   const corpo = catEl('tbody');
@@ -189,7 +201,7 @@ function catRenderTable() {
   }
 
   if (!lista.length) {
-    corpo.innerHTML = `<tr><td colspan="7" style="padding:48px 20px; text-align:center;">
+    corpo.innerHTML = `<tr><td colspan="8" style="padding:48px 20px; text-align:center;">
       <i data-lucide="search-x" style="width:28px;height:28px;color:#D1D5DB;"></i>
       <p style="font-size:13px; color:#6B7280; margin:10px 0 0 0;">Nenhuma comunicação bate com esse filtro.</p>
       <button onclick="catClearFilters()" style="margin-top:10px; padding:6px 12px; border:1px solid #D1D5DB; background:white; border-radius:6px; font-size:12px; color:#374151; cursor:pointer; font-family:inherit;">Limpar filtros</button>
@@ -210,9 +222,12 @@ function catRenderTable() {
       : (t.customized ? catEscape(t.customizedAt) : 'segue o padrão');
     const metaNaConta = catScope === 'cliente' && t.channel === 'whatsapp' && typeof mcMetaSummary === 'function'
       ? `<div style="font-size:11px; margin-top:4px;">${mcMetaSummary(t.key)}</div>` : '';
+    const foraDoPadrao = catScope === 'cliente' && t.customized;
     return `
-    <tr onclick="catOpen('${t.key}','${t.channel}')" style="border-top:1px solid #F3F4F6; cursor:pointer; ${i % 2 ? 'background:#F9FAFB;' : ''}"
+    <tr onclick="catOpen('${t.key}','${t.channel}')" data-fora-do-padrao="${foraDoPadrao ? 'sim' : 'nao'}"
+        style="border-top:1px solid #F3F4F6; cursor:pointer; ${i % 2 ? 'background:#F9FAFB;' : ''} ${foraDoPadrao ? 'border-left:4px solid #D97706;' : ''}"
         onmouseover="this.style.background='#F3F4F6'" onmouseout="this.style.background='${i % 2 ? '#F9FAFB' : 'white'}'">
+      <td style="padding:13px 16px; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:11.5px; color:#6B7280;">${catId(t)}</td>
       <td style="padding:13px 20px;">
         <div style="font-size:13px; font-weight:600; color:#111827;">${catEscape(t.name)}</div>
         <div style="font-size:12px; color:#6B7280; margin-top:2px;">${currentSubject ? catEscape(currentSubject) : '<span style="color:#9CA3AF;">mensagem direta, sem assunto</span>'}</div>
@@ -242,12 +257,148 @@ function catClearFilters() {
   catRenderFilters(); catRenderTable();
 }
 
+/* ------------------------------------------------- criar um texto novo
+
+   O CANAL e' a decisao desta tela, e so' dela: depois de criado, o texto
+   pertence ao canal dele -- nao existe virar um e-mail em WhatsApp, porque o
+   corpo de um nao serve ao outro. Para ter a mesma comunicacao nos dois
+   canais, cria-se o par, e a lista mostra "tambem no outro canal".
+
+   O que se escolhe aqui e' o que o backend precisa saber antes do texto
+   existir: canal, nome, categoria e quando dispara. */
+
+let catNovo = { channel: 'email', name: '', category: '', trigger: '' };
+
+function catNovoAbrir() {
+  catNovo = { channel: 'email', name: '', category: '', trigger: '' };
+  document.getElementById('cat-novo').style.display = 'flex';
+  document.getElementById('cat-novo-backdrop').style.display = 'block';
+  catNovoRender();
+}
+
+function catNovoFechar() {
+  document.getElementById('cat-novo').style.display = 'none';
+  document.getElementById('cat-novo-backdrop').style.display = 'none';
+}
+
+function catNovoSet(campo, valor) {
+  catNovo[campo] = valor;
+  catNovoRender();
+}
+
+function catNovoCanalCard(canal, titulo, descricao, icone) {
+  const ativo = catNovo.channel === canal;
+  return `<button onclick="catNovoSet('channel','${canal}')" style="flex:1; min-width:210px; text-align:left; padding:13px 15px; border:1.5px solid ${ativo ? '#C74446' : '#D1D5DB'}; background:${ativo ? '#FEF2F2' : 'white'}; border-radius:10px; cursor:pointer; font-family:inherit;">
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom:5px;">
+      <i data-lucide="${icone}" style="width:16px;height:16px;color:${ativo ? '#C74446' : '#6B7280'};"></i>
+      <span style="font-size:13px; font-weight:600; color:#111827;">${titulo}</span>
+      ${ativo ? '<i data-lucide="check" style="width:14px;height:14px;color:#C74446;margin-left:auto;"></i>' : ''}
+    </div>
+    <div style="font-size:11.5px; color:#6B7280; line-height:1.45;">${descricao}</div>
+  </button>`;
+}
+
+function catNovoRender() {
+  const categorias = [...new Set(CATALOGO.map(t => t.category).filter(Boolean))].sort();
+  const gatilhos = [...new Set(CATALOGO.map(t => t.trigger).filter(Boolean))].sort().slice(0, 12);
+  const whats = catNovo.channel === 'whatsapp';
+
+  document.getElementById('cat-novo-sub').textContent = catScope === 'global'
+    ? 'Nasce como padrão da WeDO e todo cliente que herdar passa a recebê-lo.'
+    : 'Nasce só para este cliente, fora do catálogo da WeDO.';
+
+  document.getElementById('cat-novo-corpo').innerHTML = `
+    <label style="display:block; font-size:12px; font-weight:600; color:#374151; margin-bottom:8px;">Canal</label>
+    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:6px;">
+      ${catNovoCanalCard('email', 'E-mail', 'Sai no layout da plataforma, com cabeçalho, assinatura e os blocos de privacidade.', 'mail')}
+      ${catNovoCanalCard('whatsapp', 'WhatsApp', 'Texto puro numa conversa. Publicar submete o modelo à Meta e só sai depois de aprovado.', 'message-circle')}
+    </div>
+    <p style="font-size:11px; color:#9CA3AF; margin:0 0 18px;">O canal se decide agora e não muda depois. Para ter a mesma comunicação nos dois, crie o par.</p>
+
+    <label style="display:block; font-size:12px; font-weight:600; color:#374151; margin-bottom:6px;">Nome da comunicação</label>
+    <input value="${catEscape(catNovo.name)}" oninput="catNovo.name = this.value; catNovoValidar();"
+           placeholder="${whats ? 'Ex.: Convite de triagem (WhatsApp)' : 'Ex.: Teste financeiro'}"
+           style="width:100%; padding:9px 11px; border:1px solid #D1D5DB; border-radius:8px; font-size:13px; color:#111827; font-family:inherit; margin-bottom:16px;">
+
+    <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:16px;">
+      <div style="flex:1; min-width:200px;">
+        <label style="display:block; font-size:12px; font-weight:600; color:#374151; margin-bottom:6px;">Categoria</label>
+        <select onchange="catNovo.category = this.value; catNovoValidar();" style="width:100%; padding:9px 11px; border:1px solid #D1D5DB; border-radius:8px; font-size:13px; color:#374151; background:white; font-family:inherit;">
+          <option value="">Escolha uma categoria</option>
+          ${categorias.map(c => `<option value="${catEscape(c)}"${catNovo.category === c ? ' selected' : ''}>${catEscape(c[0].toUpperCase() + c.slice(1))}</option>`).join('')}
+        </select>
+      </div>
+      <div style="flex:1; min-width:200px;">
+        <label style="display:block; font-size:12px; font-weight:600; color:#374151; margin-bottom:6px;">Quando dispara</label>
+        <select onchange="catNovo.trigger = this.value; catNovoValidar();" style="width:100%; padding:9px 11px; border:1px solid #D1D5DB; border-radius:8px; font-size:13px; color:#374151; background:white; font-family:inherit;">
+          <option value="">Só quando alguém enviar (manual)</option>
+          ${gatilhos.map(g => `<option value="${catEscape(g)}"${catNovo.trigger === g ? ' selected' : ''}>${catEscape(g.length > 60 ? g.slice(0, 60) + '…' : g)}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+
+    ${whats ? `<div style="background:#ECFDF5; border:1px solid #A7F3D0; border-radius:8px; padding:11px 13px; font-size:12px; color:#065F46;">
+      <strong>WhatsApp não tem assunto.</strong> Ao publicar, o modelo é submetido à Meta em cada conta do cliente e o estado aparece em Modelos na Meta. Fora da janela de 24 horas, só sai o que estiver aprovado.
+    </div>` : `<div style="background:#F9FAFB; border:1px solid #E5E7EB; border-radius:8px; padding:11px 13px; font-size:12px; color:#6B7280;">
+      O assunto e o corpo você escreve no próximo passo, com a pré-visualização do e-mail montado do jeito que o candidato recebe.
+    </div>`}
+  `;
+  catNovoValidar();
+  if (window.lucide) lucide.createIcons();
+}
+
+function catNovoValidar() {
+  const btn = document.getElementById('cat-novo-criar');
+  const ok = catNovo.name.trim().length > 2 && catNovo.category;
+  btn.disabled = !ok;
+  btn.style.opacity = ok ? '1' : '.45';
+  btn.style.cursor = ok ? 'pointer' : 'not-allowed';
+}
+
+function catNovoCriar() {
+  if (!catNovo.name.trim() || !catNovo.category) return;
+  const chave = 'avulso_' + catNovo.name.trim().toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+  const novo = {
+    key: chave,
+    name: catNovo.name.trim(),
+    channel: catNovo.channel,
+    category: catNovo.category,
+    audience: 'candidato',
+    status: 'active',
+    source: 'criado no painel',
+    subject: catNovo.channel === 'email' ? '' : '',
+    trigger: catNovo.trigger || 'Só quando alguém enviar, pelos modais da plataforma.',
+    variables: ['candidate_name', 'job_title', 'company_name'],
+    body: '',
+    note: '',
+    hasText: false,
+    type: catNovo.trigger ? 'automatica' : 'modal',
+    sender: 'processo',
+    clientEditable: true,
+    configToday: 'proprio',
+    defaultSubject: '',
+    defaultBody: '',
+    customized: catScope === 'cliente',
+    customizedBy: catScope === 'cliente' ? 'Você' : null,
+    customizedAt: catScope === 'cliente' ? 'agora' : null,
+    otherClients: []
+  };
+  CATALOGO.unshift(novo);
+  catNovoFechar();
+  catRenderFilters();
+  catRenderTable();
+  catOpen(novo.key, novo.channel);
+}
+
 /* --------------------------------------------------------- painel lateral */
 
 function catOpen(chave, canal) {
   catSelected = CATALOGO.find(t => t.key === chave && t.channel === canal);
   if (!catSelected) return;
   catDraft = Object.assign({}, catCurrentText(catSelected));
+  catSourceView = false;
   document.getElementById('cat-drawer').style.display = 'flex';
   document.getElementById('cat-drawer-backdrop').style.display = 'block';
   catRenderDrawer();
@@ -264,6 +415,8 @@ function catClose() {
 
 function catRenderDrawer() {
   const t = catSelected;
+  const abaPadrao = document.getElementById('cat-aba-padrao');
+  if (abaPadrao) abaPadrao.style.display = catCriadoNoPainel(t) ? 'none' : '';
   const channelMeta = CAT_CHANNEL[t.channel];
   document.getElementById('cat-drawer-titulo').textContent = t.name;
   document.getElementById('cat-drawer-escopo').innerHTML = catScope === 'global'
@@ -309,6 +462,12 @@ function catScopeBanner(t) {
       ${fora.length ? `Não alcança ${catEscape(fora.join(', '))}, que ajustaram o texto por conta.` : 'Nenhum cliente fugiu do padrão nesta comunicação.'}
     </div>`;
   }
+  if (catCriadoNoPainel(t)) {
+    return `<div style="background:#ECFDF5; border:1px solid #A7F3D0; border-radius:8px; padding:11px 13px; margin-bottom:16px; font-size:12px; color:#065F46;">
+      <strong>Texto próprio${catScope === 'cliente' ? ' deste cliente' : ' da WeDO'}.</strong>
+      Não existe no catálogo${catScope === 'cliente' ? ' da WeDO' : ''}, então não há padrão para acompanhar nem para voltar.
+    </div>`;
+  }
   if (t.customized) {
     return `<div style="background:#FFFBEB; border:1px solid #FDE68A; border-radius:8px; padding:11px 13px; margin-bottom:16px; display:flex; align-items:center; justify-content:space-between; gap:12px;">
       <div style="font-size:12px; color:#92400E;">
@@ -324,6 +483,12 @@ function catScopeBanner(t) {
   </div>`;
 }
 
+/* Texto nascido aqui nao tem view de e-mail atras, nem padrao da WeDO para
+   comparar: os avisos que falam de codigo e de heranca nao se aplicam a ele. */
+function catCriadoNoPainel(t) {
+  return t.source === 'criado no painel';
+}
+
 function catReadOnly() {
   return catScope === 'cliente' && !catSelected.clientEditable;
 }
@@ -335,7 +500,7 @@ function catRenderContent() {
   document.getElementById('cat-painel-conteudo').innerHTML = `
     ${catScopeBanner(t)}
     ${t.note ? `<div style="background:#FFF7ED; border:1px solid #FED7AA; border-radius:8px; padding:10px 12px; margin-bottom:16px; font-size:12px; color:#9A3412;">${catEscape(t.note)}</div>` : ''}
-    ${!t.defaultBody ? `<div style="background:#FEF2F2; border:1px solid #FECACA; border-radius:8px; padding:10px 12px; margin-bottom:16px; font-size:12px; color:#B91C1C;">O texto desta comunicação não está numa view de e-mail: ele é montado em <code style="background:none;">${catEscape(t.source)}</code>. Precisa ser extraído de lá na migração.</div>` : ''}
+    ${!t.defaultBody && !catCriadoNoPainel(t) ? `<div style="background:#FEF2F2; border:1px solid #FECACA; border-radius:8px; padding:10px 12px; margin-bottom:16px; font-size:12px; color:#B91C1C;">O texto desta comunicação não está numa view de e-mail: ele é montado em <code style="background:none;">${catEscape(t.source)}</code>. Precisa ser extraído de lá na migração.</div>` : ''}
 
     ${t.channel === 'whatsapp' ? `
     <div style="background:#ECFDF5; border:1px solid #A7F3D0; border-radius:8px; padding:11px 13px; margin-bottom:16px; font-size:12px; color:#065F46;">
@@ -353,13 +518,12 @@ function catRenderContent() {
     <div style="display:flex; flex-wrap:wrap; gap:5px; margin-bottom:8px;">
       ${vars.map(v => `<button onclick="catInsertVariable('${v}')" style="padding:3px 8px; border:1px solid #D1D5DB; background:white; border-radius:6px; font-size:11px; color:#1F6B7D; font-family:monospace; cursor:pointer;" onmouseover="this.style.background='#F3F4F6'" onmouseout="this.style.background='white'">{{${v}}}</button>`).join('')}
     </div>
-    <textarea id="cat-in-body" oninput="catEdit('body', this.value)" rows="12" ${readOnly ? 'disabled' : ''}
-      style="width:100%; ${readOnly ? 'background:#F3F4F6; color:#6B7280;' : ''} padding:11px; border:1px solid #D1D5DB; border-radius:8px; font-size:12px; color:#111827; font-family:inherit; line-height:1.6; resize:vertical;">${catEscape(catDraft.body)}</textarea>
+    ${catBodyEditor(t, readOnly)}
 
     <div style="margin-top:14px; padding-top:12px; border-top:1px solid #F3F4F6; display:grid; grid-template-columns:110px 1fr; gap:6px 10px; font-size:11px; color:#6B7280;">
       <span style="color:#9CA3AF;">Remetente</span><span>${catEscape((CAT_SENDER[t.sender] || { texto: t.sender }).texto)} <code style="background:#F3F4F6; padding:1px 5px; border-radius:4px;">${catEscape((CAT_SENDER[t.sender] || { endereco: '' }).endereco)}</code></span>
       <span style="color:#9CA3AF;">Hoje o config</span><span>${CAT_CONFIG_REACH[t.configToday]}</span>
-      <span style="color:#9CA3AF;">No código</span><span><code style="background:#F3F4F6; padding:1px 5px; border-radius:4px;">${catEscape(t.source)}</code></span>
+      ${catCriadoNoPainel(t) ? '' : `<span style="color:#9CA3AF;">No código</span><span><code style="background:#F3F4F6; padding:1px 5px; border-radius:4px;">${catEscape(t.source)}</code></span>`}
     </div>
     ${catScope === 'cliente' && t.channel === 'whatsapp' && typeof mcMetaAccountsLine === 'function' ? `
       <div style="margin-top:16px; border:1px solid #E5E7EB; border-radius:8px; padding:10px 12px;">
@@ -372,6 +536,100 @@ function catRenderContent() {
       </div>` : ''}
     ${t.hasText ? `<p style="font-size:11px; color:#9A3412; margin-top:8px;">Esta comunicação também tem versão em texto puro, que precisa acompanhar a edição.</p>` : ''}
   `;
+  if (window.lucide) lucide.createIcons();
+}
+
+/* ----------------------------------------------------- editor do corpo
+
+   Um campo so', com barra de formatacao, e o HTML atras de um botao para quem
+   sabe o que esta fazendo -- o mesmo desenho do painel. A caixa de texto crua
+   nao volta: quem escreve a comunicacao le o texto formatado, nao marcacao.
+
+   WhatsApp fica de fora da formatacao de proposito: o canal entrega texto puro,
+   sem negrito nem lista nem link. */
+
+let catSourceView = false;
+
+const CAT_TOOLBAR = [
+  { cmd: 'bold',              icone: 'bold',         rotulo: 'Negrito' },
+  { cmd: 'italic',            icone: 'italic',       rotulo: 'Itálico' },
+  { divisor: true },
+  { cmd: 'formatBlock:h2',    icone: 'type',         rotulo: 'Título de seção' },
+  { cmd: 'insertUnorderedList', icone: 'table-2',    rotulo: 'Ficha de rótulo e valor' },
+  { cmd: 'insertOrderedList', icone: 'list-ordered', rotulo: 'Passos numerados' },
+  { cmd: 'createLink',        icone: 'link',         rotulo: 'Link' },
+  { divisor: true },
+  { cmd: 'undo',              icone: 'undo-2',       rotulo: 'Desfazer' },
+  { cmd: 'redo',              icone: 'redo-2',       rotulo: 'Refazer' }
+];
+
+function catToHtmlBlocks(texto) {
+  return String(texto || '')
+    .split(/\n{2,}/)
+    .map(bloco => `<p>${catEscape(bloco).replace(/\n/g, '<br>')}</p>`)
+    .join('');
+}
+
+function catFromHtmlBlocks(el) {
+  return Array.from(el.childNodes).map(no => {
+    if (no.nodeType === Node.TEXT_NODE) return no.textContent;
+    return no.innerText !== undefined ? no.innerText : no.textContent;
+  }).join('\n\n').replace(/\n{3,}/g, '\n\n').trim();
+}
+
+function catToolbarBotao(item, readOnly) {
+  if (item.divisor) return '<span style="width:1px; height:16px; background:#D1D5DB; margin:0 3px;"></span>';
+  return `<button title="${item.rotulo}" aria-label="${item.rotulo}" ${readOnly ? 'disabled' : ''}
+    onclick="catFormat('${item.cmd}')"
+    style="display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border:none; background:transparent; border-radius:6px; color:#374151; cursor:${readOnly ? 'not-allowed' : 'pointer'}; opacity:${readOnly ? '.5' : '1'};"
+    onmouseover="if(!this.disabled)this.style.background='#E5E7EB'" onmouseout="this.style.background='transparent'">
+    <i data-lucide="${item.icone}" style="width:14px;height:14px;"></i></button>`;
+}
+
+function catBodyEditor(t, readOnly) {
+  if (t.channel === 'whatsapp') {
+    return `<textarea id="cat-in-body" oninput="catEdit('body', this.value)" rows="12" ${readOnly ? 'disabled' : ''}
+      style="width:100%; ${readOnly ? 'background:#F3F4F6; color:#6B7280;' : ''} padding:11px; border:1px solid #D1D5DB; border-radius:8px; font-size:12px; color:#111827; font-family:inherit; line-height:1.6; resize:vertical;">${catEscape(catDraft.body)}</textarea>
+      <p style="font-size:11px; color:#6B7280; margin:6px 0 0;">WhatsApp entrega texto puro: sem negrito, lista ou link.</p>`;
+  }
+  return `
+    <div data-testid="template-formatacao" style="display:flex; flex-wrap:wrap; align-items:center; gap:2px; border:1px solid #D1D5DB; background:#F9FAFB; border-radius:8px; padding:4px 6px; margin-bottom:6px;">
+      ${CAT_TOOLBAR.map(i => catToolbarBotao(i, readOnly)).join('')}
+      <span style="margin-left:auto; display:flex; align-items:center; gap:6px;">
+        <span style="font-size:11px; color:#9CA3AF;">parágrafo = linha em branco</span>
+        <button title="${catSourceView ? 'Voltar ao texto formatado' : 'Ver o HTML'}" aria-label="${catSourceView ? 'Voltar ao texto formatado' : 'Ver o HTML'}"
+          onclick="catToggleSource()"
+          style="display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border:none; border-radius:6px; cursor:pointer; background:${catSourceView ? '#E5E7EB' : 'transparent'}; color:#374151;">
+          <i data-lucide="code-2" style="width:14px;height:14px;"></i></button>
+      </span>
+    </div>
+    ${catSourceView
+      ? `<textarea data-testid="template-corpo-html" readonly rows="12"
+           style="width:100%; padding:11px; border:1px solid #D1D5DB; border-radius:8px; background:#F3F4F6; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:11px; line-height:1.6; color:#111827; resize:vertical;">${catEscape(catToHtmlBlocks(catDraft.body))}</textarea>`
+      : `<div id="cat-in-body" contenteditable="${readOnly ? 'false' : 'true'}" oninput="catEdit('body', catFromHtmlBlocks(this))"
+           style="width:100%; min-height:220px; padding:11px; border:1px solid #D1D5DB; border-radius:8px; background:${readOnly ? '#F3F4F6' : 'white'}; font-size:12.5px; color:${readOnly ? '#6B7280' : '#111827'}; font-family:inherit; line-height:1.65; outline:none;">${catToHtmlBlocks(catDraft.body)}</div>`}
+  `;
+}
+
+function catFormat(cmd) {
+  const alvo = document.getElementById('cat-in-body');
+  if (!alvo || alvo.getAttribute('contenteditable') !== 'true') return;
+  alvo.focus();
+  if (cmd === 'createLink') {
+    const url = prompt('Endereço do link');
+    if (url) document.execCommand('createLink', false, url);
+  } else if (cmd.startsWith('formatBlock:')) {
+    document.execCommand('formatBlock', false, cmd.split(':')[1]);
+  } else {
+    document.execCommand(cmd);
+  }
+  catEdit('body', catFromHtmlBlocks(alvo));
+}
+
+function catToggleSource() {
+  catSourceView = !catSourceView;
+  catRenderContent();
+  if (window.lucide) lucide.createIcons();
 }
 
 function catEdit(campo, valor) {
@@ -395,12 +653,19 @@ function catRefreshDirty() {
 }
 
 function catInsertVariable(v) {
-  const ta = document.getElementById('cat-in-body');
-  const start = ta.selectionStart, end = ta.selectionEnd;
-  ta.value = ta.value.slice(0, start) + '{{' + v + '}}' + ta.value.slice(end);
-  ta.focus();
-  ta.selectionStart = ta.selectionEnd = start + v.length + 4;
-  catEdit('body', ta.value);
+  const alvo = document.getElementById('cat-in-body');
+  if (!alvo) return;
+  if (alvo.getAttribute('contenteditable') === 'true') {
+    alvo.focus();
+    document.execCommand('insertText', false, '{{' + v + '}}');
+    catEdit('body', catFromHtmlBlocks(alvo));
+    return;
+  }
+  const start = alvo.selectionStart, end = alvo.selectionEnd;
+  alvo.value = alvo.value.slice(0, start) + '{{' + v + '}}' + alvo.value.slice(end);
+  alvo.focus();
+  alvo.selectionStart = alvo.selectionEnd = start + v.length + 4;
+  catEdit('body', alvo.value);
 }
 
 function catTab(aba) {

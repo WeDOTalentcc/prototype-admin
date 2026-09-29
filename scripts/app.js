@@ -38,6 +38,7 @@ function updateSidebarActive(screenId) {
     'screen-clients':               'nav-clients',
     'screen-clients-empty':         'nav-clients',
     'screen-clients-search-empty':  'nav-clients',
+    'screen-onboarding-clients':          'nav-onboarding-clients',
     'screen-onboarding':                  'nav-onboarding',
     'screen-onboarding-portal-global':    'nav-onboarding-portal',
     'screen-onboarding-client':           'nav-client-onboarding',
@@ -56,6 +57,7 @@ function updateSidebarActive(screenId) {
     'screen-feature-flags':         'nav-feature-flags',
     'screen-plans':                 'nav-plans',
     'screen-global-flags':          'nav-global-flags',
+    'screen-client-talent-sync':    'nav-client-talent-sync',
     'screen-client-communication':  'nav-client-communication',
     'screen-channels-health':       'nav-channels-health',
     'screen-templates-globais':     'nav-templates-globais',
@@ -93,6 +95,7 @@ function updateTopbarContext(screenId) {
     'screen-onboarding-portal-global':   'Onboarding Portal',
     'screen-onboarding-client':          'Onboarding — iFood Talentos',
     'screen-ai-monitoring':         'Monitoramento de Agentes IA',
+    'screen-onboarding-clients':    'Onboarding',
     'screen-audit-logs':            'Logs & Auditoria',
     'screen-assisted-access':         'Acessos Assistidos',
     'screen-assisted-access-empty':   'Acessos Assistidos',
@@ -107,6 +110,7 @@ function updateTopbarContext(screenId) {
     'screen-feature-flags':         'Feature Flags — iFood Talentos',
     'screen-plans':                 'Planos & Preços',
     'screen-global-flags':          'Feature Flags Globais',
+    'screen-client-talent-sync':    'De-Para de Sincronização — iFood Talentos',
     'screen-client-communication':  'Comunicação — iFood Talentos',
     'screen-channels-health':       'Canais de Mensagem',
     'screen-templates-globais':     'Catálogo de Templates',
@@ -222,7 +226,7 @@ function clearClientContext() {
     lucide.createIcons({ nodes: [scopeBtn] });
   }
 
-  const clientScreens = ['screen-client-detail','screen-client-users','screen-billing','screen-llm-config','screen-feature-flags','screen-onboarding-client','screen-client-communication'];
+  const clientScreens = ['screen-client-detail','screen-client-users','screen-billing','screen-llm-config','screen-feature-flags','screen-onboarding-client','screen-client-communication','screen-client-talent-sync','screen-lia-persona','screen-fairness-policies','screen-client-refdata-structure','screen-client-refdata-talents'];
   if (clientScreens.includes(currentScreen)) {
     showScreen('screen-clients');
   }
