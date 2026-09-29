@@ -57,6 +57,10 @@
               <span class="nav-item-icon"><i data-lucide="users"></i></span>
               <span class="nav-item-label">Lista de Clientes</span>
             </li>
+            <li id="nav-onboarding-clients" class="nav-item" data-tooltip="Onboarding" onclick="showScreen('screen-onboarding-clients')">
+              <span class="nav-item-icon"><i data-lucide="user-plus"></i></span>
+              <span class="nav-item-label">Onboarding</span>
+            </li>
             <li id="nav-onboarding" class="nav-item" data-tooltip="Provisionamentos" onclick="showScreen('screen-onboarding')">
               <span class="nav-item-icon"><i data-lucide="server"></i></span>
               <span class="nav-item-label">Provisionamentos</span>
@@ -151,6 +155,10 @@
               <span class="nav-item-icon"><i data-lucide="users"></i></span>
               <span class="nav-item-label">Usuários</span>
             </li>
+            <li id="nav-billing" class="nav-item" data-tooltip="Faturamento" onclick="showScreen('screen-billing')">
+              <span class="nav-item-icon"><i data-lucide="credit-card"></i></span>
+              <span class="nav-item-label">Faturamento</span>
+            </li>
             <li id="nav-client-onboarding" class="nav-item" data-tooltip="Onboarding Portal" onclick="showScreen('screen-onboarding-client')">
               <span class="nav-item-icon"><i data-lucide="clipboard-check"></i></span>
               <span class="nav-item-label">Onboarding</span>
@@ -172,6 +180,10 @@
             <li id="nav-lia-persona" class="nav-item" data-tooltip="Persona da LIA" onclick="showScreen('screen-lia-persona')">
               <span class="nav-item-icon"><i data-lucide="sparkles"></i></span>
               <span class="nav-item-label">Persona da LIA</span>
+            </li>
+            <li id="nav-client-talent-sync" class="nav-item" data-tooltip="De-Para de Sincronização" onclick="showScreen('screen-client-talent-sync')">
+              <span class="nav-item-icon"><i data-lucide="arrow-left-right"></i></span>
+              <span class="nav-item-label">De-Para de Sincronização</span>
             </li>
             <li id="nav-client-communication" class="nav-item" data-tooltip="Comunicação" onclick="commGoTo('textos')">
               <span class="nav-item-icon"><i data-lucide="messages-square"></i></span>
@@ -1797,6 +1809,10 @@
             E-mail e WhatsApp numa lista só. Enquanto o texto não for ajustado aqui, este cliente continua herdando do catálogo da WeDO e recebe as revisões de copy sozinho. Ao salvar uma alteração, a comunicação passa a ter a versão deste cliente e deixa de acompanhar o padrão. Salvar um texto de WhatsApp submete de novo à Meta em cada conta do cliente, e o estado aparece em Modelos na Meta.
           </div>
 
+          <div style="display:flex; justify-content:flex-end; margin-bottom:10px;">
+            <button onclick="catNovoAbrir()" style="display:flex; align-items:center; gap:7px; padding:8px 13px; border:none; background:#C74446; color:white; border-radius:8px; font-size:12.5px; font-weight:600; cursor:pointer; font-family:inherit;"><i data-lucide="plus" style="width:14px;height:14px;"></i> Novo texto</button>
+          </div>
+
           <div id="cat-filtros-cliente" style="display:flex; gap:8px; align-items:center; margin-bottom:12px; flex-wrap:wrap;"></div>
 
           <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
@@ -1807,6 +1823,7 @@
           <div style="background:white; border:1px solid #E5E7EB; border-radius:12px; overflow:hidden;">
             <table style="width:100%; border-collapse:collapse;">
               <thead><tr style="background:#F9FAFB; border-bottom:1px solid #E5E7EB;">
+                <th style="padding:10px 16px; text-align:left; font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em;">ID</th>
                 <th style="padding:10px 20px; text-align:left; font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em;">Comunicação</th>
                 <th style="padding:10px 12px; text-align:left; font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em;">Canal</th>
                 <th style="padding:10px 12px; text-align:left; font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em;">Tipo</th>
@@ -3565,12 +3582,158 @@
 
 
 
+
+    <!-- ============================================================
+         SCREEN: ONBOARDING (assistente de nova conta)
+         Espelha /admin/onboarding do painel: os 5 passos do
+         OnboardingWizard, do cadastro da empresa ate a confirmacao.
+         ============================================================ -->
+    <div class="screen" id="screen-onboarding-clients">
+      <div style="padding:24px 32px; max-width:1200px; margin:0 auto;">
+
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:20px;">
+          <div style="width:42px; height:42px; background:#111827; border-radius:10px; display:flex; align-items:center; justify-content:center;"><i data-lucide="user-plus" style="width:22px;height:22px;color:white;"></i></div>
+          <div>
+            <h1 style="font-size:22px; font-weight:700; color:#111827; margin:0 0 4px;">Onboarding</h1>
+            <p style="font-size:13px; color:#6B7280; margin:0;">Cadastro de uma conta nova, do dado da empresa ao primeiro administrador. Ao confirmar, o provisionamento entra na fila.</p>
+          </div>
+        </div>
+
+        <div style="background:white; border:1px solid #E5E7EB; border-radius:12px; padding:18px 22px; margin-bottom:18px;">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="width:26px; height:26px; border-radius:99px; background:#C74446; color:white; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700;">1</span>
+              <span style="font-size:12.5px; font-weight:600; color:#111827;">Empresa</span>
+            </div>
+            <div style="flex:1; height:2px; background:#E5E7EB; min-width:18px;"></div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="width:26px; height:26px; border-radius:99px; background:#E5E7EB; color:#9CA3AF; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700;">2</span>
+              <span style="font-size:12.5px; font-weight:500; color:#9CA3AF;">Plano</span>
+            </div>
+            <div style="flex:1; height:2px; background:#E5E7EB; min-width:18px;"></div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="width:26px; height:26px; border-radius:99px; background:#E5E7EB; color:#9CA3AF; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700;">3</span>
+              <span style="font-size:12.5px; font-weight:500; color:#9CA3AF;">Administrador</span>
+            </div>
+            <div style="flex:1; height:2px; background:#E5E7EB; min-width:18px;"></div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="width:26px; height:26px; border-radius:99px; background:#E5E7EB; color:#9CA3AF; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700;">4</span>
+              <span style="font-size:12.5px; font-weight:500; color:#9CA3AF;">Revisão</span>
+            </div>
+            <div style="flex:1; height:2px; background:#E5E7EB; min-width:18px;"></div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="width:26px; height:26px; border-radius:99px; background:#E5E7EB; color:#9CA3AF; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700;">5</span>
+              <span style="font-size:12.5px; font-weight:500; color:#9CA3AF;">Confirmação</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="background:white; border:1px solid #E5E7EB; border-radius:12px; padding:22px;">
+          <h2 style="font-size:15px; font-weight:700; color:#111827; margin:0 0 4px;">Empresa</h2>
+          <p style="font-size:12.5px; color:#6B7280; margin:0 0 18px;">Quem é o cliente. O CNPJ é a chave e não muda depois.</p>
+
+          <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px;">
+            <div>
+              <label style="display:block; font-size:12px; font-weight:600; color:#374151; margin-bottom:6px;">Razão social</label>
+              <input placeholder="Ex.: iFood Talentos Ltda." style="width:100%; padding:9px 11px; border:1px solid #D1D5DB; border-radius:8px; font-size:13px; font-family:inherit;">
+            </div>
+            <div>
+              <label style="display:block; font-size:12px; font-weight:600; color:#374151; margin-bottom:6px;">CNPJ</label>
+              <input placeholder="00.000.000/0000-00" style="width:100%; padding:9px 11px; border:1px solid #D1D5DB; border-radius:8px; font-size:13px; font-family:inherit;">
+            </div>
+            <div>
+              <label style="display:block; font-size:12px; font-weight:600; color:#374151; margin-bottom:6px;">Segmento</label>
+              <select style="width:100%; padding:9px 11px; border:1px solid #D1D5DB; border-radius:8px; font-size:13px; background:white; font-family:inherit;"><option>Tecnologia</option><option>Alimentação</option><option>Varejo</option><option>Serviços</option></select>
+            </div>
+            <div>
+              <label style="display:block; font-size:12px; font-weight:600; color:#374151; margin-bottom:6px;">Porte</label>
+              <select style="width:100%; padding:9px 11px; border:1px solid #D1D5DB; border-radius:8px; font-size:13px; background:white; font-family:inherit;"><option>Até 100 colaboradores</option><option>101 a 1.000</option><option>Mais de 1.000</option></select>
+            </div>
+            <div>
+              <label style="display:block; font-size:12px; font-weight:600; color:#374151; margin-bottom:6px;">Nome da IA</label>
+              <input value="LIA" style="width:100%; padding:9px 11px; border:1px solid #D1D5DB; border-radius:8px; font-size:13px; font-family:inherit;">
+            </div>
+          </div>
+
+          <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:22px; padding-top:16px; border-top:1px solid #F3F4F6;">
+            <button style="padding:8px 14px; border:1px solid #D1D5DB; background:white; color:#9CA3AF; border-radius:8px; font-size:13px; font-family:inherit; cursor:not-allowed;">Voltar</button>
+            <button style="padding:8px 16px; border:none; background:#C74446; color:white; border-radius:8px; font-size:13px; font-weight:600; font-family:inherit; cursor:pointer;">Continuar</button>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /#screen-onboarding-clients -->
+
+    <!-- ============================================================
+         SCREEN: DE-PARA DE SINCRONIZACAO
+         Espelha /admin/clientes/:id/talent-sync/de-para do painel:
+         categorias a esquerda, mapeamentos do parceiro a direita.
+         ============================================================ -->
+    <div class="screen" id="screen-client-talent-sync">
+      <div style="padding:24px 32px; max-width:1200px; margin:0 auto;">
+
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:20px; font-size:14px;">
+          <a href="#" onclick="showScreen('screen-client-detail'); return false;" style="color:#C74446; font-weight:500;">Sincronização de Talentos</a>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          <span style="color:#374151; font-weight:500;">De-Para</span>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:20px;">
+          <div style="width:42px; height:42px; background:#111827; border-radius:10px; display:flex; align-items:center; justify-content:center;"><i data-lucide="arrow-left-right" style="width:22px;height:22px;color:white;"></i></div>
+          <div>
+            <h1 style="font-size:22px; font-weight:700; color:#111827; margin:0 0 4px;">De-Para de Sincronização</h1>
+            <p style="font-size:13px; color:#6B7280; margin:0;">De-para de status, campos e catálogos entre o parceiro e a WeDO, para <strong>iFood Talentos</strong>.</p>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:236px 1fr; gap:24px; align-items:start;">
+          <nav style="background:white; border:1px solid #E5E7EB; border-radius:12px; padding:8px;">
+            <div style="padding:8px 10px; font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em;">Categorias</div>
+            <ul style="list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:2px;">
+              <li><button style="width:100%; text-align:left; padding:8px 10px; border:none; background:#FEF2F2; color:#C74446; border-radius:8px; font-size:12.5px; font-weight:600; cursor:pointer; font-family:inherit;">Status de candidatura <span style="float:right; color:#9CA3AF; font-weight:500;">12</span></button></li>
+              <li><button style="width:100%; text-align:left; padding:8px 10px; border:none; background:transparent; color:#374151; border-radius:8px; font-size:12.5px; cursor:pointer; font-family:inherit;">Etapas do processo <span style="float:right; color:#9CA3AF;">8</span></button></li>
+              <li><button style="width:100%; text-align:left; padding:8px 10px; border:none; background:transparent; color:#374151; border-radius:8px; font-size:12.5px; cursor:pointer; font-family:inherit;">Motivos de reprovação <span style="float:right; color:#9CA3AF;">15</span></button></li>
+              <li><button style="width:100%; text-align:left; padding:8px 10px; border:none; background:transparent; color:#374151; border-radius:8px; font-size:12.5px; cursor:pointer; font-family:inherit;">Campos do candidato <span style="float:right; color:#9CA3AF;">23</span></button></li>
+            </ul>
+          </nav>
+
+          <div style="background:white; border:1px solid #E5E7EB; border-radius:12px; overflow:hidden;">
+            <div style="padding:14px 18px; border-bottom:1px solid #E5E7EB; display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+              <div>
+                <h2 style="font-size:14px; font-weight:700; color:#111827; margin:0 0 2px;">Status de candidatura</h2>
+                <p style="font-size:12px; color:#6B7280; margin:0;">O que o parceiro chama de cada estado, e o que a WeDO entende.</p>
+              </div>
+              <button style="display:flex; align-items:center; gap:6px; padding:7px 12px; border:1px solid #D1D5DB; background:white; border-radius:8px; font-size:12.5px; color:#374151; cursor:pointer; font-family:inherit;"><i data-lucide="plus" style="width:14px;height:14px;"></i> Novo mapeamento</button>
+            </div>
+            <table style="width:100%; border-collapse:collapse;">
+              <thead><tr style="background:#F9FAFB; border-bottom:1px solid #E5E7EB;">
+                <th style="padding:10px 18px; text-align:left; font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em;">No parceiro</th>
+                <th style="padding:10px 12px; text-align:left; font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em;">Na WeDO</th>
+                <th style="padding:10px 12px; text-align:left; font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em;">Origem</th>
+                <th style="padding:10px 18px; text-align:right; font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em;">Estado</th>
+              </tr></thead>
+              <tbody>
+                <tr style="border-top:1px solid #F3F4F6;"><td style="padding:12px 18px; font-size:13px; color:#111827;"><code style="background:#F3F4F6; padding:2px 6px; border-radius:4px; font-size:11.5px;">em_triagem</code></td><td style="padding:12px; font-size:13px; color:#111827;">Triagem</td><td style="padding:12px; font-size:12px; color:#6B7280;">Padrão</td><td style="padding:12px 18px; text-align:right;"><span style="background:#DCFCE7; color:#166534; font-size:11px; font-weight:600; padding:2px 8px; border-radius:99px;">Mapeado</span></td></tr>
+                <tr style="border-top:1px solid #F3F4F6; background:#F9FAFB;"><td style="padding:12px 18px; font-size:13px; color:#111827;"><code style="background:#F3F4F6; padding:2px 6px; border-radius:4px; font-size:11.5px;">entrevista_rh</code></td><td style="padding:12px; font-size:13px; color:#111827;">Entrevista RH</td><td style="padding:12px; font-size:12px; color:#6B7280;">Padrão</td><td style="padding:12px 18px; text-align:right;"><span style="background:#DCFCE7; color:#166534; font-size:11px; font-weight:600; padding:2px 8px; border-radius:99px;">Mapeado</span></td></tr>
+                <tr style="border-top:1px solid #F3F4F6; border-left:4px solid #D97706;"><td style="padding:12px 18px; font-size:13px; color:#111827;"><code style="background:#F3F4F6; padding:2px 6px; border-radius:4px; font-size:11.5px;">teste_label</code></td><td style="padding:12px; font-size:13px; color:#9CA3AF;">sem correspondência</td><td style="padding:12px; font-size:12px; color:#6B7280;">Deste cliente</td><td style="padding:12px 18px; text-align:right;"><span style="background:#FEF3C7; color:#92400E; font-size:11px; font-weight:600; padding:2px 8px; border-radius:99px;">Sem par</span></td></tr>
+                <tr style="border-top:1px solid #F3F4F6; background:#F9FAFB;"><td style="padding:12px 18px; font-size:13px; color:#111827;"><code style="background:#F3F4F6; padding:2px 6px; border-radius:4px; font-size:11.5px;">contratado</code></td><td style="padding:12px; font-size:13px; color:#111827;">Contratado</td><td style="padding:12px; font-size:12px; color:#6B7280;">Padrão</td><td style="padding:12px 18px; text-align:right;"><span style="background:#DCFCE7; color:#166534; font-size:11px; font-weight:600; padding:2px 8px; border-radius:99px;">Mapeado</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /#screen-client-talent-sync -->
+
     <div class="screen" id="screen-templates-globais">
       <div style="padding:24px 32px; max-width:1180px; margin:0 auto;">
 
-        <div style="margin-bottom:6px;">
-          <h1 style="font-size:22px; font-weight:700; color:#111827; margin:0 0 4px 0;">Catálogo de Templates</h1>
-          <p style="font-size:13px; color:#6B7280; margin:0;">O texto padrão da WeDO para toda comunicação da plataforma. Cada cliente nasce herdando daqui, e continua acompanhando enquanto não ajustar o texto dele.</p>
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px; margin-bottom:6px; flex-wrap:wrap;">
+          <div>
+            <h1 style="font-size:22px; font-weight:700; color:#111827; margin:0 0 4px 0;">Catálogo de Templates</h1>
+            <p style="font-size:13px; color:#6B7280; margin:0;">O texto padrão da WeDO para toda comunicação da plataforma. Cada cliente nasce herdando daqui, e continua acompanhando enquanto não ajustar o texto dele.</p>
+          </div>
+          <button onclick="catNovoAbrir()" style="display:flex; align-items:center; gap:7px; padding:9px 14px; border:none; background:#C74446; color:white; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; white-space:nowrap;"><i data-lucide="plus" style="width:15px;height:15px;"></i> Novo texto</button>
         </div>
 
         <div style="background:#F5F3FF; border:1px solid #DDD6FE; border-radius:8px; padding:11px 14px; margin:16px 0; font-size:12px; color:#5B21B6;">
@@ -3587,7 +3750,8 @@
         <div style="background:white; border:1px solid #E5E7EB; border-radius:12px; overflow:hidden;">
           <table style="width:100%; border-collapse:collapse;">
             <thead><tr style="background:#F9FAFB; border-bottom:1px solid #E5E7EB;">
-              <th style="padding:10px 20px; text-align:left; font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em;">Comunicação</th>
+              <th style="padding:10px 16px; text-align:left; font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em;">ID</th>
+                <th style="padding:10px 20px; text-align:left; font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em;">Comunicação</th>
               <th style="padding:10px 12px; text-align:left; font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em;">Canal</th>
               <th style="padding:10px 12px; text-align:left; font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em;">Tipo</th>
               <th style="padding:10px 12px; text-align:left; font-size:11px; font-weight:600; color:#6B7280; text-transform:uppercase; letter-spacing:0.05em;">Remetente</th>
@@ -6637,6 +6801,26 @@ Este link expira em 7 dias.</textarea>
   <!-- ===== Catálogo de Templates: painel lateral =====
        Fica FORA do #app-shell de proposito: o #main-content tem overflow:auto e
        top:56px, e recorta o painel na faixa da topbar mesmo ele sendo fixed. ===== -->
+    <!-- criar texto: o canal e' escolhido aqui, e e' o unico momento em que ele
+         se decide -- depois de criado, o texto pertence ao canal dele. -->
+    <div id="cat-novo-backdrop" onclick="catNovoFechar()" style="display:none; position:fixed; inset:0; background:rgba(17,24,39,.55); z-index:902;"></div>
+    <div id="cat-novo" style="display:none; position:fixed; inset:0; z-index:903; align-items:center; justify-content:center; padding:24px; pointer-events:none;">
+      <div onclick="event.stopPropagation()" style="pointer-events:auto; width:620px; max-width:94vw; max-height:calc(100vh - 48px); background:white; border-radius:16px; box-shadow:0 20px 48px rgba(0,0,0,.22); display:flex; flex-direction:column; overflow:hidden;">
+        <div style="padding:18px 22px; border-bottom:1px solid #E5E7EB; display:flex; align-items:flex-start; justify-content:space-between; gap:12px;">
+          <div>
+            <h2 style="font-size:16px; font-weight:700; color:#111827; margin:0 0 4px;">Novo texto</h2>
+            <div id="cat-novo-sub" style="font-size:11px; color:#6B7280;"></div>
+          </div>
+          <button onclick="catNovoFechar()" style="background:none; border:none; cursor:pointer; color:#9CA3AF; padding:4px;" title="Fechar (Esc)"><i data-lucide="x" style="width:18px;height:18px;"></i></button>
+        </div>
+        <div id="cat-novo-corpo" style="flex:1; overflow-y:auto; padding:20px 22px;"></div>
+        <div style="padding:14px 22px; border-top:1px solid #E5E7EB; display:flex; align-items:center; justify-content:flex-end; gap:8px;">
+          <button onclick="catNovoFechar()" style="padding:8px 14px; border:1px solid #D1D5DB; background:white; color:#374151; border-radius:8px; font-size:13px; font-weight:500; cursor:pointer; font-family:inherit;">Cancelar</button>
+          <button id="cat-novo-criar" onclick="catNovoCriar()" style="padding:8px 16px; border:none; background:#C74446; color:white; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit;">Criar e escrever o texto</button>
+        </div>
+      </div>
+    </div>
+
     <!-- editor de template: modal, no mesmo padrao das demais telas do painel -->
     <div id="cat-drawer-backdrop" onclick="catClose()" style="display:none; position:fixed; inset:0; background:rgba(17,24,39,.55); z-index:900;"></div>
     <div id="cat-drawer" style="display:none; position:fixed; inset:0; z-index:901; align-items:center; justify-content:center; padding:24px; pointer-events:none;">
