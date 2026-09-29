@@ -311,7 +311,7 @@ function catNovoRender() {
     <label style="display:block; font-size:12px; font-weight:600; color:#374151; margin-bottom:8px;">Canal</label>
     <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:6px;">
       ${catNovoCanalCard('email', 'E-mail', 'Sai no layout da plataforma, com cabeçalho, assinatura e os blocos de privacidade.', 'mail')}
-      ${catNovoCanalCard('whatsapp', 'WhatsApp', 'Texto puro numa conversa. Publicar submete o modelo à Meta e só sai depois de aprovado.', 'message-circle')}
+      ${catNovoCanalCard('whatsapp', 'WhatsApp', 'Texto puro numa conversa. Sai livremente enquanto o candidato estiver respondendo. Para ABRIR conversa, só com modelo aprovado pela Meta.', 'message-circle')}
     </div>
     <p style="font-size:11px; color:#9CA3AF; margin:0 0 18px;">O canal se decide agora e não muda depois. Para ter a mesma comunicação nos dois, crie o par.</p>
 
@@ -338,7 +338,7 @@ function catNovoRender() {
     </div>
 
     ${whats ? `<div style="background:#ECFDF5; border:1px solid #A7F3D0; border-radius:8px; padding:11px 13px; font-size:12px; color:#065F46;">
-      <strong>WhatsApp não tem assunto.</strong> Ao publicar, o modelo é submetido à Meta em cada conta do cliente e o estado aparece em Modelos na Meta. Fora da janela de 24 horas, só sai o que estiver aprovado.
+      <strong>WhatsApp não tem assunto.</strong> Este texto sai como mensagem da conversa: vale enquanto o candidato tiver respondido nas últimas 24 horas. Texto que precisa <strong>abrir</strong> conversa é outra coisa: a Meta exige modelo aprovado, e isso só existe para os fluxos que a plataforma conhece (triagem, convite e confirmação de entrevista, cadência). Um texto criado aqui não vira modelo na Meta, então fora da janela ele não sai.
     </div>` : `<div style="background:#F9FAFB; border:1px solid #E5E7EB; border-radius:8px; padding:11px 13px; font-size:12px; color:#6B7280;">
       O assunto e o corpo você escreve no próximo passo, com a pré-visualização do e-mail montado do jeito que o candidato recebe.
     </div>`}
@@ -504,7 +504,7 @@ function catRenderContent() {
 
     ${t.channel === 'whatsapp' ? `
     <div style="background:#ECFDF5; border:1px solid #A7F3D0; border-radius:8px; padding:11px 13px; margin-bottom:16px; font-size:12px; color:#065F46;">
-      <strong>WhatsApp não tem assunto.</strong> Publicar este texto submete o modelo à Meta em cada conta do cliente. Fora da janela de 24 horas, só sai o que estiver aprovado.
+      <strong>WhatsApp não tem assunto.</strong> Dentro da janela de 24 horas, contada a partir da última resposta do candidato, este texto sai como mensagem livre da conversa. Fora dela a Meta só entrega modelo que ela aprovou, e só os fluxos que abrem conversa têm um.
     </div>` : `
     <div style="position:relative; display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:6px;">
       <label style="font-size:12px; font-weight:600; color:#374151;">Assunto</label>
@@ -534,7 +534,7 @@ function catRenderContent() {
           <a href="#" onclick="catClose(); commTab('modelos'); return false;" style="font-size:11px; color:#C74446; font-weight:500;">ver em Modelos na Meta</a>
         </div>
         ${mcMetaAccountsLine(t.key)}
-        <p style="font-size:11px; color:#6B7280; margin:8px 0 0;">Salvar este texto submete de novo à Meta em cada conta. Fora da janela de 24 horas, só sai o que estiver aprovado.</p>
+        <p style="font-size:11px; color:#6B7280; margin:8px 0 0;">Esta comunicação abre conversa, então tem modelo na Meta: salvar o texto gera uma revisão, e o aprovado continua servindo até a nova passar.</p>
       </div>` : ''}
     ${t.hasText ? `<p style="font-size:11px; color:#9A3412; margin-top:8px;">Esta comunicação também tem versão em texto puro, que precisa acompanhar a edição.</p>` : ''}
   `;
