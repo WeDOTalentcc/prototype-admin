@@ -399,6 +399,7 @@ function catOpen(chave, canal) {
   if (!catSelected) return;
   catDraft = Object.assign({}, catCurrentText(catSelected));
   catSourceView = false;
+  catVarAberto = null;
   document.getElementById('cat-drawer').style.display = 'flex';
   document.getElementById('cat-drawer-backdrop').style.display = 'block';
   catRenderDrawer();
@@ -496,7 +497,6 @@ function catReadOnly() {
 function catRenderContent() {
   const t = catSelected;
   const readOnly = catReadOnly();
-  const vars = t.variables.length ? t.variables : ['candidate_name', 'job_title'];
   document.getElementById('cat-painel-conteudo').innerHTML = `
     ${catScopeBanner(t)}
     ${t.note ? `<div style="background:#FFF7ED; border:1px solid #FED7AA; border-radius:8px; padding:10px 12px; margin-bottom:16px; font-size:12px; color:#9A3412;">${catEscape(t.note)}</div>` : ''}
@@ -506,17 +506,19 @@ function catRenderContent() {
     <div style="background:#ECFDF5; border:1px solid #A7F3D0; border-radius:8px; padding:11px 13px; margin-bottom:16px; font-size:12px; color:#065F46;">
       <strong>WhatsApp não tem assunto.</strong> Publicar este texto submete o modelo à Meta em cada conta do cliente. Fora da janela de 24 horas, só sai o que estiver aprovado.
     </div>` : `
-    <label style="display:block; font-size:12px; font-weight:600; color:#374151; margin-bottom:6px;">Assunto</label>
+    <div style="position:relative; display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:6px;">
+      <label style="font-size:12px; font-weight:600; color:#374151;">Assunto</label>
+      ${catVarBotao('assunto', 'Assunto', readOnly)}
+      ${catVarAberto && catVarAberto.campo === 'assunto' ? catVarPopover('assunto', 'Assunto') : ''}
+    </div>
     <input id="cat-in-subject" value="${catEscape(catDraft.subject)}" oninput="catEdit('subject', this.value)"
            ${readOnly ? 'disabled' : ''}
            style="width:100%; padding:9px 11px; border:1px solid #D1D5DB; border-radius:8px; font-size:13px; color:#111827; font-family:inherit; margin-bottom:18px; ${readOnly ? 'background:#F3F4F6; color:#9CA3AF;' : ''}">`}
 
-    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+    <div style="position:relative; display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:6px;">
       <label style="font-size:12px; font-weight:600; color:#374151;">Corpo da mensagem</label>
-      <span style="font-size:11px; color:#9CA3AF;">clique numa variável para inserir no cursor</span>
-    </div>
-    <div style="display:flex; flex-wrap:wrap; gap:5px; margin-bottom:8px;">
-      ${vars.map(v => `<button onclick="catInsertVariable('${v}')" style="padding:3px 8px; border:1px solid #D1D5DB; background:white; border-radius:6px; font-size:11px; color:#1F6B7D; font-family:monospace; cursor:pointer;" onmouseover="this.style.background='#F3F4F6'" onmouseout="this.style.background='white'">{{${v}}}</button>`).join('')}
+      ${catVarBotao('corpo', 'Corpo da mensagem', readOnly)}
+      ${catVarAberto && catVarAberto.campo === 'corpo' ? catVarPopover('corpo', 'Corpo da mensagem') : ''}
     </div>
     ${catBodyEditor(t, readOnly)}
 
@@ -537,6 +539,163 @@ function catRenderContent() {
     ${t.hasText ? `<p style="font-size:11px; color:#9A3412; margin-top:8px;">Esta comunicação também tem versão em texto puro, que precisa acompanhar a edição.</p>` : ''}
   `;
   if (window.lucide) lucide.createIcons();
+}
+
+/* ------------------------------------------------ seletor de variaveis
+
+   O painel nao lista as variaveis como fileira de etiquetas: elas ficam atras
+   de um botao "Inserir variavel", num popover com busca e separadas em duas
+   FAMILIAS. A separacao nao e' enfeite -- misturar as duas fazia o operador
+   tratar a variavel de conteudo do envio como campo que ele deveria preencher
+   aqui, quando ela e' o texto que o recrutador digita na hora de enviar.
+
+   Cada linha mostra rotulo, a marcacao que entra no texto e o que ela traz: o
+   nome cru sozinho nao dizia nem uma coisa nem outra. */
+
+const CAT_VAR_FAMILIAS = [
+  {
+    id: 'dado',
+    titulo: 'Dados que a plataforma preenche',
+    dica: 'A plataforma resolve sozinha no envio, com o que já está no cadastro do candidato e da vaga.',
+    descricaoPadrao: 'A plataforma preenche no envio.'
+  },
+  {
+    id: 'conteudo_do_envio',
+    titulo: 'Conteúdo escrito na hora do envio',
+    dica: 'Só tem valor quando alguém digita o texto no momento do envio. Aqui no template ela fica como espaço reservado.',
+    descricaoPadrao: 'Texto digitado no momento do envio.'
+  }
+];
+
+const CAT_VAR_CONTEUDO_DO_ENVIO = new Set([
+  'custom_message_html', 'mensagem_personalizada', 'assunto_da_mensagem', 'corpo_da_mensagem'
+]);
+
+const CAT_VAR_DESCRICAO = {
+  company_name:   ['Nome da empresa', 'A marca que o candidato vê, já resolvida pela vaga.'],
+  trade_name:     ['Nome fantasia', 'O nome comercial da empresa, quando ela tem um.'],
+  job_title:      ['Título da vaga', 'O cargo como está publicado.'],
+  job_url:        ['Link da vaga', 'Endereço público da vaga.'],
+  candidate_name: ['Nome do candidato', 'Como o candidato se cadastrou.'],
+  candidate_email:['E-mail do candidato', 'Para onde a mensagem vai.'],
+  recruiter_name: ['Nome do recrutador', 'Quem está conduzindo o processo.'],
+  recruiter_email:['E-mail do recrutador', 'Contato de resposta do processo.'],
+  user_name:      ['Nome de quem envia', 'O usuário logado no momento do disparo.'],
+  stage_name:     ['Etapa do processo', 'A etapa em que o candidato está.'],
+  evaluation_url: ['Link da triagem', 'Endereço da conversa com a LIA.'],
+  interview_date: ['Data da entrevista', 'Quando a entrevista foi marcada.'],
+  date_br_today:  ['Data de hoje', 'No formato brasileiro.']
+};
+
+let catVarAberto = null;
+
+function catVarFamilia(nome) {
+  return CAT_VAR_CONTEUDO_DO_ENVIO.has(nome) ? 'conteudo_do_envio' : 'dado';
+}
+
+function catVarRotulo(nome) {
+  const conhecida = CAT_VAR_DESCRICAO[nome];
+  if (conhecida) return conhecida[0];
+  return (nome.charAt(0).toUpperCase() + nome.slice(1)).replace(/_/g, ' ');
+}
+
+function catVarDescricao(nome, familia) {
+  const conhecida = CAT_VAR_DESCRICAO[nome];
+  if (conhecida) return conhecida[1];
+  return CAT_VAR_FAMILIAS.find(f => f.id === familia).descricaoPadrao;
+}
+
+function catVarLista() {
+  const t = catSelected;
+  const nomes = (t && t.variables.length) ? t.variables : ['candidate_name', 'job_title', 'company_name'];
+  return nomes;
+}
+
+/* O botao vive ao lado do rotulo do campo, e diz quantas variaveis aquela
+   comunicacao tem -- como no painel. */
+function catVarBotao(campo, rotuloDoCampo, readOnly) {
+  const n = catVarLista().length;
+  if (!n) return '';
+  return `<button ${readOnly ? 'disabled' : ''} onclick="catVarToggle('${campo}')"
+    data-testid="template-variaveis-do-${campo}"
+    style="display:inline-flex; align-items:center; gap:6px; padding:4px 9px; border:1px solid #D1D5DB; background:white; border-radius:8px; font-size:11px; font-weight:600; color:#6B7280; cursor:${readOnly ? 'not-allowed' : 'pointer'}; opacity:${readOnly ? '.5' : '1'}; font-family:inherit;">
+    <i data-lucide="variable" style="width:12px;height:12px;"></i> Inserir variável
+    <span style="background:#F3F4F6; color:#9CA3AF; font-weight:400; font-size:10px; padding:0 5px; border-radius:6px;">${n}</span>
+  </button>`;
+}
+
+function catVarPopover(campo, rotuloDoCampo) {
+  const busca = (catVarAberto && catVarAberto.busca || '').trim().toLowerCase();
+  const grupos = CAT_VAR_FAMILIAS.map(familia => ({
+    familia,
+    nomes: catVarLista().filter(nome => {
+      if (catVarFamilia(nome) !== familia.id) return false;
+      if (!busca) return true;
+      return (nome + ' ' + catVarRotulo(nome) + ' ' + catVarDescricao(nome, familia.id)).toLowerCase().includes(busca);
+    })
+  })).filter(g => g.nomes.length);
+
+  return `<div data-testid="template-variaveis" style="position:absolute; right:0; top:calc(100% + 6px); z-index:50; width:22rem; max-width:92vw; background:white; border:1px solid #E5E7EB; border-radius:12px; box-shadow:0 12px 32px rgba(0,0,0,.14); overflow:hidden;">
+    <div style="border-bottom:1px solid #E5E7EB; padding:10px;">
+      <div style="position:relative;">
+        <i data-lucide="search" style="width:13px;height:13px;position:absolute;left:8px;top:50%;transform:translateY(-50%);color:#9CA3AF;"></i>
+        <input id="cat-var-busca" value="${catEscape(catVarAberto.busca || '')}" oninput="catVarBuscar(this.value)" placeholder="Buscar variável"
+               style="width:100%; padding:6px 8px 6px 27px; border:1px solid #D1D5DB; border-radius:8px; font-size:12px; color:#111827; font-family:inherit;">
+      </div>
+      <p style="font-size:11px; color:#9CA3AF; margin:6px 0 0;">Entra no cursor do campo ${catEscape(rotuloDoCampo)}.</p>
+    </div>
+    <div style="max-height:13rem; overflow-y:auto; padding:8px;">
+      ${grupos.length === 0
+        ? '<p data-testid="template-variaveis-sem-resultado" style="padding:16px 4px; text-align:center; font-size:11px; color:#9CA3AF;">Nenhuma variável com esse nome.</p>'
+        : grupos.map(g => `
+        <section data-testid="template-familia" data-familia="${g.familia.id}" style="margin-bottom:8px;">
+          <h3 style="margin:0 0 2px; padding:0 4px; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.05em; color:#6B7280;">${g.familia.titulo}</h3>
+          <p style="margin:0 0 4px; padding:0 4px; font-size:11px; line-height:1.45; color:#9CA3AF;">${g.familia.dica}</p>
+          ${g.nomes.map(nome => `
+            <button data-testid="template-variavel" data-familia="${g.familia.id}" onclick="catVarInserir('${campo}','${nome}')"
+              style="display:block; width:100%; text-align:left; padding:7px 8px; border:1px solid transparent; background:transparent; border-radius:8px; cursor:pointer; font-family:inherit;"
+              onmouseover="this.style.background='#F3F4F6'; this.style.borderColor='#D1D5DB';"
+              onmouseout="this.style.background='transparent'; this.style.borderColor='transparent';">
+              <span style="display:flex; align-items:baseline; gap:6px;">
+                <span style="font-size:12px; font-weight:600; color:#111827;">${catEscape(catVarRotulo(nome))}</span>
+                <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:11px; color:#2B7A8C;">{{${catEscape(nome)}}}</span>
+              </span>
+              <span style="display:block; margin-top:2px; font-size:11px; line-height:1.45; color:#9CA3AF;">${catEscape(catVarDescricao(nome, g.familia.id))}</span>
+            </button>`).join('')}
+        </section>`).join('')}
+    </div>
+  </div>`;
+}
+
+function catVarToggle(campo) {
+  catVarAberto = (catVarAberto && catVarAberto.campo === campo) ? null : { campo: campo, busca: '' };
+  catRenderContent();
+}
+
+function catVarBuscar(valor) {
+  if (!catVarAberto) return;
+  catVarAberto.busca = valor;
+  const campo = catVarAberto.campo;
+  catRenderContent();
+  const input = document.getElementById('cat-var-busca');
+  if (input) { input.focus(); input.selectionStart = input.selectionEnd = input.value.length; }
+}
+
+function catVarInserir(campo, nome) {
+  catVarAberto = null;
+  if (campo === 'assunto') {
+    const el = document.getElementById('cat-in-subject');
+    if (el) {
+      const start = el.selectionStart, end = el.selectionEnd;
+      el.value = el.value.slice(0, start) + '{{' + nome + '}}' + el.value.slice(end);
+      catDraft.subject = el.value;
+      catRefreshDirty();
+      catRenderContent();
+      return;
+    }
+  }
+  catInsertVariable(nome);
+  catRenderContent();
 }
 
 /* ----------------------------------------------------- editor do corpo
